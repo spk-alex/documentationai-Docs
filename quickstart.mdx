@@ -1,0 +1,165 @@
+---
+title: Getting Started with SmartphoneKey
+description: Follow this guide to quickly set up SmartphoneKey in your property, from hardware installation to initial configuration. Ideal for property managers looking to implement the system with minimal downtime.
+---
+
+## Overview
+
+SmartphoneKey modernizes access control for multifamily properties and short-term rentals. Residents and guests unlock doors contactlessly using Apple Wallet or Google Wallet—no app required. You achieve enterprise-grade security with easy installation and minimal maintenance.
+
+This quickstart guides you through hardware setup, account creation, user access assignment, and testing. Complete the process in under 30 minutes for your first functional door.
+
+<Callout kind="tip">
+Prepare these prerequisites:
+- SmartphoneKey Bridge hardware kit (includes lock, bridge, and power adapter)
+- Smartphone with Apple Wallet (iOS 14+) or Google Wallet (Android 8+)
+- Stable Wi-Fi network (`2.4GHz` band recommended)
+- Property manager email for account signup
+</Callout>
+
+## Hardware Installation
+
+Install the SmartphoneKey Bridge and lock in minutes. Mount at standard deadbolt height (`{38-42 inches}` from floor).
+
+<Steps>
+  <Step title="Unbox and Mount Lock" icon="package">
+    Remove the SmartphoneKey Lock from packaging. Align with your door's deadbolt hole. Secure using provided screws and template.
+
+    ```
+    Drill guide:
+    - Top hole: `{1.5in}` from edge
+    - Bottom hole: `{3.5in}` from edge
+    ```
+  </Step>
+
+  <Step title="Connect Bridge" icon="wifi">
+    Plug the Bridge into power and your `{2.4GHz}` Wi-Fi router via Ethernet (preferred) or Wi-Fi setup.
+
+    Scan QR code on Bridge with your phone's camera to join network `SmartphoneKey-XXXX`.
+
+    ```bash
+    # Default Wi-Fi credentials (change after setup)
+    SSID: SmartphoneKey-Setup
+    Password: setup1234
+    ```
+  </Step>
+
+  <Step title="Pair Lock to Bridge" icon="link">
+    Press the Bridge sync button for `{5 seconds}` until LED flashes blue. Hold lock's reset button until it pairs (LED solid green).
+  </Step>
+</Steps>
+
+## Account Setup and Onboarding
+
+Create your dashboard account to manage properties and passes.
+
+<Tabs>
+  <Tab title="Web Dashboard" icon="globe">
+    Visit `https://dashboard.smartphonekey.com` and sign up.
+
+    ```javascript
+    // Example signup payload (via browser fetch)
+    const signupData = {
+      email: "manager@yourproperty.com",
+      propertyName: "Maple Apartments",
+      bridgeSerial: "SKB-123456789"
+    };
+    ```
+
+    Verify email and add your Bridge serial number from the device label.
+  </Tab>
+
+  <Tab title="Mobile Browser" icon="smartphone">
+    Open `dashboard.smartphonekey.com` in mobile Safari/Chrome. Tap "Sign Up" and follow prompts.
+
+    <Callout kind="info">
+      Mobile setup auto-detects nearby Bridges via Bluetooth.
+    </Callout>
+  </Tab>
+</Tabs>
+
+## Assign Initial User Access
+
+Generate and assign NFC passes to test users. Passes sync instantly to Wallets.
+
+<CodeGroup tabs="Dashboard API,cURL">
+  ```javascript
+  // Dashboard API: Create pass
+  const response = await fetch('https://api.smartphonekey.com/v1/passes', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer YOUR_API_KEY' },
+    body: JSON.stringify({
+      userEmail: 'resident@tenant.com',
+      propertyId: 'prop_abc123',
+      doors: ['front-door-1']
+    })
+  });
+  ```
+  ```bash
+  curl -X POST https://api.smartphonekey.com/v1/passes \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -d '{
+      "userEmail": "resident@tenant.com",
+      "propertyId": "prop_abc123",
+      "doors": ["front-door-1"]
+    }'
+  ```
+</CodeGroup>
+
+Users receive an email with Wallet add instructions. Passes auto-update on access changes.
+
+## Test the First Unlock
+
+Verify setup with a live test.
+
+<Tabs>
+  <Tab title="Apple Wallet" icon="apple">
+    <Steps>
+      <Step title="Add Pass">
+        Open Wallet app > tap email link > "Add to Apple Wallet".
+      </Step>
+      <Step title="Unlock Door" icon="unlock">
+        Hold iPhone near lock (`{1-2 inches}`). Listen for beep and watch green LED.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Google Wallet" icon="android">
+    <Steps>
+      <Step title="Add Pass">
+        Open Gmail > tap link > "Add to Google Wallet".
+      </Step>
+      <Step title="Unlock Door" icon="unlock">
+        Hold Android near lock. Confirm haptic feedback and green LED.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Columns cols={3}>
+  <Card title="Scale to Multiple Doors" icon="plus" href="/docs/multi-door-setup">
+    Add more locks seamlessly.
+  </Card>
+
+  <Card title="User Management" icon="users" href="/docs/users">
+    Bulk import residents and guests.
+  </Card>
+
+  <Card title="Troubleshooting" icon="alert-triangle" href="/docs/troubleshoot">
+    Common fixes and support.
+  </Card>
+</Columns>
+
+<Expandable title="Advanced: Audit Logs" default-open="false">
+View unlock history in dashboard.
+
+```
+Recent events:
+- 2024-10-15 14:30: User resident@tenant.com > front-door-1 (Success)
+- 2024-10-15 14:28: Unknown device > front-door-1 (Denied)
+```
+</Expandable>
+
+<Callout kind="success">
+Success! Your first SmartphoneKey door is live. Monitor access in real-time via dashboard.
+</Callout>

@@ -1,0 +1,156 @@
+---
+title: Changelog
+description: Track updates and improvements to SmartphoneKey, including new features, bug fixes, and security enhancements. This page lists version history to help users stay informed about changes.
+---
+
+## Stay Up to Date
+
+SmartphoneKey releases updates regularly to enhance security, add features, and improve reliability for your multifamily properties and short-term rentals. You receive notifications through the property manager dashboard. Review changes below to understand impacts on your access control setup.
+
+<Columns cols={3}>
+  <Card title="New Features" icon="zap" href="#v2-1-0">
+    Discover enhanced Wallet integrations and automation tools.
+  </Card>
+  <Card title="Bug Fixes" icon="check-circle" href="#v2-0-0">
+    Resolve common issues with door unlocking and guest access.
+  </Card>
+  <Card title="Security Updates" icon="shield" href="#v1-9-0">
+    Stay protected with the latest patches and compliance improvements.
+  </Card>
+</Columns>
+
+<Callout kind="tip">
+  Upgrade automatically via the dashboard or use the CLI for custom deployments. Test in staging before production.
+</Callout>
+
+## Upgrade Instructions
+
+Follow these steps to apply the latest version across your properties.
+
+<Steps>
+  <Step title="Check Compatibility" icon="check">
+    Verify your hardware firmware supports the new version in the dashboard.
+  </Step>
+  <Step title="Backup Data" icon="database">
+    Export access logs and user mappings.
+  </Step>
+  <Step title="Deploy Update">
+    <Tabs>
+      <Tab title="Dashboard" icon="settings">
+        Select properties and click **Update Now**.
+      </Tab>
+      <Tab title="CLI" icon="terminal">
+        ```bash
+        smartphonekey update --properties=all --version=latest --api-key=YOUR_API_KEY
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Verify" icon="search">
+    Test door unlocking with Apple and Google Wallet on multiple devices.
+  </Step>
+</Steps>
+
+## Version History
+
+<Update label="2024-10-15" description="v2.1.0" tags={["feature", "improvement"]}>
+
+## New Features
+
+- Added dynamic guest pass expiration tied to rental booking systems.
+- Introduced bulk user import from CSV for property managers.
+
+## Improvements
+
+- Reduced unlock latency by `>30%` with optimized Bluetooth Low Energy handling.
+- Enhanced dashboard analytics for access pattern visualization.
+
+## Bug Fixes
+
+- Fixed intermittent failures in Google Wallet provisioning for Android 14+ devices.
+
+````jsx
+// Example: New bulk import API usage
+const users = await smartphonekey.importUsers({
+  file: 'tenants.csv',
+  propertyId: 'prop_123'
+});
+````
+
+</Update>
+
+<Update label="2024-09-20" description="v2.0.0" tags={["feature", "breaking"]}>
+
+## New Features
+
+- Apple Wallet Express Mode support for hands-free entry.
+- Integration with Airbnb and Vrbo for automatic guest key provisioning.
+
+## Breaking Changes
+
+- Updated API authentication to require `api-key-v2` header instead of legacy tokens.
+
+<Callout kind="alert">
+  Migrate your integrations: Replace `{legacy_token}` with `api-key-v2: YOUR_NEW_API_KEY`.
+</Callout>
+
+## Bug Fixes
+
+- Resolved door sensor desync after prolonged idle periods.
+
+```javascript
+// Updated auth header
+fetch('/api/doors/unlock', {
+  headers: {
+    'api-key-v2': 'YOUR_NEW_API_KEY'
+  }
+});
+```
+
+</Update>
+
+<Update label="2024-08-05" description="v1.9.0" tags={["security", "bugfix"]}>
+
+## Security Updates
+
+- Patched potential replay attack vectors in NFC handover.
+- Enforced stricter rate limiting on unlock endpoints (`<100ms` response guaranteed).
+
+## Improvements
+
+- Added audit logs for all Wallet key revocations.
+
+## Bug Fixes
+
+- Corrected iOS Wallet key duplication during user transfers.
+
+<CodeGroup tabs="JavaScript,Python">
+```javascript
+// Audit log query
+const logs = await smartphonekey.getAuditLogs({
+  from: '2024-08-01',
+  type: 'revocation'
+});
+```
+```python
+# Audit log query
+logs = smartphonekey.get_audit_logs(
+    from_date='2024-08-01',
+    log_type='revocation'
+)
+```
+</CodeGroup>
+
+</Update>
+
+## Summary of Changes
+
+| Version | Date       | Key Changes                  | Tags              |
+|---------|------------|------------------------------|-------------------|
+| v2.1.0 | 2024-10-15 | Bulk import, latency fix    | feature, improvement |
+| v2.0.0 | 2024-09-20 | Express Mode, API breaking  | feature, breaking    |
+| v1.9.0 | 2024-08-05 | Security patch, audit logs  | security, bugfix     |
+
+<Expandable title="Older Versions" default-open="false">
+  Review v1.8.x and earlier in the [full archive](https://docs.smartphonekey.com/archive).
+</Expandable>
