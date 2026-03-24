@@ -5497,8 +5497,8 @@
                   },
                   "commissioningCode": {
                     "type": "string",
-                    "pattern": "^(\\d{11}|\\d{22}|MT:.+)$",
-                    "description": "Matter commissioning code (11 or 22 digits, or MT:<code>)"
+                    "pattern": "^(\\d&#123;11&#125;|\\d&#123;22&#125;|MT:.+)$",
+                    "description": "Matter commissioning code (11 or 22 digits, or MT:&lt;code>)"
                   }
                 },
                 "required": [
