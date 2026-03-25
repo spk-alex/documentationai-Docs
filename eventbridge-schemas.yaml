@@ -43,13 +43,17 @@ info:
 
     The schemas below document the `detail` object for each event type.
 
-webhooks:
+servers:
+  - url: https://your-webhook-endpoint.example.com
+    description: Your registered webhook endpoint receives these events as HTTP POST requests
+
+paths:
 
   # ─────────────────────────────────────────
   # KEY MANAGEMENT EVENTS
   # ─────────────────────────────────────────
 
-  KeyAdded:
+  /webhooks/key-added:
     post:
       summary: Key Added
       description: |
@@ -72,7 +76,7 @@ webhooks:
           description: Event received successfully
 
 
-  KeyRemoved:
+  /webhooks/key-removed:
     post:
       summary: Key Removed
       description: |
@@ -95,7 +99,7 @@ webhooks:
           description: Event received successfully
 
 
-  PhysicalKeyAssigned:
+  /webhooks/physical-key-assigned:
     post:
       summary: Physical Key Assigned
       description: |
@@ -118,7 +122,7 @@ webhooks:
           description: Event received successfully
 
 
-  WalletKeyPrepared:
+  /webhooks/wallet-key-prepared:
     post:
       summary: Wallet Key Prepared
       description: |
@@ -141,7 +145,7 @@ webhooks:
           description: Event received successfully
 
 
-  TempKeyCreated:
+  /webhooks/temp-key-created:
     post:
       summary: Temporary Key Created
       description: |
@@ -165,7 +169,7 @@ webhooks:
           description: Event received successfully
 
 
-  TempKeyUpdated:
+  /webhooks/temp-key-updated:
     post:
       summary: Temporary Key Updated
       description: |
@@ -188,7 +192,7 @@ webhooks:
           description: Event received successfully
 
 
-  TempKeyDeleted:
+  /webhooks/temp-key-deleted:
     post:
       summary: Temporary Key Deleted
       description: |
@@ -215,7 +219,7 @@ webhooks:
   # LOCK MANAGEMENT EVENTS
   # ─────────────────────────────────────────
 
-  LockCreated:
+  /webhooks/lock-created:
     post:
       summary: Lock Created
       description: |
@@ -239,7 +243,7 @@ webhooks:
           description: Event received successfully
 
 
-  AccessibleLockAdded:
+  /webhooks/accessible-lock-added:
     post:
       summary: Accessible Lock Added
       description: |
@@ -262,7 +266,7 @@ webhooks:
           description: Event received successfully
 
 
-  AccessibleLockRemoved:
+  /webhooks/accessible-lock-removed:
     post:
       summary: Accessible Lock Removed
       description: |
@@ -289,7 +293,7 @@ webhooks:
   # RESIDENT MANAGEMENT EVENTS
   # ─────────────────────────────────────────
 
-  ResidentAdded:
+  /webhooks/resident-added:
     post:
       summary: Resident Added
       description: |
@@ -312,7 +316,7 @@ webhooks:
           description: Event received successfully
 
 
-  ResidentRemoved:
+  /webhooks/resident-removed:
     post:
       summary: Resident Removed
       description: |
@@ -339,7 +343,7 @@ webhooks:
   # HUB MANAGEMENT EVENTS
   # ─────────────────────────────────────────
 
-  HubClaimed:
+  /webhooks/hub-claimed:
     post:
       summary: Hub Claimed
       description: |
@@ -362,7 +366,7 @@ webhooks:
           description: Event received successfully
 
 
-  HubProvisioned:
+  /webhooks/hub-provisioned:
     post:
       summary: Hub Provisioned
       description: |
@@ -385,7 +389,7 @@ webhooks:
           description: Event received successfully
 
 
-  HubRoleSet:
+  /webhooks/hub-role-set:
     post:
       summary: Hub Role Set
       description: |
@@ -408,7 +412,7 @@ webhooks:
           description: Event received successfully
 
 
-  HubSuspended:
+  /webhooks/hub-suspended:
     post:
       summary: Hub Suspended
       description: |
@@ -435,7 +439,7 @@ webhooks:
   # ORGANIZATION EVENTS
   # ─────────────────────────────────────────
 
-  CustomerCreated:
+  /webhooks/customer-created:
     post:
       summary: Customer Created
       description: |
@@ -458,7 +462,7 @@ webhooks:
           description: Event received successfully
 
 
-  OrganizationSet:
+  /webhooks/organization-set:
     post:
       summary: Organization Set
       description: |
@@ -481,7 +485,7 @@ webhooks:
           description: Event received successfully
 
 
-  OwnerSet:
+  /webhooks/owner-set:
     post:
       summary: Owner Set
       description: |
@@ -504,7 +508,7 @@ webhooks:
           description: Event received successfully
 
 
-  UserCreated:
+  /webhooks/user-created:
     post:
       summary: User Created
       description: |
@@ -531,7 +535,7 @@ webhooks:
   # AUTHENTICATION EVENTS
   # ─────────────────────────────────────────
 
-  UserSignup:
+  /webhooks/user-signup:
     post:
       summary: User Signup
       description: |
@@ -560,7 +564,7 @@ webhooks:
   # IOT EVENTS
   # ─────────────────────────────────────────
 
-  ShadowUpdate:
+  /webhooks/shadow-update:
     post:
       summary: Shadow Update
       description: |
