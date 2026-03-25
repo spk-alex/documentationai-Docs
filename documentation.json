@@ -63,11 +63,6 @@
                 "icon": "plug"
               }
             ]
-          },
-          {
-            "group": "Event Schema Reference",
-            "icon": "terminal",
-            "openapi": "eventbridge-schemas.yaml"
           }
         ]
       }

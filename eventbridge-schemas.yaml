@@ -1,14 +1,17 @@
 openapi: 3.1.0
 info:
-  title: SmartphoneKey Event Schemas
+  title: SmartphoneKey Webhook Events
   version: 1.0.0
-  description: >
-    Event schemas for SmartphoneKey EventBridge events delivered via partner webhooks.
-    Each endpoint below represents an event type that your webhook will receive as an HTTP POST.
+  description: |
+    OpenAPI schema for SmartphoneKey webhook event payloads.
 
+    When you register a webhook subscription, SmartphoneKey sends HTTP POST
+    requests to your endpoint with event payloads matching one of the schemas below.
+
+    Use this schema to generate typed clients, validate incoming payloads,
+    or scaffold your webhook handler implementation.
 
     ## Event Sources
-
 
     | Source | Description |
     |--------|-------------|
@@ -17,580 +20,141 @@ info:
     | `auth0.signup` | User registration events from Auth0 |
     | `spk.iot.shadow` | IoT device shadow state updates |
 
-
     ## Event Envelope
 
-
-    Every event arrives wrapped in an AWS EventBridge envelope:
-
+    Every event arrives wrapped in an AWS EventBridge envelope. The `detail-type`
+    field identifies the event type. The `detail` field contains the event-specific payload.
 
     ```json
-
     {
       "id": "event-uuid",
-      "source": "customer.events",
+      "source": "spk.api",
       "detail-type": "KeyAdded",
       "time": "2024-01-15T10:30:00Z",
       "region": "eu-west-1",
       "account": "123456789",
       "version": "0",
       "resources": [],
-      "detail": { ... }
+      "detail": { "..." : "..." }
     }
-
     ```
-
-
-    The schemas below document the `detail` object for each event type.
 
 servers:
   - url: https://your-webhook-endpoint.example.com
-    description: Your registered webhook endpoint receives these events as HTTP POST requests
+    description: Your registered webhook endpoint
 
 paths:
-
-  # ─────────────────────────────────────────
-  # KEY MANAGEMENT EVENTS
-  # ─────────────────────────────────────────
-
-  /webhooks/key-added:
+  /webhook:
     post:
-      summary: Key Added
+      summary: Receive SmartphoneKey Event
       description: |
-        Fired when a new digital key is programmed into a lock, granting a user access.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `KeyAdded`
-        **Aggregate:** Lock
-      operationId: KeyAdded
-      tags:
-        - Key Management
+        Your webhook endpoint receives event payloads via HTTP POST.
+        The `detail-type` field in the EventBridge envelope identifies which event type was sent.
+        The `detail` field contains the event payload matching one of the schemas below.
+      operationId: receiveWebhookEvent
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KeyAdded'
+              $ref: '#/components/schemas/WebhookEvent'
       responses:
         '200':
-          description: Event received successfully
-
-
-  /webhooks/key-removed:
-    post:
-      summary: Key Removed
-      description: |
-        Fired when a digital key is removed from a lock, revoking that credential's access.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `KeyRemoved`
-        **Aggregate:** Lock
-      operationId: KeyRemoved
-      tags:
-        - Key Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/KeyRemoved'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/physical-key-assigned:
-    post:
-      summary: Physical Key Assigned
-      description: |
-        Fired when a physical (NFC/RFID) key credential is assigned to a user.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `PhysicalKeyAssigned`
-        **Aggregate:** Key
-      operationId: PhysicalKeyAssigned
-      tags:
-        - Key Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PhysicalKeyAssigned'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/wallet-key-prepared:
-    post:
-      summary: Wallet Key Prepared
-      description: |
-        Fired when a wallet key (Apple Wallet / Google Wallet) is prepared for a user.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `WalletKeyPrepared`
-        **Aggregate:** Key
-      operationId: WalletKeyPrepared
-      tags:
-        - Key Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WalletKeyPrepared'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/temp-key-created:
-    post:
-      summary: Temporary Key Created
-      description: |
-        Fired when a temporary access key is created for a lock.
-        Temp keys can be time-bounded, use-limited, and restricted to specific users.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `TempKeyCreated`
-        **Aggregate:** Lock
-      operationId: TempKeyCreated
-      tags:
-        - Key Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TempKeyCreated'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/temp-key-updated:
-    post:
-      summary: Temporary Key Updated
-      description: |
-        Fired when a temporary key's properties are modified (e.g., validity window, max uses).
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `TempKeyUpdated`
-        **Aggregate:** Lock
-      operationId: TempKeyUpdated
-      tags:
-        - Key Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TempKeyUpdated'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/temp-key-deleted:
-    post:
-      summary: Temporary Key Deleted
-      description: |
-        Fired when a temporary key is revoked and deleted from the system.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `TempKeyDeleted`
-        **Aggregate:** Lock
-      operationId: TempKeyDeleted
-      tags:
-        - Key Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TempKeyDeleted'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  # ─────────────────────────────────────────
-  # LOCK MANAGEMENT EVENTS
-  # ─────────────────────────────────────────
-
-  /webhooks/lock-created:
-    post:
-      summary: Lock Created
-      description: |
-        Fired when a new lock is registered in the system and linked to an AWS IoT thing.
-        The `spk.api` variant also includes the hardware `serialNumber`.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `LockCreated`
-        **Aggregate:** Lock
-      operationId: LockCreated
-      tags:
-        - Lock Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LockCreated'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/accessible-lock-added:
-    post:
-      summary: Accessible Lock Added
-      description: |
-        Fired when a user is granted access to a lock at a specific access level (owner, resident, guest).
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `AccessibleLockAdded`
-        **Aggregate:** Lock
-      operationId: AccessibleLockAdded
-      tags:
-        - Lock Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccessibleLockAdded'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/accessible-lock-removed:
-    post:
-      summary: Accessible Lock Removed
-      description: |
-        Fired when a user's access to a lock is revoked.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `AccessibleLockRemoved`
-        **Aggregate:** Lock
-      operationId: AccessibleLockRemoved
-      tags:
-        - Lock Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccessibleLockRemoved'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  # ─────────────────────────────────────────
-  # RESIDENT MANAGEMENT EVENTS
-  # ─────────────────────────────────────────
-
-  /webhooks/resident-added:
-    post:
-      summary: Resident Added
-      description: |
-        Fired when a resident is added to a lock and granted long-term access.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `ResidentAdded`
-        **Aggregate:** Lock
-      operationId: ResidentAdded
-      tags:
-        - Resident Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResidentAdded'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/resident-removed:
-    post:
-      summary: Resident Removed
-      description: |
-        Fired when a resident is removed from a lock and their access is revoked.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `ResidentRemoved`
-        **Aggregate:** Lock
-      operationId: ResidentRemoved
-      tags:
-        - Resident Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResidentRemoved'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  # ─────────────────────────────────────────
-  # HUB MANAGEMENT EVENTS
-  # ─────────────────────────────────────────
-
-  /webhooks/hub-claimed:
-    post:
-      summary: Hub Claimed
-      description: |
-        Fired when a hub device is claimed by an organization and assigned to a site.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `HubClaimed`
-        **Aggregate:** Hub
-      operationId: HubClaimed
-      tags:
-        - Hub Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HubClaimed'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/hub-provisioned:
-    post:
-      summary: Hub Provisioned
-      description: |
-        Fired when a hub device completes IoT provisioning and receives its AWS IoT thing certificate.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `HubProvisioned`
-        **Aggregate:** Hub
-      operationId: HubProvisioned
-      tags:
-        - Hub Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HubProvisioned'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/hub-role-set:
-    post:
-      summary: Hub Role Set
-      description: |
-        Fired when a hub's role is configured within a site (primary vs secondary).
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `HubRoleSet`
-        **Aggregate:** Hub
-      operationId: HubRoleSet
-      tags:
-        - Hub Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HubRoleSet'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/hub-suspended:
-    post:
-      summary: Hub Suspended
-      description: |
-        Fired when a hub is suspended, typically due to policy violations or non-payment.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `HubSuspended`
-        **Aggregate:** Hub
-      operationId: HubSuspended
-      tags:
-        - Hub Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HubSuspended'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  # ─────────────────────────────────────────
-  # ORGANIZATION EVENTS
-  # ─────────────────────────────────────────
-
-  /webhooks/customer-created:
-    post:
-      summary: Customer Created
-      description: |
-        Fired when a new customer account is created under a partner.
-
-        **Source:** `customer.events`
-        **Detail-type:** `CustomerCreated`
-        **Aggregate:** Customer
-      operationId: CustomerCreated
-      tags:
-        - Organization
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomerCreated'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/organization-set:
-    post:
-      summary: Organization Set
-      description: |
-        Fired when a lock is assigned to an organization.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `OrganizationSet`
-        **Aggregate:** Lock
-      operationId: OrganizationSet
-      tags:
-        - Organization
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrganizationSet'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/owner-set:
-    post:
-      summary: Owner Set
-      description: |
-        Fired when a user is designated as the owner of a lock.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `OwnerSet`
-        **Aggregate:** Lock
-      operationId: OwnerSet
-      tags:
-        - Organization
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OwnerSet'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  /webhooks/user-created:
-    post:
-      summary: User Created
-      description: |
-        Fired when a new user is created in the system.
-
-        **Sources:** `customer.events`, `spk.api`
-        **Detail-type:** `UserCreated`
-        **Aggregate:** User
-      operationId: UserCreated
-      tags:
-        - Organization
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreated'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  # ─────────────────────────────────────────
-  # AUTHENTICATION EVENTS
-  # ─────────────────────────────────────────
-
-  /webhooks/user-signup:
-    post:
-      summary: User Signup
-      description: |
-        Fired when a user completes registration via Auth0.
-        This event is distinct from `UserCreated` — it represents the authentication identity
-        being created, whereas `UserCreated` represents the application user record.
-
-        **Source:** `auth0.signup`
-        **Detail-type:** `UserSignup`
-        **Aggregate:** User
-      operationId: UserSignup
-      tags:
-        - Authentication
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserSignup'
-      responses:
-        '200':
-          description: Event received successfully
-
-
-  # ─────────────────────────────────────────
-  # IOT EVENTS
-  # ─────────────────────────────────────────
-
-  /webhooks/shadow-update:
-    post:
-      summary: Shadow Update
-      description: |
-        Fired when an IoT device's shadow state is updated. Contains the desired state,
-        reported state, and any delta between them. Non-empty `deltaState` indicates the
-        device has not yet applied all desired changes.
-
-        **Source:** `spk.iot.shadow`
-        **Detail-type:** `Shadow Update`
-        **Aggregate:** Device
-      operationId: ShadowUpdate
-      tags:
-        - IoT
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ShadowUpdate'
-      responses:
-        '200':
-          description: Event received successfully
-
+          description: Event received successfully — return 2xx to acknowledge
 
 components:
   schemas:
+
+    WebhookEvent:
+      type: object
+      description: EventBridge event envelope delivered to your webhook endpoint
+      required:
+        - id
+        - source
+        - detail-type
+        - time
+        - region
+        - account
+        - version
+        - resources
+        - detail
+      properties:
+        id:
+          type: string
+          description: Unique event ID
+        source:
+          type: string
+          description: "Event source (e.g., customer.events, spk.api)"
+        detail-type:
+          type: string
+          description: "Event type identifier (e.g., KeyAdded, ResidentRemoved)"
+        time:
+          type: string
+          format: date-time
+          description: When the event was emitted
+        region:
+          type: string
+          description: AWS region
+        account:
+          type: string
+          description: AWS account ID
+        version:
+          type: string
+          description: EventBridge envelope version
+        resources:
+          type: array
+          items:
+            type: string
+        detail:
+          description: Event-specific payload. The structure depends on the event type identified by `detail-type`.
+          oneOf:
+            - $ref: '#/components/schemas/KeyAdded'
+            - $ref: '#/components/schemas/KeyRemoved'
+            - $ref: '#/components/schemas/PhysicalKeyAssigned'
+            - $ref: '#/components/schemas/WalletKeyPrepared'
+            - $ref: '#/components/schemas/TempKeyCreated'
+            - $ref: '#/components/schemas/TempKeyUpdated'
+            - $ref: '#/components/schemas/TempKeyDeleted'
+            - $ref: '#/components/schemas/LockCreated'
+            - $ref: '#/components/schemas/AccessibleLockAdded'
+            - $ref: '#/components/schemas/AccessibleLockRemoved'
+            - $ref: '#/components/schemas/ResidentAdded'
+            - $ref: '#/components/schemas/ResidentRemoved'
+            - $ref: '#/components/schemas/HubClaimed'
+            - $ref: '#/components/schemas/HubProvisioned'
+            - $ref: '#/components/schemas/HubRoleSet'
+            - $ref: '#/components/schemas/HubSuspended'
+            - $ref: '#/components/schemas/CustomerCreated'
+            - $ref: '#/components/schemas/OrganizationSet'
+            - $ref: '#/components/schemas/OwnerSet'
+            - $ref: '#/components/schemas/UserCreated'
+            - $ref: '#/components/schemas/UserSignup'
+            - $ref: '#/components/schemas/ShadowUpdate'
+          discriminator:
+            propertyName: detail-type
+            mapping:
+              KeyAdded: '#/components/schemas/KeyAdded'
+              KeyRemoved: '#/components/schemas/KeyRemoved'
+              PhysicalKeyAssigned: '#/components/schemas/PhysicalKeyAssigned'
+              WalletKeyPrepared: '#/components/schemas/WalletKeyPrepared'
+              TempKeyCreated: '#/components/schemas/TempKeyCreated'
+              TempKeyUpdated: '#/components/schemas/TempKeyUpdated'
+              TempKeyDeleted: '#/components/schemas/TempKeyDeleted'
+              LockCreated: '#/components/schemas/LockCreated'
+              AccessibleLockAdded: '#/components/schemas/AccessibleLockAdded'
+              AccessibleLockRemoved: '#/components/schemas/AccessibleLockRemoved'
+              ResidentAdded: '#/components/schemas/ResidentAdded'
+              ResidentRemoved: '#/components/schemas/ResidentRemoved'
+              HubClaimed: '#/components/schemas/HubClaimed'
+              HubProvisioned: '#/components/schemas/HubProvisioned'
+              HubRoleSet: '#/components/schemas/HubRoleSet'
+              HubSuspended: '#/components/schemas/HubSuspended'
+              CustomerCreated: '#/components/schemas/CustomerCreated'
+              OrganizationSet: '#/components/schemas/OrganizationSet'
+              OwnerSet: '#/components/schemas/OwnerSet'
+              UserCreated: '#/components/schemas/UserCreated'
+              UserSignup: '#/components/schemas/UserSignup'
+              Shadow Update: '#/components/schemas/ShadowUpdate'
 
     # ─────────────────────────────────────────
     # DOMAIN EVENT ENVELOPE (customer.events / spk.api)

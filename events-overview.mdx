@@ -94,6 +94,17 @@ Access Control System
 
 When a state change occurs in the access control system (e.g., a key is added to a lock), the domain model emits an event to `customer.events`. A forwarding rule propagates the event to `spk.api`, which then delivers it to registered partner webhook endpoints.
 
+## Webhook Schema
+
+We publish an OpenAPI 3.1 schema that describes the full webhook event payload structure, including all event types. Use it to:
+
+- Generate typed webhook handlers in any language via [OpenAPI Generator](https://openapi-generator.tech/)
+- Validate incoming payloads in your webhook endpoint
+- Import into Postman, Insomnia, or other API tools for testing
+- Browse the complete event type definitions with field-level documentation
+
+**Download:** [eventbridge-schemas.yaml](/eventbridge-schemas.yaml)
+
 ## Subscribing to Events
 
 Partners receive events through webhook subscriptions. When an event matches your subscription criteria, SmartphoneKey makes an HTTP POST to your registered endpoint with the event payload.

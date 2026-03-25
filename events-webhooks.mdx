@@ -172,3 +172,22 @@ If your endpoint is not receiving events:
 3. Verify your endpoint URL is reachable from the internet (not localhost or a private network).
 4. Review your signature verification logic — a `4xx` response from your endpoint is treated as a permanent failure and will **not** be retried. Only `5xx` responses and timeouts trigger retries.
 5. Check whether events are firing at all using the [Event Catalog](/events-catalog) to confirm when the events you expect should be generated.
+
+## Schema & Code Generation
+
+Download the OpenAPI schema to scaffold your webhook handler:
+
+**Download:** [eventbridge-schemas.yaml](/eventbridge-schemas.yaml)
+
+Generate a typed client:
+
+```bash
+# TypeScript
+npx openapi-generator-cli generate -i eventbridge-schemas.yaml -g typescript-fetch -o ./generated
+
+# Python
+openapi-generator-cli generate -i eventbridge-schemas.yaml -g python -o ./generated
+
+# Go
+openapi-generator-cli generate -i eventbridge-schemas.yaml -g go -o ./generated
+```
