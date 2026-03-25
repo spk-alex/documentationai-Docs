@@ -1,9 +1,9 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
-  title: SmartphoneKey EventBridge Event Schemas
+  title: SmartphoneKey Event Schemas
   version: 1.0.0
   description: |
-    Event payload schemas for all SmartphoneKey EventBridge events.
+    Event schemas for SmartphoneKey EventBridge events delivered via partner webhooks.
     These schemas describe the `detail` object within each AWS EventBridge event envelope.
 
     ## Event Sources
@@ -35,7 +35,503 @@ info:
 
     The schemas below document the `detail` object for each event type.
 
-paths: {}
+webhooks:
+
+  # ─────────────────────────────────────────
+  # KEY MANAGEMENT EVENTS
+  # ─────────────────────────────────────────
+
+  KeyAdded:
+    post:
+      summary: Key Added
+      description: |
+        Fired when a new digital key is programmed into a lock.
+        Sources: `customer.events`, `spk.api` — detail-type: `KeyAdded`
+      operationId: KeyAdded
+      tags:
+        - Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyAdded'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  KeyRemoved:
+    post:
+      summary: Key Removed
+      description: |
+        Fired when a digital key is removed from a lock.
+        Sources: `customer.events`, `spk.api` — detail-type: `KeyRemoved`
+      operationId: KeyRemoved
+      tags:
+        - Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyRemoved'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  PhysicalKeyAssigned:
+    post:
+      summary: Physical Key Assigned
+      description: |
+        Fired when a physical (NFC/RFID) key credential is assigned to a user.
+        Sources: `customer.events`, `spk.api` — detail-type: `PhysicalKeyAssigned`
+      operationId: PhysicalKeyAssigned
+      tags:
+        - Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhysicalKeyAssigned'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  WalletKeyPrepared:
+    post:
+      summary: Wallet Key Prepared
+      description: |
+        Fired when a wallet key (Apple Wallet / Google Wallet) is prepared for a user.
+        Sources: `customer.events`, `spk.api` — detail-type: `WalletKeyPrepared`
+      operationId: WalletKeyPrepared
+      tags:
+        - Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletKeyPrepared'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  TempKeyCreated:
+    post:
+      summary: Temporary Key Created
+      description: |
+        Fired when a temporary access key is created for a lock.
+        Temp keys can be time-bounded, use-limited, and restricted to specific users.
+        Sources: `customer.events`, `spk.api` — detail-type: `TempKeyCreated`
+      operationId: TempKeyCreated
+      tags:
+        - Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TempKeyCreated'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  TempKeyUpdated:
+    post:
+      summary: Temporary Key Updated
+      description: |
+        Fired when a temporary key's properties are modified (e.g., validity window, max uses).
+        Sources: `customer.events`, `spk.api` — detail-type: `TempKeyUpdated`
+      operationId: TempKeyUpdated
+      tags:
+        - Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TempKeyUpdated'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  TempKeyDeleted:
+    post:
+      summary: Temporary Key Deleted
+      description: |
+        Fired when a temporary key is revoked and deleted from the system.
+        Sources: `customer.events`, `spk.api` — detail-type: `TempKeyDeleted`
+      operationId: TempKeyDeleted
+      tags:
+        - Key Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TempKeyDeleted'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  # ─────────────────────────────────────────
+  # LOCK MANAGEMENT EVENTS
+  # ─────────────────────────────────────────
+
+  LockCreated:
+    post:
+      summary: Lock Created
+      description: |
+        Fired when a new lock is registered in the system and linked to an AWS IoT thing.
+        The `spk.api` variant also includes the hardware `serialNumber`.
+        Source: `customer.events`, `spk.api` — detail-type: `LockCreated`
+      operationId: LockCreated
+      tags:
+        - Lock Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCreated'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  AccessibleLockAdded:
+    post:
+      summary: Accessible Lock Added
+      description: |
+        Fired when a user is granted access to a lock at a specific access level (owner, resident, guest).
+        Sources: `customer.events`, `spk.api` — detail-type: `AccessibleLockAdded`
+      operationId: AccessibleLockAdded
+      tags:
+        - Lock Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessibleLockAdded'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  AccessibleLockRemoved:
+    post:
+      summary: Accessible Lock Removed
+      description: |
+        Fired when a user's access to a lock is revoked.
+        Sources: `customer.events`, `spk.api` — detail-type: `AccessibleLockRemoved`
+      operationId: AccessibleLockRemoved
+      tags:
+        - Lock Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessibleLockRemoved'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  # ─────────────────────────────────────────
+  # RESIDENT MANAGEMENT EVENTS
+  # ─────────────────────────────────────────
+
+  ResidentAdded:
+    post:
+      summary: Resident Added
+      description: |
+        Fired when a resident is added to a lock and granted long-term access.
+        Sources: `customer.events`, `spk.api` — detail-type: `ResidentAdded`
+      operationId: ResidentAdded
+      tags:
+        - Resident Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResidentAdded'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  ResidentRemoved:
+    post:
+      summary: Resident Removed
+      description: |
+        Fired when a resident is removed from a lock and their access is revoked.
+        Sources: `customer.events`, `spk.api` — detail-type: `ResidentRemoved`
+      operationId: ResidentRemoved
+      tags:
+        - Resident Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResidentRemoved'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  # ─────────────────────────────────────────
+  # HUB MANAGEMENT EVENTS
+  # ─────────────────────────────────────────
+
+  HubClaimed:
+    post:
+      summary: Hub Claimed
+      description: |
+        Fired when a hub device is claimed by an organization and assigned to a site.
+        Sources: `customer.events`, `spk.api` — detail-type: `HubClaimed`
+      operationId: HubClaimed
+      tags:
+        - Hub Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubClaimed'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  HubProvisioned:
+    post:
+      summary: Hub Provisioned
+      description: |
+        Fired when a hub device completes IoT provisioning and receives its AWS IoT thing certificate.
+        Sources: `customer.events`, `spk.api` — detail-type: `HubProvisioned`
+      operationId: HubProvisioned
+      tags:
+        - Hub Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubProvisioned'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  HubRoleSet:
+    post:
+      summary: Hub Role Set
+      description: |
+        Fired when a hub's role is configured within a site (primary vs secondary).
+        Sources: `customer.events`, `spk.api` — detail-type: `HubRoleSet`
+      operationId: HubRoleSet
+      tags:
+        - Hub Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubRoleSet'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  HubSuspended:
+    post:
+      summary: Hub Suspended
+      description: |
+        Fired when a hub is suspended, typically due to policy violations or non-payment.
+        Sources: `customer.events`, `spk.api` — detail-type: `HubSuspended`
+      operationId: HubSuspended
+      tags:
+        - Hub Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubSuspended'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  # ─────────────────────────────────────────
+  # ORGANIZATION EVENTS
+  # ─────────────────────────────────────────
+
+  CustomerCreated:
+    post:
+      summary: Customer Created
+      description: |
+        Fired when a new customer account is created under a partner.
+        Source: `customer.events` — detail-type: `CustomerCreated`
+      operationId: CustomerCreated
+      tags:
+        - Organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerCreated'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  OrganizationSet:
+    post:
+      summary: Organization Set
+      description: |
+        Fired when a lock is assigned to an organization.
+        Sources: `customer.events`, `spk.api` — detail-type: `OrganizationSet`
+      operationId: OrganizationSet
+      tags:
+        - Organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationSet'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  OwnerSet:
+    post:
+      summary: Owner Set
+      description: |
+        Fired when a user is designated as the owner of a lock.
+        Sources: `customer.events`, `spk.api` — detail-type: `OwnerSet`
+      operationId: OwnerSet
+      tags:
+        - Organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnerSet'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  UserCreated:
+    post:
+      summary: User Created
+      description: |
+        Fired when a new user is created in the system.
+        Sources: `customer.events`, `spk.api` — detail-type: `UserCreated`
+      operationId: UserCreated
+      tags:
+        - Organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreated'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  # ─────────────────────────────────────────
+  # AUTHENTICATION EVENTS
+  # ─────────────────────────────────────────
+
+  UserSignup:
+    post:
+      summary: User Signup
+      description: |
+        Fired when a user completes registration via Auth0.
+        This event is distinct from `UserCreated` — it represents the authentication identity
+        being created, whereas `UserCreated` represents the application user record.
+        Source: `auth0.signup` — detail-type: `UserSignup`
+      operationId: UserSignup
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignup'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
+
+  # ─────────────────────────────────────────
+  # IOT EVENTS
+  # ─────────────────────────────────────────
+
+  ShadowUpdate:
+    post:
+      summary: Shadow Update
+      description: |
+        Fired when an IoT device's shadow state is updated. Contains the desired state,
+        reported state, and any delta between them. Non-empty `deltaState` indicates the
+        device has not yet applied all desired changes.
+        Source: `spk.iot.shadow` — detail-type: `Shadow Update`
+      operationId: ShadowUpdate
+      tags:
+        - IoT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShadowUpdate'
+      responses:
+        '200':
+          description: Event received successfully
+        '5xx':
+          description: Server error — delivery will be retried
 
 components:
   schemas:
