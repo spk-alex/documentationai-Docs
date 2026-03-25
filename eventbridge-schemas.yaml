@@ -2,11 +2,13 @@ openapi: 3.1.0
 info:
   title: SmartphoneKey Event Schemas
   version: 1.0.0
-  description: |
+  description: >
     Event schemas for SmartphoneKey EventBridge events delivered via partner webhooks.
-    These schemas describe the `detail` object within each AWS EventBridge event envelope.
+    Each endpoint below represents an event type that your webhook will receive as an HTTP POST.
+
 
     ## Event Sources
+
 
     | Source | Description |
     |--------|-------------|
@@ -15,11 +17,15 @@ info:
     | `auth0.signup` | User registration events from Auth0 |
     | `spk.iot.shadow` | IoT device shadow state updates |
 
+
     ## Event Envelope
+
 
     Every event arrives wrapped in an AWS EventBridge envelope:
 
+
     ```json
+
     {
       "id": "event-uuid",
       "source": "customer.events",
@@ -31,7 +37,9 @@ info:
       "resources": [],
       "detail": { ... }
     }
+
     ```
+
 
     The schemas below document the `detail` object for each event type.
 
@@ -45,8 +53,11 @@ webhooks:
     post:
       summary: Key Added
       description: |
-        Fired when a new digital key is programmed into a lock.
-        Sources: `customer.events`, `spk.api` — detail-type: `KeyAdded`
+        Fired when a new digital key is programmed into a lock, granting a user access.
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `KeyAdded`
+        **Aggregate:** Lock
       operationId: KeyAdded
       tags:
         - Key Management
@@ -59,15 +70,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   KeyRemoved:
     post:
       summary: Key Removed
       description: |
-        Fired when a digital key is removed from a lock.
-        Sources: `customer.events`, `spk.api` — detail-type: `KeyRemoved`
+        Fired when a digital key is removed from a lock, revoking that credential's access.
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `KeyRemoved`
+        **Aggregate:** Lock
       operationId: KeyRemoved
       tags:
         - Key Management
@@ -80,15 +93,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   PhysicalKeyAssigned:
     post:
       summary: Physical Key Assigned
       description: |
         Fired when a physical (NFC/RFID) key credential is assigned to a user.
-        Sources: `customer.events`, `spk.api` — detail-type: `PhysicalKeyAssigned`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `PhysicalKeyAssigned`
+        **Aggregate:** Key
       operationId: PhysicalKeyAssigned
       tags:
         - Key Management
@@ -101,15 +116,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   WalletKeyPrepared:
     post:
       summary: Wallet Key Prepared
       description: |
         Fired when a wallet key (Apple Wallet / Google Wallet) is prepared for a user.
-        Sources: `customer.events`, `spk.api` — detail-type: `WalletKeyPrepared`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `WalletKeyPrepared`
+        **Aggregate:** Key
       operationId: WalletKeyPrepared
       tags:
         - Key Management
@@ -122,8 +139,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   TempKeyCreated:
     post:
@@ -131,7 +147,10 @@ webhooks:
       description: |
         Fired when a temporary access key is created for a lock.
         Temp keys can be time-bounded, use-limited, and restricted to specific users.
-        Sources: `customer.events`, `spk.api` — detail-type: `TempKeyCreated`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `TempKeyCreated`
+        **Aggregate:** Lock
       operationId: TempKeyCreated
       tags:
         - Key Management
@@ -144,15 +163,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   TempKeyUpdated:
     post:
       summary: Temporary Key Updated
       description: |
         Fired when a temporary key's properties are modified (e.g., validity window, max uses).
-        Sources: `customer.events`, `spk.api` — detail-type: `TempKeyUpdated`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `TempKeyUpdated`
+        **Aggregate:** Lock
       operationId: TempKeyUpdated
       tags:
         - Key Management
@@ -165,15 +186,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   TempKeyDeleted:
     post:
       summary: Temporary Key Deleted
       description: |
         Fired when a temporary key is revoked and deleted from the system.
-        Sources: `customer.events`, `spk.api` — detail-type: `TempKeyDeleted`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `TempKeyDeleted`
+        **Aggregate:** Lock
       operationId: TempKeyDeleted
       tags:
         - Key Management
@@ -186,8 +209,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   # ─────────────────────────────────────────
   # LOCK MANAGEMENT EVENTS
@@ -199,7 +221,10 @@ webhooks:
       description: |
         Fired when a new lock is registered in the system and linked to an AWS IoT thing.
         The `spk.api` variant also includes the hardware `serialNumber`.
-        Source: `customer.events`, `spk.api` — detail-type: `LockCreated`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `LockCreated`
+        **Aggregate:** Lock
       operationId: LockCreated
       tags:
         - Lock Management
@@ -212,15 +237,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   AccessibleLockAdded:
     post:
       summary: Accessible Lock Added
       description: |
         Fired when a user is granted access to a lock at a specific access level (owner, resident, guest).
-        Sources: `customer.events`, `spk.api` — detail-type: `AccessibleLockAdded`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `AccessibleLockAdded`
+        **Aggregate:** Lock
       operationId: AccessibleLockAdded
       tags:
         - Lock Management
@@ -233,15 +260,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   AccessibleLockRemoved:
     post:
       summary: Accessible Lock Removed
       description: |
         Fired when a user's access to a lock is revoked.
-        Sources: `customer.events`, `spk.api` — detail-type: `AccessibleLockRemoved`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `AccessibleLockRemoved`
+        **Aggregate:** Lock
       operationId: AccessibleLockRemoved
       tags:
         - Lock Management
@@ -254,8 +283,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   # ─────────────────────────────────────────
   # RESIDENT MANAGEMENT EVENTS
@@ -266,7 +294,10 @@ webhooks:
       summary: Resident Added
       description: |
         Fired when a resident is added to a lock and granted long-term access.
-        Sources: `customer.events`, `spk.api` — detail-type: `ResidentAdded`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `ResidentAdded`
+        **Aggregate:** Lock
       operationId: ResidentAdded
       tags:
         - Resident Management
@@ -279,15 +310,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   ResidentRemoved:
     post:
       summary: Resident Removed
       description: |
         Fired when a resident is removed from a lock and their access is revoked.
-        Sources: `customer.events`, `spk.api` — detail-type: `ResidentRemoved`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `ResidentRemoved`
+        **Aggregate:** Lock
       operationId: ResidentRemoved
       tags:
         - Resident Management
@@ -300,8 +333,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   # ─────────────────────────────────────────
   # HUB MANAGEMENT EVENTS
@@ -312,7 +344,10 @@ webhooks:
       summary: Hub Claimed
       description: |
         Fired when a hub device is claimed by an organization and assigned to a site.
-        Sources: `customer.events`, `spk.api` — detail-type: `HubClaimed`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `HubClaimed`
+        **Aggregate:** Hub
       operationId: HubClaimed
       tags:
         - Hub Management
@@ -325,15 +360,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   HubProvisioned:
     post:
       summary: Hub Provisioned
       description: |
         Fired when a hub device completes IoT provisioning and receives its AWS IoT thing certificate.
-        Sources: `customer.events`, `spk.api` — detail-type: `HubProvisioned`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `HubProvisioned`
+        **Aggregate:** Hub
       operationId: HubProvisioned
       tags:
         - Hub Management
@@ -346,15 +383,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   HubRoleSet:
     post:
       summary: Hub Role Set
       description: |
         Fired when a hub's role is configured within a site (primary vs secondary).
-        Sources: `customer.events`, `spk.api` — detail-type: `HubRoleSet`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `HubRoleSet`
+        **Aggregate:** Hub
       operationId: HubRoleSet
       tags:
         - Hub Management
@@ -367,15 +406,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   HubSuspended:
     post:
       summary: Hub Suspended
       description: |
         Fired when a hub is suspended, typically due to policy violations or non-payment.
-        Sources: `customer.events`, `spk.api` — detail-type: `HubSuspended`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `HubSuspended`
+        **Aggregate:** Hub
       operationId: HubSuspended
       tags:
         - Hub Management
@@ -388,8 +429,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   # ─────────────────────────────────────────
   # ORGANIZATION EVENTS
@@ -400,7 +440,10 @@ webhooks:
       summary: Customer Created
       description: |
         Fired when a new customer account is created under a partner.
-        Source: `customer.events` — detail-type: `CustomerCreated`
+
+        **Source:** `customer.events`
+        **Detail-type:** `CustomerCreated`
+        **Aggregate:** Customer
       operationId: CustomerCreated
       tags:
         - Organization
@@ -413,15 +456,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   OrganizationSet:
     post:
       summary: Organization Set
       description: |
         Fired when a lock is assigned to an organization.
-        Sources: `customer.events`, `spk.api` — detail-type: `OrganizationSet`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `OrganizationSet`
+        **Aggregate:** Lock
       operationId: OrganizationSet
       tags:
         - Organization
@@ -434,15 +479,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   OwnerSet:
     post:
       summary: Owner Set
       description: |
         Fired when a user is designated as the owner of a lock.
-        Sources: `customer.events`, `spk.api` — detail-type: `OwnerSet`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `OwnerSet`
+        **Aggregate:** Lock
       operationId: OwnerSet
       tags:
         - Organization
@@ -455,15 +502,17 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   UserCreated:
     post:
       summary: User Created
       description: |
         Fired when a new user is created in the system.
-        Sources: `customer.events`, `spk.api` — detail-type: `UserCreated`
+
+        **Sources:** `customer.events`, `spk.api`
+        **Detail-type:** `UserCreated`
+        **Aggregate:** User
       operationId: UserCreated
       tags:
         - Organization
@@ -476,8 +525,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   # ─────────────────────────────────────────
   # AUTHENTICATION EVENTS
@@ -490,7 +538,10 @@ webhooks:
         Fired when a user completes registration via Auth0.
         This event is distinct from `UserCreated` — it represents the authentication identity
         being created, whereas `UserCreated` represents the application user record.
-        Source: `auth0.signup` — detail-type: `UserSignup`
+
+        **Source:** `auth0.signup`
+        **Detail-type:** `UserSignup`
+        **Aggregate:** User
       operationId: UserSignup
       tags:
         - Authentication
@@ -503,8 +554,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
   # ─────────────────────────────────────────
   # IOT EVENTS
@@ -517,7 +567,10 @@ webhooks:
         Fired when an IoT device's shadow state is updated. Contains the desired state,
         reported state, and any delta between them. Non-empty `deltaState` indicates the
         device has not yet applied all desired changes.
-        Source: `spk.iot.shadow` — detail-type: `Shadow Update`
+
+        **Source:** `spk.iot.shadow`
+        **Detail-type:** `Shadow Update`
+        **Aggregate:** Device
       operationId: ShadowUpdate
       tags:
         - IoT
@@ -530,8 +583,7 @@ webhooks:
       responses:
         '200':
           description: Event received successfully
-        '5xx':
-          description: Server error — delivery will be retried
+
 
 components:
   schemas:
