@@ -1,0 +1,943 @@
+openapi: 3.0.0
+info:
+  title: SmartphoneKey EventBridge Event Schemas
+  version: 1.0.0
+  description: |
+    Event payload schemas for all SmartphoneKey EventBridge events.
+    These schemas describe the `detail` object within each AWS EventBridge event envelope.
+
+    ## Event Sources
+
+    | Source | Description |
+    |--------|-------------|
+    | `customer.events` | Domain events from the access control system |
+    | `spk.api` | API-level events for external partner consumption |
+    | `auth0.signup` | User registration events from Auth0 |
+    | `spk.iot.shadow` | IoT device shadow state updates |
+
+    ## Event Envelope
+
+    Every event arrives wrapped in an AWS EventBridge envelope:
+
+    ```json
+    {
+      "id": "event-uuid",
+      "source": "customer.events",
+      "detail-type": "KeyAdded",
+      "time": "2024-01-15T10:30:00Z",
+      "region": "eu-west-1",
+      "account": "123456789",
+      "version": "0",
+      "resources": [],
+      "detail": { ... }
+    }
+    ```
+
+    The schemas below document the `detail` object for each event type.
+
+paths: {}
+
+components:
+  schemas:
+
+    # ─────────────────────────────────────────
+    # DOMAIN EVENT ENVELOPE (customer.events / spk.api)
+    # ─────────────────────────────────────────
+
+    DomainEventEnvelope:
+      type: object
+      description: |
+        Common envelope wrapping all `customer.events` and `spk.api` domain events.
+        The `data` object contains event-specific fields.
+      required:
+        - aggregateId
+        - aggregateType
+        - partnerId
+        - version
+        - timestamp
+        - data
+      properties:
+        aggregateId:
+          type: string
+          description: ID of the aggregate root this event belongs to (e.g., lock UUID, hub ID).
+        aggregateType:
+          type: string
+          description: Type of aggregate that produced this event (e.g., "Lock", "Hub", "Key").
+        partnerId:
+          type: string
+          description: ID of the partner account that owns this data.
+        version:
+          type: number
+          description: Monotonically increasing version number for the aggregate.
+        timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp (milliseconds) when the event was produced.
+        data:
+          type: object
+          description: Event-specific payload. See individual event schemas.
+
+    # ─────────────────────────────────────────
+    # KEY MANAGEMENT EVENTS
+    # ─────────────────────────────────────────
+
+    KeyAddedData:
+      type: object
+      required:
+        - lockId
+        - keyIndexNumber
+        - type
+        - uuid
+        - keyUuid
+        - timestamp
+      properties:
+        lockId:
+          type: number
+          description: Internal numeric ID of the lock.
+        keyIndexNumber:
+          type: number
+          description: Slot index the key was programmed into on the lock.
+        keyUuid:
+          type: string
+          description: Unique identifier of the key credential.
+        uuid:
+          type: string
+          description: UUID of the lock aggregate.
+        type:
+          type: string
+          description: Event type discriminator.
+        timestamp:
+          type: string
+          format: date-time
+
+    KeyAdded:
+      description: |
+        Fired when a new digital key is programmed into a lock.
+        Source: `customer.events`, `spk.api` — detail-type: `KeyAdded`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/KeyAddedData'
+
+    KeyRemovedData:
+      type: object
+      required:
+        - lockId
+        - type
+        - uuid
+        - keyUuid
+        - timestamp
+      properties:
+        lockId:
+          type: number
+          description: Internal numeric ID of the lock.
+        keyUuid:
+          type: string
+          description: Unique identifier of the key that was removed.
+        uuid:
+          type: string
+          description: UUID of the lock aggregate.
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    KeyRemoved:
+      description: |
+        Fired when a digital key is removed from a lock.
+        Source: `customer.events`, `spk.api` — detail-type: `KeyRemoved`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/KeyRemovedData'
+
+    PhysicalKeyAssignedData:
+      type: object
+      required:
+        - keyId
+        - keyIndex
+        - type
+        - userId
+      properties:
+        keyId:
+          type: string
+          description: Unique identifier of the physical key credential.
+        keyIndex:
+          type: number
+          description: Slot index of the key.
+        userId:
+          type: string
+          description: ID of the user the key was assigned to.
+        type:
+          type: string
+
+    PhysicalKeyAssigned:
+      description: |
+        Fired when a physical (NFC/RFID) key credential is assigned to a user.
+        Source: `customer.events`, `spk.api` — detail-type: `PhysicalKeyAssigned`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PhysicalKeyAssignedData'
+
+    WalletKeyPreparedData:
+      type: object
+      required:
+        - keyId
+        - keyIndex
+        - walletType
+        - type
+        - userId
+      properties:
+        keyId:
+          type: string
+          description: Unique identifier of the wallet key credential.
+        keyIndex:
+          type: number
+          description: Slot index of the key on the lock.
+        walletType:
+          type: string
+          description: Wallet provider — e.g., `apple`, `google`.
+        userId:
+          type: string
+          description: ID of the user the wallet key belongs to.
+        type:
+          type: string
+
+    WalletKeyPrepared:
+      description: |
+        Fired when a wallet key (Apple Wallet / Google Wallet) is prepared for a user.
+        Source: `customer.events`, `spk.api` — detail-type: `WalletKeyPrepared`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/WalletKeyPreparedData'
+
+    TempKeyCreatedData:
+      type: object
+      required:
+        - lockId
+        - lockUuid
+        - tempKeyUuid
+        - createdBy
+        - validFrom
+        - validUntil
+        - accessMode
+        - maxUses
+        - allowedUserIds
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+          description: Internal numeric ID of the lock.
+        lockUuid:
+          type: string
+          description: UUID of the lock aggregate.
+        tempKeyUuid:
+          type: string
+          description: Unique identifier of the temporary key.
+        createdBy:
+          type: string
+          description: User ID of the person who created the temp key.
+        validFrom:
+          type: string
+          format: date-time
+          description: Start of the access window.
+        validUntil:
+          type: string
+          format: date-time
+          description: End of the access window.
+        accessMode:
+          type: string
+          description: Access mode — e.g., `once`, `always`, `scheduled`.
+        maxUses:
+          type: number
+          nullable: true
+          description: Maximum number of times the key can be used. Null means unlimited.
+        allowedUserIds:
+          type: array
+          description: List of user IDs allowed to use this temp key. Empty means any user.
+          items:
+            type: string
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    TempKeyCreated:
+      description: |
+        Fired when a temporary access key is created for a lock.
+        Temp keys can be time-bounded, use-limited, and restricted to specific users.
+        Source: `customer.events`, `spk.api` — detail-type: `TempKeyCreated`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TempKeyCreatedData'
+
+    TempKeyUpdatedData:
+      type: object
+      required:
+        - lockId
+        - lockUuid
+        - tempKeyUuid
+        - updatedBy
+        - changes
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+        lockUuid:
+          type: string
+        tempKeyUuid:
+          type: string
+          description: Unique identifier of the temporary key that was updated.
+        updatedBy:
+          type: string
+          description: User ID of the person who made the update.
+        changes:
+          type: object
+          description: Only the fields that changed are included.
+          properties:
+            validFrom:
+              type: string
+              format: date-time
+            validUntil:
+              type: string
+              format: date-time
+            accessMode:
+              type: string
+            maxUses:
+              type: number
+            allowedUserIds:
+              type: array
+              items:
+                type: string
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    TempKeyUpdated:
+      description: |
+        Fired when a temporary key's properties are modified.
+        Source: `customer.events`, `spk.api` — detail-type: `TempKeyUpdated`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TempKeyUpdatedData'
+
+    TempKeyDeletedData:
+      type: object
+      required:
+        - lockId
+        - lockUuid
+        - tempKeyUuid
+        - deletedBy
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+        lockUuid:
+          type: string
+        tempKeyUuid:
+          type: string
+          description: Unique identifier of the temporary key that was deleted.
+        deletedBy:
+          type: string
+          description: User ID of the person who deleted the temp key.
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    TempKeyDeleted:
+      description: |
+        Fired when a temporary key is revoked and deleted.
+        Source: `customer.events`, `spk.api` — detail-type: `TempKeyDeleted`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TempKeyDeletedData'
+
+    # ─────────────────────────────────────────
+    # LOCK MANAGEMENT EVENTS
+    # ─────────────────────────────────────────
+
+    LockCreatedData:
+      type: object
+      required:
+        - lockId
+        - uuid
+        - thingName
+        - thingArn
+        - keys
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+          description: Internal numeric ID of the lock.
+        uuid:
+          type: string
+          description: UUID of the lock aggregate.
+        thingName:
+          type: string
+          description: AWS IoT thing name for this lock.
+        thingArn:
+          type: string
+          description: AWS IoT thing ARN for this lock.
+        serialNumber:
+          type: string
+          description: Hardware serial number of the lock device (included in spk.api variant).
+        keys:
+          type: array
+          description: Initial key slots provisioned on the lock.
+          items:
+            type: object
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    LockCreated:
+      description: |
+        Fired when a new lock is registered in the system and linked to an IoT thing.
+        Source: `customer.events` — detail-type: `LockCreated`
+        Note: `spk.api` variant also includes `serialNumber`.
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/LockCreatedData'
+
+    AccessibleLockAddedData:
+      type: object
+      required:
+        - lockId
+        - lockName
+        - userId
+        - grantedBy
+        - accessLevel
+        - type
+      properties:
+        lockId:
+          type: string
+          description: UUID of the lock.
+        lockName:
+          type: string
+          description: Human-readable name of the lock.
+        userId:
+          type: string
+          description: ID of the user who was granted access.
+        grantedBy:
+          type: string
+          description: ID of the user or system that granted the access.
+        accessLevel:
+          type: string
+          description: Access level granted — e.g., `owner`, `resident`, `guest`.
+        type:
+          type: string
+
+    AccessibleLockAdded:
+      description: |
+        Fired when a user is granted access to a lock.
+        Source: `customer.events`, `spk.api` — detail-type: `AccessibleLockAdded`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/AccessibleLockAddedData'
+
+    AccessibleLockRemovedData:
+      type: object
+      required:
+        - lockId
+        - userId
+        - removedBy
+        - removedAt
+        - reason
+        - type
+      properties:
+        lockId:
+          type: string
+          description: UUID of the lock.
+        userId:
+          type: string
+          description: ID of the user whose access was revoked.
+        removedBy:
+          type: string
+          description: ID of the user or system that revoked the access.
+        removedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the access was revoked.
+        reason:
+          type: string
+          description: Reason code for the revocation.
+        type:
+          type: string
+
+    AccessibleLockRemoved:
+      description: |
+        Fired when a user's access to a lock is revoked.
+        Source: `customer.events`, `spk.api` — detail-type: `AccessibleLockRemoved`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/AccessibleLockRemovedData'
+
+    # ─────────────────────────────────────────
+    # RESIDENT MANAGEMENT EVENTS
+    # ─────────────────────────────────────────
+
+    ResidentAddedData:
+      type: object
+      required:
+        - lockId
+        - uuid
+        - name
+        - email
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+          description: Internal numeric ID of the lock.
+        uuid:
+          type: string
+          description: UUID of the lock aggregate.
+        name:
+          type: string
+          description: Full name of the resident.
+        email:
+          type: string
+          description: Email address of the resident.
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ResidentAdded:
+      description: |
+        Fired when a resident is added to a lock (granted long-term access).
+        Source: `customer.events`, `spk.api` — detail-type: `ResidentAdded`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ResidentAddedData'
+
+    ResidentRemovedData:
+      type: object
+      required:
+        - lockId
+        - uuid
+        - email
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+        uuid:
+          type: string
+          description: UUID of the lock aggregate.
+        email:
+          type: string
+          description: Email address of the resident who was removed.
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ResidentRemoved:
+      description: |
+        Fired when a resident is removed from a lock.
+        Source: `customer.events`, `spk.api` — detail-type: `ResidentRemoved`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ResidentRemovedData'
+
+    # ─────────────────────────────────────────
+    # HUB MANAGEMENT EVENTS
+    # ─────────────────────────────────────────
+
+    HubClaimedData:
+      type: object
+      required:
+        - hubId
+        - orgId
+        - siteId
+        - claimedBy
+        - claimedAt
+        - type
+      properties:
+        hubId:
+          type: string
+          description: Unique identifier of the hub device.
+        orgId:
+          type: string
+          description: ID of the organization that claimed the hub.
+        siteId:
+          type: string
+          description: ID of the site the hub is deployed at.
+        claimedBy:
+          type: string
+          description: User ID of the person who performed the claim.
+        claimedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp (milliseconds) when the hub was claimed.
+        type:
+          type: string
+
+    HubClaimed:
+      description: |
+        Fired when a hub device is claimed by an organization and site.
+        Source: `customer.events`, `spk.api` — detail-type: `HubClaimed`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/HubClaimedData'
+
+    HubProvisionedData:
+      type: object
+      required:
+        - hubId
+        - serial
+        - thingName
+        - model
+        - provisionedAt
+        - type
+      properties:
+        hubId:
+          type: string
+          description: Unique identifier of the hub.
+        serial:
+          type: string
+          description: Hardware serial number of the hub device.
+        thingName:
+          type: string
+          description: AWS IoT thing name assigned to this hub.
+        model:
+          type: string
+          description: Hardware model identifier.
+        provisionedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp (milliseconds) when provisioning completed.
+        type:
+          type: string
+
+    HubProvisioned:
+      description: |
+        Fired when a hub device completes IoT provisioning and receives its thing certificate.
+        Source: `customer.events`, `spk.api` — detail-type: `HubProvisioned`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/HubProvisionedData'
+
+    HubRoleSetData:
+      type: object
+      required:
+        - hubId
+        - isPrimary
+        - setBy
+        - setAt
+        - type
+      properties:
+        hubId:
+          type: string
+          description: Unique identifier of the hub.
+        isPrimary:
+          type: boolean
+          description: Whether this hub is the primary hub for the site.
+        setBy:
+          type: string
+          description: User ID of the person who set the role.
+        setAt:
+          type: integer
+          format: int64
+          description: Unix timestamp (milliseconds) when the role was set.
+        type:
+          type: string
+
+    HubRoleSet:
+      description: |
+        Fired when a hub's role is configured within a site (primary vs secondary).
+        Source: `customer.events`, `spk.api` — detail-type: `HubRoleSet`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/HubRoleSetData'
+
+    HubSuspendedData:
+      type: object
+      required:
+        - hubId
+        - reason
+        - suspendedBy
+        - suspendedAt
+        - type
+      properties:
+        hubId:
+          type: string
+          description: Unique identifier of the suspended hub.
+        reason:
+          type: string
+          description: Reason code for the suspension.
+        suspendedBy:
+          type: string
+          description: User ID or system that triggered the suspension.
+        suspendedAt:
+          type: integer
+          format: int64
+          description: Unix timestamp (milliseconds) when the hub was suspended.
+        type:
+          type: string
+
+    HubSuspended:
+      description: |
+        Fired when a hub is suspended, typically due to policy violations or non-payment.
+        Source: `customer.events`, `spk.api` — detail-type: `HubSuspended`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/HubSuspendedData'
+
+    # ─────────────────────────────────────────
+    # ORGANIZATION EVENTS
+    # ─────────────────────────────────────────
+
+    CustomerCreated:
+      type: object
+      description: |
+        Fired when a new customer account is created under a partner.
+        Source: `customer.events` — detail-type: `CustomerCreated`
+      required:
+        - partnerId
+        - customerName
+        - timestamp
+      properties:
+        partnerId:
+          type: string
+          description: ID of the partner that owns this customer.
+        customerName:
+          type: string
+          description: Display name of the newly created customer.
+        timestamp:
+          type: string
+          format: date-time
+
+    OrganizationSetData:
+      type: object
+      required:
+        - lockId
+        - uuid
+        - orgId
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+          description: Internal numeric ID of the lock.
+        uuid:
+          type: string
+          description: UUID of the lock aggregate.
+        orgId:
+          type: string
+          description: ID of the organization the lock was assigned to.
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    OrganizationSet:
+      description: |
+        Fired when a lock is assigned to an organization.
+        Source: `customer.events`, `spk.api` — detail-type: `OrganizationSet`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OrganizationSetData'
+
+    OwnerSetData:
+      type: object
+      required:
+        - lockId
+        - uuid
+        - userId
+        - type
+        - timestamp
+      properties:
+        lockId:
+          type: number
+          description: Internal numeric ID of the lock.
+        uuid:
+          type: string
+          description: UUID of the lock aggregate.
+        userId:
+          type: string
+          description: ID of the user who was set as owner.
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    OwnerSet:
+      description: |
+        Fired when a user is designated as the owner of a lock.
+        Source: `customer.events`, `spk.api` — detail-type: `OwnerSet`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OwnerSetData'
+
+    UserCreatedData:
+      type: object
+      required:
+        - userId
+        - firstName
+        - lastName
+        - email
+        - status
+        - type
+      properties:
+        userId:
+          type: string
+          description: Unique identifier of the new user.
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+          description: Account status — e.g., `active`, `pending`.
+        type:
+          type: string
+
+    UserCreated:
+      description: |
+        Fired when a new user is created in the system.
+        Source: `customer.events`, `spk.api` — detail-type: `UserCreated`
+      allOf:
+        - $ref: '#/components/schemas/DomainEventEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UserCreatedData'
+
+    # ─────────────────────────────────────────
+    # AUTH EVENTS (auth0.signup)
+    # ─────────────────────────────────────────
+
+    UserSignup:
+      type: object
+      description: |
+        Fired when a user completes registration via Auth0.
+        Source: `auth0.signup` — detail-type: `UserSignup`
+
+        This event is distinct from `UserCreated` — it represents the authentication
+        identity being created, whereas `UserCreated` represents the application user record.
+      required:
+        - user_id
+        - email
+      properties:
+        user_id:
+          type: string
+          description: Auth0 user ID (format `auth0|<id>`).
+        email:
+          type: string
+          description: Email address the user registered with.
+
+    # ─────────────────────────────────────────
+    # IOT SHADOW EVENTS (spk.iot.shadow)
+    # ─────────────────────────────────────────
+
+    ShadowUpdate:
+      type: object
+      description: |
+        Fired when an IoT device's shadow state is updated. Contains the desired state,
+        reported state, and any delta between them.
+        Source: `spk.iot.shadow` — detail-type: `Shadow Update`
+      required:
+        - thingName
+        - version
+        - desiredState
+        - reportedState
+        - deltaState
+        - metadata
+      properties:
+        thingName:
+          type: string
+          description: AWS IoT thing name of the device that updated its shadow.
+        partnerId:
+          type: string
+          nullable: true
+          description: Partner ID associated with this device, if available.
+        version:
+          type: number
+          description: Shadow document version number.
+        desiredState:
+          type: object
+          nullable: true
+          description: The desired state set by the application (JSON object, serialized as string in raw event).
+        reportedState:
+          type: string
+          description: The state the device reported back (JSON, serialized as string).
+        deltaState:
+          type: string
+          description: |
+            The difference between desired and reported state.
+            Non-empty when the device has not yet applied all desired changes.
+        metadata:
+          type: string
+          description: AWS IoT shadow metadata including timestamps per field (JSON, serialized as string).

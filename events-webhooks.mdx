@@ -1,0 +1,174 @@
+---
+title: Partner Webhooks
+description: How to receive SmartphoneKey events via HTTP webhooks — configuration, authentication, delivery, and retry behavior.
+---
+
+Partner webhooks allow your system to receive real-time notifications when events occur in SmartphoneKey. When a subscribed event fires, SmartphoneKey makes an HTTP POST to your registered endpoint with the event payload.
+
+## How It Works
+
+1. You register a webhook subscription with a target URL and the event types you want to receive.
+2. When a matching event fires on the `spk.api` event bus, SmartphoneKey delivers it to your endpoint as an HTTP POST.
+3. Your endpoint responds with a `2xx` status code to acknowledge receipt.
+4. If delivery fails, SmartphoneKey retries automatically.
+
+## Available Event Types
+
+Webhooks are delivered from the `spk.api` source. The following event types are available for subscription:
+
+| Domain | Event Types |
+|--------|-------------|
+| **Keys** | `KeyAdded`, `KeyRemoved`, `PhysicalKeyAssigned`, `WalletKeyPrepared`, `TempKeyCreated`, `TempKeyUpdated`, `TempKeyDeleted` |
+| **Locks** | `LockCreated`, `AccessibleLockAdded`, `AccessibleLockRemoved` |
+| **Residents** | `ResidentAdded`, `ResidentRemoved` |
+| **Hubs** | `HubClaimed`, `HubProvisioned`, `HubRoleSet`, `HubSuspended` |
+| **Organization** | `OrganizationSet`, `OwnerSet`, `UserCreated` |
+
+See the [Event Catalog](/events-catalog) for descriptions of when each event fires and what data it contains.
+
+## Webhook Payload
+
+Your endpoint receives the full EventBridge event as a JSON body:
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "source": "spk.api",
+  "detail-type": "KeyAdded",
+  "time": "2024-03-15T10:30:00Z",
+  "region": "eu-west-1",
+  "account": "123456789012",
+  "version": "0",
+  "resources": [],
+  "detail": {
+    "aggregateId": "lock-uuid-here",
+    "aggregateType": "Lock",
+    "partnerId": "your-partner-id",
+    "version": 42,
+    "timestamp": 1710494200000,
+    "data": {
+      "lockId": 1234,
+      "keyUuid": "key-uuid-here",
+      "uuid": "lock-uuid-here",
+      "type": "KeyAdded",
+      "timestamp": "2024-03-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+The `detail-type` field tells you which event type was fired. The `detail` object contains the event-specific payload.
+
+## Webhook Authentication
+
+SmartphoneKey supports request signing so your endpoint can verify that incoming webhooks are genuine.
+
+### Supported Authentication Types
+
+| `auth_type` | Description |
+|-------------|-------------|
+| `hmac_sha256` | HMAC-SHA256 signature in a request header |
+| `bearer_token` | Static bearer token in the Authorization header |
+| `header` | Custom header with a static secret value |
+
+### HMAC-SHA256 Signing
+
+When `auth_type` is `hmac_sha256`, SmartphoneKey computes an HMAC-SHA256 signature of the request body using your shared secret and sends it in a configurable header.
+
+To verify the signature in your endpoint:
+
+```python
+import hmac
+import hashlib
+
+def verify_webhook(body: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(
+        secret.encode(),
+        body,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+```
+
+```typescript
+import { createHmac, timingSafeEqual } from 'crypto';
+
+function verifyWebhook(body: Buffer, signature: string, secret: string): boolean {
+  const expected = createHmac('sha256', secret)
+    .update(body)
+    .digest('hex');
+  return timingSafeEqual(
+    Buffer.from(expected),
+    Buffer.from(signature)
+  );
+}
+```
+
+Always use a constant-time comparison (like `hmac.compare_digest` or `timingSafeEqual`) to prevent timing attacks.
+
+### Header Configuration
+
+| Field | Description |
+|-------|-------------|
+| `header_name` | The HTTP header name that carries the signature or token |
+| `match_type` | How to match the value — `exact` for static tokens, `hmac` for computed signatures |
+
+Example webhook subscription configuration:
+
+```json
+{
+  "url": "https://your-api.example.com/webhooks/spk",
+  "auth_type": "hmac_sha256",
+  "header_name": "X-SPK-Signature",
+  "match_type": "hmac",
+  "secret": "your-shared-secret",
+  "event_types": ["KeyAdded", "KeyRemoved", "AccessibleLockAdded"]
+}
+```
+
+## Delivery and Retry Policy
+
+SmartphoneKey delivers webhooks with the following guarantees:
+
+| Parameter | Value |
+|-----------|-------|
+| **Delivery model** | At-least-once |
+| **Max retries** | 5 attempts |
+| **Max event age** | 3600 seconds (1 hour) |
+| **Retry backoff** | Exponential |
+
+Events that cannot be delivered within the retry window (1 hour) are dropped. Design your endpoint to be idempotent — use the `id` field in the EventBridge envelope as a deduplication key.
+
+### Response Requirements
+
+Your endpoint must:
+
+- Return HTTP `2xx` within the timeout window to acknowledge receipt.
+- `4xx` responses are treated as permanent failures and are **not** retried.
+- `5xx` responses or timeouts trigger a retry with exponential backoff.
+
+Returning `2xx` immediately and processing asynchronously is recommended for webhooks that trigger heavy work.
+
+## Filtering Events
+
+You can subscribe to specific event types rather than all events. Only subscribe to the event types your integration needs — this reduces noise and unnecessary traffic to your endpoint.
+
+You can also filter by `partnerId` if you are building a multi-tenant integration that should only receive events for a specific partner account.
+
+## Security Best Practices
+
+- **Always verify signatures** — Don't process webhook payloads without checking the HMAC or token.
+- **Use HTTPS** — Only register HTTPS endpoints. HTTP endpoints will not receive webhooks.
+- **Respond quickly** — Return `2xx` before doing heavy processing. Queue events for async processing if needed.
+- **Be idempotent** — The same event may be delivered more than once. Use `id` from the envelope for deduplication.
+- **Rotate secrets periodically** — Update your webhook secret regularly and support a short overlap window during rotation.
+
+## Debugging Deliveries
+
+If your endpoint is not receiving events:
+
+1. Confirm your endpoint returns `2xx` for a test POST.
+2. Check that your subscription includes the correct event types.
+3. Verify your endpoint URL is reachable from the internet (not localhost or a private network).
+4. Review your signature verification logic — a `4xx` response from your endpoint is treated as a permanent failure and will **not** be retried. Only `5xx` responses and timeouts trigger retries.
+5. Check whether events are firing at all using the [Event Catalog](/events-catalog) to confirm when the events you expect should be generated.

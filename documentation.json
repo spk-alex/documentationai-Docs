@@ -38,6 +38,38 @@
             "openapi": "openapi.yaml"
           }
         ]
+      },
+      {
+        "tab": "Events",
+        "icon": "zap",
+        "groups": [
+          {
+            "group": "Guide",
+            "icon": "book",
+            "pages": [
+              {
+                "title": "Overview",
+                "path": "events-overview",
+                "icon": "activity"
+              },
+              {
+                "title": "Event Catalog",
+                "path": "events-catalog",
+                "icon": "list"
+              },
+              {
+                "title": "Partner Webhooks",
+                "path": "events-webhooks",
+                "icon": "plug"
+              }
+            ]
+          },
+          {
+            "group": "Event Schema Reference",
+            "icon": "terminal",
+            "openapi": "eventbridge-schemas.yaml"
+          }
+        ]
       }
     ]
   }

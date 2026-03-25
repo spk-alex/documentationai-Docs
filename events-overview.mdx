@@ -1,0 +1,101 @@
+---
+title: Events Overview
+description: How SmartphoneKey uses EventBridge to publish real-time domain events for partner integrations and internal services.
+---
+
+SmartphoneKey publishes real-time events via AWS EventBridge whenever significant state changes occur in the access control system. Partners can subscribe to these events through webhooks to build integrations that react to changes as they happen — no polling required.
+
+## Event Sources
+
+SmartphoneKey uses four distinct EventBridge event sources, each serving a different purpose:
+
+### `customer.events`
+
+The primary domain event bus. Publishes events directly from the access control domain model as aggregates change state. Events carry the full domain context including `aggregateId`, `aggregateType`, `partnerId`, `version`, and a `timestamp` in milliseconds.
+
+Use `customer.events` when you need the richest data and are building internal integrations or tightly-coupled partner systems.
+
+**Publishes:** AccessibleLockAdded, AccessibleLockRemoved, CustomerCreated, HubClaimed, HubProvisioned, HubRoleSet, HubSuspended, KeyAdded, KeyRemoved, LockCreated, OrganizationSet, OwnerSet, PhysicalKeyAssigned, ResidentAdded, ResidentRemoved, TempKeyCreated, TempKeyDeleted, TempKeyUpdated, UserCreated, WalletKeyPrepared
+
+### `spk.api`
+
+A stable, partner-facing event bus that mirrors `customer.events` but is designed for external consumption. The schema is kept stable across API versions. Partner webhooks are routed from this source.
+
+**Publishes:** 19 of the 20 `customer.events` event types (all except `CustomerCreated`), with minor schema differences — for example, `LockCreated` on `spk.api` includes a `serialNumber` field.
+
+### `auth0.signup`
+
+Publishes a `UserSignup` event when a user completes registration through Auth0. This event carries the Auth0 `user_id` and `email`, and is typically used to trigger downstream user provisioning flows.
+
+Note: `UserSignup` (authentication identity created) is separate from `UserCreated` (application user record created). Both events may fire during a new user registration flow.
+
+### `spk.iot.shadow`
+
+Publishes `ShadowUpdate` events when an IoT hub device updates its AWS IoT Device Shadow. The event carries the `thingName`, `version`, `desiredState`, `reportedState`, and `deltaState` — the delta being non-empty when the device hasn't yet applied all desired configuration changes.
+
+## Event Envelope
+
+Every EventBridge event arrives wrapped in an AWS envelope:
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "source": "spk.api",
+  "detail-type": "KeyAdded",
+  "time": "2024-03-15T10:30:00Z",
+  "region": "eu-west-1",
+  "account": "123456789012",
+  "version": "0",
+  "resources": [],
+  "detail": {
+    "aggregateId": "lock-uuid-here",
+    "aggregateType": "Lock",
+    "partnerId": "partner-uuid-here",
+    "version": 42,
+    "timestamp": 1710494200000,
+    "data": {
+      "lockId": 1234,
+      "keyUuid": "key-uuid-here",
+      "uuid": "lock-uuid-here",
+      "type": "KeyAdded",
+      "timestamp": "2024-03-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+The `detail` object is the event payload. For `customer.events` and `spk.api` events it always includes the common domain event envelope fields (`aggregateId`, `aggregateType`, `partnerId`, `version`, `timestamp`) with event-specific data nested under `data`.
+
+## Domain Event Structure
+
+All `customer.events` and `spk.api` events share a common envelope in the `detail` object:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `aggregateId` | string | ID of the aggregate root (e.g., lock UUID, hub ID) |
+| `aggregateType` | string | Type of aggregate — e.g., `Lock`, `Hub`, `Key` |
+| `partnerId` | string | Partner account that owns this data |
+| `version` | number | Monotonically increasing version for the aggregate |
+| `timestamp` | int64 | Unix timestamp in milliseconds when the event was produced |
+| `data` | object | Event-specific payload fields |
+
+## Event Flow Architecture
+
+```
+Access Control System
+        │
+        ▼
+  customer.events ──────► Internal services (notifications, analytics)
+        │
+        ▼
+     spk.api ────────────► Partner webhooks
+                           (HTTP POST to your endpoint)
+```
+
+When a state change occurs in the access control system (e.g., a key is added to a lock), the domain model emits an event to `customer.events`. A forwarding rule propagates the event to `spk.api`, which then delivers it to registered partner webhook endpoints.
+
+## Subscribing to Events
+
+Partners receive events through webhook subscriptions. When an event matches your subscription criteria, SmartphoneKey makes an HTTP POST to your registered endpoint with the event payload.
+
+See the [Partner Webhooks](/events-webhooks) guide for configuration details and the [Event Catalog](/events-catalog) for a complete reference of all event types and their payloads.
