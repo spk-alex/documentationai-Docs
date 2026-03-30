@@ -5629,6 +5629,315 @@
         }
       }
     },
+    "/matter-devices/{id}/CreateMatterDevice": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Create matter device",
+        "description": "Registers a new Matter device in the system",
+        "operationId": "post_CreateMatterDeviceRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceId": {
+                    "type": "string",
+                    "description": "Matter Device ID"
+                  },
+                  "thingName": {
+                    "type": "string",
+                    "description": "AWS IoT Thing name"
+                  },
+                  "hubId": {
+                    "type": "string",
+                    "description": "Hub ID this device belongs to"
+                  },
+                  "deviceType": {
+                    "type": "string",
+                    "default": "generic",
+                    "description": "Matter device type"
+                  }
+                },
+                "required": [
+                  "deviceId",
+                  "thingName",
+                  "hubId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matter device created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matter-devices/{id}/UpdateDesiredShadow": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Update desired shadow",
+        "description": "Sets desired shadow state and pushes to AWS IoT Core",
+        "operationId": "post_UpdateDesiredShadowRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "desired": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "Desired shadow state to push to device"
+                  }
+                },
+                "required": [
+                  "desired"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Desired shadow updated and pushed to device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or device not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matter-devices/{id}/UpdateReportedShadow": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Update reported shadow",
+        "description": "Stores the reported shadow state received from the device via AWS IoT",
+        "operationId": "post_UpdateReportedShadowRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reported": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "Reported shadow state from device"
+                  }
+                },
+                "required": [
+                  "reported"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reported shadow stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or device not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/temp-keys/{uuid}/open": {
       "post": {
         "tags": [
