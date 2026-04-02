@@ -23,6 +23,11 @@
                 "title": "Introduction",
                 "path": "introduction",
                 "icon": "home"
+              },
+              {
+                "title": "Partner Onboarding",
+                "path": "partner-onboarding",
+                "icon": "users"
               }
             ]
           }

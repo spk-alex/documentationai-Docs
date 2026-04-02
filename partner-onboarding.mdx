@@ -1,0 +1,178 @@
+---
+title: Partner Onboarding
+description: How to create a partner, get an API key, and set up a webhook URL using the Admin API.
+---
+
+## Overview
+
+This guide walks through the complete partner onboarding flow: creating a tenant, obtaining an API key, and registering a webhook URL to receive events.
+
+## Prerequisites
+
+- Admin API Key (`X-Admin-API-Key`) — stored in Doppler as `ADMIN_API_KEY`
+- Admin JWT Token (`Authorization: Bearer <token>`) — must have `email` with `@smartphonekey.com` domain
+
+Both headers are required on every admin-api request.
+
+## Environments
+
+| Environment | Admin API URL |
+|-------------|---------------|
+| Dev | `https://admin-api.spk-dev.workers.dev` |
+| Nonprod | `https://admin-api.spk-nonprod.workers.dev` |
+| Stage | `https://admin-api.spk-stage.workers.dev` |
+| Prod | `https://admin-api.spk-prod.workers.dev` |
+
+## Step 1: Create Partner (API Key)
+
+Creating an API key automatically creates the partner (tenant).
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/api-keys" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orgId": "acme-corp",
+    "orgName": "ACME Corporation"
+  }'
+```
+
+**Response:**
+```json
+{
+  "apiKey": "xK7mP9qR2wT5vN8jL4hG6cF3bA0eD1iY...",
+  "orgId": "acme-corp",
+  "orgName": "ACME Corporation",
+  "createdAt": "2026-04-02T10:00:00.000Z",
+  "createdBy": "admin@smartphonekey.com"
+}
+```
+
+Save the `apiKey` — it won't be shown again (only the prefix is visible in list endpoints).
+
+**Notes:**
+- One active API key per organization
+- If the org already has an active key, you'll get `409 Conflict`
+- The API key is 40 random alphanumeric characters
+
+## Step 2: Set Up Webhook
+
+Register a webhook URL to receive events for this partner.
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.com/webhooks/smartphonekey",
+    "events": [
+      "device.added",
+      "device.removed",
+      "key.created",
+      "key.revoked",
+      "lock.opened",
+      "lock.access-denied"
+    ]
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "aggregateId": "acme-corp",
+  "version": 1
+}
+```
+
+**Notes:**
+- URL must be HTTPS in production (HTTP allowed in dev)
+- A webhook secret is auto-generated if not provided
+- The webhook is backed by AWS EventBridge — events matching the partner's `orgId` are delivered to the URL
+
+### Available Event Types
+
+| Event | Description |
+|-------|-------------|
+| `access-control.*` | All access control events (wildcard) |
+| `device.added` | Device added to a lock |
+| `device.removed` | Device removed from a lock |
+| `key.created` | New key assigned |
+| `key.revoked` | Key revoked |
+| `lock.opened` | Lock opened |
+| `lock.access-denied` | Lock access denied |
+| `subscription.created` | Webhook subscription created |
+| `subscription.updated` | Webhook subscription updated |
+| `subscription.deleted` | Webhook subscription deleted |
+| `api-key.created` | API key created |
+| `api-key.revoked` | API key revoked |
+
+## Step 3: Verify Webhook
+
+Check that the webhook was created and its status:
+
+```bash
+curl "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+**Response:**
+```json
+{
+  "webhooks": [
+    {
+      "id": "32bc72f9-1676-4cd5-b568-15a39a80536e",
+      "url": "https://acme-corp.com/webhooks/smartphonekey",
+      "events": ["device.added", "device.removed", "key.created", "key.revoked", "lock.opened", "lock.access-denied"],
+      "status": "pending",
+      "createdAt": "2026-04-02T10:01:00.000Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+Status will transition from `pending` to `verified` once EventBridge confirms the subscription.
+
+## Updating a Webhook
+
+```bash
+curl -X PUT "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.com/webhooks/v2",
+    "events": ["device.added", "lock.opened"]
+  }'
+```
+
+At least one field (`url`, `events`, or `secret`) must be provided.
+
+## Deleting a Webhook
+
+```bash
+curl -X DELETE "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+## Listing Partners
+
+```bash
+curl "https://admin-api.spk-dev.workers.dev/tenants" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+## How Events Flow to Webhooks
+
+1. An action happens in the B2C API (e.g., lock opened, key assigned)
+2. The event is published to AWS EventBridge with `source: "spk.api"` and `partnerId` matching the lock's organization
+3. EventBridge matches the event against webhook subscription rules
+4. The event is delivered to the partner's webhook URL
+
+Events include `partnerId` in the detail so partners receive only events for their organization.
