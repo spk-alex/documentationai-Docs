@@ -673,6 +673,108 @@
         }
       }
     },
+    "/admin/users/{id}/3deye-credentials": {
+      "get": {
+        "tags": [
+          "Admin",
+          "3dEye"
+        ],
+        "summary": "Get 3dEye credentials for a user",
+        "description": "Returns stored 3dEye user ID and password. Requires admin auth.",
+        "operationId": "get_GetThreeDeyeCredentialsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "3dEye credentials found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "threeDeyeUserId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "password": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "email",
+                    "threeDeyeUserId",
+                    "password"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "3dEye credentials not found for this user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/CreateUser": {
       "post": {
         "tags": [
@@ -6699,6 +6801,90 @@
                   },
                   "required": [
                     "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/backfill-threedeye": {
+      "post": {
+        "tags": [
+          "Admin",
+          "3dEye"
+        ],
+        "summary": "Backfill 3dEye accounts for existing users",
+        "description": "Finds users without 3dEye accounts and creates them. Requires admin auth.",
+        "operationId": "post_BackfillThreeDeyeRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Maximum number of users to process (default: 50)"
+            },
+            "required": false,
+            "description": "Maximum number of users to process (default: 50)",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Backfill completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "created": {
+                      "type": "number"
+                    },
+                    "failed": {
+                      "type": "number"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "total",
+                    "created",
+                    "failed",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
                     "error",
                     "message"
                   ]
