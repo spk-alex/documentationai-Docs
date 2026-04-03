@@ -2337,6 +2337,141 @@
         }
       }
     },
+    "/locks/{id}/events": {
+      "get": {
+        "tags": [
+          "Lock",
+          "Query"
+        ],
+        "summary": "Get lock event history",
+        "description": "Returns paginated event history from R2. Default: last 10 events. Use ?page=N for older events.",
+        "operationId": "get_GetLockEventsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Lock ID (numeric)"
+            },
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Page number (1-based). Default: last page (most recent events)"
+            },
+            "required": false,
+            "description": "Page number (1-based). Default: last page (most recent events)",
+            "name": "page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lock events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "totalEvents": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pageSize": {
+                      "type": "number"
+                    },
+                    "totalPages": {
+                      "type": "number"
+                    },
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "aggregateType": {
+                            "type": "string"
+                          },
+                          "aggregateId": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "number"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string"
+                          },
+                          "orgId": {
+                            "type": "string"
+                          },
+                          "event": {}
+                        },
+                        "required": [
+                          "aggregateType",
+                          "aggregateId",
+                          "version",
+                          "type",
+                          "timestamp",
+                          "orgId"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "aggregateId",
+                    "totalEvents",
+                    "page",
+                    "pageSize",
+                    "totalPages",
+                    "events"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lock not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locks/{id}/create-temp-key": {
       "post": {
         "tags": [
