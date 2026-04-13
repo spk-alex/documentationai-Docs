@@ -6175,6 +6175,742 @@
         }
       }
     },
+    "/cameras/{id}/details": {
+      "get": {
+        "tags": [
+          "Camera",
+          "Query"
+        ],
+        "summary": "Get camera details",
+        "description": "Get full camera details including status and 3dEye identifiers",
+        "operationId": "get_GetCameraDetailsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Camera details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "threeDeyeCameraId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "generic",
+                        "onvif",
+                        "pnp"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "ownerId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "Active",
+                        "Disabled",
+                        "Deleted"
+                      ]
+                    },
+                    "httpUrl": {
+                      "type": "string"
+                    },
+                    "rtspUrl": {
+                      "type": "string"
+                    },
+                    "registrationCode": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cameraId",
+                    "threeDeyeCameraId",
+                    "type",
+                    "name",
+                    "orgId",
+                    "ownerId",
+                    "status",
+                    "httpUrl",
+                    "rtspUrl",
+                    "registrationCode",
+                    "version",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{id}/RegisterCamera": {
+      "post": {
+        "tags": [
+          "Camera",
+          "Command"
+        ],
+        "summary": "Register camera",
+        "description": "Registers a camera in 3dEye and persists the registration event.",
+        "operationId": "post_RegisterCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID (must match cameraId in body)"
+            },
+            "required": true,
+            "description": "Camera ID (must match cameraId in body)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Camera ID"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Camera name"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "generic",
+                      "onvif",
+                      "pnp"
+                    ],
+                    "description": "Camera type"
+                  },
+                  "httpUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "HTTP access URL for the camera (http:// or https://)"
+                  },
+                  "rtspUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "RTSP streaming URL for the camera (rtsp://)"
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Organization ID"
+                  },
+                  "ownerId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Owner user ID"
+                  },
+                  "login": {
+                    "type": "string",
+                    "description": "Camera admin login name"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Camera admin password"
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "name",
+                  "type",
+                  "httpUrl",
+                  "rtspUrl",
+                  "orgId",
+                  "ownerId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed or business rule violated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict — camera already registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{id}/UpdateCamera": {
+      "post": {
+        "tags": [
+          "Camera",
+          "Command"
+        ],
+        "summary": "Update camera",
+        "description": "Updates camera details in 3dEye and persists the update event.",
+        "operationId": "post_UpdateCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Updated camera name"
+                  },
+                  "httpUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Updated HTTP access URL"
+                  },
+                  "rtspUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Updated RTSP streaming URL"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed or business rule violated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — camera does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{id}/DisableCamera": {
+      "post": {
+        "tags": [
+          "Camera",
+          "Command"
+        ],
+        "summary": "Disable camera",
+        "description": "Soft-disables a camera without deleting it from 3dEye.",
+        "operationId": "post_DisableCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Reason for disabling the camera"
+                  },
+                  "disabledBy": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "User ID who disabled the camera"
+                  }
+                },
+                "required": [
+                  "reason",
+                  "disabledBy"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera disabled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed or business rule violated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — camera does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{id}/DeleteCamera": {
+      "post": {
+        "tags": [
+          "Camera",
+          "Command"
+        ],
+        "summary": "Delete camera",
+        "description": "Deletes the camera from 3dEye and persists the deletion event.",
+        "operationId": "post_DeleteCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deletedBy": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "User ID who deleted the camera"
+                  }
+                },
+                "required": [
+                  "deletedBy"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed or business rule violated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — camera does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/temp-keys/{uuid}/open": {
       "post": {
         "tags": [
