@@ -4856,28 +4856,23 @@
                 "properties": {
                   "hubId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Hub ID"
                   },
                   "orgId": {
                     "type": "string",
-                    "format": "uuid",
-                    "description": "Organization ID"
+                    "description": "Organization ID (defaults to caller org from API key)"
                   },
                   "siteId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Site ID"
                   },
                   "userId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User ID claiming the hub"
                   }
                 },
                 "required": [
                   "hubId",
-                  "orgId",
                   "siteId",
                   "userId"
                 ]
@@ -5036,17 +5031,14 @@
                 "properties": {
                   "hubId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Hub ID"
                   },
                   "newOrgId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "New Organization ID"
                   },
                   "newSiteId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "New Site ID"
                   },
                   "reason": {
@@ -5056,7 +5048,6 @@
                   },
                   "userId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User ID performing re-claim"
                   }
                 },
@@ -5385,7 +5376,6 @@
                 "properties": {
                   "hubId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Hub ID"
                   },
                   "reason": {
@@ -5395,7 +5385,6 @@
                   },
                   "userId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User ID suspending the hub"
                   }
                 },
