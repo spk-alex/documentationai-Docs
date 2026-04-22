@@ -8,23 +8,19 @@ Partner webhooks allow your system to receive real-time notifications when event
 ## How It Works
 
 1. You register a webhook subscription with a target URL and the event types you want to receive.
-2. When a matching event fires on the `spk.api` event bus, SmartphoneKey delivers it to your endpoint as an HTTP POST.
+2. When a matching event fires, SmartphoneKey delivers it to your endpoint as an HTTP POST.
 3. Your endpoint responds with a `2xx` status code to acknowledge receipt.
 4. If delivery fails, SmartphoneKey retries automatically.
 
 ## Available Event Types
 
-Webhooks are delivered from the `spk.api` source. The following event types are available for subscription:
+| Event Type | Source |
+|------------|--------|
+| `Shadow Update` | `spk.iot.shadow` |
 
-| Domain | Event Types |
-|--------|-------------|
-| **Keys** | `KeyAdded`, `KeyRemoved`, `PhysicalKeyAssigned`, `WalletKeyPrepared`, `TempKeyCreated`, `TempKeyUpdated`, `TempKeyDeleted` |
-| **Locks** | `LockCreated`, `AccessibleLockAdded`, `AccessibleLockRemoved` |
-| **Residents** | `ResidentAdded`, `ResidentRemoved` |
-| **Hubs** | `HubClaimed`, `HubProvisioned`, `HubRoleSet`, `HubSuspended` |
-| **Organization** | `OrganizationSet`, `OwnerSet`, `UserCreated` |
+The `Shadow Update` event carries the raw AWS IoT shadow update document for a device (state change snapshot). Use this when you want full device state diffs. Several of its payload fields are **stringified JSON** — your handler must call `JSON.parse()` on them before accessing nested values (see [Shadow Update payload](#shadow-update-payload) below).
 
-See the [Event Catalog](/events-catalog) for descriptions of when each event fires and what data it contains.
+See the [Event Catalog](/events-catalog) for a full description of the payload.
 
 ## Webhook Payload
 
@@ -33,31 +29,48 @@ Your endpoint receives the full EventBridge event as a JSON body:
 ```json
 {
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "source": "spk.api",
-  "detail-type": "KeyAdded",
+  "source": "spk.iot.shadow",
+  "detail-type": "Shadow Update",
   "time": "2024-03-15T10:30:00Z",
   "region": "eu-west-1",
   "account": "123456789012",
   "version": "0",
   "resources": [],
   "detail": {
-    "aggregateId": "lock-uuid-here",
-    "aggregateType": "Lock",
-    "partnerId": "your-partner-id",
-    "version": 42,
-    "timestamp": 1710494200000,
-    "data": {
-      "lockId": 1234,
-      "keyUuid": "key-uuid-here",
-      "uuid": "lock-uuid-here",
-      "type": "KeyAdded",
-      "timestamp": "2024-03-15T10:30:00.000Z"
-    }
+    "partnerId": "<tenant-org-id>",
+    "thingName": "<device-uuid>",
+    "reportedState": "<stringified JSON of reported state>",
+    "desiredState": "<stringified JSON of desired state>",
+    "deltaState": "{}",
+    "metadata": "<stringified IoT shadow metadata>",
+    "version": 42
   }
 }
 ```
 
 The `detail-type` field tells you which event type was fired. The `detail` object contains the event-specific payload.
+
+### Shadow Update Payload
+
+The `source` is `spk.iot.shadow` and several `detail` fields are **stringified JSON** — your handler must call `JSON.parse()` on them before accessing nested values.
+
+```json
+{
+  "source": "spk.iot.shadow",
+  "detail-type": "Shadow Update",
+  "detail": {
+    "partnerId": "<tenant-org-id>",
+    "thingName": "<device-uuid>",
+    "reportedState": "<stringified JSON of reported state>",
+    "desiredState": "<stringified JSON of desired state>",
+    "deltaState": "{}",
+    "metadata": "<stringified IoT shadow metadata>",
+    "version": 42
+  }
+}
+```
+
+`reportedState`, `desiredState`, `deltaState`, and `metadata` are stringified JSON embedded inside the outer JSON object. Parse each field individually before accessing its contents.
 
 ## Webhook Authentication
 
@@ -122,7 +135,7 @@ Example webhook subscription configuration:
   "header_name": "X-SPK-Signature",
   "match_type": "hmac",
   "secret": "your-shared-secret",
-  "event_types": ["KeyAdded", "KeyRemoved", "AccessibleLockAdded"]
+  "event_types": ["Shadow Update"]
 }
 ```
 
