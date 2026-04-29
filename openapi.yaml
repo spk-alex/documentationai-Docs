@@ -50,6 +50,133 @@
     "parameters": {}
   },
   "paths": {
+    "/users/{id}/wallet/link": {
+      "get": {
+        "tags": [
+          "User",
+          "Query"
+        ],
+        "summary": "Get wallet install URL",
+        "description": "Returns a URL the user can open to install their existing wallet key into Apple Wallet or Google Wallet. Returns 404 if no wallet key is set.",
+        "operationId": "get_GetUserWalletLinkRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet install URL retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "walletType": {
+                      "type": "string",
+                      "enum": [
+                        "APPLE",
+                        "GOOGLE"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "walletType"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User has wallet key but is missing required data (e.g. email for Apple)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User has no wallet key set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locks/{id}/debug/messages": {
       "get": {
         "tags": [
@@ -1027,7 +1154,7 @@
           "Wallet"
         ],
         "summary": "Add wallet key to user",
-        "description": "Prepares a wallet key for a user (Apple Wallet or Google Wallet).",
+        "description": "Prepares a wallet key for a user (Apple Wallet or Google Wallet). The server generates the wallet keyId (UUID) inside the command handler and returns it in the response; clients must not send keyId in the request body.",
         "operationId": "post_AddWalletKeyRoute",
         "parameters": [
           {
@@ -1048,10 +1175,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "keyId": {
-                    "type": "string",
-                    "description": "Key ID"
-                  },
                   "walletType": {
                     "type": "string",
                     "enum": [
@@ -1066,7 +1189,6 @@
                   }
                 },
                 "required": [
-                  "keyId",
                   "walletType",
                   "keyIndex"
                 ]
@@ -1076,7 +1198,7 @@
         },
         "responses": {
           "200": {
-            "description": "Wallet key prepared successfully",
+            "description": "Wallet key prepared successfully. Response includes the server-generated keyId.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1092,7 +1214,9 @@
                       "type": "number"
                     },
                     "keyId": {
-                      "type": "string"
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Server-generated wallet key UUID"
                     },
                     "walletType": {
                       "type": "string",
@@ -1109,6 +1233,13 @@
                     "keyId",
                     "walletType"
                   ]
+                },
+                "example": {
+                  "success": true,
+                  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+                  "version": 2,
+                  "keyId": "00000000-0000-0000-0000-000000000000",
+                  "walletType": "APPLE"
                 }
               }
             }
@@ -1406,6 +1537,255 @@
           },
           "400": {
             "description": "Invalid request or lock not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/AddLicensePlate": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "License Plate"
+        ],
+        "summary": "Add license plate to user",
+        "description": "Adds a license plate to the user profile for LPR automation. Plates are normalized (uppercase, no spaces/dashes) and deduplicated.",
+        "operationId": "post_AddLicensePlateRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "plate": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "License plate number"
+                  },
+                  "label": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Human-readable label for the plate"
+                  }
+                },
+                "required": [
+                  "plate"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "License plate added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "plate": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "plate",
+                    "label"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or plate already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/RemoveLicensePlate": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "License Plate"
+        ],
+        "summary": "Remove license plate from user",
+        "description": "Removes a license plate from the user's profile.",
+        "operationId": "post_RemoveLicensePlateRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "plate": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "License plate number to remove"
+                  }
+                },
+                "required": [
+                  "plate"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "License plate removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "plate": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "plate"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or plate not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -1922,6 +2302,111 @@
                   },
                   "required": [
                     "locks",
+                    "totalCount"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/license-plates": {
+      "get": {
+        "tags": [
+          "User",
+          "Query",
+          "License Plate"
+        ],
+        "summary": "Get license plates",
+        "description": "Get the user's registered license plates for LPR automation",
+        "operationId": "get_GetLicensePlatesRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "License plates retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "licensePlates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "plate": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "addedAt": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "plate",
+                          "label",
+                          "addedAt"
+                        ]
+                      }
+                    },
+                    "totalCount": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "licensePlates",
                     "totalCount"
                   ]
                 }
@@ -6233,6 +6718,9 @@
                     "registrationCode": {
                       "type": "string"
                     },
+                    "lockId": {
+                      "type": "string"
+                    },
                     "version": {
                       "type": "number"
                     },
@@ -6251,6 +6739,7 @@
                     "httpUrl",
                     "rtspUrl",
                     "registrationCode",
+                    "lockId",
                     "version",
                     "timestamp"
                   ]
@@ -6366,11 +6855,13 @@
                   },
                   "login": {
                     "type": "string",
-                    "description": "Camera admin login name"
+                    "minLength": 1,
+                    "description": "Camera admin login name (required by 3dEye)"
                   },
                   "password": {
                     "type": "string",
-                    "description": "Camera admin password"
+                    "minLength": 1,
+                    "description": "Camera admin password (required by 3dEye)"
                   }
                 },
                 "required": [
@@ -6380,7 +6871,9 @@
                   "httpUrl",
                   "rtspUrl",
                   "orgId",
-                  "ownerId"
+                  "ownerId",
+                  "login",
+                  "password"
                 ]
               }
             }
@@ -6414,7 +6907,7 @@
             }
           },
           "400": {
-            "description": "Invalid request — validation failed or business rule violated.",
+            "description": "Invalid request — validation failed or business rule violated. login and password are required (3dEye requires AdminName/AdminPassword).",
             "content": {
               "application/json": {
                 "schema": {
@@ -6815,6 +7308,252 @@
         "responses": {
           "200": {
             "description": "Camera deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed or business rule violated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — camera does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{id}/LinkCameraToLock": {
+      "post": {
+        "tags": [
+          "Camera",
+          "Command"
+        ],
+        "summary": "Link camera to lock",
+        "description": "Links a camera to a lock for LPR automation (camera sees plate, lock opens).",
+        "operationId": "post_LinkCameraToLockRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lockId": {
+                    "type": "string",
+                    "description": "Lock ID to link this camera to"
+                  }
+                },
+                "required": [
+                  "lockId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera linked to lock successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed or business rule violated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — camera does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{id}/UnlinkCameraFromLock": {
+      "post": {
+        "tags": [
+          "Camera",
+          "Command"
+        ],
+        "summary": "Unlink camera from lock",
+        "description": "Removes the lock association from a camera.",
+        "operationId": "post_UnlinkCameraFromLockRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera unlinked from lock successfully",
             "content": {
               "application/json": {
                 "schema": {
