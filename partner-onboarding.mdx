@@ -1,38 +1,54 @@
 ---
 title: Partner Onboarding
-description: How to create a partner, get an API key, and set up a webhook URL using the Admin API.
+description: How partners onboard themselves via the Partner Portal, plus the Admin API for scripted/automated onboarding.
 ---
 
-## Overview
+SmartphoneKey delivers events to partner systems via webhooks. Most partners onboard themselves through the [Partner Portal](/partner-portal): sign in with Auth0, copy your API key, set a webhook URL, done. If you need scripted or automated onboarding — or any change beyond the URL (events filter, secret rotation, multiple webhooks) — an Admin API is available and documented further down this page.
 
-This guide walks through the complete partner onboarding flow: creating a tenant, obtaining an API key, and registering a webhook URL to receive events.
-
-There are two paths:
-
-- **Self-service** via the [Partner Portal](/partner-portal) — partners sign in with Auth0, view and rotate their API key, and configure their webhook URL without admin help.
-- **Admin-driven** via the Admin API — used to onboard the partner the first time, or for any change beyond the URL (events filter, secret rotation).
-
-This page documents the admin-driven flow. For the self-service flow see the [Partner Portal guide](/partner-portal).
-
-## Self-Service Quickstart
+## Quickstart: Self-Service via the Partner Portal
 
 For partners who already have a SmartphoneKey account in Auth0:
 
-1. Visit the partner portal for your environment (e.g. `https://partner-portal.spk-dev.workers.dev/`).
-2. Click **Sign in with Auth0** and complete the OIDC flow.
-3. On first sign-in, a tenant and an initial API key are created automatically. The key is shown once — copy and store it now.
-4. Set your webhook URL from the dashboard. Events for your `orgId` start delivering as soon as EventBridge verifies the URL.
+1. **Visit the partner portal for your environment.** For example, dev is at `https://partner-portal.spk-dev.workers.dev/`. (Each environment has its own portal URL — your account manager will share the right one for stage / nonprod / prod.)
+2. **Sign in with Auth0.** Click **Sign in with Auth0** and complete the OIDC flow.
+3. **Copy the API key shown once.** On first sign-in, a tenant and an initial API key are created automatically. The full key is shown only once on this screen — copy and store it in your secret manager now. After this, only a masked prefix is visible.
+4. **Set your webhook URL on the dashboard.** Enter the HTTPS endpoint in your system that will receive events. EventBridge will verify the URL.
+5. **Done — events start arriving.** Once EventBridge confirms the subscription (status moves from `pending` to `verified`), events for your `orgId` are delivered to your URL.
 
-See [Partner Portal](/partner-portal) for the full walkthrough.
+You can return to the dashboard any time to rotate the API key or update the webhook URL.
 
-## Prerequisites (Admin-driven flow)
+See [Partner Portal](/partner-portal) for the full UI walkthrough.
+
+## Receiving events
+
+Events arrive at your webhook URL as HTTP POST requests carrying an AWS EventBridge envelope. The `detail` field includes a `partnerId` that matches your `orgId`, so you only receive events for your organization. Failed deliveries are retried with exponential backoff.
+
+For payload shapes, signature verification, retry behavior, and security best practices, see [Setting Up Webhooks](/events-webhooks) and the [Event Catalog](/events-catalog).
+
+## What partners can do without admin help
+
+| Action | Self-Service (Portal) | Admin API |
+|--------|-----------------------|-----------|
+| Create tenant + initial API key | Yes (auto on first sign-in) | Yes (`POST /api-keys`) |
+| View masked API key | Yes | Yes (list/get tenants) |
+| Rotate API key | Yes | Yes |
+| Set/update webhook URL | Yes | Yes |
+| Update events filter | No | Yes (admin-only) |
+| Rotate webhook secret | No | Yes (admin-only) |
+| Multiple webhooks per partner | No | Yes (admin-only) |
+
+## Programmatic onboarding (Admin API)
+
+The rest of this page documents the Admin API. Use this for automation, integration tests, or admin operations the portal doesn't cover (events filters, secret rotation, multiple webhooks per partner).
+
+### Prerequisites
 
 - Admin API Key (`X-Admin-API-Key`) — stored in Doppler as `ADMIN_API_KEY`
 - Admin JWT Token (`Authorization: Bearer <token>`) — must have `email` with `@smartphonekey.com` domain
 
 Both headers are required on every admin-api request.
 
-## Environments
+### Environments
 
 | Environment | Admin API URL |
 |-------------|---------------|
@@ -41,7 +57,7 @@ Both headers are required on every admin-api request.
 | Stage | `https://admin-api.spk-stage.workers.dev` |
 | Prod | `https://admin-api.spk-prod.workers.dev` |
 
-## Step 1: Create Partner (API Key)
+### Step 1: Create Partner (API Key)
 
 Creating an API key automatically creates the partner (tenant).
 
@@ -74,7 +90,7 @@ Save the `apiKey` — it won't be shown again (only the prefix is visible in lis
 - If the org already has an active key, you'll get `409 Conflict`
 - The API key is 40 random alphanumeric characters
 
-## Step 2: Set Up Webhook
+### Step 2: Set Up Webhook
 
 Register a webhook URL to receive events for this partner. See [Setting Up Webhooks](/events-webhooks) for full configuration options including authentication and retry behavior.
 
@@ -105,7 +121,7 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 - A webhook secret is auto-generated if not provided
 - The webhook is backed by AWS EventBridge — events matching the partner's `orgId` are delivered to the URL
 
-### Available Event Types
+#### Available Event Types
 
 | Event Type | Source |
 |------------|--------|
@@ -113,7 +129,7 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 
 `Shadow Update` is currently the only subscribable event type. See the [Event Catalog](/events-catalog) for a full description of the payload.
 
-## Step 3: Verify Webhook
+### Step 3: Verify Webhook
 
 Check that the webhook was created and its status:
 
@@ -141,7 +157,7 @@ curl "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
 
 Status will transition from `pending` to `verified` once EventBridge confirms the subscription.
 
-## Updating a Webhook
+### Updating a Webhook
 
 ```bash
 curl -X PUT "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
@@ -156,7 +172,7 @@ curl -X PUT "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WE
 
 At least one field (`url`, `events`, or `secret`) must be provided.
 
-## Deleting a Webhook
+### Deleting a Webhook
 
 ```bash
 curl -X DELETE "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
@@ -164,7 +180,7 @@ curl -X DELETE "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks
   -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
 ```
 
-## Listing Partners
+### Listing Partners
 
 ```bash
 curl "https://admin-api.spk-dev.workers.dev/tenants" \

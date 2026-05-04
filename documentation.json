@@ -25,14 +25,14 @@
                 "icon": "home"
               },
               {
-                "title": "Partner Onboarding",
-                "path": "partner-onboarding",
-                "icon": "users"
-              },
-              {
                 "title": "Partner Portal",
                 "path": "partner-portal",
                 "icon": "key"
+              },
+              {
+                "title": "Partner Onboarding",
+                "path": "partner-onboarding",
+                "icon": "users"
               }
             ]
           }
