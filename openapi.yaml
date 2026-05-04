@@ -177,6 +177,124 @@
         }
       }
     },
+    "/users/{id}/PhysicalKeys/{number}": {
+      "get": {
+        "tags": [
+          "User",
+          "Query",
+          "Physical Keys"
+        ],
+        "summary": "Get a single physical key by number",
+        "description": "Returns the user's physical-key entry with the given number, or 404 if no such entry exists.",
+        "operationId": "get_GetPhysicalKeyRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Physical key number"
+            },
+            "required": true,
+            "description": "Physical key number",
+            "name": "number",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this — any client value is overwritten. Used to enforce per-key org scoping on B2B reads (mismatch → 404, never leaks existence)."
+            },
+            "required": false,
+            "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this — any client value is overwritten. Used to enforce per-key org scoping on B2B reads (mismatch → 404, never leaks existence).",
+            "name": "_callerOrgId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Physical key retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "number": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "orgName": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string"
+                    },
+                    "addedAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "number",
+                    "orgId",
+                    "addedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found, or no physical key with that number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locks/{id}/debug/messages": {
       "get": {
         "tags": [
@@ -1023,129 +1141,6 @@
         }
       }
     },
-    "/users/{id}/AssignPhysicalKey": {
-      "post": {
-        "tags": [
-          "User",
-          "Command",
-          "Keys"
-        ],
-        "summary": "Assign physical key to user",
-        "description": "Assigns a physical key to a user. Maximum 5 keys per user.",
-        "operationId": "post_AssignPhysicalKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "User ID"
-            },
-            "required": true,
-            "description": "User ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "keyId": {
-                    "type": "string",
-                    "description": "Key ID"
-                  },
-                  "keyIndex": {
-                    "type": "number",
-                    "description": "Key index slot"
-                  }
-                },
-                "required": [
-                  "keyId"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Physical key assigned successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "aggregateId": {
-                      "type": "string"
-                    },
-                    "version": {
-                      "type": "number"
-                    },
-                    "keyId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "aggregateId",
-                    "version",
-                    "keyId"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request or business rule violation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/users/{id}/AddWalletKey": {
       "post": {
         "tags": [
@@ -1831,6 +1826,276 @@
         }
       }
     },
+    "/users/{id}/AddPhysicalKey": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Physical Keys"
+        ],
+        "summary": "Add a physical key to the user inventory",
+        "description": "Records that a physical key has been issued to the user by some organisation. Server assigns a per-user autoincrement `number` (returned in the response) which is never reused after removal.",
+        "operationId": "post_AddPhysicalKeyRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orgId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Issuing organisation id"
+                  },
+                  "orgName": {
+                    "type": "string",
+                    "description": "Issuing organisation display name (optional, denormalised)"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Free-text note about the key (max 500 chars)"
+                  }
+                },
+                "required": [
+                  "orgId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Physical key added successfully. Response includes the server-assigned number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "number": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "description": "Server-assigned per-user key number"
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "orgName": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string"
+                    },
+                    "addedAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "number",
+                    "orgId",
+                    "addedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (e.g. missing orgId, note too long)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/RemovePhysicalKey": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Physical Keys"
+        ],
+        "summary": "Remove a physical key from the user inventory",
+        "description": "Removes the physical-key entry with the given `number` from the user's inventory. The next-number counter is NOT decremented — numbers are never reused after removal.",
+        "operationId": "post_RemovePhysicalKeyRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Number of the physical key to remove"
+                  },
+                  "_callerOrgId": {
+                    "type": "string",
+                    "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this — any client value is overwritten. Used to enforce per-key org scoping on B2B removals."
+                  }
+                },
+                "required": [
+                  "number"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Physical key removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "number": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "number"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found, or no physical key with that number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/profile": {
       "get": {
         "tags": [
@@ -1967,29 +2232,27 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "keyId": {
+                          "number": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                          },
+                          "orgId": {
                             "type": "string"
                           },
-                          "keyIndex": {
+                          "orgName": {
+                            "type": "string"
+                          },
+                          "note": {
+                            "type": "string"
+                          },
+                          "addedAt": {
                             "type": "number"
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "ASSIGNED",
-                              "REVOKED",
-                              "SUSPENDED",
-                              "EXPIRED"
-                            ]
-                          },
-                          "canAddToWallet": {
-                            "type": "boolean"
                           }
                         },
                         "required": [
-                          "keyId",
-                          "status",
-                          "canAddToWallet"
+                          "number",
+                          "orgId",
+                          "addedAt"
                         ]
                       }
                     },
@@ -2408,6 +2671,150 @@
                   "required": [
                     "licensePlates",
                     "totalCount"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/PhysicalKeys": {
+      "get": {
+        "tags": [
+          "User",
+          "Query",
+          "Physical Keys"
+        ],
+        "summary": "List / search the user's physical keys",
+        "description": "Lists physical-key entries for the user. Optional filters: `orgId` (exact), `orgName` (exact), `q` (case-insensitive substring match on `note`). Filters combine with AND. Capped at 100 entries; `total` reflects filtered count before the cap.",
+        "operationId": "get_SearchPhysicalKeysRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by exact orgId match"
+            },
+            "required": false,
+            "description": "Filter by exact orgId match",
+            "name": "orgId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by exact orgName match"
+            },
+            "required": false,
+            "description": "Filter by exact orgName match",
+            "name": "orgName",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Case-insensitive substring match against the note field"
+            },
+            "required": false,
+            "description": "Case-insensitive substring match against the note field",
+            "name": "q",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Physical keys retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "number": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                          },
+                          "orgId": {
+                            "type": "string"
+                          },
+                          "orgName": {
+                            "type": "string"
+                          },
+                          "note": {
+                            "type": "string"
+                          },
+                          "addedAt": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "number",
+                          "orgId",
+                          "addedAt"
+                        ]
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Filtered count BEFORE the 100-result cap"
+                    }
+                  },
+                  "required": [
+                    "keys",
+                    "total"
                   ]
                 }
               }
@@ -9516,7 +9923,7 @@
                 "properties": {
                   "commandType": {
                     "type": "string",
-                    "description": "Command name (e.g., AssignPhysicalKey, AddWalletKey)"
+                    "description": "Command name (e.g., AddPhysicalKey, AddWalletKey)"
                   }
                 },
                 "required": [
