@@ -328,23 +328,23 @@ You may additionally filter by `detail-type` (event name) at subscription time. 
 If your endpoint is not receiving events:
 
 1. Confirm your endpoint returns `2xx` for a test POST.
-2. Check that your subscription includes the correct event types (or no `events` filter at all — see Known Issues below).
+2. Check that your subscription includes the correct event types — pass `events: ['*']` to receive every event for your tenant.
 3. Verify your endpoint URL is reachable from the public internet (not localhost or a private network).
 4. Review your signature verification logic — a `4xx` response from your endpoint is treated as a permanent failure and will **not** be retried. Only `5xx` responses and timeouts trigger retries.
 5. Check whether events are firing at all using the [Event Catalog](/events-catalog) to confirm when the events you expect should be generated.
 
-## Known Issues
+## Subscribing to All Events
 
-### Event-name mismatch between subscription schema and emitted events
+Pass `events: ['*']` when creating a webhook subscription to receive every event tagged with your `partnerId`. The wildcard collapses to an empty `detail-type` filter on the underlying EventBridge rule — EventBridge then delivers everything for your tenant and your handler can switch on `detail-type` to fan out.
 
-The admin webhook-creation API currently validates `events[]` against a legacy kebab-case enum (`lock.opened`, `device.added`, `key.created`, …). The B2C API actually emits PascalCase `detail-type`s (`KeyAdded`, `LockCreated`, `ResidentAdded`, …). **Subscribing to one of the legacy enum values will not match any real event.**
+```json
+{
+  "url": "https://your-api.example.com/webhooks/spk",
+  "events": ["*"]
+}
+```
 
-Workaround until the schema is fixed:
-
-- Ask your account manager to subscribe you with an empty `detail_types` filter — EventBridge will then deliver every event tagged with your `partnerId`. The underlying Lambda accepts an empty array; only the admin-API schema currently rejects it.
-- Once delivered, filter on `detail-type` in your handler using the PascalCase names listed above.
-
-The `Shadow Update` event is the one entry that already matches across both the schema and the emitted name.
+To narrow later, replace `events` with an explicit list of PascalCase `detail-type`s from the tables above.
 
 ## Schema & Code Generation
 
