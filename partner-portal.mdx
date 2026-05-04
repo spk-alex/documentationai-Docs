@@ -1,0 +1,90 @@
+---
+title: Partner Portal
+description: Self-service web UI where partners view their API key, rotate it, and configure their webhook URL.
+---
+
+The Partner Portal is a server-rendered web app that lets partners manage their own SmartphoneKey credentials and webhook delivery URL without contacting support.
+
+## URLs
+
+| Environment | URL |
+|-------------|-----|
+| Dev | `https://partner-portal.spk-dev.workers.dev/` |
+| Stage | `https://partner-portal.spk-stage.workers.dev/` |
+| Nonprod | `https://partner-portal.spk-nonprod.workers.dev/` |
+| Prod | `https://partner-portal.spk-prod.workers.dev/` |
+
+## What You Can Do
+
+- View your `orgId` and the prefix of your active API key.
+- See your full API key once, immediately after rotation, behind a **Reveal** toggle.
+- **Rotate your API key** — issues a new key and revokes the previous one in the same step.
+- **Set or update your webhook URL** — the URL events will be POSTed to. Status resets to `pending` until EventBridge re-verifies.
+
+The portal is intentionally narrow: anything beyond URL changes (event filter, secret rotation, secondary webhooks) is admin-only.
+
+## Sign-in Flow
+
+The portal does not have its own sign-up form. Identity is owned by Auth0:
+
+1. Open the portal URL for your environment.
+2. Click **Sign in with Auth0** on the landing page.
+3. Auth0 walks you through email-based sign-in (or social login, depending on your tenant config).
+4. After the OIDC callback, the portal:
+   - Creates a tenant for you on first sign-in.
+   - Issues an initial API key (shown once with a reveal toggle and a "save it now" warning).
+   - Redirects to the dashboard.
+
+Subsequent sign-ins skip tenant + key creation and land you straight on the dashboard with a masked key (`abc12345…wxyz`).
+
+## Dashboard Walkthrough
+
+The dashboard is a single page divided into three cards:
+
+### 1. Organization
+
+Shows your `orgId`. This is the value EventBridge filters on (`detail.partnerId`) for every event you receive.
+
+### 2. API Key
+
+- If a new key was just issued (first sign-in or after rotation), the card shows a **Reveal API key** toggle. Click to expand the full key — copy it now, you can't see it again.
+- After the reveal step, only a masked preview is shown (first 8 characters, then ellipsis, then last 4).
+- **Rotate API key** issues a new key and revokes the current one immediately. Any client still using the old key will start getting `401`s straight away — coordinate the rotation with your integration's deploy.
+
+### 3. Webhook URL
+
+- Shows the currently configured URL, or "No webhook URL configured" if you haven't set one yet.
+- The form accepts any HTTPS URL. Submitting it:
+  - Creates the webhook subscription on first set, or
+  - Updates the URL on the existing subscription if you already have one.
+- The webhook status resets to `pending` until AWS EventBridge re-verifies the new endpoint. During verification, EventBridge will POST a verification challenge — your endpoint should reply `2xx`.
+
+## What Happens Behind the Scenes
+
+- Sign-in is OIDC against Auth0. The portal stores a signed session cookie; there is no client-side framework.
+- Tenant and API-key creation, listing, and rotation are proxied to the Admin API (`POST /api-keys`, etc.) using a service-to-service credential — partners never see the admin token.
+- Setting a webhook URL goes through the partner self-service endpoint:
+  - First-time set → `POST /tenants/:orgId/webhooks` (admin path, called by the portal on the partner's behalf)
+  - Subsequent updates → `PATCH /webhooks/:webhookId` with the partner's own `X-API-Key`
+
+The same `PATCH /webhooks/:webhookId` endpoint is also available directly to partners who prefer to automate. See [Update Webhook URL via API](/events-webhooks#update-webhook-url-via-api).
+
+## Security Notes
+
+- All actions submitted from the dashboard include a CSRF token; the portal rejects POSTs that don't carry it.
+- Sign-out is a `POST /logout` (also CSRF-protected) that clears the session cookie.
+- The portal validates the Doppler-injected runtime config on every request; misconfigured environments fail loudly rather than silently producing broken auth redirects.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| "No active key" on the dashboard | Your previous key was revoked but a new one wasn't issued (rare) | Click **Rotate API key** to issue a fresh one |
+| Webhook stays in `pending` | EventBridge hasn't received a `2xx` from the verification request | Check your endpoint logs for the verification POST and confirm it returns `2xx` |
+| Sign-in loop / instant logout | Stale or invalid session cookie | Clear cookies for the portal domain and sign in again |
+
+## Related
+
+- [Partner Onboarding](/partner-onboarding) — Admin-driven onboarding (no portal access)
+- [Partner Webhooks](/events-webhooks) — Full webhook configuration, delivery, and retry behavior
+- [Event Catalog](/events-catalog) — Reference for the events you'll receive once your URL is set
