@@ -7,7 +7,25 @@ description: How to create a partner, get an API key, and set up a webhook URL u
 
 This guide walks through the complete partner onboarding flow: creating a tenant, obtaining an API key, and registering a webhook URL to receive events.
 
-## Prerequisites
+There are two paths:
+
+- **Self-service** via the [Partner Portal](/partner-portal) — partners sign in with Auth0, view and rotate their API key, and configure their webhook URL without admin help.
+- **Admin-driven** via the Admin API — used to onboard the partner the first time, or for any change beyond the URL (events filter, secret rotation).
+
+This page documents the admin-driven flow. For the self-service flow see the [Partner Portal guide](/partner-portal).
+
+## Self-Service Quickstart
+
+For partners who already have a SmartphoneKey account in Auth0:
+
+1. Visit the partner portal for your environment (e.g. `https://partner-portal.spk-dev.workers.dev/`).
+2. Click **Sign in with Auth0** and complete the OIDC flow.
+3. On first sign-in, a tenant and an initial API key are created automatically. The key is shown once — copy and store it now.
+4. Set your webhook URL from the dashboard. Events for your `orgId` start delivering as soon as EventBridge verifies the URL.
+
+See [Partner Portal](/partner-portal) for the full walkthrough.
+
+## Prerequisites (Admin-driven flow)
 
 - Admin API Key (`X-Admin-API-Key`) — stored in Doppler as `ADMIN_API_KEY`
 - Admin JWT Token (`Authorization: Bearer <token>`) — must have `email` with `@smartphonekey.com` domain
@@ -165,6 +183,7 @@ Events include `partnerId` in the detail so partners receive only events for the
 
 ## Next Steps
 
+- [Partner Portal](/partner-portal) — Self-service UI for partners to view their key and update their webhook URL
 - [Events Overview](/events-overview) — Understand how SmartphoneKey publishes events via EventBridge
 - [Setting Up Webhooks](/events-webhooks) — Full webhook configuration: authentication, delivery, retry behavior, and security best practices
-- [Event Catalog](/events-catalog) — Complete reference for the `Shadow Update` payload fields
+- [Event Catalog](/events-catalog) — Complete reference for the highest-value event payloads
