@@ -7,50 +7,157 @@ Partner webhooks allow your system to receive real-time notifications when event
 
 ## How It Works
 
-1. You register a webhook subscription with a target URL and the event types you want to receive.
+1. You register a webhook subscription with a target URL and (optionally) the event types you want to receive.
 2. When a matching event fires, SmartphoneKey delivers it to your endpoint as an HTTP POST.
 3. Your endpoint responds with a `2xx` status code to acknowledge receipt.
-4. If delivery fails, SmartphoneKey retries automatically.
+4. If delivery fails, AWS EventBridge retries automatically.
+
+Behind the scenes, every webhook is backed by an EventBridge rule + API destination provisioned for your `partnerId`. EventBridge filters events by `detail.partnerId == <your orgId>` so you only ever see events for your own tenant.
 
 ## Available Event Types
 
-| Event Type | Source |
-|------------|--------|
-| `Shadow Update` | `spk.iot.shadow` |
+SmartphoneKey publishes events from two sources:
 
-The `Shadow Update` event carries the raw AWS IoT shadow update document for a device (state change snapshot). Use this when you want full device state diffs. Several of its payload fields are **stringified JSON** — your handler must call `JSON.parse()` on them before accessing nested values (see [Shadow Update payload](#shadow-update-payload) below).
+| Source | Description |
+|--------|-------------|
+| `spk.api` | Domain events from the B2C API (locks, users, hubs, cameras, keys) |
+| `spk.iot.shadow` | AWS IoT shadow updates from connected hub devices |
 
-See the [Event Catalog](/events-catalog) for a full description of the payload.
+The `detail-type` of each event matches the **PascalCase** event name listed below.
+
+### Lock events (`spk.api`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `LockCreated` | A new lock has been created in the system |
+| `OwnerSet` | A lock's owner has been assigned or changed |
+| `OrganizationSet` | A lock has been moved to a different organization |
+| `KeyAdded` | A physical key has been added to a lock |
+| `KeyRemoved` | A physical key has been removed from a lock |
+| `ResidentAdded` | A resident has been granted access to a lock |
+| `ResidentRemoved` | A resident's access to a lock has been revoked |
+| `LockUuidChanged` | A lock's UUID has been replaced |
+
+### User events (`spk.api`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `UserCreated` | A new user has been registered |
+| `ProfileUpdated` | A user's profile fields have changed |
+| `PhysicalKeyAdded` | A physical key has been issued to a user |
+| `PhysicalKeyRemoved` | A physical key has been removed from a user |
+| `WalletKeyPrepared` | A wallet key (Apple/Google) is being provisioned |
+| `WalletKeyCommitted` | A wallet key has been issued and the pass is available |
+| `WalletKeyRolledBack` | A wallet key provisioning attempt was rolled back |
+| `WalletKeyRemoved` | A wallet key has been removed from a user |
+| `WalletKeyAdded` | A wallet key was added (legacy single-step path) |
+| `AccessibleLockAdded` | A user has been granted access to a lock |
+| `AccessibleLockRemoved` | A user has lost access to a lock |
+| `UserSuspended` | A user has been suspended |
+| `UserReactivated` | A previously suspended user has been reactivated |
+| `LicensePlateAdded` | A license plate has been registered to a user |
+| `LicensePlateRemoved` | A license plate has been removed from a user |
+
+### Hub events (`spk.api`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `HubProvisioned` | A hub has been provisioned (manufactured / known to the system) |
+| `HubClaimed` | A hub has been claimed by an organization + site |
+| `HubReClaimed` | A hub has been moved from one org/site to another |
+| `HubRoleSet` | A hub's primary/secondary role has been set |
+| `HubSuspended` | A hub has been suspended |
+| `HubDecommissioned` | A hub has been decommissioned |
+| `MigrationStarted` | A hub-to-hub device migration has started |
+| `DeviceMigrationStatusUpdated` | A device's migration status has changed |
+| `MigrationCompleted` | A hub-to-hub device migration has finished |
+
+### Camera events (`spk.api`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `CameraRegistered` | A camera has been registered |
+| `CameraUpdated` | A camera's metadata or stream URLs have changed |
+| `CameraDisabled` | A camera has been disabled |
+| `CameraDeleted` | A camera has been deleted |
+| `CameraLinkedToLock` | A camera has been associated with a lock |
+| `CameraUnlinkedFromLock` | A camera has been disassociated from a lock |
+| `CameraRoleCreated` | A 3dEye access role has been created |
+| `CameraRoleDeleted` | A 3dEye access role has been deleted |
+| `CameraRoleUserAssigned` | A user has been added to a camera role |
+| `CameraRoleUserRemoved` | A user has been removed from a camera role |
+| `CameraRoleCameraAssigned` | A camera has been added to a role |
+| `CameraRoleCameraRemoved` | A camera has been removed from a role |
+
+### Temporary key events (`spk.api`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `TempKeyCreated` | A temporary key has been issued |
+| `TempKeyUsed` | A temporary key has been used to unlock |
+| `TempKeyUpdated` | A temporary key's validity window or rules changed |
+| `TempKeyDeleted` | A temporary key has been deleted |
+
+### Matter device events (`spk.api`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `MatterDeviceCreated` | A Matter device has been registered |
+| `ReportedShadowUpdated` | A device reported new shadow state |
+| `DesiredShadowUpdated` | A new desired shadow state was pushed |
+
+### IoT events (`spk.iot.shadow`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `Shadow Update` | An IoT hub device updated its AWS IoT Device Shadow |
+
+See the [Event Catalog](/events-catalog) for payload shapes of the highest-value events.
 
 ## Webhook Payload
 
-Your endpoint receives the full EventBridge event as a JSON body:
+Your endpoint receives the full EventBridge event as a JSON body. The `detail` object contains the event-specific data; for `spk.api` events the actual domain event lives under `detail.data`.
 
 ```json
 {
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "source": "spk.iot.shadow",
-  "detail-type": "Shadow Update",
-  "time": "2024-03-15T10:30:00Z",
+  "source": "spk.api",
+  "detail-type": "ResidentAdded",
+  "time": "2026-04-30T10:30:00Z",
   "region": "eu-west-1",
   "account": "123456789012",
   "version": "0",
   "resources": [],
   "detail": {
-    "partnerId": "<tenant-org-id>",
-    "thingName": "<device-uuid>",
-    "reportedState": "<stringified JSON of reported state>",
-    "desiredState": "<stringified JSON of desired state>",
-    "deltaState": "{}",
-    "metadata": "<stringified IoT shadow metadata>",
-    "version": 42
+    "partnerId": "acme-corp",
+    "aggregateType": "lock",
+    "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+    "version": 7,
+    "timestamp": "2026-04-30T10:30:00.123Z",
+    "data": {
+      "type": "ResidentAdded",
+      "lockId": 4321,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "resident@example.com",
+      "name": "Jane Resident",
+      "timestamp": "2026-04-30T10:30:00.123Z"
+    }
   }
 }
 ```
 
-The `detail-type` field tells you which event type was fired. The `detail` object contains the event-specific payload.
+The fields you'll most commonly use:
 
-### Shadow Update Payload
+| Field | Purpose |
+|-------|---------|
+| `id` | Unique EventBridge envelope ID — use as a deduplication key |
+| `source` | `spk.api` or `spk.iot.shadow` |
+| `detail-type` | The PascalCase event name (e.g. `ResidentAdded`) |
+| `detail.partnerId` | Your tenant `orgId` — already filtered by EventBridge |
+| `detail.aggregateType` / `aggregateId` | Identifies the aggregate that produced the event |
+| `detail.data` | The full event payload (see Event Catalog) |
+
+### IoT Shadow Update Payload
 
 The `source` is `spk.iot.shadow` and several `detail` fields are **stringified JSON** — your handler must call `JSON.parse()` on them before accessing nested values.
 
@@ -71,6 +178,46 @@ The `source` is `spk.iot.shadow` and several `detail` fields are **stringified J
 ```
 
 `reportedState`, `desiredState`, `deltaState`, and `metadata` are stringified JSON embedded inside the outer JSON object. Parse each field individually before accessing its contents.
+
+## Partner Self-Service
+
+Partners can manage their own credentials and webhook URL without going through SmartphoneKey support.
+
+### Partner Portal
+
+A web UI is available per environment:
+
+| Environment | URL |
+|-------------|-----|
+| Dev | `https://partner-portal.spk-dev.workers.dev/` |
+| Stage | `https://partner-portal.spk-stage.workers.dev/` |
+| Nonprod | `https://partner-portal.spk-nonprod.workers.dev/` |
+| Prod | `https://partner-portal.spk-prod.workers.dev/` |
+
+Partners sign in with Auth0 and can:
+
+- View their `orgId` and active API key (revealed once on first issue, masked thereafter)
+- Rotate their API key — instantly revokes the previous one
+- Create or update their webhook URL
+
+See the [Partner Portal guide](/partner-portal) for a walkthrough.
+
+### Update Webhook URL via API
+
+If you'd rather automate, you can update your webhook URL with your `X-API-Key`:
+
+```bash
+curl -X PATCH "https://admin-api.spk-dev.workers.dev/webhooks/$WEBHOOK_ID" \
+  -H "X-API-Key: $YOUR_PARTNER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/webhooks/spk-v2"}'
+```
+
+Notes:
+
+- Only the `url` field is mutable through this endpoint — to change the event list or rotate the secret, contact your account manager.
+- HTTPS is required in every environment for partner self-service updates.
+- The webhook status is reset to `pending` until EventBridge re-verifies the new URL.
 
 ## Webhook Authentication
 
@@ -126,7 +273,7 @@ Always use a constant-time comparison (like `hmac.compare_digest` or `timingSafe
 | `header_name` | The HTTP header name that carries the signature or token |
 | `match_type` | How to match the value — `exact` for static tokens, `hmac` for computed signatures |
 
-Example webhook subscription configuration:
+Example webhook subscription configuration (admin-only — contact your account manager):
 
 ```json
 {
@@ -135,22 +282,22 @@ Example webhook subscription configuration:
   "header_name": "X-SPK-Signature",
   "match_type": "hmac",
   "secret": "your-shared-secret",
-  "event_types": ["Shadow Update"]
+  "events": ["KeyAdded", "ResidentAdded"]
 }
 ```
 
 ## Delivery and Retry Policy
 
-SmartphoneKey delivers webhooks with the following guarantees:
+SmartphoneKey delivers webhooks via AWS EventBridge with the following guarantees:
 
 | Parameter | Value |
 |-----------|-------|
 | **Delivery model** | At-least-once |
-| **Max retries** | 5 attempts |
-| **Max event age** | 3600 seconds (1 hour) |
+| **Max retries** | EventBridge default (24h retry window) |
 | **Retry backoff** | Exponential |
+| **Retry triggers** | `5xx` responses and timeouts |
 
-Events that cannot be delivered within the retry window (1 hour) are dropped. Design your endpoint to be idempotent — use the `id` field in the EventBridge envelope as a deduplication key.
+Events that cannot be delivered within the 24h retry window are dropped to a dead-letter store (and surfaced via support). Design your endpoint to be idempotent — use the `id` field in the EventBridge envelope as a deduplication key.
 
 ### Response Requirements
 
@@ -164,14 +311,14 @@ Returning `2xx` immediately and processing asynchronously is recommended for web
 
 ## Filtering Events
 
-You can subscribe to specific event types rather than all events. Only subscribe to the event types your integration needs — this reduces noise and unnecessary traffic to your endpoint.
+Every webhook subscription is automatically filtered to events whose `detail.partnerId` equals your `orgId`. You don't need to do per-event filtering for tenancy.
 
-You can also filter by `partnerId` if you are building a multi-tenant integration that should only receive events for a specific partner account.
+You may additionally filter by `detail-type` (event name) at subscription time. Only subscribe to the event types your integration needs — this reduces noise and unnecessary traffic to your endpoint.
 
 ## Security Best Practices
 
 - **Always verify signatures** — Don't process webhook payloads without checking the HMAC or token.
-- **Use HTTPS** — Only register HTTPS endpoints. HTTP endpoints will not receive webhooks.
+- **Use HTTPS** — Only register HTTPS endpoints. HTTP is rejected outside the dev environment.
 - **Respond quickly** — Return `2xx` before doing heavy processing. Queue events for async processing if needed.
 - **Be idempotent** — The same event may be delivered more than once. Use `id` from the envelope for deduplication.
 - **Rotate secrets periodically** — Update your webhook secret regularly and support a short overlap window during rotation.
@@ -181,10 +328,23 @@ You can also filter by `partnerId` if you are building a multi-tenant integratio
 If your endpoint is not receiving events:
 
 1. Confirm your endpoint returns `2xx` for a test POST.
-2. Check that your subscription includes the correct event types.
-3. Verify your endpoint URL is reachable from the internet (not localhost or a private network).
+2. Check that your subscription includes the correct event types (or no `events` filter at all — see Known Issues below).
+3. Verify your endpoint URL is reachable from the public internet (not localhost or a private network).
 4. Review your signature verification logic — a `4xx` response from your endpoint is treated as a permanent failure and will **not** be retried. Only `5xx` responses and timeouts trigger retries.
 5. Check whether events are firing at all using the [Event Catalog](/events-catalog) to confirm when the events you expect should be generated.
+
+## Known Issues
+
+### Event-name mismatch between subscription schema and emitted events
+
+The admin webhook-creation API currently validates `events[]` against a legacy kebab-case enum (`lock.opened`, `device.added`, `key.created`, …). The B2C API actually emits PascalCase `detail-type`s (`KeyAdded`, `LockCreated`, `ResidentAdded`, …). **Subscribing to one of the legacy enum values will not match any real event.**
+
+Workaround until the schema is fixed:
+
+- Ask your account manager to subscribe you with an empty `detail_types` filter — EventBridge will then deliver every event tagged with your `partnerId`. The underlying Lambda accepts an empty array; only the admin-API schema currently rejects it.
+- Once delivered, filter on `detail-type` in your handler using the PascalCase names listed above.
+
+The `Shadow Update` event is the one entry that already matches across both the schema and the emitted name.
 
 ## Schema & Code Generation
 
@@ -204,3 +364,5 @@ openapi-generator-cli generate -i eventbridge-schemas.yaml -g python -o ./genera
 # Go
 openapi-generator-cli generate -i eventbridge-schemas.yaml -g go -o ./generated
 ```
+
+The bundled schema currently lags the full event catalog above — regeneration from the b2c-api source is tracked separately. Use the tables in this page as the authoritative list of emitted `detail-type`s in the meantime.
