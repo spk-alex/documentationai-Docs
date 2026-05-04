@@ -3,13 +3,337 @@ title: Event Catalog
 description: Reference documentation for SmartphoneKey EventBridge events available to partners.
 ---
 
-This catalog describes the events published by SmartphoneKey. For each event you'll find the source, when it fires, and the key fields in its payload.
+This catalog describes the highest-value events published by SmartphoneKey. For each event you'll find the source, when it fires, and the key fields in its payload.
+
+For the complete list of every emitted `detail-type`, see [Partner Webhooks](/events-webhooks).
+
+All `spk.api` events share the same envelope structure. The domain payload is wrapped in a `detail` object that carries projection metadata plus the original event under `data`:
+
+```json
+{
+  "source": "spk.api",
+  "detail-type": "<EventName>",
+  "detail": {
+    "partnerId": "<your-orgId>",
+    "aggregateType": "<lock|user|hub|...>",
+    "aggregateId": "<aggregate uuid>",
+    "version": 7,
+    "timestamp": "2026-04-30T10:30:00.123Z",
+    "data": { /* event-specific payload — see below */ }
+  }
+}
+```
+
+The fields documented below describe `detail.data` — the actual domain event.
+
+---
+
+## Lock Events
+
+### LockCreated
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `LockCreated` |
+| **aggregateType** | `lock` |
+
+Fires when a new lock is created in the system.
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lockId` | number | Numeric lock ID |
+| `uuid` | string | Lock UUID |
+| `serialNumber` | string\|null | Hardware serial number |
+| `ownerId` | string\|null | Owning user ID |
+| `keys` | array\|null | Initial key list `{ uuid, indexNumber?, userId? }` |
+| `thingName` | string\|null | AWS IoT thing name |
+| `thingArn` | string\|null | AWS IoT thing ARN |
+| `timestamp` | string | ISO timestamp |
+
+**Sample:**
+
+```json
+{
+  "type": "LockCreated",
+  "lockId": 4321,
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "serialNumber": "SPK-1234",
+  "ownerId": "user-uuid",
+  "keys": [],
+  "timestamp": "2026-04-30T10:30:00.123Z"
+}
+```
+
+### OwnerSet
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `OwnerSet` |
+
+Fires when a lock's owner is assigned or changed.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lockId` | number | Numeric lock ID |
+| `uuid` | string | Lock UUID |
+| `userId` | string | New owner user ID |
+| `timestamp` | string | ISO timestamp |
+
+### KeyAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `KeyAdded` |
+
+Fires when a physical key is added to a lock.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lockId` | number | Numeric lock ID |
+| `uuid` | string | Lock UUID |
+| `keyUuid` | string | UUID of the key |
+| `keyIndexNumber` | number\|null | Key slot index |
+| `userId` | string\|null | User the key is assigned to |
+| `timestamp` | string | ISO timestamp |
+
+**Sample:**
+
+```json
+{
+  "type": "KeyAdded",
+  "lockId": 4321,
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "keyUuid": "0f5b84e0-1d56-4d2f-8d6c-1f2e3a4b5c6d",
+  "keyIndexNumber": 3,
+  "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
+  "timestamp": "2026-04-30T10:30:00.123Z"
+}
+```
+
+### KeyRemoved
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `KeyRemoved` |
+
+Fires when a physical key is removed from a lock.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lockId` | number | Numeric lock ID |
+| `uuid` | string | Lock UUID |
+| `keyUuid` | string | UUID of the removed key |
+| `keyIndexNumber` | number\|null | Key slot index |
+| `timestamp` | string | ISO timestamp |
+
+### ResidentAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `ResidentAdded` |
+
+Fires when a resident is granted access to a lock.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lockId` | number | Numeric lock ID |
+| `uuid` | string | Lock UUID |
+| `email` | string | Resident email |
+| `name` | string | Resident display name |
+| `timestamp` | string | ISO timestamp |
+
+**Sample:**
+
+```json
+{
+  "type": "ResidentAdded",
+  "lockId": 4321,
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "resident@example.com",
+  "name": "Jane Resident",
+  "timestamp": "2026-04-30T10:30:00.123Z"
+}
+```
+
+### ResidentRemoved
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `ResidentRemoved` |
+
+Fires when a resident's lock access is revoked.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lockId` | number | Numeric lock ID |
+| `uuid` | string | Lock UUID |
+| `email` | string | Resident email |
+| `timestamp` | string | ISO timestamp |
+
+---
+
+## User Events
+
+### PhysicalKeyAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `PhysicalKeyAdded` |
+| **aggregateType** | `user` |
+
+Fires when a physical key is issued to a user.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | User ID |
+| `number` | number | Key number |
+| `orgId` | string | Issuing organization |
+| `orgName` | string\|null | Organization display name |
+| `note` | string\|null | Free-form note |
+| `addedAt` | number | Unix epoch ms |
+
+### PhysicalKeyRemoved
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `PhysicalKeyRemoved` |
+
+Fires when a physical key is removed from a user.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | User ID |
+| `number` | number | Key number |
+| `removedAt` | number | Unix epoch ms |
+
+### AccessibleLockAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `AccessibleLockAdded` |
+
+Fires when a user is granted access to a lock.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | User ID |
+| `lockId` | string | Lock UUID |
+| `lockName` | string | Lock display name |
+| `accessLevel` | enum | `OWNER` \| `ADMIN` \| `USER` \| `GUEST` |
+| `grantedBy` | string | User ID who granted access |
+
+**Sample:**
+
+```json
+{
+  "type": "AccessibleLockAdded",
+  "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
+  "lockId": "550e8400-e29b-41d4-a716-446655440000",
+  "lockName": "Front Door",
+  "accessLevel": "USER",
+  "grantedBy": "1c1c1c1c-1c1c-1c1c-1c1c-1c1c1c1c1c1c"
+}
+```
+
+### LicensePlateAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `LicensePlateAdded` |
+
+Fires when a license plate is registered to a user (used by ALPR / camera-driven access flows).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | User ID |
+| `plate` | string | License plate string |
+| `label` | string | Friendly label |
+| `addedAt` | number | Unix epoch ms |
+
+---
+
+## Hub Events
+
+### HubProvisioned
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `HubProvisioned` |
+| **aggregateType** | `hub` |
+
+Fires when a hub is registered with the system (typically at manufacturing time).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hubId` | string | Hub UUID |
+| `serial` | string | Hardware serial |
+| `model` | string | Hardware model |
+| `thingName` | string | AWS IoT thing name |
+| `vendorName` | string\|null | Vendor name |
+| `provisionedAt` | number | Unix epoch ms |
+
+### HubClaimed
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `HubClaimed` |
+
+Fires when a hub is claimed by an organization and assigned to a site.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hubId` | string | Hub UUID |
+| `orgId` | string | Claiming organization |
+| `siteId` | string | Site the hub is installed at |
+| `claimedBy` | string | User ID who claimed it |
+| `claimedAt` | number | Unix epoch ms |
+
+---
+
+## Camera Events
+
+### CameraRegistered
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `CameraRegistered` |
+| **aggregateType** | `camera` |
+
+Fires when a camera is registered for a tenant.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cameraId` | string | Camera UUID |
+| `threeDeyeCameraId` | string | 3dEye-side camera ID |
+| `cameraType` | enum | `generic` \| `onvif` \| `pnp` |
+| `name` | string | Camera display name |
+| `orgId` | string | Owning organization |
+| `ownerId` | string | Owning user ID |
+| `httpUrl` | string | HTTP stream URL |
+| `rtspUrl` | string | RTSP stream URL |
+| `registrationCode` | string | Registration code used |
+| `registeredAt` | number | Unix epoch ms |
 
 ---
 
 ## IoT Events
 
-### ShadowUpdate
+### Shadow Update
 
 | | |
 |--|--|
@@ -18,6 +342,8 @@ This catalog describes the events published by SmartphoneKey. For each event you
 
 Fires when an IoT hub device updates its AWS IoT Device Shadow. Contains the full shadow state snapshot including desired state, reported state, and the delta.
 
+This event has a **different envelope** from `spk.api` events — there is no `detail.data` wrapper. The shadow fields live directly on `detail`.
+
 **Payload fields (top-level `detail`):**
 
 | Field | Type | Description |
@@ -25,7 +351,7 @@ Fires when an IoT hub device updates its AWS IoT Device Shadow. Contains the ful
 | `thingName` | string | AWS IoT thing name of the device |
 | `partnerId` | string\|null | Partner associated with this device |
 | `version` | number | Shadow document version |
-| `desiredState` | object\|null | Target state set by the application |
+| `desiredState` | string | Target state set by the application (JSON string) |
 | `reportedState` | string | State the device reported back (JSON string) |
 | `deltaState` | string | Difference between desired and reported state (JSON string); non-empty when the device hasn't applied all changes |
 | `metadata` | string | AWS IoT shadow metadata with timestamps per field (JSON string) |
