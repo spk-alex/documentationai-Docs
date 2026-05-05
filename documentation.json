@@ -35,6 +35,17 @@
                 "icon": "users"
               }
             ]
+          },
+          {
+            "group": "Matter",
+            "icon": "cpu",
+            "pages": [
+              {
+                "title": "Matter Clusters",
+                "path": "matter-clusters",
+                "icon": "database"
+              }
+            ]
           }
         ]
       },

@@ -1,0 +1,237 @@
+---
+title: Matter Clusters
+description: Matter cluster attributes, device info fields, and supported commands for SmartphoneKey Matter devices.
+---
+
+# Matter Cluster Documentation
+
+## What is Matter?
+
+Matter is a smart-device interoperability standard. Instead of every vendor inventing a completely different device data model, Matter defines a common structure so controllers, apps, hubs, and cloud systems can understand devices in a predictable way.
+
+The most important building blocks are:
+
+- **Node**: the full physical device on the network.
+- **Endpoint**: a functional part of the device. One physical product can expose multiple endpoints.
+- **Cluster**: a group of related features or properties. Think of a cluster as a topic area, such as *Door Lock*, *Battery*, or *Temperature Measurement*.
+- **Attribute**: one specific value inside a cluster, such as `LockState` or `BatVoltage`.
+- **Command**: an action you can send to a cluster, such as lock/unlock for a lock device.
+
+## How to read the table
+
+- **Endpoint** tells you which functional part of the device the row belongs to.
+- **Cluster ID** identifies the Matter cluster numerically.
+- **Cluster Name** gives the human-readable name of that cluster.
+- **Attribute Name** is the exact property exposed by the cluster.
+- **Path to Value** uses the format `endpoint/cluster/attribute`.
+- **Meaning** is the short meaning from the original export.
+- **Example / Value Details** shows one real value from this export and explains the value range, enum mapping, units, or boolean meaning that the cluster may report.
+- **Cluster General Description** explains what that entire cluster is for.
+
+## Important beginner note
+
+A cluster is not the same thing as a device type.
+
+For example, the **Boolean State** cluster only gives a `true/false` value. That value can mean very different things depending on the endpoint device type:
+
+- for a contact sensor, it may mean **open/closed**
+- for a leak sensor, it may mean **leak/no leak**
+
+So Matter data must always be interpreted using both:
+
+1. the cluster and attribute
+2. the endpoint role / device type context
+
+## Device info data
+
+This section documents values reported by Matter device clusters. These fields are data attributes used for inventory, state shadows, diagnostics, power status, and sensor readings. They are not commands.
+
+### Root device / system information
+
+These rows describe the overall device identity and diagnostic/network-management information. They are important for inventory, troubleshooting, and support, but they do not directly control the main user-facing lock function.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | 40 | Basic Information | VendorName | 0/40/1 | Human-readable vendor name. | Example: `"SmartphoneKey Systems Inc"`. String value. This is not an enum. It is the vendor display name reported by the device, so different manufacturers return different text. |
+| 0 | 40 | Basic Information | ProductName | 0/40/3 | Human-readable product name. | Example: `"SmartphoneKey Reader"`. String value. This is the product/model display name exposed by the node, not a device-type enum. |
+| 0 | 40 | Basic Information | HardwareVersionString | 0/40/8 | Hardware version string. | Example: `"release"`. String value. Usually a human-readable hardware revision, board revision, or release label. Treat as vendor-defined text. |
+| 0 | 40 | Basic Information | SoftwareVersionString | 0/40/10 | Software/firmware version string. | Example: `"1.26.1+1"`. String value. Usually firmware/software version. Use as text because vendors may include semantic versions, build metadata, or custom labels. |
+| 0 | 40 | Basic Information | ManufacturingDate/DateCode | 0/40/11 | Manufacturing date or date code supplied by the device. | Example: `"20250903"`. String/date-code value. Format is vendor-provided. In this export it looks like `YYYYMMDD`, but do not assume all devices use the same format. |
+| 0 | 40 | Basic Information | SerialNumber | 0/40/15 | Serial number string. | Example: `"11064672519639222187"`. String value. Physical serial number. It may look numeric but should be stored as text to avoid losing leading zeros or formatting. |
+| 0 | 51 | General Diagnostics | UpTime | 0/51/2 | Current uptime. | Example: `588758`. Numeric duration in seconds. Means the device has been up for 588,758 seconds since last boot. A sudden low value usually means the node rebooted recently. |
+| 0 | 51 | General Diagnostics | TotalOperationalHours | 0/51/3 | Total operational hours. | Example: `163`. Numeric duration in hours. Means the device reports 163 total operational hours. This value is cumulative if the device persists it. |
+| 0 | 51 | General Diagnostics | BootReason | 0/51/4 | Reason for most recent boot. | Example: `6`. Enum value. Common Matter meanings include `0 = Unspecified`, `1 = PowerOnReboot`, `2 = BrownOutReset`, `3 = SoftwareWatchdogReset`, `4 = HardwareWatchdogReset`, `5 = SoftwareUpdateCompleted`, `6 = SoftwareReset`. Here `6` means software-triggered reset/reboot. |
+| 0 | 53 | Thread Network Diagnostics | NeighborTable | 0/53/7 | Neighbor table entries. | Example: `[{"averageRssi": -25, ...}]` or simplified as `[-25]`. Table/list value. Each entry describes a Thread neighbor. RSSI values are normally negative dBm: closer to 0 is stronger; around `-25` is very strong, `-50` is good, `-70` is weak. |
+| 0 | 54 | Wi‑Fi Network Diagnostics | RSSI | 0/54/4 | Received signal strength indicator. | Example: `nan`. Numeric RSSI in dBm when reported. Wi-Fi RSSI is usually negative: closer to 0 is stronger. `nan`, null, or missing usually means Wi-Fi is not used or the device does not report it. |
+| 0 | 53 | Thread Network Diagnostics | RoutingRole | 0/53/1 | Current Thread routing role. | Example: `6`. Enum value describing Thread role. Typical values are role-like states such as disabled, detached, child/end device, router, leader, or border-router-capable role depending on implementation/spec version. Use this mainly for diagnostics, not business state. |
+| 0 | 53 | Thread Network Diagnostics | NetworkName | 0/53/2 | Thread network name. | Example: `"OpenThread-952e"`. String value. Thread network name. It should match the expected Thread mesh if the device joined the correct network. |
+| 0 | 40 | Basic Information | VendorID | 0/40/2 | Vendor identifier. | Example: `4619`. Numeric vendor identifier assigned through the Matter/CSA vendor ID process. Store as number, but display can also be useful in hex for engineering logs. |
+| 0 | 40 | Basic Information | ProductURL | 0/40/14 | Product URL if implemented. | Example: `""`. String URL value when implemented. Empty string means the device did not provide a product/support URL. |
+| 0 | 70 | ICD Management | IdleModeDuration | 0/70/0 | Idle mode duration for ICD behavior. | Example: `300`. Numeric duration in seconds. For ICD devices this is the idle-mode interval where the device may sleep or be less immediately reachable. |
+| 0 | 70 | ICD Management | ActiveModeDuration | 0/70/1 | Active mode duration for ICD behavior. | Example: `300`. Numeric duration in milliseconds in Matter ICD definitions. It describes how long the device stays in active mode after wake/active behavior before returning to idle behavior. |
+| 0 | 70 | ICD Management | ActiveModeThreshold | 0/70/2 | Threshold for entering active mode. | Example: `300`. Numeric threshold in milliseconds. Used by ICD behavior to decide active-mode timing/responsiveness. Larger values usually keep the device responsive longer but can affect battery. |
+| 0 | 70 | ICD Management | UserActiveModeTriggerHint | 0/70/6 | Hint describing how to trigger active mode. | Example: `4381`. Bitmap/bitmask value. Each bit hints a possible user action that can wake or activate the device. Decode as flags, not as a single plain number. Pair with `UserActiveModeTriggerInstruction` for human-readable instructions. |
+| 0 | 70 | ICD Management | UserActiveModeTriggerInstruction | 0/70/7 | Instruction text for user-triggered active mode. | Example: `"Restart the application"`. String value. Human-readable instruction for how a user can trigger active mode. This is directly displayable text if needed. |
+
+### Door lock / access control
+
+These rows describe the access-control behavior of the device. This is the most business-critical group for teams working with door-entry logic, credentials, remote operations, and physical security behavior.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 257 | Door Lock | LockState | 1/257/0 | Current lock state. | Example: `1`. Enum value: `0 = NotFullyLocked`, `1 = Locked`, `2 = Unlocked`, `3 = Unlatched`, plus unknown/vendor values may appear. In your bridge logic, treat `1` as locked and `0`/`2` as not locked unless you explicitly handle `NotFullyLocked` separately. |
+| 1 | 257 | Door Lock | NumberOfTotalUsersSupported | 1/257/17 | Total user capacity. | Example: `10`. Numeric capacity. Maximum number of user records supported by the lock. This is a limit, not current user count. |
+| 1 | 257 | Door Lock | NumberOfPINUsersSupported | 1/257/18 | PIN user capacity. | Example: `15`. Numeric capacity. Maximum number of PIN/code users or PIN slots supported. This is a capability limit, not active PIN count. |
+| 1 | 257 | Door Lock | NumberOfCredentialsSupportedPerUser | 1/257/23 | Credential capacity per user. | Example: `8`. Numeric capacity. Maximum credentials per user record. A credential may be PIN, RFID, fingerprint, face, Aliro, or another credential type depending on lock features. |
+| 1 | 257 | Door Lock | AutoRelockTime | 1/257/27 | Auto-relock time. | Example: `1`. Numeric duration in seconds. Time before automatic relock after unlock. `0` commonly means no auto-relock from this attribute; positive values mean relock delay. |
+| 1 | 257 | Door Lock | SoundVolume | 1/257/28 | Sound volume configuration. | Example: `4`. Numeric level. Sound/beeper volume setting. Exact scale is device-dependent, so do not assume `4` always means the same loudness across vendors. |
+| 1 | 257 | Door Lock | LEDSettings | 1/257/41 | LED settings. | Example: `false`. Boolean value. `true` means LED/visual feedback setting enabled; `false` means disabled, if the device implements this attribute in that way. |
+| 1 | 257 | Door Lock | AutoRelockBehavior | 1/257/43 | Auto-relock behavior setting. | Example: `false`. Boolean/config value. Controls auto-relock behavior mode on devices that implement it. Interpret together with `AutoRelockTime` because time and behavior both affect locking. |
+| 1 | 257 | Door Lock | WrongCodeEntryLimit | 1/257/48 | Wrong-code entry limit. | Example: `3`. Numeric count. Number of wrong code attempts allowed before protective behavior starts. Useful for security policy and lockout UX. |
+| 1 | 257 | Door Lock | UserCodeTemporaryDisableTime | 1/257/49 | Temporary disable time after wrong code entries. | Example: `10`. Numeric duration in seconds. Time that user code entry is disabled or throttled after too many wrong attempts. |
+| 1 | 257 | Door Lock | RequirePINforRemoteOperation | 1/257/51 | Whether PIN is required for remote operation. | Example: `false`. Boolean value. `true` means remote operation requires PIN/additional credential; `false` means the lock allows remote operation without this extra PIN requirement. |
+
+### Battery / power source
+
+These rows describe how the device is powered and whether maintenance may be needed. This is especially important for field support teams and for platforms that need to show battery health.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 47 | Power Source | Status | 1/47/0 | Power source status. | Example: `0`. Enum value: `0 = Unspecified`, `1 = Active`, `2 = Standby`, `3 = Unavailable`. Here `0` means the source status was not specified by the device. |
+| 1 | 47 | Power Source | BatVoltage | 1/47/11 | Battery voltage, usually in mV units in Matter. | Example: `2740`. Numeric voltage in millivolts. Convert to volts as `2740 mV = 2.740 V` for display. |
+| 1 | 47 | Power Source | BatPercentRemaining | 1/47/12 | Battery percent remaining, often half-percent units. | Example: `5`. Numeric percentage in half-percent units. Convert with `value / 2`, so `5` means `2.5%` remaining, not `5%`, when the device follows Matter encoding. |
+| 1 | 47 | Power Source | BatChargeLevel | 1/47/14 | Battery charge level enumeration. | Example: `1`. Enum value: `0 = OK`, `1 = Warning`, `2 = Critical`. Here `1` means low battery warning/intervention may soon be needed. |
+| 1 | 47 | Power Source | BatReplacementNeeded | 1/47/15 | Whether battery replacement is needed. | Example: `false`. Boolean value. `true` means the device says battery replacement is needed; `false` means replacement is not currently required. |
+| 1 | 47 | Power Source | BatReplacementDescription | 1/47/19 | Replacement battery description string. | Example: `"CR123A"`. String value. Human-readable replacement battery type or description. Display directly to field/support teams. |
+| 1 | 47 | Power Source | BatReplacementNeededLevel | 1/47/24 | Threshold/status related to replacement-needed indication. | Example: `0`. Numeric threshold/status value related to replacement-needed behavior. Treat as implementation-facing unless you have a product-specific UI mapping. |
+| 1 | 47 | Power Source | BatQuantity | 1/47/25 | Battery quantity/indicator depending on implementation. | Example: `0`. Numeric quantity. Usually number of battery cells/packs required when implemented. `0` may mean not reported, not applicable, or vendor-specific behavior. |
+
+### Humidity sensor
+
+These rows show environmental humidity sensing data. Even though the main product is a reader/lock-oriented device, this export also exposes humidity measurement information on one endpoint.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1029 | Relative Humidity Measurement | MeasuredValue | 1/1029/0 | Current relative humidity measured value. | Example: `3011`. Numeric measured humidity in hundredths of a percent. Convert with `value / 100`, so `3011` means `30.11% RH`. |
+
+### Occupancy / presence sensor
+
+These rows show whether the endpoint currently detects occupancy or presence. This is typically used by automation and monitoring systems rather than by core lock workflows.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1030 | Occupancy Sensing | Occupancy | 1/1030/0 | Current occupancy/presence state. | Example: `0`. Bitmap value. Bit 0 indicates occupied/presence detected. `0` means no occupancy detected; `1` means occupied. Future/additional bits may represent more sensing modes. |
+
+### Contact sensor interpretation
+
+This section isolates the Boolean State row that is documented as a contact/door-sensor style interpretation. It is separated on purpose to show that Boolean State needs device-type context.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 69 | Boolean State | StateValue | 1/69/0 | Binary state value. For this door sensor it maps to open/closed contact state. | Example: `true`. Boolean value. For a contact sensor endpoint, map with endpoint context: commonly `true = open/contact active`, `false = closed/inactive`, but verify with the specific device behavior. |
+
+### Water leak sensor interpretation
+
+This section isolates the Boolean State row that is documented as a water-leak interpretation. It is separated on purpose to show that the same Boolean State cluster can represent a completely different real-world condition.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 69 | Boolean State | StateValue | 1/69/0 | Binary state value. On this interview it maps to water leak state because the endpoint reports Water Leak Detector. | Example: `false`. Boolean value. For a water leak detector endpoint, `true` normally means leak detected/alarm active; `false` means no leak detected. |
+
+### Temperature sensor
+
+These rows show temperature measurement data from the endpoint that reports temperature. As with humidity, the raw value normally needs conversion before end-user display.
+
+| Endpoint | Cluster ID | Cluster Name | Attribute Name | Path to Value | Meaning | Example / Value Details |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2 | 1026 | Temperature Measurement | MeasuredValue | 2/1026/0 | Current temperature measured value. | Example: `2591`. Numeric measured temperature in hundredths of a degree Celsius. Convert with `value / 100`, so `2591` means `25.91 °C`. |
+
+## Supported commands
+
+This section documents command capabilities. These fields describe what the device can accept as actions. In Matter, command support is normally discovered from the global `AcceptedCommandList` attribute, path format `endpoint/cluster/65529`.
+
+Use this section separately from **Device info data**:
+
+- **Device info data** = attributes reported by the device, for example `0/40/1`, `1/257/0`, or `1/47/12`.
+- **Supported commands** = actions the device/cluster accepts, for example `LockDoor`, `UnlockDoor`, `GetUser`, or general commissioning commands.
+
+### Matter command capability fields
+
+Matter exposes command capability through global cluster attributes. In the `endpoint/cluster/attribute` format, the most important command-capability paths are:
+
+| Attribute ID | Hex | Attribute Name | Meaning |
+| --- | --- | --- | --- |
+| 65529 | `0xFFF9` | AcceptedCommandList | List of command IDs that this exact cluster server accepts. Use this to decide whether your bridge/API can send a command. |
+| 65528 | `0xFFF8` | GeneratedCommandList | List of command IDs that this cluster may generate as responses/events. Useful for command-response handling, but not the main capability check. |
+
+Example path: `0/49/65529` means endpoint `0`, cluster `49`, attribute `65529`. That tells you which commands the Network Commissioning cluster accepts on endpoint `0`.
+
+### General endpoint 0 commands for all Matter device types
+
+Endpoint `0` is the root/system endpoint. These commands are not lock-specific. They are common Matter system, commissioning, diagnostics, security, and fabric-management capabilities. Any device type may expose some of these clusters depending on what it supports.
+
+| Path | Endpoint | Cluster ID | Cluster Name | Accepted Command IDs | Decoded Commands | What this means |
+| --- | ---: | ---: | --- | --- | --- | --- |
+| `0/48/65529` | 0 | 48 / `0x0030` | General Commissioning | `[0, 2, 4]` | `0 / 0x00 = ArmFailSafe`<br>`2 / 0x02 = SetRegulatoryConfig`<br>`4 / 0x04 = CommissioningComplete` | Device supports the standard commissioning safety flow. These commands are used while adding the device to a Matter fabric. |
+| `0/49/65529` | 0 | 49 / `0x0031` | Network Commissioning | `[0, 3, 4, 6, 8]` | `0 / 0x00 = ScanNetworks`<br>`3 / 0x03 = AddOrUpdateThreadNetwork`<br>`4 / 0x04 = RemoveNetwork`<br>`6 / 0x06 = ConnectNetwork`<br>`8 / 0x08 = ReorderNetwork` | Device supports network commissioning operations. Because this list has `AddOrUpdateThreadNetwork` and not Wi-Fi network commands, this looks like Thread commissioning capability. |
+| `0/50/65529` | 0 | 50 / `0x0032` | Diagnostic Logs | `[0]` | `0 / 0x00 = RetrieveLogsRequest` | Controller can request diagnostic logs from the device if the device has logs available. |
+| `0/51/65529` | 0 | 51 / `0x0033` | General Diagnostics | `[0, 1]` | `0 / 0x00 = TestEventTrigger`<br>`1 / 0x01 = TimeSnapshot` | Device supports diagnostic commands. These are mainly useful for testing, certification, troubleshooting, and time snapshot diagnostics. |
+| `0/53/65529` | 0 | 53 / `0x0035` | Thread Network Diagnostics | `[0]` | `0 / 0x00 = ResetCounts` | Controller can reset Thread diagnostic counters. This is diagnostics-only and does not control the main device function. |
+| `0/60/65529` | 0 | 60 / `0x003C` | Administrator Commissioning | `[0, 1, 2]` | `0 / 0x00 = OpenCommissioningWindow`<br>`1 / 0x01 = OpenBasicCommissioningWindow`<br>`2 / 0x02 = RevokeCommissioning` | Device can open or revoke a commissioning window. This is used for adding another controller/admin or putting the device back into commissioning mode. |
+| `0/62/65529` | 0 | 62 / `0x003E` | Operational Credentials | `[0, 2, 4, 6, 7, 9, 10, 11]` | `0 / 0x00 = AttestationRequest`<br>`2 / 0x02 = CertificateChainRequest`<br>`4 / 0x04 = CSRRequest`<br>`6 / 0x06 = AddNOC`<br>`7 / 0x07 = UpdateNOC`<br>`9 / 0x09 = UpdateFabricLabel`<br>`10 / 0x0A = RemoveFabric`<br>`11 / 0x0B = AddTrustedRootCertificate` | Device supports Matter fabric/security certificate operations. These commands are used during commissioning, fabric setup, multi-admin, and operational credential management. |
+| `0/63/65529` | 0 | 63 / `0x003F` | Group Key Management | `[0, 1, 3, 4]` | `0 / 0x00 = KeySetWrite`<br>`1 / 0x01 = KeySetRead`<br>`3 / 0x03 = KeySetRemove`<br>`4 / 0x04 = KeySetReadAllIndices` | Device supports group key management for secure Matter group communication. This is not a user-facing device action. |
+
+For bridge implementation, these endpoint `0` command lists should usually be treated as system capabilities. They are useful for commissioning, diagnostics, network setup, and fabric administration, but they should not be exposed as normal user commands like lock/unlock, temperature read, or leak state.
+
+### Door Lock cluster supported commands
+
+The Door Lock cluster has a command set for lock operation, user/PIN/RFID management, schedules, credentials, logs, and Aliro reader configuration. Important: a real lock may support only a subset of these commands. To know what one exact device supports, read the standard `AcceptedCommandList` global attribute for cluster `257` on the lock endpoint, for example path `1/257/65529` when using the `endpoint/cluster/attribute` format.
+
+For python-matter-server / bridge usage, commands are normally sent to cluster `257` on the lock endpoint, usually endpoint `1`. In your AWS IoT payload, the bridge should resolve `device_uuid -> node_id`, then send the command with `node_id`, `endpoint_id`, cluster command name, and command-specific args.
+
+| Command ID | Hex | Command Name | Area | What it does | Typical args / value details |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 0x00 | LockDoor | Lock operation | Locks the door. | Usually no args. Some locks may require `PINCode` if `RequirePINforRemoteOperation` is `true`. Result should be checked because the command can fail if the lock is unavailable, blocked, already moving, or requires extra credential data. |
+| 1 | 0x01 | UnlockDoor | Lock operation | Unlocks the door. | Usually no args, unless the lock requires a PIN for remote operation. Security-sensitive command. Your API should treat it as a controlled remote operation and log who/what triggered it. |
+| 2 | 0x02 | Toggle | Lock operation | Toggles between locked and unlocked state. | Usually no args. Not recommended for cloud/API workflows when exact desired state matters, because result depends on current physical state. Prefer `LockDoor` or `UnlockDoor` for deterministic behavior. |
+| 3 | 0x03 | UnlockWithTimeout | Lock operation | Unlocks the door temporarily, then the lock should relock after timeout. | Common arg: `timeout` or `timeoutInSeconds` depending on SDK binding. Value is a duration, normally seconds. Use when you want temporary access instead of permanent unlock. |
+| 4 | 0x04 | GetLogRecord | Audit/logs | Reads one log record from the lock audit log if supported. | Common arg: `logIndex`. Used for troubleshooting/audit history. Many consumer locks may not implement full log retrieval. |
+| 5 | 0x05 | SetPINCode | Legacy PIN management | Creates or updates a PIN code in a legacy PIN slot. | Typical args include `userIndex`, `userStatus`, `userType`, `pinCode`. This is older PIN-specific API. Newer locks may prefer `SetUser` plus `SetCredential`. |
+| 6 | 0x06 | GetPINCode | Legacy PIN management | Reads PIN information for a user/slot if supported. | Typical arg: `userIndex`. Some devices intentionally do not return secret PIN material for security reasons, even if the command exists. |
+| 7 | 0x07 | ClearPINCode | Legacy PIN management | Clears one PIN code/user PIN slot. | Typical arg: `userIndex`. Use carefully because it removes access for that PIN slot. |
+| 8 | 0x08 | ClearAllPINCodes | Legacy PIN management | Clears all PIN codes. | Usually no args. Dangerous bulk operation. Should be protected in backend/API because it can remove all PIN-based access. |
+| 9 | 0x09 | SetUserStatus | Legacy user management | Sets the status for a user record. | Typical args: `userIndex`, `userStatus`. User status values are enum-like, commonly available/enabled/disabled style states depending on Matter version. |
+| 10 | 0x0A | GetUserStatus | Legacy user management | Reads the status for a user record. | Typical arg: `userIndex`. Useful to check if a user slot is active/enabled before setting credentials. |
+| 11 | 0x0B | SetWeekDaySchedule | Scheduling | Sets a recurring weekly access schedule for one user. | Typical args include `weekDayIndex`, `userIndex`, `daysMask`, `startHour`, `startMinute`, `endHour`, `endMinute`. Used for repeating access windows like weekdays 09:00-17:00. |
+| 12 | 0x0C | GetWeekDaySchedule | Scheduling | Reads a recurring weekly schedule. | Typical args: `weekDayIndex`, `userIndex`. Returns schedule fields when present. |
+| 13 | 0x0D | ClearWeekDaySchedule | Scheduling | Clears one recurring weekly schedule. | Typical args: `weekDayIndex`, `userIndex`. Removes that schedule window only, not necessarily the user or credential. |
+| 14 | 0x0E | SetYearDaySchedule | Scheduling | Sets a one-time/date-range schedule for one user. | Typical args include `yearDayIndex`, `userIndex`, `localStartTime`, `localEndTime`. Used for temporary date-based access windows. |
+| 15 | 0x0F | GetYearDaySchedule | Scheduling | Reads a date-range schedule. | Typical args: `yearDayIndex`, `userIndex`. Returns start/end time when present. |
+| 16 | 0x10 | ClearYearDaySchedule | Scheduling | Clears one date-range schedule. | Typical args: `yearDayIndex`, `userIndex`. Removes that temporary schedule. |
+| 17 | 0x11 | SetHolidaySchedule | Scheduling | Sets a holiday schedule / exception schedule. | Typical args include `holidayIndex`, `localStartTime`, `localEndTime`, `operatingModeDuringHoliday`. Used to change lock behavior during special calendar periods. |
+| 18 | 0x12 | GetHolidaySchedule | Scheduling | Reads a holiday schedule. | Typical arg: `holidayIndex`. Returns holiday schedule information if supported and configured. |
+| 19 | 0x13 | ClearHolidaySchedule | Scheduling | Clears one holiday schedule. | Typical arg: `holidayIndex`. Removes that holiday exception. |
+| 20 | 0x14 | SetUserType | Legacy user management | Sets the type/category of a user. | Typical args: `userIndex`, `userType`. User type may represent unrestricted user, schedule-restricted user, programming user, etc., depending on supported enum values. |
+| 21 | 0x15 | GetUserType | Legacy user management | Reads the type/category of a user. | Typical arg: `userIndex`. Useful for understanding how a user slot is configured. |
+| 22 | 0x16 | SetRFIDCode | Legacy RFID management | Creates or updates an RFID credential in a legacy RFID slot. | Typical args include `userIndex`, `userStatus`, `userType`, `rfidCode`. Older RFID-specific API; newer devices may use generic `SetCredential`. |
+| 23 | 0x17 | GetRFIDCode | Legacy RFID management | Reads RFID credential information if supported. | Typical arg: `userIndex`. Devices may avoid returning secret credential material. |
+| 24 | 0x18 | ClearRFIDCode | Legacy RFID management | Clears one RFID credential. | Typical arg: `userIndex`. Removes RFID access for that slot/user. |
+| 25 | 0x19 | ClearAllRFIDCodes | Legacy RFID management | Clears all RFID credentials. | Usually no args. Dangerous bulk operation; should be admin-only. |
+| 26 | 0x1A | SetUser | User management | Creates or updates a modern Door Lock user record. | Typical args include `userIndex`, `userName`, `userUniqueID`, `userStatus`, `userType`, `credentialRule`. This is the modern user API used before/with credentials. |
+| 27 | 0x1B | GetUser | User management | Reads one modern Door Lock user record. | Typical arg: `userIndex`. Response can include `userName`, `userUniqueID`, `userStatus`, `userType`, `credentialRule`, credentials list, and fabric indexes. In your project this is useful because `userName` can be used as stable identity when available. |
+| 29 | 0x1D | ClearUser | User management | Clears one modern user record. | Typical arg: `userIndex`. Removes the user and may also affect credentials linked to that user depending on device behavior. |
+| 34 | 0x22 | SetCredential | Credential management | Adds or updates a credential such as PIN, RFID, fingerprint, face, Aliro, or other supported credential type. | Typical args include `operationType`, `credential`, `credentialData`, `userIndex`, `userStatus`, `userType`. The `credential` structure normally contains `credentialType` and `credentialIndex`. |
+| 36 | 0x24 | GetCredentialStatus | Credential management | Checks whether a credential slot exists/has data and who it belongs to. | Typical arg: `credential` with `credentialType` and `credentialIndex`. Useful before writing or clearing credentials. |
+| 38 | 0x26 | ClearCredential | Credential management | Clears one credential, or a credential matching the provided credential structure. | Typical arg: `credential`. Use carefully because it removes access for that credential. |
+| 39 | 0x27 | UnboltDoor | Lock operation | Retracts/unbolts the door when the device supports a separate unbolt action. | Usually no args or optional PIN depending on lock policy. Not all locks distinguish `UnlockDoor` and `UnboltDoor`. |
+| 40 | 0x28 | SetAliroReaderConfig | Aliro / reader config | Configures Aliro reader behavior on compatible locks/readers. | Args are Aliro-specific reader configuration fields. Only supported by devices with Aliro reader capability. Treat as advanced/vendor/ecosystem feature. |
+| 41 | 0x29 | ClearAliroReaderConfig | Aliro / reader config | Clears Aliro reader configuration. | Usually no args or Aliro-specific selector depending on implementation. Only supported by Aliro-capable devices. |
+
+#### Door Lock command support check
+
+Door Lock command support is separate from the general endpoint `0` system commands above. Do not assume every Matter lock supports every command listed above. The practical support check is:
+
+| Path | Attribute | What it tells you | Example / Value Details |
+| --- | --- | --- | --- |
+| `1/257/65529` | AcceptedCommandList | Commands this specific lock accepts on endpoint `1`, cluster `257`. | Example: `[0, 1, 26, 27, 29, 34, 36, 38]` means this lock supports `LockDoor`, `UnlockDoor`, `SetUser`, `GetUser`, `ClearUser`, `SetCredential`, `GetCredentialStatus`, and `ClearCredential`. Use this list to decide which API buttons/functions to expose. |
+| `1/257/65528` | GeneratedCommandList | Responses/events generated by this cluster for commands, depending on implementation. | Useful for command/response handling, but `AcceptedCommandList` is the main one for deciding whether a command can be sent. |
