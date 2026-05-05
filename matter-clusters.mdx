@@ -73,26 +73,108 @@ These rows describe the overall device identity and diagnostic/network-managemen
 
 ## Field details
 
-- `VendorName`: Human-readable vendor name. Example: `"SmartphoneKey Systems Inc"`. String value. This is not an enum. It is the vendor display name reported by the device, so different manufacturers return different text.
-- `ProductName`: Human-readable product name. Example: `"SmartphoneKey Reader"`. String value. This is the product/model display name exposed by the node, not a device-type enum.
-- `HardwareVersionString`: Hardware version string. Example: `"release"`. String value. Usually a human-readable hardware revision, board revision, or release label. Treat as vendor-defined text.
-- `SoftwareVersionString`: Software/firmware version string. Example: `"1.26.1+1"`. String value. Usually firmware/software version. Use as text because vendors may include semantic versions, build metadata, or custom labels.
-- `ManufacturingDate/DateCode`: Manufacturing date or date code supplied by the device. Example: `"20250903"`. String/date-code value. Format is vendor-provided. In this export it looks like `YYYYMMDD`, but do not assume all devices use the same format.
-- `SerialNumber`: Serial number string. Example: `"11064672519639222187"`. String value. Physical serial number. It may look numeric but should be stored as text to avoid losing leading zeros or formatting.
-- `VendorID`: Vendor identifier. Example: `4619`. Numeric vendor identifier assigned through the Matter/CSA vendor ID process. Store as number, but display can also be useful in hex for engineering logs.
-- `ProductURL`: Product URL if implemented. Example: `""`. String URL value when implemented. Empty string means the device did not provide a product/support URL.
-- `UpTime`: Current uptime. Example: `588758`. Numeric duration in seconds. Means the device has been up for 588,758 seconds since last boot. A sudden low value usually means the node rebooted recently.
-- `TotalOperationalHours`: Total operational hours. Example: `163`. Numeric duration in hours. Means the device reports 163 total operational hours. This value is cumulative if the device persists it.
-- `BootReason`: Reason for most recent boot. Example: `6`. Enum value. Common Matter meanings include `0 = Unspecified`, `1 = PowerOnReboot`, `2 = BrownOutReset`, `3 = SoftwareWatchdogReset`, `4 = HardwareWatchdogReset`, `5 = SoftwareUpdateCompleted`, `6 = SoftwareReset`. Here `6` means software-triggered reset/reboot.
-- `NeighborTable`: Neighbor table entries. Example: `[{"averageRssi": -25, ...}]` or simplified as `[-25]`. Table/list value. Each entry describes a Thread neighbor. RSSI values are normally negative dBm: closer to 0 is stronger; around `-25` is very strong, `-50` is good, `-70` is weak.
-- `RoutingRole`: Current Thread routing role. Example: `6`. Enum value describing Thread role. Typical values are role-like states such as disabled, detached, child/end device, router, leader, or border-router-capable role depending on implementation/spec version. Use this mainly for diagnostics, not business state.
-- `NetworkName`: Thread network name. Example: `"OpenThread-952e"`. String value. Thread network name. It should match the expected Thread mesh if the device joined the correct network.
-- `RSSI`: Received signal strength indicator. Example: `nan`. Numeric RSSI in dBm when reported. Wi-Fi RSSI is usually negative: closer to 0 is stronger. `nan`, null, or missing usually means Wi-Fi is not used or the device does not report it.
-- `IdleModeDuration`: Idle mode duration for ICD behavior. Example: `300`. Numeric duration in seconds. For ICD devices this is the idle-mode interval where the device may sleep or be less immediately reachable.
-- `ActiveModeDuration`: Active mode duration for ICD behavior. Example: `300`. Numeric duration in milliseconds in Matter ICD definitions. It describes how long the device stays in active mode after wake/active behavior before returning to idle behavior.
-- `ActiveModeThreshold`: Threshold for entering active mode. Example: `300`. Numeric threshold in milliseconds. Used by ICD behavior to decide active-mode timing/responsiveness. Larger values usually keep the device responsive longer but can affect battery.
-- `UserActiveModeTriggerHint`: Hint describing how to trigger active mode. Example: `4381`. Bitmap/bitmask value. Each bit hints a possible user action that can wake or activate the device. Decode as flags, not as a single plain number. Pair with `UserActiveModeTriggerInstruction` for human-readable instructions.
-- `UserActiveModeTriggerInstruction`: Instruction text for user-triggered active mode. Example: `"Restart the application"`. String value. Human-readable instruction for how a user can trigger active mode. This is directly displayable text if needed.
+<ExpandableGroup>
+  <Expandable title="VendorName">
+
+Human-readable vendor name. Example: `"SmartphoneKey Systems Inc"`. String value. This is not an enum. It is the vendor display name reported by the device, so different manufacturers return different text.
+
+  </Expandable>
+  <Expandable title="ProductName">
+
+Human-readable product name. Example: `"SmartphoneKey Reader"`. String value. This is the product/model display name exposed by the node, not a device-type enum.
+
+  </Expandable>
+  <Expandable title="HardwareVersionString">
+
+Hardware version string. Example: `"release"`. String value. Usually a human-readable hardware revision, board revision, or release label. Treat as vendor-defined text.
+
+  </Expandable>
+  <Expandable title="SoftwareVersionString">
+
+Software/firmware version string. Example: `"1.26.1+1"`. String value. Usually firmware/software version. Use as text because vendors may include semantic versions, build metadata, or custom labels.
+
+  </Expandable>
+  <Expandable title="ManufacturingDate/DateCode">
+
+Manufacturing date or date code supplied by the device. Example: `"20250903"`. String/date-code value. Format is vendor-provided. In this export it looks like `YYYYMMDD`, but do not assume all devices use the same format.
+
+  </Expandable>
+  <Expandable title="SerialNumber">
+
+Serial number string. Example: `"11064672519639222187"`. String value. Physical serial number. It may look numeric but should be stored as text to avoid losing leading zeros or formatting.
+
+  </Expandable>
+  <Expandable title="VendorID">
+
+Vendor identifier. Example: `4619`. Numeric vendor identifier assigned through the Matter/CSA vendor ID process. Store as number, but display can also be useful in hex for engineering logs.
+
+  </Expandable>
+  <Expandable title="ProductURL">
+
+Product URL if implemented. Example: `""`. String URL value when implemented. Empty string means the device did not provide a product/support URL.
+
+  </Expandable>
+  <Expandable title="UpTime">
+
+Current uptime. Example: `588758`. Numeric duration in seconds. Means the device has been up for 588,758 seconds since last boot. A sudden low value usually means the node rebooted recently.
+
+  </Expandable>
+  <Expandable title="TotalOperationalHours">
+
+Total operational hours. Example: `163`. Numeric duration in hours. Means the device reports 163 total operational hours. This value is cumulative if the device persists it.
+
+  </Expandable>
+  <Expandable title="BootReason">
+
+Reason for most recent boot. Example: `6`. Enum value. Common Matter meanings include `0 = Unspecified`, `1 = PowerOnReboot`, `2 = BrownOutReset`, `3 = SoftwareWatchdogReset`, `4 = HardwareWatchdogReset`, `5 = SoftwareUpdateCompleted`, `6 = SoftwareReset`. Here `6` means software-triggered reset/reboot.
+
+  </Expandable>
+  <Expandable title="NeighborTable">
+
+Neighbor table entries. Example: `[{"averageRssi": -25, ...}]` or simplified as `[-25]`. Table/list value. Each entry describes a Thread neighbor. RSSI values are normally negative dBm: closer to 0 is stronger; around `-25` is very strong, `-50` is good, `-70` is weak.
+
+  </Expandable>
+  <Expandable title="RoutingRole">
+
+Current Thread routing role. Example: `6`. Enum value describing Thread role. Typical values are role-like states such as disabled, detached, child/end device, router, leader, or border-router-capable role depending on implementation/spec version. Use this mainly for diagnostics, not business state.
+
+  </Expandable>
+  <Expandable title="NetworkName">
+
+Thread network name. Example: `"OpenThread-952e"`. String value. Thread network name. It should match the expected Thread mesh if the device joined the correct network.
+
+  </Expandable>
+  <Expandable title="RSSI">
+
+Received signal strength indicator. Example: `nan`. Numeric RSSI in dBm when reported. Wi-Fi RSSI is usually negative: closer to 0 is stronger. `nan`, null, or missing usually means Wi-Fi is not used or the device does not report it.
+
+  </Expandable>
+  <Expandable title="IdleModeDuration">
+
+Idle mode duration for ICD behavior. Example: `300`. Numeric duration in seconds. For ICD devices this is the idle-mode interval where the device may sleep or be less immediately reachable.
+
+  </Expandable>
+  <Expandable title="ActiveModeDuration">
+
+Active mode duration for ICD behavior. Example: `300`. Numeric duration in milliseconds in Matter ICD definitions. It describes how long the device stays in active mode after wake/active behavior before returning to idle behavior.
+
+  </Expandable>
+  <Expandable title="ActiveModeThreshold">
+
+Threshold for entering active mode. Example: `300`. Numeric threshold in milliseconds. Used by ICD behavior to decide active-mode timing/responsiveness. Larger values usually keep the device responsive longer but can affect battery.
+
+  </Expandable>
+  <Expandable title="UserActiveModeTriggerHint">
+
+Hint describing how to trigger active mode. Example: `4381`. Bitmap/bitmask value. Each bit hints a possible user action that can wake or activate the device. Decode as flags, not as a single plain number. Pair with `UserActiveModeTriggerInstruction` for human-readable instructions.
+
+  </Expandable>
+  <Expandable title="UserActiveModeTriggerInstruction">
+
+Instruction text for user-triggered active mode. Example: `"Restart the application"`. String value. Human-readable instruction for how a user can trigger active mode. This is directly displayable text if needed.
+
+  </Expandable>
+</ExpandableGroup>
 
 ### Door lock / access control
 
@@ -128,32 +210,6 @@ These rows describe how the device is powered and whether maintenance may be nee
 | 1 | Power Source (47) | BatReplacementNeededLevel | `1/47/24` |
 | 1 | Power Source (47) | BatQuantity | `1/47/25` |
 
-
-  - **Status">
-    Power source status. Example: `0`. Enum value: `0 = Unspecified`, `1 = Active`, `2 = Standby`, `3 = Unavailable`. Here `0` means the source status was not specified by the device.
-  </Accordion>
-  - **BatVoltage">
-    Battery voltage, usually in mV units in Matter. Example: `2740`. Numeric voltage in millivolts. Convert to volts as `2740 mV = 2.740 V` for display.
-  </Accordion>
-  - **BatPercentRemaining">
-    Battery percent remaining, often half-percent units. Example: `5`. Numeric percentage in half-percent units. Convert with `value / 2`, so `5` means `2.5%` remaining, not `5%`, when the device follows Matter encoding.
-  </Accordion>
-  - **BatChargeLevel">
-    Battery charge level enumeration. Example: `1`. Enum value: `0 = OK`, `1 = Warning`, `2 = Critical`. Here `1` means low battery warning/intervention may soon be needed.
-  </Accordion>
-  - **BatReplacementNeeded">
-    Whether battery replacement is needed. Example: `false`. Boolean value. `true` means the device says battery replacement is needed; `false` means replacement is not currently required.
-  </Accordion>
-  - **BatReplacementDescription">
-    Replacement battery description string. Example: `"CR123A"`. String value. Human-readable replacement battery type or description. Display directly to field/support teams.
-  </Accordion>
-  - **BatReplacementNeededLevel">
-    Threshold/status related to replacement-needed indication. Example: `0`. Numeric threshold/status value related to replacement-needed behavior. Treat as implementation-facing unless you have a product-specific UI mapping.
-  </Accordion>
-  - **BatQuantity">
-    Battery quantity/indicator depending on implementation. Example: `0`. Numeric quantity. Usually number of battery cells/packs required when implemented. `0` may mean not reported, not applicable, or vendor-specific behavior.
-  </Accordion>
-</AccordionGroup>
 
 ### Humidity sensor
 
