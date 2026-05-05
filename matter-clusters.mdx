@@ -71,68 +71,28 @@ These rows describe the overall device identity and diagnostic/network-managemen
 | 0 | ICD Management (70) | UserActiveModeTriggerHint | `0/70/6` |
 | 0 | ICD Management (70) | UserActiveModeTriggerInstruction | `0/70/7` |
 
-<AccordionGroup>
-  <Accordion title="VendorName">
-    Human-readable vendor name. Example: `"SmartphoneKey Systems Inc"`. String value. This is not an enum. It is the vendor display name reported by the device, so different manufacturers return different text.
-  </Accordion>
-  <Accordion title="ProductName">
-    Human-readable product name. Example: `"SmartphoneKey Reader"`. String value. This is the product/model display name exposed by the node, not a device-type enum.
-  </Accordion>
-  <Accordion title="HardwareVersionString">
-    Hardware version string. Example: `"release"`. String value. Usually a human-readable hardware revision, board revision, or release label. Treat as vendor-defined text.
-  </Accordion>
-  <Accordion title="SoftwareVersionString">
-    Software/firmware version string. Example: `"1.26.1+1"`. String value. Usually firmware/software version. Use as text because vendors may include semantic versions, build metadata, or custom labels.
-  </Accordion>
-  <Accordion title="ManufacturingDate/DateCode">
-    Manufacturing date or date code supplied by the device. Example: `"20250903"`. String/date-code value. Format is vendor-provided. In this export it looks like `YYYYMMDD`, but do not assume all devices use the same format.
-  </Accordion>
-  <Accordion title="SerialNumber">
-    Serial number string. Example: `"11064672519639222187"`. String value. Physical serial number. It may look numeric but should be stored as text to avoid losing leading zeros or formatting.
-  </Accordion>
-  <Accordion title="VendorID">
-    Vendor identifier. Example: `4619`. Numeric vendor identifier assigned through the Matter/CSA vendor ID process. Store as number, but display can also be useful in hex for engineering logs.
-  </Accordion>
-  <Accordion title="ProductURL">
-    Product URL if implemented. Example: `""`. String URL value when implemented. Empty string means the device did not provide a product/support URL.
-  </Accordion>
-  <Accordion title="UpTime">
-    Current uptime. Example: `588758`. Numeric duration in seconds. Means the device has been up for 588,758 seconds since last boot. A sudden low value usually means the node rebooted recently.
-  </Accordion>
-  <Accordion title="TotalOperationalHours">
-    Total operational hours. Example: `163`. Numeric duration in hours. Means the device reports 163 total operational hours. This value is cumulative if the device persists it.
-  </Accordion>
-  <Accordion title="BootReason">
-    Reason for most recent boot. Example: `6`. Enum value. Common Matter meanings include `0 = Unspecified`, `1 = PowerOnReboot`, `2 = BrownOutReset`, `3 = SoftwareWatchdogReset`, `4 = HardwareWatchdogReset`, `5 = SoftwareUpdateCompleted`, `6 = SoftwareReset`. Here `6` means software-triggered reset/reboot.
-  </Accordion>
-  <Accordion title="NeighborTable">
-    Neighbor table entries. Example: `[{"averageRssi": -25, ...}]` or simplified as `[-25]`. Table/list value. Each entry describes a Thread neighbor. RSSI values are normally negative dBm: closer to 0 is stronger; around `-25` is very strong, `-50` is good, `-70` is weak.
-  </Accordion>
-  <Accordion title="RoutingRole">
-    Current Thread routing role. Example: `6`. Enum value describing Thread role. Typical values are role-like states such as disabled, detached, child/end device, router, leader, or border-router-capable role depending on implementation/spec version. Use this mainly for diagnostics, not business state.
-  </Accordion>
-  <Accordion title="NetworkName">
-    Thread network name. Example: `"OpenThread-952e"`. String value. Thread network name. It should match the expected Thread mesh if the device joined the correct network.
-  </Accordion>
-  <Accordion title="RSSI">
-    Received signal strength indicator. Example: `nan`. Numeric RSSI in dBm when reported. Wi-Fi RSSI is usually negative: closer to 0 is stronger. `nan`, null, or missing usually means Wi-Fi is not used or the device does not report it.
-  </Accordion>
-  <Accordion title="IdleModeDuration">
-    Idle mode duration for ICD behavior. Example: `300`. Numeric duration in seconds. For ICD devices this is the idle-mode interval where the device may sleep or be less immediately reachable.
-  </Accordion>
-  <Accordion title="ActiveModeDuration">
-    Active mode duration for ICD behavior. Example: `300`. Numeric duration in milliseconds in Matter ICD definitions. It describes how long the device stays in active mode after wake/active behavior before returning to idle behavior.
-  </Accordion>
-  <Accordion title="ActiveModeThreshold">
-    Threshold for entering active mode. Example: `300`. Numeric threshold in milliseconds. Used by ICD behavior to decide active-mode timing/responsiveness. Larger values usually keep the device responsive longer but can affect battery.
-  </Accordion>
-  <Accordion title="UserActiveModeTriggerHint">
-    Hint describing how to trigger active mode. Example: `4381`. Bitmap/bitmask value. Each bit hints a possible user action that can wake or activate the device. Decode as flags, not as a single plain number. Pair with `UserActiveModeTriggerInstruction` for human-readable instructions.
-  </Accordion>
-  <Accordion title="UserActiveModeTriggerInstruction">
-    Instruction text for user-triggered active mode. Example: `"Restart the application"`. String value. Human-readable instruction for how a user can trigger active mode. This is directly displayable text if needed.
-  </Accordion>
-</AccordionGroup>
+## Field details
+
+- `VendorName`: Human-readable vendor name. Example: `"SmartphoneKey Systems Inc"`. String value. This is not an enum. It is the vendor display name reported by the device, so different manufacturers return different text.
+- `ProductName`: Human-readable product name. Example: `"SmartphoneKey Reader"`. String value. This is the product/model display name exposed by the node, not a device-type enum.
+- `HardwareVersionString`: Hardware version string. Example: `"release"`. String value. Usually a human-readable hardware revision, board revision, or release label. Treat as vendor-defined text.
+- `SoftwareVersionString`: Software/firmware version string. Example: `"1.26.1+1"`. String value. Usually firmware/software version. Use as text because vendors may include semantic versions, build metadata, or custom labels.
+- `ManufacturingDate/DateCode`: Manufacturing date or date code supplied by the device. Example: `"20250903"`. String/date-code value. Format is vendor-provided. In this export it looks like `YYYYMMDD`, but do not assume all devices use the same format.
+- `SerialNumber`: Serial number string. Example: `"11064672519639222187"`. String value. Physical serial number. It may look numeric but should be stored as text to avoid losing leading zeros or formatting.
+- `VendorID`: Vendor identifier. Example: `4619`. Numeric vendor identifier assigned through the Matter/CSA vendor ID process. Store as number, but display can also be useful in hex for engineering logs.
+- `ProductURL`: Product URL if implemented. Example: `""`. String URL value when implemented. Empty string means the device did not provide a product/support URL.
+- `UpTime`: Current uptime. Example: `588758`. Numeric duration in seconds. Means the device has been up for 588,758 seconds since last boot. A sudden low value usually means the node rebooted recently.
+- `TotalOperationalHours`: Total operational hours. Example: `163`. Numeric duration in hours. Means the device reports 163 total operational hours. This value is cumulative if the device persists it.
+- `BootReason`: Reason for most recent boot. Example: `6`. Enum value. Common Matter meanings include `0 = Unspecified`, `1 = PowerOnReboot`, `2 = BrownOutReset`, `3 = SoftwareWatchdogReset`, `4 = HardwareWatchdogReset`, `5 = SoftwareUpdateCompleted`, `6 = SoftwareReset`. Here `6` means software-triggered reset/reboot.
+- `NeighborTable`: Neighbor table entries. Example: `[{"averageRssi": -25, ...}]` or simplified as `[-25]`. Table/list value. Each entry describes a Thread neighbor. RSSI values are normally negative dBm: closer to 0 is stronger; around `-25` is very strong, `-50` is good, `-70` is weak.
+- `RoutingRole`: Current Thread routing role. Example: `6`. Enum value describing Thread role. Typical values are role-like states such as disabled, detached, child/end device, router, leader, or border-router-capable role depending on implementation/spec version. Use this mainly for diagnostics, not business state.
+- `NetworkName`: Thread network name. Example: `"OpenThread-952e"`. String value. Thread network name. It should match the expected Thread mesh if the device joined the correct network.
+- `RSSI`: Received signal strength indicator. Example: `nan`. Numeric RSSI in dBm when reported. Wi-Fi RSSI is usually negative: closer to 0 is stronger. `nan`, null, or missing usually means Wi-Fi is not used or the device does not report it.
+- `IdleModeDuration`: Idle mode duration for ICD behavior. Example: `300`. Numeric duration in seconds. For ICD devices this is the idle-mode interval where the device may sleep or be less immediately reachable.
+- `ActiveModeDuration`: Active mode duration for ICD behavior. Example: `300`. Numeric duration in milliseconds in Matter ICD definitions. It describes how long the device stays in active mode after wake/active behavior before returning to idle behavior.
+- `ActiveModeThreshold`: Threshold for entering active mode. Example: `300`. Numeric threshold in milliseconds. Used by ICD behavior to decide active-mode timing/responsiveness. Larger values usually keep the device responsive longer but can affect battery.
+- `UserActiveModeTriggerHint`: Hint describing how to trigger active mode. Example: `4381`. Bitmap/bitmask value. Each bit hints a possible user action that can wake or activate the device. Decode as flags, not as a single plain number. Pair with `UserActiveModeTriggerInstruction` for human-readable instructions.
+- `UserActiveModeTriggerInstruction`: Instruction text for user-triggered active mode. Example: `"Restart the application"`. String value. Human-readable instruction for how a user can trigger active mode. This is directly displayable text if needed.
 
 ### Door lock / access control
 
@@ -152,41 +112,6 @@ These rows describe the access-control behavior of the device. This is the most 
 | 1 | Door Lock (257) | UserCodeTemporaryDisableTime | `1/257/49` |
 | 1 | Door Lock (257) | RequirePINforRemoteOperation | `1/257/51` |
 
-<AccordionGroup>
-  <Accordion title="LockState">
-    Current lock state. Example: `1`. Enum value: `0 = NotFullyLocked`, `1 = Locked`, `2 = Unlocked`, `3 = Unlatched`, plus unknown/vendor values may appear. In your bridge logic, treat `1` as locked and `0`/`2` as not locked unless you explicitly handle `NotFullyLocked` separately.
-  </Accordion>
-  <Accordion title="NumberOfTotalUsersSupported">
-    Total user capacity. Example: `10`. Numeric capacity. Maximum number of user records supported by the lock. This is a limit, not current user count.
-  </Accordion>
-  <Accordion title="NumberOfPINUsersSupported">
-    PIN user capacity. Example: `15`. Numeric capacity. Maximum number of PIN/code users or PIN slots supported. This is a capability limit, not active PIN count.
-  </Accordion>
-  <Accordion title="NumberOfCredentialsSupportedPerUser">
-    Credential capacity per user. Example: `8`. Numeric capacity. Maximum credentials per user record. A credential may be PIN, RFID, fingerprint, face, Aliro, or another credential type depending on lock features.
-  </Accordion>
-  <Accordion title="AutoRelockTime">
-    Auto-relock time. Example: `1`. Numeric duration in seconds. Time before automatic relock after unlock. `0` commonly means no auto-relock from this attribute; positive values mean relock delay.
-  </Accordion>
-  <Accordion title="SoundVolume">
-    Sound volume configuration. Example: `4`. Numeric level. Sound/beeper volume setting. Exact scale is device-dependent, so do not assume `4` always means the same loudness across vendors.
-  </Accordion>
-  <Accordion title="LEDSettings">
-    LED settings. Example: `false`. Boolean value. `true` means LED/visual feedback setting enabled; `false` means disabled, if the device implements this attribute in that way.
-  </Accordion>
-  <Accordion title="AutoRelockBehavior">
-    Auto-relock behavior setting. Example: `false`. Boolean/config value. Controls auto-relock behavior mode on devices that implement it. Interpret together with `AutoRelockTime` because time and behavior both affect locking.
-  </Accordion>
-  <Accordion title="WrongCodeEntryLimit">
-    Wrong-code entry limit. Example: `3`. Numeric count. Number of wrong code attempts allowed before protective behavior starts. Useful for security policy and lockout UX.
-  </Accordion>
-  <Accordion title="UserCodeTemporaryDisableTime">
-    Temporary disable time after wrong code entries. Example: `10`. Numeric duration in seconds. Time that user code entry is disabled or throttled after too many wrong attempts.
-  </Accordion>
-  <Accordion title="RequirePINforRemoteOperation">
-    Whether PIN is required for remote operation. Example: `false`. Boolean value. `true` means remote operation requires PIN/additional credential; `false` means the lock allows remote operation without this extra PIN requirement.
-  </Accordion>
-</AccordionGroup>
 
 ### Battery / power source
 
@@ -203,29 +128,29 @@ These rows describe how the device is powered and whether maintenance may be nee
 | 1 | Power Source (47) | BatReplacementNeededLevel | `1/47/24` |
 | 1 | Power Source (47) | BatQuantity | `1/47/25` |
 
-<AccordionGroup>
-  <Accordion title="Status">
+
+  - **Status">
     Power source status. Example: `0`. Enum value: `0 = Unspecified`, `1 = Active`, `2 = Standby`, `3 = Unavailable`. Here `0` means the source status was not specified by the device.
   </Accordion>
-  <Accordion title="BatVoltage">
+  - **BatVoltage">
     Battery voltage, usually in mV units in Matter. Example: `2740`. Numeric voltage in millivolts. Convert to volts as `2740 mV = 2.740 V` for display.
   </Accordion>
-  <Accordion title="BatPercentRemaining">
+  - **BatPercentRemaining">
     Battery percent remaining, often half-percent units. Example: `5`. Numeric percentage in half-percent units. Convert with `value / 2`, so `5` means `2.5%` remaining, not `5%`, when the device follows Matter encoding.
   </Accordion>
-  <Accordion title="BatChargeLevel">
+  - **BatChargeLevel">
     Battery charge level enumeration. Example: `1`. Enum value: `0 = OK`, `1 = Warning`, `2 = Critical`. Here `1` means low battery warning/intervention may soon be needed.
   </Accordion>
-  <Accordion title="BatReplacementNeeded">
+  - **BatReplacementNeeded">
     Whether battery replacement is needed. Example: `false`. Boolean value. `true` means the device says battery replacement is needed; `false` means replacement is not currently required.
   </Accordion>
-  <Accordion title="BatReplacementDescription">
+  - **BatReplacementDescription">
     Replacement battery description string. Example: `"CR123A"`. String value. Human-readable replacement battery type or description. Display directly to field/support teams.
   </Accordion>
-  <Accordion title="BatReplacementNeededLevel">
+  - **BatReplacementNeededLevel">
     Threshold/status related to replacement-needed indication. Example: `0`. Numeric threshold/status value related to replacement-needed behavior. Treat as implementation-facing unless you have a product-specific UI mapping.
   </Accordion>
-  <Accordion title="BatQuantity">
+  - **BatQuantity">
     Battery quantity/indicator depending on implementation. Example: `0`. Numeric quantity. Usually number of battery cells/packs required when implemented. `0` may mean not reported, not applicable, or vendor-specific behavior.
   </Accordion>
 </AccordionGroup>
@@ -238,8 +163,8 @@ These rows show environmental humidity sensing data. Even though the main produc
 | --- | --- | --- | --- |
 | 1 | Relative Humidity Measurement (1029) | MeasuredValue | `1/1029/0` |
 
-<AccordionGroup>
-  <Accordion title="MeasuredValue">
+
+  - **MeasuredValue">
     Current relative humidity measured value. Example: `3011`. Numeric measured humidity in hundredths of a percent. Convert with `value / 100`, so `3011` means `30.11% RH`.
   </Accordion>
 </AccordionGroup>
@@ -252,8 +177,8 @@ These rows show whether the endpoint currently detects occupancy or presence. Th
 | --- | --- | --- | --- |
 | 1 | Occupancy Sensing (1030) | Occupancy | `1/1030/0` |
 
-<AccordionGroup>
-  <Accordion title="Occupancy">
+
+  - **Occupancy">
     Current occupancy/presence state. Example: `0`. Bitmap value. Bit 0 indicates occupied/presence detected. `0` means no occupancy detected; `1` means occupied. Future/additional bits may represent more sensing modes.
   </Accordion>
 </AccordionGroup>
@@ -266,8 +191,8 @@ This section isolates the Boolean State row that is documented as a contact/door
 | --- | --- | --- | --- |
 | 1 | Boolean State (69) | StateValue | `1/69/0` |
 
-<AccordionGroup>
-  <Accordion title="StateValue">
+
+  - **StateValue">
     Binary state value. For this door sensor it maps to open/closed contact state. Example: `true`. Boolean value. For a contact sensor endpoint, map with endpoint context: commonly `true = open/contact active`, `false = closed/inactive`, but verify with the specific device behavior.
   </Accordion>
 </AccordionGroup>
@@ -280,8 +205,8 @@ This section isolates the Boolean State row that is documented as a water-leak i
 | --- | --- | --- | --- |
 | 1 | Boolean State (69) | StateValue | `1/69/0` |
 
-<AccordionGroup>
-  <Accordion title="StateValue">
+
+  - **StateValue">
     Binary state value. On this interview it maps to water leak state because the endpoint reports Water Leak Detector. Example: `false`. Boolean value. For a water leak detector endpoint, `true` normally means leak detected/alarm active; `false` means no leak detected.
   </Accordion>
 </AccordionGroup>
@@ -294,8 +219,8 @@ These rows show temperature measurement data from the endpoint that reports temp
 | --- | --- | --- | --- |
 | 2 | Temperature Measurement (1026) | MeasuredValue | `2/1026/0` |
 
-<AccordionGroup>
-  <Accordion title="MeasuredValue">
+
+  - **MeasuredValue">
     Current temperature measured value. Example: `2591`. Numeric measured temperature in hundredths of a degree Celsius. Convert with `value / 100`, so `2591` means `25.91 °C`.
   </Accordion>
 </AccordionGroup>
