@@ -9340,6 +9340,186 @@
         }
       }
     },
+    "/admin/debug/registry": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Debug"
+        ],
+        "summary": "Get in-memory decorator registries",
+        "description": "Admin-only debug endpoint that returns the current state of the in-memory decorator registries (routes registered by @Route, event handlers registered by @EventHandler, and projectors registered via registerProjector). Useful for verifying decorator pickup at runtime — e.g. to confirm a refactor did not silently drop routes. Requires dual authentication (X-Admin-API-Key + JWT with @smartphonekey.com email domain), same as /admin/cleanup/*.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_GetRegistryRoute",
+        "responses": {
+          "200": {
+            "description": "Current contents of the in-memory decorator registries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "routes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "method": {
+                            "type": "string"
+                          },
+                          "path": {
+                            "type": "string"
+                          },
+                          "className": {
+                            "type": "string"
+                          },
+                          "aggregateType": {
+                            "type": "string"
+                          },
+                          "isCreateCommand": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "method",
+                          "path",
+                          "className"
+                        ]
+                      }
+                    },
+                    "eventHandlers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "eventType": {
+                            "type": "string"
+                          },
+                          "aggregateType": {
+                            "type": "string"
+                          },
+                          "className": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "eventType",
+                          "aggregateType",
+                          "className"
+                        ]
+                      }
+                    },
+                    "projectors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "className": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "className"
+                        ]
+                      }
+                    },
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "routeCount": {
+                          "type": "integer"
+                        },
+                        "eventHandlerCount": {
+                          "type": "integer"
+                        },
+                        "projectorCount": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "routeCount",
+                        "eventHandlerCount",
+                        "projectorCount"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "routes",
+                    "eventHandlers",
+                    "projectors",
+                    "summary"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/by-email": {
       "get": {
         "tags": [
