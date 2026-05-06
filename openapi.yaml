@@ -2788,6 +2788,12 @@
                     "type": "string",
                     "minLength": 1,
                     "description": "Camera admin password (required by 3dEye)"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 65535,
+                    "description": "Optional RTSP port — required for ONVIF cameras (parsed from rtspUrl if omitted)."
                   }
                 },
                 "required": [
