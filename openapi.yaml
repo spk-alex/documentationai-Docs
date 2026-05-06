@@ -1400,12 +1400,57 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRoleCameraAssigned"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "roleId": {
+                              "type": "string"
+                            },
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "permissions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "assignedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "roleId",
+                            "cameraId",
+                            "permissions",
+                            "assignedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -1534,12 +1579,54 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRoleUserAssigned"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "roleId": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "string"
+                            },
+                            "threeDeyeUserId": {
+                              "type": "string"
+                            },
+                            "assignedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "roleId",
+                            "userId",
+                            "threeDeyeUserId",
+                            "assignedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -1680,12 +1767,62 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRoleCreated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "roleId": {
+                              "type": "string"
+                            },
+                            "threeDeyeRoleId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "createdAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "roleId",
+                            "threeDeyeRoleId",
+                            "name",
+                            "description",
+                            "orgId",
+                            "createdAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -1837,12 +1974,46 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRoleDeleted"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "roleId": {
+                              "type": "string"
+                            },
+                            "deletedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "roleId",
+                            "deletedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -1965,12 +2136,50 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRoleCameraRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "roleId": {
+                              "type": "string"
+                            },
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "removedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "roleId",
+                            "cameraId",
+                            "removedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -2099,12 +2308,54 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRoleUserRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "roleId": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "string"
+                            },
+                            "threeDeyeUserId": {
+                              "type": "string"
+                            },
+                            "removedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "roleId",
+                            "userId",
+                            "threeDeyeUserId",
+                            "removedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -2380,12 +2631,50 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraDeleted"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "deletedBy": {
+                              "type": "string"
+                            },
+                            "deletedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "deletedBy",
+                            "deletedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -2514,12 +2803,54 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraDisabled"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "disabledBy": {
+                              "type": "string"
+                            },
+                            "disabledAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "reason",
+                            "disabledBy",
+                            "disabledAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -2641,12 +2972,46 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraLinkedToLock"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "lockId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -2827,12 +3192,82 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRegistered"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "threeDeyeCameraId": {
+                              "type": "string"
+                            },
+                            "cameraType": {
+                              "type": "string",
+                              "enum": [
+                                "generic",
+                                "onvif",
+                                "pnp"
+                              ]
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "ownerId": {
+                              "type": "string"
+                            },
+                            "httpUrl": {
+                              "type": "string"
+                            },
+                            "rtspUrl": {
+                              "type": "string"
+                            },
+                            "registrationCode": {
+                              "type": "string"
+                            },
+                            "registeredAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "threeDeyeCameraId",
+                            "cameraType",
+                            "name",
+                            "orgId",
+                            "ownerId",
+                            "httpUrl",
+                            "rtspUrl",
+                            "registeredAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -2975,12 +3410,42 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraUnlinkedFromLock"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -3110,12 +3575,55 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "httpUrl": {
+                              "type": "string"
+                            },
+                            "rtspUrl": {
+                              "type": "string"
+                            },
+                            "updatedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "updatedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -3389,12 +3897,58 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "HubClaimed"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "hubId": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "siteId": {
+                              "type": "string"
+                            },
+                            "claimedBy": {
+                              "type": "string"
+                            },
+                            "claimedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "hubId",
+                            "orgId",
+                            "siteId",
+                            "claimedBy",
+                            "claimedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 },
                 "example": {
@@ -3558,14 +4112,15 @@
                     "version": {
                       "type": "number"
                     },
-                    "noEvent": {
-                      "type": "boolean"
+                    "event": {
+                      "type": "null"
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -3737,12 +4292,61 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "HubProvisioned"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "hubId": {
+                              "type": "string"
+                            },
+                            "serial": {
+                              "type": "string"
+                            },
+                            "model": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "vendorName": {
+                              "type": "string"
+                            },
+                            "provisionedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "hubId",
+                            "serial",
+                            "model",
+                            "thingName",
+                            "provisionedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -3914,12 +4518,70 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "HubReClaimed"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "hubId": {
+                              "type": "string"
+                            },
+                            "previousOrgId": {
+                              "type": "string"
+                            },
+                            "previousSiteId": {
+                              "type": "string"
+                            },
+                            "newOrgId": {
+                              "type": "string"
+                            },
+                            "newSiteId": {
+                              "type": "string"
+                            },
+                            "reclaimedBy": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "reclaimedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "hubId",
+                            "previousOrgId",
+                            "previousSiteId",
+                            "newOrgId",
+                            "newSiteId",
+                            "reclaimedBy",
+                            "reason",
+                            "reclaimedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -4087,14 +4749,15 @@
                     "version": {
                       "type": "number"
                     },
-                    "noEvent": {
-                      "type": "boolean"
+                    "event": {
+                      "type": "null"
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -4257,12 +4920,54 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "HubRoleSet"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "hubId": {
+                              "type": "string"
+                            },
+                            "isPrimary": {
+                              "type": "boolean"
+                            },
+                            "setBy": {
+                              "type": "string"
+                            },
+                            "setAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "hubId",
+                            "isPrimary",
+                            "setBy",
+                            "setAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -4424,12 +5129,54 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "HubSuspended"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "hubId": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "suspendedBy": {
+                              "type": "string"
+                            },
+                            "suspendedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "hubId",
+                            "reason",
+                            "suspendedBy",
+                            "suspendedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -4723,12 +5470,60 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "KeyAdded"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "keyUuid": {
+                              "type": "string"
+                            },
+                            "keyIndexNumber": {
+                              "type": "number"
+                            },
+                            "userId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "keyUuid"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -4860,6 +5655,51 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ResidentAdded"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "email",
+                            "name"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "email": {
                       "type": "string"
                     }
@@ -4868,6 +5708,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "email"
                   ]
                 }
@@ -4978,12 +5819,58 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LockUuidChanged"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "newUuid": {
+                              "type": "string"
+                            },
+                            "previousUuid": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "newUuid",
+                            "previousUuid"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -5205,18 +6092,83 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LockCreated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "serialNumber": {
+                              "type": "string"
+                            },
+                            "keys": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "uuid": {
+                                    "type": "string"
+                                  },
+                                  "indexNumber": {
+                                    "type": "number"
+                                  },
+                                  "userId": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "uuid"
+                                ]
+                              }
+                            },
+                            "ownerId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "thingArn": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
-                },
-                "example": {
-                  "success": true,
-                  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
-                  "version": 1
                 }
               }
             }
@@ -5340,14 +6292,55 @@
                     "version": {
                       "type": "number"
                     },
-                    "noEvent": {
-                      "type": "boolean"
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LockOpenRequested"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "requestId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -5448,12 +6441,57 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "KeyRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "keyUuid": {
+                              "type": "string"
+                            },
+                            "keyIndexNumber": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "keyUuid"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -5608,6 +6646,47 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ResidentRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "email"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "email": {
                       "type": "string"
                     }
@@ -5616,6 +6695,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "email"
                   ]
                 }
@@ -5725,12 +6805,54 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "OrganizationSet"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "orgId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -5853,12 +6975,54 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "OwnerSet"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "userId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -5987,14 +7151,56 @@
                     "version": {
                       "type": "number"
                     },
-                    "noEvent": {
-                      "type": "boolean"
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "KeyWriteRequested"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "keyUuid": {
+                              "type": "string"
+                            },
+                            "keyIndexNumber": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "keyUuid"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -6248,6 +7454,79 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "TempKeyCreated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "tempKeyUuid": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "lockUuid": {
+                              "type": "string"
+                            },
+                            "accessMode": {
+                              "type": "string",
+                              "enum": [
+                                "public",
+                                "user-whitelist"
+                              ]
+                            },
+                            "allowedUserIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "validFrom": {
+                              "type": "string"
+                            },
+                            "validUntil": {
+                              "type": "string"
+                            },
+                            "maxUses": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "createdBy": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tempKeyUuid",
+                            "lockId",
+                            "lockUuid",
+                            "accessMode",
+                            "validFrom",
+                            "validUntil",
+                            "createdBy",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "tempKeyUuid": {
                       "type": "string"
                     }
@@ -6256,6 +7535,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "tempKeyUuid"
                   ]
                 }
@@ -6365,12 +7645,58 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "TempKeyDeleted"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "tempKeyUuid": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "lockUuid": {
+                              "type": "string"
+                            },
+                            "deletedBy": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tempKeyUuid",
+                            "lockId",
+                            "lockUuid",
+                            "deletedBy",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -7149,12 +8475,89 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "TempKeyUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "tempKeyUuid": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "lockUuid": {
+                              "type": "string"
+                            },
+                            "changes": {
+                              "type": "object",
+                              "properties": {
+                                "validFrom": {
+                                  "type": "string"
+                                },
+                                "validUntil": {
+                                  "type": "string"
+                                },
+                                "maxUses": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "allowedUserIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "accessMode": {
+                                  "type": "string",
+                                  "enum": [
+                                    "public",
+                                    "user-whitelist"
+                                  ]
+                                }
+                              }
+                            },
+                            "updatedBy": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tempKeyUuid",
+                            "lockId",
+                            "lockUuid",
+                            "changes",
+                            "updatedBy",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -7275,12 +8678,58 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MatterDeviceCreated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "hubId": {
+                              "type": "string"
+                            },
+                            "deviceType": {
+                              "type": "string"
+                            },
+                            "createdAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "deviceId",
+                            "thingName",
+                            "hubId",
+                            "deviceType",
+                            "createdAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -7374,12 +8823,55 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ReportedShadowUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "reported": {
+                              "type": "object",
+                              "additionalProperties": {}
+                            },
+                            "updatedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "deviceId",
+                            "thingName",
+                            "reported",
+                            "updatedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -7473,12 +8965,55 @@
                     },
                     "version": {
                       "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DesiredShadowUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "desired": {
+                              "type": "object",
+                              "additionalProperties": {}
+                            },
+                            "updatedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "deviceId",
+                            "thingName",
+                            "desired",
+                            "updatedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
-                    "version"
+                    "version",
+                    "event"
                   ]
                 }
               }
@@ -7773,6 +9308,57 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "AccessibleLockAdded"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "string"
+                            },
+                            "lockName": {
+                              "type": "string"
+                            },
+                            "accessLevel": {
+                              "type": "string",
+                              "enum": [
+                                "OWNER",
+                                "ADMIN",
+                                "USER",
+                                "GUEST"
+                              ]
+                            },
+                            "grantedBy": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "lockId",
+                            "lockName",
+                            "accessLevel",
+                            "grantedBy"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "lockId": {
                       "type": "string"
                     },
@@ -7790,6 +9376,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "lockId",
                     "accessLevel"
                   ]
@@ -7908,6 +9495,47 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LicensePlateAdded"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "plate": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "addedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "plate",
+                            "label",
+                            "addedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "plate": {
                       "type": "string"
                     },
@@ -7919,6 +9547,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "plate",
                     "label"
                   ]
@@ -8041,6 +9670,53 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PhysicalKeyAdded"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "number": {
+                              "type": "number"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "orgName": {
+                              "type": "string"
+                            },
+                            "note": {
+                              "type": "string"
+                            },
+                            "addedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "number",
+                            "orgId",
+                            "addedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "number": {
                       "type": "integer",
                       "exclusiveMinimum": 0,
@@ -8063,6 +9739,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "number",
                     "orgId",
                     "addedAt"
@@ -8185,6 +9862,53 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "WalletKeyPrepared"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "keyId": {
+                              "type": "string"
+                            },
+                            "walletType": {
+                              "type": "string",
+                              "enum": [
+                                "APPLE",
+                                "GOOGLE"
+                              ]
+                            },
+                            "keyIndex": {
+                              "type": "number"
+                            },
+                            "deviceId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "keyId",
+                            "walletType"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "keyId": {
                       "type": "string",
                       "format": "uuid",
@@ -8202,6 +9926,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "keyId",
                     "walletType"
                   ]
@@ -8339,6 +10064,57 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "UserCreated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string"
+                            },
+                            "firstName": {
+                              "type": "string"
+                            },
+                            "lastName": {
+                              "type": "string"
+                            },
+                            "phoneNumber": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "ACTIVE",
+                                "INACTIVE",
+                                "SUSPENDED"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "email",
+                            "status"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "userId": {
                       "type": "string"
                     }
@@ -8347,6 +10123,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "userId"
                   ]
                 },
@@ -9072,6 +10849,51 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "AccessibleLockRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "string"
+                            },
+                            "removedBy": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "removedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "lockId",
+                            "removedBy",
+                            "reason",
+                            "removedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "lockId": {
                       "type": "string"
                     },
@@ -9083,6 +10905,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "lockId",
                     "removedAt"
                   ]
@@ -9196,6 +11019,39 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LicensePlateRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "plate": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "plate"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "plate": {
                       "type": "string"
                     }
@@ -9204,6 +11060,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "plate"
                   ]
                 }
@@ -9320,6 +11177,43 @@
                     "version": {
                       "type": "number"
                     },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PhysicalKeyRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "number": {
+                              "type": "number"
+                            },
+                            "removedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "number",
+                            "removedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
                     "number": {
                       "type": "integer",
                       "exclusiveMinimum": 0
@@ -9329,6 +11223,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "event",
                     "number"
                   ]
                 }
