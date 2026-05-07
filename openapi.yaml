@@ -789,7 +789,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -906,7 +905,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -1546,7 +1544,6 @@
                 "properties": {
                   "userId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Our user UUID"
                   },
                   "threeDeyeUserId": {
@@ -1722,7 +1719,6 @@
                 "properties": {
                   "roleId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Camera Role ID"
                   },
                   "name": {
@@ -1737,7 +1733,6 @@
                   },
                   "orgId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Organization ID"
                   }
                 },
@@ -1947,7 +1942,6 @@
                 "properties": {
                   "deletedBy": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User ID who deleted the role"
                   }
                 },
@@ -2275,7 +2269,6 @@
                 "properties": {
                   "userId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Our user UUID"
                   },
                   "threeDeyeUserId": {
@@ -2604,7 +2597,6 @@
                 "properties": {
                   "deletedBy": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User ID who deleted the camera"
                   }
                 },
@@ -2775,7 +2767,6 @@
                   },
                   "disabledBy": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User ID who disabled the camera"
                   }
                 },
@@ -3107,7 +3098,6 @@
                 "properties": {
                   "cameraId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Camera ID"
                   },
                   "name": {
@@ -3141,7 +3131,6 @@
                   },
                   "ownerId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Owner user ID"
                   },
                   "login": {
@@ -4078,7 +4067,6 @@
                 "properties": {
                   "hubId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Hub ID"
                   },
                   "commissioningCode": {
@@ -4245,7 +4233,6 @@
                 "properties": {
                   "hubId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Hub ID"
                   },
                   "serial": {
@@ -4706,7 +4693,6 @@
                 "properties": {
                   "hubId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Hub ID"
                   },
                   "command": {
@@ -4882,7 +4868,6 @@
                 "properties": {
                   "hubId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Hub ID"
                   },
                   "isPrimary": {
@@ -4891,7 +4876,6 @@
                   },
                   "userId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User ID setting the role"
                   }
                 },
@@ -5792,7 +5776,6 @@
                 "properties": {
                   "newUuid": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "New UUID for the lock"
                   }
                 },
@@ -6030,7 +6013,6 @@
                   },
                   "uuid": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Lock UUID"
                   },
                   "serialNumber": {
@@ -7393,8 +7375,7 @@
                 "type": "object",
                 "properties": {
                   "tempKeyUuid": {
-                    "type": "string",
-                    "format": "uuid"
+                    "type": "string"
                   },
                   "accessMode": {
                     "type": "string",
@@ -7406,8 +7387,7 @@
                   "allowedUserIds": {
                     "type": "array",
                     "items": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     },
                     "default": []
                   },
@@ -7618,8 +7598,7 @@
                 "type": "object",
                 "properties": {
                   "tempKeyUuid": {
-                    "type": "string",
-                    "format": "uuid"
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -8419,8 +8398,7 @@
                 "type": "object",
                 "properties": {
                   "tempKeyUuid": {
-                    "type": "string",
-                    "format": "uuid"
+                    "type": "string"
                   },
                   "validFrom": {
                     "type": "string",
@@ -8440,8 +8418,7 @@
                   "allowedUserIds": {
                     "type": "array",
                     "items": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     }
                   },
                   "accessMode": {
@@ -9235,7 +9212,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -9445,7 +9421,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -9616,7 +9591,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -9809,7 +9783,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -9911,7 +9884,6 @@
                     },
                     "keyId": {
                       "type": "string",
-                      "format": "uuid",
                       "description": "Server-generated wallet key UUID"
                     },
                     "walletType": {
@@ -10001,7 +9973,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -10018,7 +9989,6 @@
                 "properties": {
                   "userId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "User UUID"
                   },
                   "email": {
@@ -10174,7 +10144,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -10292,7 +10261,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -10396,7 +10364,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -10548,7 +10515,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -10727,7 +10693,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -10828,7 +10793,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -10947,7 +10911,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -11126,7 +11089,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -11280,7 +11242,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -11443,7 +11404,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -11586,7 +11546,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "User ID"
             },
             "required": true,
@@ -11608,7 +11567,8 @@
                 },
                 "required": [
                   "commandType"
-                ]
+                ],
+                "additionalProperties": {}
               }
             }
           }
@@ -11630,7 +11590,8 @@
                   },
                   "required": [
                     "success"
-                  ]
+                  ],
+                  "additionalProperties": {}
                 }
               }
             }
@@ -11678,7 +11639,8 @@
                 },
                 "required": [
                   "commandType"
-                ]
+                ],
+                "additionalProperties": {}
               }
             }
           }
@@ -11700,7 +11662,8 @@
                   },
                   "required": [
                     "success"
-                  ]
+                  ],
+                  "additionalProperties": {}
                 }
               }
             }
@@ -11748,7 +11711,8 @@
                 },
                 "required": [
                   "commandType"
-                ]
+                ],
+                "additionalProperties": {}
               }
             }
           }
@@ -11770,7 +11734,8 @@
                   },
                   "required": [
                     "success"
-                  ]
+                  ],
+                  "additionalProperties": {}
                 }
               }
             }
@@ -12237,7 +12202,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "Optional UUID to assign to the new user. Ignored if user already exists."
             },
             "required": false,
@@ -12255,8 +12219,7 @@
                   "type": "object",
                   "properties": {
                     "uuid": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     },
                     "email": {
                       "type": "string",
@@ -12398,8 +12361,7 @@
                       "type": "boolean"
                     },
                     "userId": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     },
                     "email": {
                       "type": "string",
