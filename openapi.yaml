@@ -10383,6 +10383,158 @@
         }
       }
     },
+    "/users/{id}/owned-locks": {
+      "get": {
+        "tags": [
+          "User",
+          "Query"
+        ],
+        "summary": "Get locks owned by the user",
+        "description": "Returns locks where `LockAggregate.state.ownerId === user.userId`, sourced from the SpacetimeDB `device_state` read model.",
+        "operationId": "get_GetOwnedLocksRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned locks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "locks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "lockUuid": {
+                            "type": "string",
+                            "description": "Lock device UUID (matches `device_state.uuid`)"
+                          },
+                          "serialNumber": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Manufacturer serial number, empty string if unknown"
+                          },
+                          "thingName": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "AWS IoT thing name, empty string if unknown"
+                          },
+                          "online": {
+                            "type": "boolean",
+                            "description": "Whether the device is currently reporting online"
+                          },
+                          "keysCount": {
+                            "type": "integer",
+                            "description": "Number of physical keys on the lock"
+                          },
+                          "residentCount": {
+                            "type": "integer",
+                            "description": "Number of users granted access"
+                          },
+                          "lastEvent": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Last projected event type (e.g. \"OwnerSet\", \"KeyAdded\")"
+                          },
+                          "lastUpdated": {
+                            "type": [
+                              "number",
+                              "null"
+                            ],
+                            "description": "Unix epoch ms when the last projected event was applied"
+                          }
+                        },
+                        "required": [
+                          "lockUuid",
+                          "serialNumber",
+                          "thingName",
+                          "online",
+                          "keysCount",
+                          "residentCount",
+                          "lastEvent",
+                          "lastUpdated"
+                        ]
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "spacetimedb",
+                        "unavailable"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "locks",
+                    "totalCount",
+                    "source"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/keys": {
       "get": {
         "tags": [
