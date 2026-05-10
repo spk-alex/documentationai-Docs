@@ -5582,7 +5582,7 @@
           "Doorbell"
         ],
         "summary": "Add resident to doorbell list",
-        "description": "Adds a resident who will receive notifications when doorbell is activated.",
+        "description": "Adds a resident who will receive notifications when doorbell is activated. The resident must already exist in user_state (call GET /users/by-email first if not).",
         "operationId": "post_AddResidentRoute",
         "parameters": [
           {
@@ -5606,7 +5606,7 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "description": "Resident email"
+                    "description": "Resident email — server resolves to the user UUID via D1"
                   },
                   "name": {
                     "type": "string",
@@ -5663,10 +5663,13 @@
                             "timestamp": {
                               "type": "string"
                             },
-                            "email": {
+                            "userId": {
                               "type": "string"
                             },
                             "name": {
+                              "type": "string"
+                            },
+                            "email": {
                               "type": "string"
                             }
                           },
@@ -5674,7 +5677,7 @@
                             "lockId",
                             "uuid",
                             "timestamp",
-                            "email",
+                            "userId",
                             "name"
                           ]
                         }
@@ -5722,7 +5725,7 @@
             }
           },
           "404": {
-            "description": "Lock not found",
+            "description": "Lock not found, or no user exists for the supplied email — call GET /users/by-email first to provision.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6652,6 +6655,9 @@
                             "timestamp": {
                               "type": "string"
                             },
+                            "userId": {
+                              "type": "string"
+                            },
                             "email": {
                               "type": "string"
                             }
@@ -6660,7 +6666,7 @@
                             "lockId",
                             "uuid",
                             "timestamp",
-                            "email"
+                            "userId"
                           ]
                         }
                       },
@@ -7915,15 +7921,18 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "email": {
+                          "userId": {
                             "type": "string"
                           },
                           "name": {
                             "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
                           }
                         },
                         "required": [
-                          "email",
+                          "userId",
                           "name"
                         ]
                       }
@@ -8171,15 +8180,18 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "email": {
+                          "userId": {
                             "type": "string"
                           },
                           "name": {
                             "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
                           }
                         },
                         "required": [
-                          "email",
+                          "userId",
                           "name"
                         ]
                       }
