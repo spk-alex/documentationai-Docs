@@ -9419,6 +9419,198 @@
         }
       }
     },
+    "/users/{id}/AddDevice": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Devices"
+        ],
+        "summary": "Link a device to a user",
+        "description": "Records a cross-reference between a user and a device aggregate (Matter bridge or 3dEye camera) along with the device's org.",
+        "operationId": "post_AddDeviceRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceId": {
+                    "type": "string",
+                    "description": "Device UUID (DO name + R2 prefix in the device namespace)"
+                  },
+                  "deviceType": {
+                    "type": "string",
+                    "enum": [
+                      "matter",
+                      "camera"
+                    ],
+                    "description": "matter | camera — discriminates which device aggregate this references"
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "description": "Organisation the device belongs to. Captured at link time so consumers can filter without loading the device aggregate."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Friendly label, optional"
+                  },
+                  "addedBy": {
+                    "type": "string",
+                    "description": "Actor that performed the link, optional"
+                  }
+                },
+                "required": [
+                  "deviceId",
+                  "deviceType",
+                  "orgId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device linked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DeviceAdded"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "deviceType": {
+                              "type": "string",
+                              "enum": [
+                                "matter",
+                                "camera"
+                              ]
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "addedBy": {
+                              "type": "string"
+                            },
+                            "addedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "deviceId",
+                            "deviceType",
+                            "orgId",
+                            "addedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or device already linked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/AddLicensePlate": {
       "post": {
         "tags": [
@@ -10514,6 +10706,138 @@
         }
       }
     },
+    "/users/{id}/devices": {
+      "get": {
+        "tags": [
+          "User",
+          "Query",
+          "Devices"
+        ],
+        "summary": "Get devices linked to a user",
+        "description": "Returns the user's linked devices. Optional `?type=` query param filters by device kind. API-key (B2B) requests are auto-scoped to the key's orgId; JWT (B2C) callers see all of the user's devices.",
+        "operationId": "get_GetUserDevicesRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "matter",
+                "camera"
+              ],
+              "description": "Filter by device type (matter | camera). Omit to return both kinds."
+            },
+            "required": false,
+            "description": "Filter by device type (matter | camera). Omit to return both kinds.",
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Devices retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "devices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deviceId": {
+                            "type": "string"
+                          },
+                          "deviceType": {
+                            "type": "string",
+                            "enum": [
+                              "matter",
+                              "camera"
+                            ]
+                          },
+                          "orgId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "addedBy": {
+                            "type": "string"
+                          },
+                          "addedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "deviceId",
+                          "deviceType",
+                          "orgId",
+                          "addedAt"
+                        ]
+                      }
+                    },
+                    "totalCount": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "devices",
+                    "totalCount"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/keys": {
       "get": {
         "tags": [
@@ -11042,6 +11366,184 @@
           },
           "400": {
             "description": "Invalid request or lock not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/RemoveDevice": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Devices"
+        ],
+        "summary": "Unlink a device from a user",
+        "description": "Removes the cross-reference between a user and a device aggregate. The device aggregate itself is not touched.",
+        "operationId": "post_RemoveDeviceRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceId": {
+                    "type": "string",
+                    "description": "Device UUID"
+                  },
+                  "removedBy": {
+                    "type": "string",
+                    "description": "Actor that performed the unlink"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Why the device is being unlinked (audit)"
+                  }
+                },
+                "required": [
+                  "deviceId",
+                  "removedBy",
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device unlinked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DeviceRemoved"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "deviceType": {
+                              "type": "string",
+                              "enum": [
+                                "matter",
+                                "camera"
+                              ]
+                            },
+                            "removedBy": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "removedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "deviceId",
+                            "deviceType",
+                            "removedBy",
+                            "reason",
+                            "removedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or device not linked",
             "content": {
               "application/json": {
                 "schema": {
