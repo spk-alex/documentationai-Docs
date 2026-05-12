@@ -810,10 +810,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this — any client value is overwritten. Used to enforce per-key org scoping on B2B reads (mismatch → 404, never leaks existence)."
+              "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this."
             },
             "required": false,
-            "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this — any client value is overwritten. Used to enforce per-key org scoping on B2B reads (mismatch → 404, never leaks existence).",
+            "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this.",
             "name": "_callerOrgId",
             "in": "query"
           }
@@ -1703,10 +1703,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Camera Role ID (must match roleId in body)"
+              "description": "Camera Role ID"
             },
             "required": true,
-            "description": "Camera Role ID (must match roleId in body)",
+            "description": "Camera Role ID",
             "name": "id",
             "in": "path"
           }
@@ -3082,10 +3082,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Camera ID (must match cameraId in body)"
+              "description": "Camera ID"
             },
             "required": true,
-            "description": "Camera ID (must match cameraId in body)",
+            "description": "Camera ID",
             "name": "id",
             "in": "path"
           }
@@ -3830,10 +3830,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Hub ID (must match hubId in body)"
+              "description": "Hub ID"
             },
             "required": true,
-            "description": "Hub ID (must match hubId in body)",
+            "description": "Hub ID",
             "name": "id",
             "in": "path"
           }
@@ -4217,10 +4217,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Hub ID (must match hubId in body)"
+              "description": "Hub ID"
             },
             "required": true,
-            "description": "Hub ID (must match hubId in body)",
+            "description": "Hub ID",
             "name": "id",
             "in": "path"
           }
@@ -4442,10 +4442,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Hub ID (must match hubId in body)"
+              "description": "Hub ID"
             },
             "required": true,
-            "description": "Hub ID (must match hubId in body)",
+            "description": "Hub ID",
             "name": "id",
             "in": "path"
           }
@@ -4677,10 +4677,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Hub ID (must match hubId in body)"
+              "description": "Hub ID"
             },
             "required": true,
-            "description": "Hub ID (must match hubId in body)",
+            "description": "Hub ID",
             "name": "id",
             "in": "path"
           }
@@ -4852,10 +4852,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Hub ID (must match hubId in body)"
+              "description": "Hub ID"
             },
             "required": true,
-            "description": "Hub ID (must match hubId in body)",
+            "description": "Hub ID",
             "name": "id",
             "in": "path"
           }
@@ -5060,10 +5060,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Hub ID (must match hubId in body)"
+              "description": "Hub ID"
             },
             "required": true,
-            "description": "Hub ID (must match hubId in body)",
+            "description": "Hub ID",
             "name": "id",
             "in": "path"
           }
@@ -6348,7 +6348,10 @@
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
                     },
                     "error": {
                       "type": "string"
@@ -7195,13 +7198,91 @@
             }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
           },
           "403": {
-            "description": "Forbidden - insufficient permissions"
+            "description": "Forbidden - insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
           },
           "404": {
-            "description": "Lock not found"
+            "description": "Lock not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
           },
           "502": {
             "description": "Failed to update device shadow",
@@ -7211,7 +7292,10 @@
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
                     },
                     "error": {
                       "type": "string"
@@ -8611,9 +8695,11 @@
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Matter Device ID"
             },
             "required": true,
+            "description": "Matter Device ID",
             "name": "id",
             "in": "path"
           }
@@ -9064,17 +9150,7 @@
         ],
         "responses": {
           "303": {
-            "description": "Lock opened successfully, redirecting to temp key page",
-            "headers": {
-              "Location": {
-                "schema": {
-                  "type": "string",
-                  "description": "Redirect URL with success query param"
-                },
-                "required": true,
-                "description": "Redirect URL with success query param"
-              }
-            }
+            "description": "Lock opened successfully, redirecting to temp key page"
           },
           "400": {
             "description": "Temporary key is invalid (not yet valid, expired, or used up)",
@@ -9449,7 +9525,7 @@
                 "properties": {
                   "deviceId": {
                     "type": "string",
-                    "description": "Device UUID (DO name + R2 prefix in the device namespace)"
+                    "description": "Device UUID"
                   },
                   "deviceType": {
                     "type": "string",
@@ -9457,19 +9533,19 @@
                       "matter",
                       "camera"
                     ],
-                    "description": "matter | camera — discriminates which device aggregate this references"
+                    "description": "matter | camera"
                   },
                   "orgId": {
                     "type": "string",
-                    "description": "Organisation the device belongs to. Captured at link time so consumers can filter without loading the device aggregate."
+                    "description": "Organisation the device belongs to"
                   },
                   "name": {
                     "type": "string",
-                    "description": "Friendly label, optional"
+                    "description": "Friendly label"
                   },
                   "addedBy": {
                     "type": "string",
-                    "description": "Actor that performed the link, optional"
+                    "description": "Actor that performed the link"
                   }
                 },
                 "required": [
@@ -9816,7 +9892,7 @@
                   },
                   "orgName": {
                     "type": "string",
-                    "description": "Issuing organisation display name (optional, denormalised)"
+                    "description": "Issuing organisation display name"
                   },
                   "note": {
                     "type": "string",
@@ -10591,21 +10667,21 @@
                         "properties": {
                           "lockUuid": {
                             "type": "string",
-                            "description": "Lock device UUID (matches `device_state.uuid`)"
+                            "description": "Lock device UUID"
                           },
                           "serialNumber": {
                             "type": [
                               "string",
                               "null"
                             ],
-                            "description": "Manufacturer serial number, empty string if unknown"
+                            "description": "Manufacturer serial number"
                           },
                           "thingName": {
                             "type": [
                               "string",
                               "null"
                             ],
-                            "description": "AWS IoT thing name, empty string if unknown"
+                            "description": "AWS IoT thing name"
                           },
                           "online": {
                             "type": "boolean",
@@ -10624,7 +10700,7 @@
                               "string",
                               "null"
                             ],
-                            "description": "Last projected event type (e.g. \"OwnerSet\", \"KeyAdded\")"
+                            "description": "Last projected event type"
                           },
                           "lastUpdated": {
                             "type": [
@@ -10734,10 +10810,10 @@
                 "matter",
                 "camera"
               ],
-              "description": "Filter by device type (matter | camera). Omit to return both kinds."
+              "description": "Filter by device type (matter | camera)"
             },
             "required": false,
-            "description": "Filter by device type (matter | camera). Omit to return both kinds.",
+            "description": "Filter by device type (matter | camera)",
             "name": "type",
             "in": "query"
           }
@@ -11449,7 +11525,7 @@
                   },
                   "reason": {
                     "type": "string",
-                    "description": "Why the device is being unlinked (audit)"
+                    "description": "Why the device is being unlinked"
                   }
                 },
                 "required": [
@@ -11777,7 +11853,7 @@
                   },
                   "_callerOrgId": {
                     "type": "string",
-                    "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this — any client value is overwritten. Used to enforce per-key org scoping on B2B removals."
+                    "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this."
                   }
                 },
                 "required": [
@@ -12047,222 +12123,6 @@
         }
       }
     },
-    "/users/{id}": {
-      "post": {
-        "tags": [
-          "User",
-          "Command"
-        ],
-        "summary": "Execute user command (convention-based)",
-        "description": "Execute a command on a user aggregate with command name in request body",
-        "operationId": "post_UserAggregateCommandRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "User ID"
-            },
-            "required": true,
-            "description": "User ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "commandType": {
-                    "type": "string",
-                    "description": "Command name (e.g., AddPhysicalKey, AddWalletKey)"
-                  }
-                },
-                "required": [
-                  "commandType"
-                ],
-                "additionalProperties": {}
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Command executed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "version": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "success"
-                  ],
-                  "additionalProperties": {}
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid command or validation error"
-          },
-          "404": {
-            "description": "User not found"
-          }
-        }
-      }
-    },
-    "/locks/{id}": {
-      "post": {
-        "tags": [
-          "Lock",
-          "Command"
-        ],
-        "summary": "Execute lock command (convention-based)",
-        "description": "Execute a command on a lock aggregate with command name in request body",
-        "operationId": "post_LockAggregateCommandRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Lock ID (numeric or UUID)"
-            },
-            "required": true,
-            "description": "Lock ID (numeric or UUID)",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "commandType": {
-                    "type": "string",
-                    "description": "Command name (e.g., CreateLock, AddKey, OpenLock)"
-                  }
-                },
-                "required": [
-                  "commandType"
-                ],
-                "additionalProperties": {}
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Command executed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "version": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "success"
-                  ],
-                  "additionalProperties": {}
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid command or validation error"
-          },
-          "404": {
-            "description": "Lock not found"
-          }
-        }
-      }
-    },
-    "/hubs/{id}": {
-      "post": {
-        "tags": [
-          "Hub",
-          "Command"
-        ],
-        "summary": "Execute hub command (convention-based)",
-        "description": "Execute a command on a hub aggregate with command name in request body",
-        "operationId": "post_HubAggregateCommandRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Hub ID"
-            },
-            "required": true,
-            "description": "Hub ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "commandType": {
-                    "type": "string",
-                    "description": "Command name (e.g., ProvisionHub, ClaimHub)"
-                  }
-                },
-                "required": [
-                  "commandType"
-                ],
-                "additionalProperties": {}
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Command executed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "version": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "success"
-                  ],
-                  "additionalProperties": {}
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid command or validation error"
-          },
-          "404": {
-            "description": "Hub not found"
-          }
-        }
-      }
-    },
     "/admin/backfill-threedeye": {
       "post": {
         "tags": [
@@ -12329,6 +12189,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
                     "error": {
                       "type": "string"
                     },
@@ -12337,6 +12200,7 @@
                     }
                   },
                   "required": [
+                    "success",
                     "error",
                     "message"
                   ]
@@ -12716,10 +12580,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "Optional UUID to assign to the new user. Ignored if user already exists."
+              "description": "Optional UUID to assign to the new user"
             },
             "required": false,
-            "description": "Optional UUID to assign to the new user. Ignored if user already exists.",
+            "description": "Optional UUID to assign to the new user",
             "name": "uuid",
             "in": "query"
           }
