@@ -349,12 +349,14 @@ This event has a **different envelope** from `spk.api` events — there is no `d
 | Field | Type | Description |
 |-------|------|-------------|
 | `thingName` | string | AWS IoT thing name of the device |
-| `partnerId` | string\|null | Partner associated with this device |
-| `version` | number | Shadow document version |
-| `desiredState` | string | Target state set by the application (JSON string) |
-| `reportedState` | string | State the device reported back (JSON string) |
-| `deltaState` | string | Difference between desired and reported state (JSON string); non-empty when the device hasn't applied all changes |
-| `metadata` | string | AWS IoT shadow metadata with timestamps per field (JSON string) |
+| `partnerId` | string\|null | Partner associated with this device; `null` when the device's IoT thing has no `Org` attribute yet |
+| `version` | number\|null | Shadow document version; `null` for the device's very first shadow event |
+| `desiredState` | string\|null | Target state set by the application (JSON string); `null` when no desired state has ever been set — common for idle devices |
+| `reportedState` | string\|null | State the device reported back (JSON string); `null` when the device has not yet reported any state |
+| `deltaState` | string | Difference between desired and reported state (JSON string); always populated (`"{}"` when no delta) |
+| `metadata` | string\|null | AWS IoT shadow metadata with timestamps per field (JSON string); `null` when the device hasn't produced metadata yet |
+
+Only `thingName` and `deltaState` are guaranteed non-null. **Plan for `null` on all other fields** when consuming Shadow Update events — roughly half of real-world events have at least one null field (typically `desiredState` for devices that never received a desired-state update).
 
 **Example payload:**
 
@@ -366,7 +368,7 @@ This event has a **different envelope** from `spk.api` events — there is no `d
     "partnerId": "<tenant-org-id>",
     "thingName": "<device-uuid>",
     "reportedState": "<stringified JSON of reported state>",
-    "desiredState": "<stringified JSON of desired state>",
+    "desiredState": null,
     "deltaState": "{}",
     "metadata": "<stringified IoT shadow metadata>",
     "version": 42
@@ -374,4 +376,4 @@ This event has a **different envelope** from `spk.api` events — there is no `d
 }
 ```
 
-Note: `reportedState`, `desiredState`, `deltaState`, and `metadata` are **stringified JSON** embedded inside the outer JSON object. Partners must call `JSON.parse()` on each of these fields before accessing their contents.
+Note: when `reportedState`, `desiredState`, `deltaState`, or `metadata` is non-null, the value is **stringified JSON** embedded inside the outer JSON object. Call `JSON.parse()` on each non-null field before accessing its contents.
