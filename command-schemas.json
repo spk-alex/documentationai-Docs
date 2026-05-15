@@ -1,5 +1,5 @@
 {
-  "version": "eb194fa5",
+  "version": "a5e8b9c3",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -498,7 +498,8 @@
           "type": "string",
           "enum": [
             "matter",
-            "camera"
+            "camera",
+            "rtsp-camera"
           ],
           "description": "matter | camera"
         },
@@ -1211,6 +1212,63 @@
       "required": [
         "desired"
       ],
+      "additionalProperties": false
+    },
+    "RegisterRtspCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "rtspCameraId": {
+          "type": "string",
+          "description": "Camera UUID (caller-supplied or server-generated)"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable camera name"
+        },
+        "rtspUrl": {
+          "type": "string",
+          "minLength": 1,
+          "description": "RTSP stream URL (e.g. rtsp://192.168.1.1:554/stream)"
+        },
+        "httpSnapshotUrl": {
+          "description": "HTTP snapshot URL for still image capture",
+          "type": "string"
+        },
+        "username": {
+          "description": "Camera authentication username",
+          "type": "string"
+        },
+        "password": {
+          "description": "Camera authentication password",
+          "type": "string"
+        },
+        "ownerId": {
+          "description": "User ID who owns this camera (B2C)",
+          "type": "string"
+        },
+        "orgId": {
+          "description": "Organisation ID that owns this camera (B2B)",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rtspCameraId",
+        "name",
+        "rtspUrl"
+      ],
+      "additionalProperties": false
+    },
+    "DeleteRtspCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deletedBy": {
+          "description": "Actor who requested the deletion",
+          "type": "string"
+        }
+      },
       "additionalProperties": false
     }
   }
