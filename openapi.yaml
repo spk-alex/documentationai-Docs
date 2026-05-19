@@ -1733,7 +1733,8 @@
                   },
                   "orgId": {
                     "type": "string",
-                    "description": "Organization ID"
+                    "minLength": 1,
+                    "description": "Organization ID — opaque string, conventionally but not always a UUID"
                   }
                 },
                 "required": [

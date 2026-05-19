@@ -1,5 +1,5 @@
 {
-  "version": "8820d942",
+  "version": "b8234f08",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -1035,9 +1035,8 @@
         },
         "orgId": {
           "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "Organization ID"
+          "minLength": 1,
+          "description": "Organization ID — opaque string, conventionally but not always a UUID"
         }
       },
       "required": [
