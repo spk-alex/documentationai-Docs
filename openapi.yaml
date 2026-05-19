@@ -3818,6 +3818,219 @@
         }
       }
     },
+    "/cameras/{id}/stream": {
+      "get": {
+        "tags": [
+          "Camera",
+          "Query"
+        ],
+        "summary": "Get camera streaming URLs",
+        "description": "Fetches live streaming URLs (HLS, DASH, RTMP, thumbnail, snapshot) from 3dEye for a specific camera. Requires the authenticated user to have View permission on the camera.",
+        "operationId": "get_GetCameraStreamRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Streaming URLs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameraId": {
+                      "type": "string",
+                      "description": "Camera ID"
+                    },
+                    "threeDeyeCameraId": {
+                      "type": "string",
+                      "description": "3dEye camera ID"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Camera display name"
+                    },
+                    "videoStreamState": {
+                      "type": "string",
+                      "description": "Current video stream state from 3dEye"
+                    },
+                    "accessUrls": {
+                      "type": "object",
+                      "properties": {
+                        "http": {
+                          "type": "string",
+                          "description": "HTTP stream URL"
+                        },
+                        "rtsp": {
+                          "type": "string",
+                          "description": "RTSP stream URL"
+                        },
+                        "hlsStream": {
+                          "type": "string",
+                          "description": "HLS stream URL"
+                        },
+                        "dashStream": {
+                          "type": "string",
+                          "description": "DASH stream URL"
+                        },
+                        "rtmpStream": {
+                          "type": "string",
+                          "description": "RTMP stream URL"
+                        },
+                        "thumbnail": {
+                          "type": "string",
+                          "description": "Thumbnail URL"
+                        },
+                        "snapShot": {
+                          "type": "string",
+                          "description": "Snapshot URL"
+                        }
+                      },
+                      "required": [
+                        "http",
+                        "rtsp",
+                        "hlsStream",
+                        "dashStream",
+                        "rtmpStream",
+                        "thumbnail",
+                        "snapShot"
+                      ],
+                      "description": "Stream access URLs for different protocols"
+                    }
+                  },
+                  "required": [
+                    "cameraId",
+                    "threeDeyeCameraId",
+                    "name",
+                    "videoStreamState",
+                    "accessUrls"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — JWT authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — user does not have View permission on this camera",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera not found or not active, or not linked to 3dEye",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "3dEye integration not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/hubs/{id}/ClaimHub": {
       "post": {
         "tags": [
@@ -12962,6 +13175,142 @@
                   },
                   "required": [
                     "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/my": {
+      "get": {
+        "tags": [
+          "Camera",
+          "Query"
+        ],
+        "summary": "List cameras accessible to the authenticated user",
+        "description": "Returns all cameras the authenticated B2C user can access via their camera role memberships. Permissions from multiple roles for the same camera are merged into a single entry.",
+        "operationId": "get_GetMyCamerasRoute",
+        "responses": {
+          "200": {
+            "description": "Camera list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameras": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cameraId": {
+                            "type": "string",
+                            "description": "Camera ID"
+                          },
+                          "threeDeyeCameraId": {
+                            "type": "string",
+                            "description": "3dEye camera ID"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Camera display name"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Camera type (generic, onvif, pnp)"
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "Camera status"
+                          },
+                          "httpUrl": {
+                            "type": "string",
+                            "description": "HTTP access URL for the camera"
+                          },
+                          "rtspUrl": {
+                            "type": "string",
+                            "description": "RTSP streaming URL for the camera"
+                          },
+                          "orgId": {
+                            "type": "string",
+                            "description": "Organization ID"
+                          },
+                          "permissions": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Permissions granted to the user for this camera"
+                          }
+                        },
+                        "required": [
+                          "cameraId",
+                          "threeDeyeCameraId",
+                          "name",
+                          "type",
+                          "status",
+                          "httpUrl",
+                          "rtspUrl",
+                          "orgId",
+                          "permissions"
+                        ]
+                      },
+                      "description": "Cameras accessible to the authenticated user"
+                    },
+                    "total": {
+                      "type": "number",
+                      "description": "Total number of cameras returned"
+                    }
+                  },
+                  "required": [
+                    "cameras",
+                    "total"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — JWT authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
                     "error",
                     "message"
                   ]
