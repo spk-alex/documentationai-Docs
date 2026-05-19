@@ -12766,13 +12766,27 @@
               "enum": [
                 "user",
                 "lock",
-                "hub"
+                "hub",
+                "matter-device",
+                "camera",
+                "camera-role",
+                "rtsp-camera"
               ],
-              "description": "Limit resync to a single aggregate type (user, lock, or hub). Omit to resync all."
+              "description": "Limit resync to a single aggregate type. Omit to resync all supported types."
             },
             "required": false,
-            "description": "Limit resync to a single aggregate type (user, lock, or hub). Omit to resync all.",
+            "description": "Limit resync to a single aggregate type. Omit to resync all supported types.",
             "name": "aggregateType",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Optional single aggregate ID to resync. Requires aggregateType. When set, the R2 list step is skipped — the workflow enqueues just this one DO."
+            },
+            "required": false,
+            "description": "Optional single aggregate ID to resync. Requires aggregateType. When set, the R2 list step is skipped — the workflow enqueues just this one DO.",
+            "name": "aggregateId",
             "in": "query"
           },
           {
@@ -12838,6 +12852,18 @@
                           "type": "number"
                         },
                         "hub": {
+                          "type": "number"
+                        },
+                        "matter-device": {
+                          "type": "number"
+                        },
+                        "camera": {
+                          "type": "number"
+                        },
+                        "camera-role": {
+                          "type": "number"
+                        },
+                        "rtsp-camera": {
                           "type": "number"
                         }
                       }
