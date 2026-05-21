@@ -1544,17 +1544,11 @@
                 "properties": {
                   "userId": {
                     "type": "string",
-                    "description": "Our user UUID"
-                  },
-                  "threeDeyeUserId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "3dEye user GUID"
+                    "description": "Our user UUID — server resolves 3dEye account on demand"
                   }
                 },
                 "required": [
-                  "userId",
-                  "threeDeyeUserId"
+                  "userId"
                 ]
               }
             }
@@ -2270,17 +2264,11 @@
                 "properties": {
                   "userId": {
                     "type": "string",
-                    "description": "Our user UUID"
-                  },
-                  "threeDeyeUserId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "3dEye user GUID"
+                    "description": "Our user UUID — server resolves 3dEye account on demand"
                   }
                 },
                 "required": [
-                  "userId",
-                  "threeDeyeUserId"
+                  "userId"
                 ]
               }
             }
