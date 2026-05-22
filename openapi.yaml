@@ -673,108 +673,6 @@
         }
       }
     },
-    "/admin/users/{id}/3deye-credentials": {
-      "get": {
-        "tags": [
-          "Admin",
-          "3dEye"
-        ],
-        "summary": "Get 3dEye credentials for a user",
-        "description": "Returns stored 3dEye user ID and password. Requires admin auth.",
-        "operationId": "get_GetThreeDeyeCredentialsRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "User ID"
-            },
-            "required": true,
-            "description": "User ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "3dEye credentials found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "userId": {
-                      "type": "string"
-                    },
-                    "email": {
-                      "type": "string"
-                    },
-                    "threeDeyeUserId": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "password": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "email",
-                    "threeDeyeUserId",
-                    "password"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "3dEye credentials not found for this user",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/users/{id}/PhysicalKeys/{number}": {
       "get": {
         "tags": [
@@ -9921,6 +9819,152 @@
               "text/html": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/3deye-credentials": {
+      "get": {
+        "tags": [
+          "User",
+          "3dEye"
+        ],
+        "summary": "Get 3dEye credentials for a user",
+        "description": "Returns the stored 3dEye user GUID and password for the b2c user. Lazy-creates the 3dEye account on first call. B2C JWT auth: caller can only fetch their own credentials. B2B API key: partner can fetch credentials for any userId.",
+        "operationId": "get_GetThreeDeyeCredentialsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "3dEye credentials found (or just provisioned)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "threeDeyeUserId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "password": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "email",
+                    "threeDeyeUserId",
+                    "password"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid auth",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — JWT caller asked for someone else's credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No b2c user found for this id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "3dEye not configured for this environment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
                 }
               }
             }
