@@ -1,5 +1,5 @@
 {
-  "version": "d4c1726b",
+  "version": "71ecfa2f",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "LockCreated": {
