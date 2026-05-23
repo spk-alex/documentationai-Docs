@@ -9833,7 +9833,7 @@
           "3dEye"
         ],
         "summary": "Get 3dEye credentials for a user",
-        "description": "Returns the stored 3dEye user GUID and password for the b2c user. Lazy-creates the 3dEye account on first call. B2C JWT auth: caller can only fetch their own credentials. B2B API key: partner can fetch credentials for any userId.",
+        "description": "Returns the stored 3dEye user GUID and password for the b2c user. Lazy-creates the 3dEye account on first call. Auth: JWT or B2B X-API-Key, same as the rest of the user-scoped routes.",
         "operationId": "get_GetThreeDeyeCredentialsRoute",
         "parameters": [
           {
@@ -9883,28 +9883,6 @@
           },
           "401": {
             "description": "Unauthorized — missing or invalid auth",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden — JWT caller asked for someone else's credentials",
             "content": {
               "application/json": {
                 "schema": {
