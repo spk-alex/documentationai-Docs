@@ -1228,6 +1228,197 @@
         }
       }
     },
+    "/admin/shadow-sync/{thingName}": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Shadow"
+        ],
+        "summary": "Force-sync every named shadow on a Thing through the EventBridge pipeline",
+        "description": "Enumerates every named shadow on the target Thing (via AWS IoT `ListNamedShadowsForThing` + `GetThingShadow`), then invokes the `shadow_to_eventbridge` Lambda once per shadow with a synthetic Topic-Rule-SQL-shaped event. Lambda → EventBridge → `/admin/shadow-webhook` → SpacetimeDB populates `device_named_shadow` as if the hub had organically republished. Auth: X-Admin-API-Key + @smartphonekey.com JWT.",
+        "operationId": "post_ShadowSyncRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "AWS IoT thing name to sync. For Matter devices this equals the device UUID."
+            },
+            "required": true,
+            "description": "AWS IoT thing name to sync. For Matter devices this equals the device UUID.",
+            "name": "thingName",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shadow sync triggered for every named shadow on the Thing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "thingName": {
+                      "type": "string"
+                    },
+                    "shadows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "shadowName": {
+                            "type": "string"
+                          },
+                          "lambdaStatusCode": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "lambdaRequestId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "error": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "shadowName",
+                          "lambdaStatusCode",
+                          "lambdaRequestId",
+                          "error"
+                        ]
+                      }
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "thingName",
+                    "shadows",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid thingName",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Thing has no named shadows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/camera-roles/{id}/AssignCamera": {
       "post": {
         "tags": [
