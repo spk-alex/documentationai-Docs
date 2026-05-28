@@ -4108,6 +4108,204 @@
         }
       }
     },
+    "/cameras/{id}/lpr-events": {
+      "get": {
+        "tags": [
+          "Camera",
+          "Query"
+        ],
+        "summary": "Get LPR event history",
+        "description": "Returns paginated license plate recognition audit history for a camera. Supports from/to date filters.",
+        "operationId": "get_GetLprEventsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Inclusive ISO-8601 start timestamp"
+            },
+            "required": false,
+            "description": "Inclusive ISO-8601 start timestamp",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Inclusive ISO-8601 end timestamp"
+            },
+            "required": false,
+            "description": "Inclusive ISO-8601 end timestamp",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "1-based page number"
+            },
+            "required": false,
+            "description": "1-based page number",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Events per page, maximum 100"
+            },
+            "required": false,
+            "description": "Events per page, maximum 100",
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "LPR event history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Audit event id"
+                          },
+                          "cameraId": {
+                            "type": "string",
+                            "description": "Camera aggregate id"
+                          },
+                          "lockId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Linked lock id, when known"
+                          },
+                          "plate": {
+                            "type": "string",
+                            "description": "Detected license plate"
+                          },
+                          "confidence": {
+                            "type": "number",
+                            "description": "3dEye detection confidence"
+                          },
+                          "matched": {
+                            "type": "boolean",
+                            "description": "Whether the plate matched an authorized user"
+                          },
+                          "matchedUserId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Matched user id, when matched"
+                          },
+                          "actionTaken": {
+                            "type": "string",
+                            "description": "Action taken by the LPR matcher"
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "description": "ISO-8601 event timestamp"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "cameraId",
+                          "lockId",
+                          "plate",
+                          "confidence",
+                          "matched",
+                          "matchedUserId",
+                          "actionTaken",
+                          "timestamp"
+                        ]
+                      }
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pageSize": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "cameraId",
+                    "events",
+                    "page",
+                    "pageSize",
+                    "total",
+                    "hasMore"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/hubs/{id}/ClaimHub": {
       "post": {
         "tags": [
