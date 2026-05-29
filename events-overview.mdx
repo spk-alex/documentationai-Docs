@@ -7,9 +7,15 @@ SmartphoneKey publishes real-time events via AWS EventBridge whenever significan
 
 ## Event Sources
 
+SmartphoneKey publishes events from two sources:
+
+### `spk.api`
+
+Domain events from the B2C API — locks, users, hubs, cameras, temp keys, and Matter devices (e.g. `LockCreated`, `KeyAdded`, `ResidentAdded`, `AccessibleLockAdded`). The `detail-type` is the PascalCase event name, and the domain payload is wrapped under `detail.data`. This is the bulk of what most integrations consume. See the [Event Catalog](/events-catalog) and [Partner Webhooks](/events-webhooks) for the full list.
+
 ### `spk.iot.shadow`
 
-Publishes `Shadow Update` events when an IoT hub device updates its AWS IoT Device Shadow. The event carries the `thingName`, `version`, `desiredState`, `reportedState`, and `deltaState` — the delta being non-empty when the device hasn't yet applied all desired configuration changes.
+Publishes `Shadow Update` events when an IoT hub device updates its AWS IoT Device Shadow. The event carries the `thingName`, `version`, `desiredState`, `reportedState`, and `deltaState` — the delta being non-empty when the device hasn't yet applied all desired configuration changes. Unlike `spk.api` events, the shadow fields live directly on `detail` (there is no `detail.data` wrapper).
 
 ## Event Envelope
 
