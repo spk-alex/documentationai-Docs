@@ -30,12 +30,12 @@ The portal does not have its own sign-up form. Identity is owned by Auth0:
 1. Open the portal URL for your environment.
 2. Click **Sign in with Auth0** on the landing page.
 3. Auth0 walks you through email-based sign-in (or social login, depending on your tenant config).
-4. After the OIDC callback, the portal:
-   - Creates a tenant for you on first sign-in.
-   - Issues an initial API key (shown once with a reveal toggle and a "save it now" warning).
-   - Redirects to the dashboard.
+4. After the OIDC callback, **first-time partners** are sent to an **Onboarding** page to choose an organization ID and name. Submitting that form:
+   - Registers your tenant.
+   - Issues your initial API key (shown once on the dashboard with a reveal toggle and a "save it now" warning).
+   - Redirects you to the dashboard.
 
-Subsequent sign-ins skip tenant + key creation and land you straight on the dashboard with a masked key (`abc12345…wxyz`).
+Returning partners skip onboarding and land straight on the dashboard with a masked key (`3f9a1b2c…7d4e`).
 
 ## Dashboard Walkthrough
 

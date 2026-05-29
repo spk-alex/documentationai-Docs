@@ -11,9 +11,10 @@ For partners who already have a SmartphoneKey account in Auth0:
 
 1. **Visit the partner portal for your environment.** For example, dev is at `https://partner-portal.spk-dev.workers.dev/`. (Each environment has its own portal URL — your account manager will share the right one for stage / nonprod / prod.)
 2. **Sign in with Auth0.** Click **Sign in with Auth0** and complete the OIDC flow.
-3. **Copy the API key shown once.** On first sign-in, a tenant and an initial API key are created automatically. The full key is shown only once on this screen — copy and store it in your secret manager now. After this, only a masked prefix is visible.
-4. **Set your webhook URL on the dashboard.** Enter the HTTPS endpoint in your system that will receive events. EventBridge will verify the URL.
-5. **Done — events start arriving.** Once EventBridge confirms the subscription (status moves from `pending` to `verified`), events for your `orgId` are delivered to your URL.
+3. **Complete onboarding (first sign-in only).** New partners are sent to a short onboarding form to choose an **organization ID** and name. Submitting it registers your tenant and issues your initial API key.
+4. **Copy the API key shown once.** The full key is shown only once, on the dashboard, immediately after it's issued — copy and store it in your secret manager now. After that, only a masked prefix is visible.
+5. **Set your webhook URL on the dashboard.** Enter the HTTPS endpoint in your system that will receive events.
+6. **Done — events start arriving.** Your webhook is created with status `active`, and events for your `orgId` are delivered to your URL.
 
 You can return to the dashboard any time to rotate the API key or update the webhook URL.
 
@@ -21,15 +22,15 @@ See [Partner Portal](/partner-portal) for the full UI walkthrough.
 
 ## Receiving events
 
-Events arrive at your webhook URL as HTTP POST requests carrying an AWS EventBridge envelope. The `detail` field includes a `partnerId` that matches your `orgId`, so you only receive events for your organization. Failed deliveries are retried with exponential backoff.
+Events arrive at your webhook URL as HTTP POST requests carrying an AWS EventBridge envelope. The `detail` field includes a `partnerId` that matches your `orgId`, so you only receive events for your organization. Failed deliveries are retried automatically.
 
-For payload shapes, signature verification, retry behavior, and security best practices, see [Setting Up Webhooks](/events-webhooks) and the [Event Catalog](/events-catalog).
+For payload shapes, delivery authentication, retry behavior, and security best practices, see [Setting Up Webhooks](/events-webhooks) and the [Event Catalog](/events-catalog).
 
 ## What partners can do without admin help
 
 | Action | Self-Service (Portal) | Admin API |
 |--------|-----------------------|-----------|
-| Create tenant + initial API key | Yes (auto on first sign-in) | Yes (`POST /api-keys`) |
+| Register tenant + create initial API key | Yes (via onboarding form on first sign-in) | Yes (`POST /tenants/{orgId}/register`, then `POST /api-keys`) |
 | View masked API key | Yes | Yes (list/get tenants) |
 | Rotate API key | Yes | Yes |
 | Set/update webhook URL | Yes | Yes |
@@ -57,9 +58,24 @@ Both headers are required on every admin-api request.
 | Stage | `https://admin-api.spk-stage.workers.dev` |
 | Prod | `https://admin-api.spk-prod.workers.dev` |
 
-### Step 1: Create Partner (API Key)
+### Step 1: Register the Partner (Tenant)
 
-Creating an API key automatically creates the partner (tenant).
+Register the tenant **before** creating an API key. The `orgId` is the path segment (`acme-corp` below).
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/register" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orgName": "ACME Corporation",
+    "ownerEmail": "owner@acme-corp.com"
+  }'
+```
+
+This must succeed first — `POST /api-keys` returns `404 Tenant not registered` if the tenant doesn't exist yet.
+
+### Step 2: Create the API Key
 
 ```bash
 curl -X POST "https://admin-api.spk-dev.workers.dev/api-keys" \
@@ -72,14 +88,17 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/api-keys" \
   }'
 ```
 
-**Response:**
+An optional `expiresAt` (ISO 8601) field is also accepted to issue a time-limited key.
+
+**Response:** (HTTP `201`)
 ```json
 {
   "apiKey": "xK7mP9qR2wT5vN8jL4hG6cF3bA0eD1iY...",
   "orgId": "acme-corp",
   "orgName": "ACME Corporation",
   "createdAt": "2026-04-02T10:00:00.000Z",
-  "createdBy": "admin@smartphonekey.com"
+  "createdBy": "admin@smartphonekey.com",
+  "expiresAt": null
 }
 ```
 
@@ -90,7 +109,7 @@ Save the `apiKey` — it won't be shown again (only the prefix is visible in lis
 - If the org already has an active key, you'll get `409 Conflict`
 - The API key is 40 random alphanumeric characters
 
-### Step 2: Set Up Webhook
+### Step 3: Set Up Webhook
 
 Register a webhook URL to receive events for this partner. See [Setting Up Webhooks](/events-webhooks) for full configuration options including authentication and retry behavior.
 
@@ -102,7 +121,8 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
   -d '{
     "url": "https://acme-corp.com/webhooks/smartphonekey",
     "events": [
-      "Shadow Update"
+      "LockCreated",
+      "KeyAdded"
     ]
   }'
 ```
@@ -123,13 +143,17 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 
 #### Available Event Types
 
-| Event Type | Source |
-|------------|--------|
-| `Shadow Update` | `spk.iot.shadow` |
+You can subscribe to any of the `spk.api` domain event types (e.g. `LockCreated`, `OwnerSet`, `KeyAdded`, `KeyRemoved`, `ResidentAdded`, `ResidentRemoved`, plus User, Hub, Camera, Temp-key and Matter events) as well as `Shadow Update` (the one type sourced from `spk.iot.shadow`).
 
-`Shadow Update` is currently the only subscribable event type. See the [Event Catalog](/events-catalog) for a full description of the payload.
+| To subscribe to… | Pass in `events` |
+|------------------|------------------|
+| Specific events | The PascalCase `detail-type`(s), e.g. `["LockCreated", "KeyAdded"]` |
+| Everything for your org | `["*"]` (wildcard) |
+| IoT hub shadow updates | `["Shadow Update"]` |
 
-### Step 3: Verify Webhook
+See [Partner Webhooks](/events-webhooks) for the full list of `detail-type`s and the [Event Catalog](/events-catalog) for payload shapes.
+
+### Step 4: Verify Webhook
 
 Check that the webhook was created and its status:
 
@@ -146,8 +170,8 @@ curl "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
     {
       "id": "32bc72f9-1676-4cd5-b568-15a39a80536e",
       "url": "https://acme-corp.com/webhooks/smartphonekey",
-      "events": ["Shadow Update"],
-      "status": "pending",
+      "events": ["LockCreated", "KeyAdded"],
+      "status": "active",
       "createdAt": "2026-04-02T10:01:00.000Z"
     }
   ],
@@ -155,7 +179,9 @@ curl "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
 }
 ```
 
-Status will transition from `pending` to `verified` once EventBridge confirms the subscription.
+(Response abbreviated — each webhook also includes `verifiedAt`, `updatedAt`, and last-error fields, and the top level includes `limit`/`offset`.)
+
+A newly created webhook is `active` immediately. If you later change its URL, the status resets to `pending` until the new endpoint is re-verified.
 
 ### Updating a Webhook
 
@@ -166,7 +192,7 @@ curl -X PUT "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WE
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://acme-corp.com/webhooks/v2",
-    "events": ["Shadow Update"]
+    "events": ["LockCreated", "KeyAdded"]
   }'
 ```
 

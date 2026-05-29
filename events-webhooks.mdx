@@ -34,6 +34,8 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 | `OrganizationSet` | A lock has been moved to a different organization |
 | `KeyAdded` | A physical key has been added to a lock |
 | `KeyRemoved` | A physical key has been removed from a lock |
+| `KeyWriteRequested` | A key write to physical NFC hardware was requested |
+| `LockOpenRequested` | An unlock was requested for a lock |
 | `ResidentAdded` | A resident has been granted access to a lock |
 | `ResidentRemoved` | A resident's access to a lock has been revoked |
 | `LockUuidChanged` | A lock's UUID has been replaced |
@@ -57,6 +59,8 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 | `UserReactivated` | A previously suspended user has been reactivated |
 | `LicensePlateAdded` | A license plate has been registered to a user |
 | `LicensePlateRemoved` | A license plate has been removed from a user |
+| `DeviceAdded` | A device has been linked to a user |
+| `DeviceRemoved` | A device has been unlinked from a user |
 
 ### Hub events (`spk.api`)
 
@@ -89,6 +93,13 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 | `CameraRoleCameraAssigned` | A camera has been added to a role |
 | `CameraRoleCameraRemoved` | A camera has been removed from a role |
 
+### RTSP camera events (`spk.api`)
+
+| `detail-type` | When it fires |
+|---------------|----------------|
+| `RtspCameraRegistered` | An RTSP camera has been registered |
+| `RtspCameraDeleted` | An RTSP camera has been deleted |
+
 ### Temporary key events (`spk.api`)
 
 | `detail-type` | When it fires |
@@ -105,6 +116,8 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 | `MatterDeviceCreated` | A Matter device has been registered |
 | `ReportedShadowUpdated` | A device reported new shadow state |
 | `DesiredShadowUpdated` | A new desired shadow state was pushed |
+
+> **Note:** `ReportedShadowUpdated` and `DesiredShadowUpdated` can be named in a subscription, but they are **not re-published to partner webhooks** — they are deduplicated against the IoT shadow path. To track device shadow state, subscribe to `Shadow Update` instead. Of the Matter events, only `MatterDeviceCreated` is delivered.
 
 ### IoT events (`spk.iot.shadow`)
 
@@ -133,13 +146,14 @@ Your endpoint receives the full EventBridge event as a JSON body. The `detail` o
     "aggregateType": "lock",
     "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
     "version": 7,
-    "timestamp": "2026-04-30T10:30:00.123Z",
+    "timestamp": 1745922600123,
     "data": {
       "type": "ResidentAdded",
       "lockId": 4321,
       "uuid": "550e8400-e29b-41d4-a716-446655440000",
-      "email": "resident@example.com",
+      "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
       "name": "Jane Resident",
+      "email": "resident@example.com",
       "timestamp": "2026-04-30T10:30:00.123Z"
     }
   }
@@ -150,11 +164,12 @@ The fields you'll most commonly use:
 
 | Field | Purpose |
 |-------|---------|
-| `id` | Unique EventBridge envelope ID — use as a deduplication key |
+| `id` | The AWS-generated EventBridge envelope ID — use as a deduplication key |
 | `source` | `spk.api` or `spk.iot.shadow` |
 | `detail-type` | The PascalCase event name (e.g. `ResidentAdded`) |
 | `detail.partnerId` | Your tenant `orgId` — already filtered by EventBridge |
 | `detail.aggregateType` / `aggregateId` | Identifies the aggregate that produced the event |
+| `detail.timestamp` | Projection time as **epoch milliseconds** (a number) — distinct from `detail.data.timestamp`, which is the ISO-8601 domain-event time |
 | `detail.data` | The full event payload (see Event Catalog) |
 
 ### IoT Shadow Update Payload
@@ -221,83 +236,53 @@ Notes:
 
 ## Webhook Authentication
 
-SmartphoneKey supports request signing so your endpoint can verify that incoming webhooks are genuine.
+So your endpoint can confirm that incoming requests are genuinely from SmartphoneKey, a delivery can carry a **static secret** that SmartphoneKey includes on every request. This is configured admin-side on the EventBridge connection — contact your account manager to set it up.
 
 ### Supported Authentication Types
 
 | `auth_type` | Description |
 |-------------|-------------|
-| `hmac_sha256` | HMAC-SHA256 signature in a request header |
-| `bearer_token` | Static bearer token in the Authorization header |
-| `header` | Custom header with a static secret value |
+| `none` | No authentication header is added. This is the default for self-service webhooks. |
+| `apiKeyHeader` | A static secret is sent in a custom request header of your choosing. |
+| `bearerToken` | A static token is sent in the `Authorization: Bearer <token>` header. |
 
-### HMAC-SHA256 Signing
+> **Per-request HMAC body signing is not currently available.** There is no `X-SPK-Signature` HMAC of the request body — don't build verification around one. Webhooks created through self-service default to `none`; to have SmartphoneKey attach a static header or bearer token, ask your account manager to configure `apiKeyHeader` or `bearerToken`.
 
-When `auth_type` is `hmac_sha256`, SmartphoneKey computes an HMAC-SHA256 signature of the request body using your shared secret and sends it in a configurable header.
+### Verifying a static token
 
-To verify the signature in your endpoint:
+When a static header or bearer token is configured, compare the received value against your stored secret using a **constant-time comparison** to avoid timing attacks:
 
 ```python
 import hmac
-import hashlib
 
-def verify_webhook(body: bytes, signature: str, secret: str) -> bool:
-    expected = hmac.new(
-        secret.encode(),
-        body,
-        hashlib.sha256
-    ).hexdigest()
-    return hmac.compare_digest(expected, signature)
+def verify_token(received: str, expected: str) -> bool:
+    return hmac.compare_digest(received.encode(), expected.encode())
 ```
 
 ```typescript
-import { createHmac, timingSafeEqual } from 'crypto';
+import { timingSafeEqual } from 'crypto';
 
-function verifyWebhook(body: Buffer, signature: string, secret: string): boolean {
-  const expected = createHmac('sha256', secret)
-    .update(body)
-    .digest('hex');
-  return timingSafeEqual(
-    Buffer.from(expected),
-    Buffer.from(signature)
-  );
+function verifyToken(received: string, expected: string): boolean {
+  const a = Buffer.from(received);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 ```
 
-Always use a constant-time comparison (like `hmac.compare_digest` or `timingSafeEqual`) to prevent timing attacks.
-
-### Header Configuration
-
-| Field | Description |
-|-------|-------------|
-| `header_name` | The HTTP header name that carries the signature or token |
-| `match_type` | How to match the value — `exact` for static tokens, `hmac` for computed signatures |
-
-Example webhook subscription configuration (admin-only — contact your account manager):
-
-```json
-{
-  "url": "https://your-api.example.com/webhooks/spk",
-  "auth_type": "hmac_sha256",
-  "header_name": "X-SPK-Signature",
-  "match_type": "hmac",
-  "secret": "your-shared-secret",
-  "events": ["KeyAdded", "ResidentAdded"]
-}
-```
+As defense in depth, also confirm `detail.partnerId` equals your `orgId`, and only ever serve your webhook endpoint over HTTPS.
 
 ## Delivery and Retry Policy
 
-SmartphoneKey delivers webhooks via AWS EventBridge with the following guarantees:
+SmartphoneKey delivers webhooks via AWS EventBridge API destinations, which retry per their configured policy:
 
 | Parameter | Value |
 |-----------|-------|
 | **Delivery model** | At-least-once |
-| **Max retries** | EventBridge default (24h retry window) |
+| **Retries** | Per the EventBridge API-destination retry policy (subject to change) |
 | **Retry backoff** | Exponential |
 | **Retry triggers** | `5xx` responses and timeouts |
 
-Events that cannot be delivered within the 24h retry window are dropped to a dead-letter store (and surfaced via support). Design your endpoint to be idempotent — use the `id` field in the EventBridge envelope as a deduplication key.
+Because delivery is at-least-once, design your endpoint to be **idempotent** — use the `id` field in the EventBridge envelope as a deduplication key. Events that exhaust their retries are dropped; contact support if you need to recover missed events.
 
 ### Response Requirements
 
@@ -317,7 +302,7 @@ You may additionally filter by `detail-type` (event name) at subscription time. 
 
 ## Security Best Practices
 
-- **Always verify signatures** — Don't process webhook payloads without checking the HMAC or token.
+- **Verify the token when one is configured** — If you've had a static header or bearer token set up, check it (constant-time) before processing, and confirm `detail.partnerId` matches your `orgId`.
 - **Use HTTPS** — Only register HTTPS endpoints. HTTP is rejected outside the dev environment.
 - **Respond quickly** — Return `2xx` before doing heavy processing. Queue events for async processing if needed.
 - **Be idempotent** — The same event may be delivered more than once. Use `id` from the envelope for deduplication.
@@ -330,7 +315,7 @@ If your endpoint is not receiving events:
 1. Confirm your endpoint returns `2xx` for a test POST.
 2. Check that your subscription includes the correct event types — pass `events: ['*']` to receive every event for your tenant.
 3. Verify your endpoint URL is reachable from the public internet (not localhost or a private network).
-4. Review your signature verification logic — a `4xx` response from your endpoint is treated as a permanent failure and will **not** be retried. Only `5xx` responses and timeouts trigger retries.
+4. Review your auth/token check (if configured) — a `4xx` response from your endpoint is treated as a permanent failure and will **not** be retried. Only `5xx` responses and timeouts trigger retries.
 5. Check whether events are firing at all using the [Event Catalog](/events-catalog) to confirm when the events you expect should be generated.
 
 ## Subscribing to All Events

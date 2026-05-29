@@ -18,13 +18,13 @@ All `spk.api` events share the same envelope structure. The domain payload is wr
     "aggregateType": "<lock|user|hub|...>",
     "aggregateId": "<aggregate uuid>",
     "version": 7,
-    "timestamp": "2026-04-30T10:30:00.123Z",
+    "timestamp": 1745922600123,
     "data": { /* event-specific payload — see below */ }
   }
 }
 ```
 
-The fields documented below describe `detail.data` — the actual domain event.
+`detail.timestamp` is the projection time as **epoch milliseconds** (a number). The ISO-8601 timestamp inside `detail.data.timestamp` is the domain-event time. The fields documented below describe `detail.data` — the actual domain event.
 
 ---
 
@@ -145,8 +145,9 @@ Fires when a resident is granted access to a lock.
 |-------|------|-------------|
 | `lockId` | number | Numeric lock ID |
 | `uuid` | string | Lock UUID |
-| `email` | string | Resident email |
+| `userId` | string | Resident user ID (resolved from the email) |
 | `name` | string | Resident display name |
+| `email` | string\|null | Resident email (optional) |
 | `timestamp` | string | ISO timestamp |
 
 **Sample:**
@@ -156,8 +157,9 @@ Fires when a resident is granted access to a lock.
   "type": "ResidentAdded",
   "lockId": 4321,
   "uuid": "550e8400-e29b-41d4-a716-446655440000",
-  "email": "resident@example.com",
+  "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
   "name": "Jane Resident",
+  "email": "resident@example.com",
   "timestamp": "2026-04-30T10:30:00.123Z"
 }
 ```
@@ -175,7 +177,8 @@ Fires when a resident's lock access is revoked.
 |-------|------|-------------|
 | `lockId` | number | Numeric lock ID |
 | `uuid` | string | Lock UUID |
-| `email` | string | Resident email |
+| `userId` | string | Resident user ID |
+| `email` | string\|null | Resident email (optional) |
 | `timestamp` | string | ISO timestamp |
 
 ---
