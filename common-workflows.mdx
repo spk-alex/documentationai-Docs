@@ -1,0 +1,352 @@
+---
+title: Common Workflows
+description: Minimal step-by-step recipes for the most common B2C API operations — adding a key to a lock, making a lock appear in the mobile app, sending a wallet pass, and adding a resident to a doorbell.
+---
+
+This page collects the **minimal sequence of API calls** for the operations integrators ask about most. Each recipe lists what must already exist, the smallest set of requests to get the job done, and the gotchas worth knowing.
+
+For the full request/response schema of any endpoint, see the **API Reference** tab.
+
+## Before you begin
+
+**Base URL.** Examples below use the Development environment. Swap the host for your environment:
+
+| Environment | Base URL |
+|-------------|----------|
+| Production | `https://api.spkey.co` |
+| Staging | `https://b2c-api.spk-stage.workers.dev` |
+| Development | `https://b2c-api.spk-dev.workers.dev` |
+
+**Authentication.** B2B integrations authenticate with an API key in the `X-API-Key` header (used in the examples below). B2C clients use a JWT via `Authorization: Bearer <token>`. Send one or the other — never set internal headers like `X-Org-Id` or `X-User-Id` yourself; they're rejected.
+
+```bash
+export API_KEY="your-api-key"
+export BASE="https://b2c-api.spk-dev.workers.dev"
+```
+
+**IDs — read this once.** Two different identifier types appear in these recipes:
+
+- **Lock endpoints** (`/locks/{id}/...`) take the **numeric lock id** (e.g. `123`).
+- **User endpoints** (`/users/{id}/...`) take the **user UUID** (e.g. `550e8400-e29b-41d4-a716-446655440000`).
+
+Mixing them up is the most common integration mistake.
+
+**Authorization.** For B2B calls, your API key's organization must own the target lock (or be a super key). For B2C calls, the JWT must belong to the lock owner (or a user who already holds a key), and a user can only modify their *own* record.
+
+---
+
+## Add a key to a lock
+
+> **At a glance:** one call — `POST /locks/{id}/AddKey` with a `keyUuid`. That single request registers the key in the lock's state **and** sends it to the device.
+
+### Prerequisites
+
+- The lock already exists. Locks are normally created during hardware provisioning via `POST /locks/{id}/CreateLock`; if it doesn't exist yet, create it first.
+- You're authenticated and authorized for that lock (see [Before you begin](#before-you-begin)).
+- **Optional:** if the key should also live in the user's Apple/Google Wallet, mint a wallet key first (Step 1) and reuse its id as the `keyUuid`. If you just need a working key, skip Step 1 and pass any UUID you mint.
+
+### Step 1 — (Optional) Provision a wallet key to get a key id
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/AddWalletKey" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "walletType": "APPLE",
+    "keyIndex": 2
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+  "version": 2,
+  "keyId": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+  "walletType": "APPLE"
+}
+```
+
+The server generates `keyId` — do **not** send it in the request. Reuse the returned `keyId` as the `keyUuid` in Step 2 so the wallet pass and the lock reference the same key.
+
+### Step 2 — Add the key to the lock
+
+```bash
+curl -X POST "$BASE/locks/123/AddKey" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "keyUuid": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+    "keyIndexNumber": 2,
+    "userId": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "aggregateId": "123",
+  "version": 7,
+  "event": {
+    "type": "KeyAdded",
+    "data": {
+      "lockId": 123,
+      "uuid": "lock-uuid",
+      "keyUuid": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+      "keyIndexNumber": 2,
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "timestamp": "2026-05-29T12:00:00.000Z"
+    }
+  }
+}
+```
+
+**Notes:**
+- **Only `keyUuid` is required.** `keyIndexNumber` and `userId` are optional metadata. Setting `userId` is recommended: it lets that user manage the lock later even if they aren't the owner.
+- `{id}` here is the **numeric** lock id.
+- **You do not need `WriteKey`.** `AddKey` already sends the command to the device. `POST /locks/{id}/WriteKey` is a *separate* command for writing a key onto a physical NFC card — not a follow-up to `AddKey`.
+- The call is fail-fast: if the device can't be reached, the request fails with a `502` and no key is recorded — make sure the lock is online.
+- To add several keys to one lock, use `POST /locks/{id}/BulkAddKeys` with a `keys` array. It runs the additions sequentially in the background and returns an `instanceId` immediately (it does not wait for them to finish).
+- Verify with `GET /locks/{id}/details` — the new `keyUuid` appears in the `keys` array.
+
+---
+
+## Make a lock appear in the user's app
+
+> **At a glance:** one call — `POST /users/{id}/AddAccessibleLock`. The mobile app's lock list is read from `GET /users/{id}/accessible-locks`, so this is what makes a lock *show up* in the app.
+
+> **App visibility and a working key are independent.** `AddAccessibleLock` only adds the lock to the user's list — it does **not** provision a key on the device. To let the user actually open the lock, you also need to [add a key](#add-a-key-to-a-lock) or [send a wallet pass](#send-a-wallet-pass-to-a-user).
+
+### Prerequisites
+
+- The user already exists. If not, create them first (Step 1).
+- `{id}` is the **user UUID**.
+
+### Step 1 — (If the user is new) Create the user
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/CreateUser" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "jane@example.com",
+    "firstName": "Jane",
+    "lastName": "Doe"
+  }'
+```
+
+The path `{id}` and body `userId` are the same UUID. Required fields: `userId`, `email`.
+
+### Step 2 — Grant the lock to the user
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/AddAccessibleLock" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "lockId": "123",
+    "lockName": "Front Door",
+    "accessLevel": "USER",
+    "grantedBy": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+  "version": 2,
+  "event": {
+    "type": "AccessibleLockAdded",
+    "data": {
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "lockId": "123",
+      "lockName": "Front Door",
+      "accessLevel": "USER",
+      "grantedBy": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  },
+  "lockId": "123",
+  "accessLevel": "USER"
+}
+```
+
+### Step 3 — (Verify) Read what the app reads
+
+```bash
+curl "$BASE/users/550e8400-e29b-41d4-a716-446655440000/accessible-locks" \
+  -H "X-API-Key: $API_KEY"
+```
+
+**Response:**
+```json
+{
+  "locks": [
+    {
+      "lockId": "123",
+      "lockName": "Front Door",
+      "accessLevel": "USER",
+      "grantedBy": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  ],
+  "totalCount": 1
+}
+```
+
+**Notes:**
+- Required fields: `lockId`, `lockName`, `accessLevel`, `grantedBy`.
+- `accessLevel` is one of `OWNER`, `ADMIN`, `USER`, `GUEST`. It's a label shown in the app — it does **not** by itself grant the ability to open the device.
+- `validFrom` / `validUntil` are accepted by the request but are **not currently applied** — there's no time-bounded access through this endpoint.
+- Returns `400` if the lock is already in the user's list.
+- With a B2C user token you can only modify your own list. To grant a lock to a *different* user, use a B2B API key.
+
+---
+
+## Send a wallet pass to a user
+
+> **At a glance:** two calls — `POST /users/{id}/AddWalletKey`, then `GET /users/{id}/wallet/link`. The second call returns the install URL you send to the user; opening it adds the pass to Apple Wallet or Google Wallet.
+
+### Prerequisites
+
+- The user already exists (create them with `POST /users/{id}/CreateUser` if not — same as Step 1 of the previous recipe).
+- For **Apple** Wallet, the user must have an `email` on their profile (set at creation). Google Wallet does not require one.
+
+### Step 1 — Provision the wallet key
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/AddWalletKey" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "walletType": "APPLE",
+    "keyIndex": 0
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+  "version": 2,
+  "keyId": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+  "walletType": "APPLE"
+}
+```
+
+Required fields: `walletType` (`APPLE` or `GOOGLE`) and `keyIndex`. The server generates `keyId` — don't send it.
+
+### Step 2 — Get the install URL
+
+```bash
+curl "$BASE/users/550e8400-e29b-41d4-a716-446655440000/wallet/link" \
+  -H "X-API-Key: $API_KEY"
+```
+
+**Response:**
+```json
+{
+  "url": "https://a.wallet.spkey.co/?email=jane%40example.com&uuid=9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b&brand=spkey",
+  "walletType": "APPLE"
+}
+```
+
+Send `url` to the user exactly as returned (e.g. by email or SMS). Opening it on their phone installs the pass.
+
+**Notes:**
+- The URL is built server-side and is safe to send as-is. Apple links carry the user's email and key id; Google links carry the key id. The host varies by environment.
+- `404` means the user has no wallet key yet — run Step 1 first. `400` means the wallet is Apple but the user has no email on file.
+- Re-provisioning the **same** `walletType` returns `400`. Provisioning a **different** `walletType` replaces the existing wallet key.
+- `GET /users/{id}/wallet` exposes `passUrl` / `serialNumber` fields that may be empty — use the `url` from `wallet/link` as the source of truth for the install link.
+- To let the pass actually open a lock, also [add the key](#add-a-key-to-a-lock) to that lock, reusing this `keyId` as the `keyUuid`.
+
+---
+
+## Add a resident to a doorbell
+
+> **At a glance:** two calls — `GET /users/by-email` (which auto-creates the user if needed), then `POST /locks/{id}/AddResident` with `{ email, name }`. Residents are notified when the doorbell is pressed.
+
+### Prerequisites
+
+- The doorbell/lock already exists, and you're authorized for it.
+- `{id}` is the **numeric** lock id.
+
+### Step 1 — Ensure the resident's user exists
+
+```bash
+curl "$BASE/users/by-email?email=resident@example.com" \
+  -H "X-API-Key: $API_KEY"
+```
+
+**Response:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "resident@example.com",
+  "created_at": "2026-05-29T10:30:00.000Z"
+}
+```
+
+This endpoint is **find-or-create**: if no user exists for the email, it provisions one and returns it. It's idempotent, so it's safe to call every time before adding a resident. To assign a specific UUID when creating a brand-new user, pass `&uuid=<your-uuid>` (returns `409` if that UUID is already taken).
+
+### Step 2 — Add the resident to the doorbell
+
+```bash
+curl -X POST "$BASE/locks/123/AddResident" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "resident@example.com",
+    "name": "Jane Doe"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "aggregateId": "123",
+  "version": 5,
+  "event": {
+    "type": "ResidentAdded",
+    "data": {
+      "lockId": 123,
+      "uuid": "lock-uuid",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Jane Doe",
+      "email": "resident@example.com",
+      "timestamp": "2026-05-29T12:00:00.000Z"
+    }
+  },
+  "email": "resident@example.com"
+}
+```
+
+**Notes:**
+- Both `email` and `name` are required. The server resolves the email to a user behind the scenes.
+- If you skip Step 1 and no user exists for that email, `AddResident` returns `404` asking you to call `GET /users/by-email` first — which is exactly what Step 1 does.
+- Adding the same resident twice returns `400`.
+- The current resident list is readable at `GET /locks/{id}/residents`. Remove a resident with `POST /locks/{id}/RemoveResident` (body: `{ "email": "..." }`).
+
+---
+
+## Putting it together
+
+A common end-to-end flow for onboarding a resident with a wallet key:
+
+1. **Create the user** — `POST /users/{userId}/CreateUser`.
+2. **Provision a wallet key** — `POST /users/{userId}/AddWalletKey` → returns `keyId`.
+3. **Add the key to their lock** — `POST /locks/{lockId}/AddKey` with `keyUuid` = that `keyId`.
+4. **Make the lock visible in their app** — `POST /users/{userId}/AddAccessibleLock`.
+5. **Send the wallet pass** — `GET /users/{userId}/wallet/link` → send `url` to the user.
+6. **(Doorbell)** add them to notifications — `POST /locks/{lockId}/AddResident`.
+
+## Next steps
+
+- **API Reference** tab — full schema for every endpoint used here.
+- [Events Overview](/events-overview) — how SmartphoneKey publishes events (e.g. `KeyAdded`, `ResidentAdded`) to your webhooks.
+- [Partner Onboarding](/partner-onboarding) — get your API key and configure webhooks.

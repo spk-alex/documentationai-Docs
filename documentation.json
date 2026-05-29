@@ -37,6 +37,17 @@
             ]
           },
           {
+            "group": "Guides",
+            "icon": "wand-magic-sparkles",
+            "pages": [
+              {
+                "title": "Common Workflows",
+                "path": "common-workflows",
+                "icon": "list-check"
+              }
+            ]
+          },
+          {
             "group": "Matter",
             "icon": "cpu",
             "pages": [
