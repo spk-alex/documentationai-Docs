@@ -1,5 +1,5 @@
 {
-  "version": "c549178e",
+  "version": "bf6abb41",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -695,7 +695,7 @@
           "description": "Hub ID"
         },
         "orgId": {
-          "description": "Organization ID (defaults to caller org from API key)",
+          "description": "Organization ID. Normal keys: bound from the authenticated key — a mismatching value is rejected (403); omit it to claim into your own org. Super keys only: may set any org for a cross-org claim.",
           "type": "string"
         },
         "siteId": {

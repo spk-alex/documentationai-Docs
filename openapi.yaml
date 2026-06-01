@@ -4453,7 +4453,7 @@
                   },
                   "orgId": {
                     "type": "string",
-                    "description": "Organization ID (defaults to caller org from API key)"
+                    "description": "Organization ID. Normal keys: bound from the authenticated key — a mismatching value is rejected (403); omit it to claim into your own org. Super keys only: may set any org for a cross-org claim."
                   },
                   "siteId": {
                     "type": "string",
