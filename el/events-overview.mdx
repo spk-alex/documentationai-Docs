@@ -1,0 +1,63 @@
+---
+title: Επισκόπηση Events
+description: Πώς η SmartphoneKey χρησιμοποιεί το EventBridge για να δημοσιεύει real-time events για ενσωματώσεις εταίρων.
+---
+
+Η SmartphoneKey δημοσιεύει real-time events μέσω AWS EventBridge κάθε φορά που συμβαίνουν σημαντικές αλλαγές κατάστασης στο σύστημα ελέγχου πρόσβασης. Οι εταίροι μπορούν να εγγραφούν σε αυτά τα events μέσω webhooks για να φτιάξουν ενσωματώσεις που αντιδρούν στις αλλαγές καθώς συμβαίνουν — χωρίς polling.
+
+## Πηγές events
+
+Η SmartphoneKey δημοσιεύει events από δύο πηγές:
+
+### `spk.api`
+
+Domain events από το B2C API — κλειδαριές, χρήστες, hubs, κάμερες, temp keys και συσκευές Matter (π.χ. `LockCreated`, `KeyAdded`, `ResidentAdded`, `AccessibleLockAdded`). Το `detail-type` είναι το όνομα του event σε PascalCase, και το domain payload τυλίγεται κάτω από το `detail.data`. Αυτό είναι το μεγαλύτερο μέρος όσων καταναλώνουν οι περισσότερες ενσωματώσεις. Δείτε το [Event Catalog](/el/events-catalog) και τα [Partner Webhooks](/el/events-webhooks) για την πλήρη λίστα.
+
+### `spk.iot.shadow`
+
+Δημοσιεύει events `Shadow Update` όταν μια συσκευή IoT hub ενημερώνει το AWS IoT Device Shadow της. Το event φέρει τα `thingName`, `version`, `desiredState`, `reportedState` και `deltaState` — με το delta να μην είναι κενό όταν η συσκευή δεν έχει ακόμη εφαρμόσει όλες τις επιθυμητές αλλαγές ρύθμισης. Σε αντίθεση με τα events `spk.api`, τα πεδία shadow βρίσκονται απευθείας στο `detail` (δεν υπάρχει wrapper `detail.data`).
+
+## Φάκελος event (Envelope)
+
+Κάθε event του EventBridge φτάνει τυλιγμένο σε έναν φάκελο (envelope) της AWS:
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "source": "spk.iot.shadow",
+  "detail-type": "Shadow Update",
+  "time": "2024-03-15T10:30:00Z",
+  "region": "eu-west-1",
+  "account": "123456789012",
+  "version": "0",
+  "resources": [],
+  "detail": {
+    "partnerId": "<tenant-org-id>",
+    "thingName": "<device-uuid>",
+    "reportedState": "<stringified JSON of reported state>",
+    "desiredState": "<stringified JSON of desired state>",
+    "deltaState": "{}",
+    "metadata": "<stringified IoT shadow metadata>",
+    "version": 42
+  }
+}
+```
+
+Το αντικείμενο `detail` είναι το payload του event. Δείτε το [Event Catalog](/el/events-catalog) για μια πλήρη περιγραφή των πεδίων.
+
+## Σχήμα Webhook
+
+Δημοσιεύουμε ένα σχήμα OpenAPI 3.1 που περιγράφει την πλήρη δομή του payload των webhook events. Χρησιμοποιήστε το για να:
+
+- Δημιουργήσετε typed webhook handlers σε οποιαδήποτε γλώσσα μέσω του [OpenAPI Generator](https://openapi-generator.tech/)
+- Επικυρώσετε εισερχόμενα payload στο webhook endpoint σας
+- Το εισαγάγετε σε Postman, Insomnia ή άλλα εργαλεία API για δοκιμές
+- Περιηγηθείτε στους πλήρεις ορισμούς τύπων event με τεκμηρίωση σε επίπεδο πεδίου
+
+**Λήψη:** [eventbridge-schemas.yaml](https://raw.githubusercontent.com/spk-alex/documentationai-Docs/main/eventbridge-schemas.yaml)
+
+## Εγγραφή σε events
+
+Οι εταίροι λαμβάνουν events μέσω συνδρομών webhook. Όταν ένα event ταιριάζει με τα κριτήρια της συνδρομής σας, η SmartphoneKey κάνει ένα HTTP POST στο καταχωρημένο endpoint σας με το payload του event.
+
+Δείτε τον οδηγό [Partner Webhooks](/el/events-webhooks) για λεπτομέρειες ρύθμισης και το [Event Catalog](/el/events-catalog) για μια πλήρη αναφορά του payload των events.

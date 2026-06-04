@@ -1,0 +1,48 @@
+---
+title: Τεκμηρίωση API SmartphoneKey
+description: Αναφορά API για το B2C API της SmartphoneKey — ασφαλής έλεγχος πρόσβασης χωρίς εφαρμογή για συγκροτήματα κατοικιών και βραχυχρόνιες μισθώσεις, με χρήση Apple Wallet και Google Wallet.
+---
+
+## Επισκόπηση
+
+Η SmartphoneKey παρέχει ασφαλή έλεγχο πρόσβασης χωρίς εφαρμογή για συγκροτήματα κατοικιών (multifamily) και βραχυχρόνιες μισθώσεις (short-term rentals). Οι ένοικοι και οι επισκέπτες ξεκλειδώνουν πόρτες χρησιμοποιώντας ψηφιακά κλειδιά αποθηκευμένα στο Apple Wallet ή το Google Wallet — χωρίς να απαιτείται λήψη εφαρμογής.
+
+Αυτή η τεκμηρίωση καλύπτει το **B2C API** — το backend που διαχειρίζεται χρήστες, κλειδαριές, κλειδιά και λειτουργίες ελέγχου πρόσβασης.
+
+## Για εταίρους που ενσωματώνουν (partner integrators)
+
+Αν ενσωματώνετε ένα εξωτερικό σύστημα για να λαμβάνετε events της SmartphoneKey:
+
+1. **Συνδεθείτε στο [Partner Portal](/el/partner-portal)** για το περιβάλλον σας ώστε να λάβετε το API key σας και να ρυθμίσετε το webhook URL σας.
+2. Υλοποιήστε ένα HTTPS endpoint που δέχεται αιτήματα POST και επιστρέφει 2xx — δείτε [Webhooks](/el/events-webhooks).
+3. Κρατήστε το API key σας μυστικό· περιστρέψτε το (rotate) από τον πίνακα ελέγχου αν χρειαστεί.
+
+Για την πλήρη ροή self-service δείτε [Onboarding Εταίρων](/el/partner-onboarding).
+
+## Αναφορά API
+
+Η πλήρης αναφορά API παράγεται αυτόματα από την προδιαγραφή OpenAPI και διατηρείται ενημερωμένη από το CI σε κάθε production deploy.
+
+Περιηγηθείτε στα endpoints στην καρτέλα **API Reference** παραπάνω.
+
+**Σχήμα OpenAPI** (ζωντανό, ανά περιβάλλον — χρησιμοποιήστε το για να δημιουργήσετε clients ή να το εξερευνήσετε σε Postman / Swagger UI):
+- Development: [b2c-api.spk-dev.workers.dev/openapi.json](https://b2c-api.spk-dev.workers.dev/openapi.json)
+- Production: [b2c-api.spk-prod.workers.dev/openapi.json](https://b2c-api.spk-prod.workers.dev/openapi.json)
+
+## Περιβάλλοντα
+
+| Περιβάλλον | Base URL |
+|-------------|----------|
+| Production | `https://api.spkey.co` |
+| Staging | `https://b2c-api.spk-stage.workers.dev` |
+| Development | `https://b2c-api.spk-dev.workers.dev` |
+
+## Έλεγχος ταυτότητας (Authentication)
+
+Το API χρησιμοποιεί έλεγχο ταυτότητας βασισμένο σε JWT. Συμπεριλάβετε ένα Bearer token στην κεφαλίδα `Authorization`:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+Οι ενσωματώσεις B2B χρησιμοποιούν API keys μέσω της κεφαλίδας `X-API-Key`.

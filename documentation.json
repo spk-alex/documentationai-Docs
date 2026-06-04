@@ -10,89 +10,188 @@
     }
   },
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "Documentation",
-        "icon": "book",
-        "groups": [
+        "language": "English",
+        "icon": "languages",
+        "tabs": [
           {
-            "group": "Getting Started",
-            "icon": "rocket",
-            "pages": [
-              {
-                "title": "Introduction",
-                "path": "introduction",
-                "icon": "home"
-              },
-              {
-                "title": "Partner Portal",
-                "path": "partner-portal",
-                "icon": "key"
-              },
-              {
-                "title": "Partner Onboarding",
-                "path": "partner-onboarding",
-                "icon": "users"
-              }
-            ]
-          },
-          {
-            "group": "Guides",
-            "icon": "wand-magic-sparkles",
-            "pages": [
-              {
-                "title": "Common Workflows",
-                "path": "common-workflows",
-                "icon": "list-check"
-              }
-            ]
-          },
-          {
-            "group": "Matter",
-            "icon": "cpu",
-            "pages": [
-              {
-                "title": "Matter Clusters",
-                "path": "matter-clusters",
-                "icon": "database"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "icon": "code",
-        "groups": [
-          {
-            "group": "Endpoints",
-            "icon": "terminal",
-            "openapi": "openapi.yaml"
-          }
-        ]
-      },
-      {
-        "tab": "Events",
-        "icon": "zap",
-        "groups": [
-          {
-            "group": "Guide",
+            "tab": "Documentation",
             "icon": "book",
-            "pages": [
+            "groups": [
               {
-                "title": "Overview",
-                "path": "events-overview",
-                "icon": "activity"
+                "group": "Getting Started",
+                "icon": "rocket",
+                "pages": [
+                  {
+                    "title": "Introduction",
+                    "path": "introduction",
+                    "icon": "home"
+                  },
+                  {
+                    "title": "Partner Portal",
+                    "path": "partner-portal",
+                    "icon": "key"
+                  },
+                  {
+                    "title": "Partner Onboarding",
+                    "path": "partner-onboarding",
+                    "icon": "users"
+                  }
+                ]
               },
               {
-                "title": "Event Catalog",
-                "path": "events-catalog",
-                "icon": "list"
+                "group": "Guides",
+                "icon": "wand-magic-sparkles",
+                "pages": [
+                  {
+                    "title": "Common Workflows",
+                    "path": "common-workflows",
+                    "icon": "list-check"
+                  }
+                ]
               },
               {
-                "title": "Partner Webhooks",
-                "path": "events-webhooks",
-                "icon": "plug"
+                "group": "Matter",
+                "icon": "cpu",
+                "pages": [
+                  {
+                    "title": "Matter Clusters",
+                    "path": "matter-clusters",
+                    "icon": "database"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API Reference",
+            "icon": "code",
+            "groups": [
+              {
+                "group": "Endpoints",
+                "icon": "terminal",
+                "openapi": "openapi.yaml"
+              }
+            ]
+          },
+          {
+            "tab": "Events",
+            "icon": "zap",
+            "groups": [
+              {
+                "group": "Guide",
+                "icon": "book",
+                "pages": [
+                  {
+                    "title": "Overview",
+                    "path": "events-overview",
+                    "icon": "activity"
+                  },
+                  {
+                    "title": "Event Catalog",
+                    "path": "events-catalog",
+                    "icon": "list"
+                  },
+                  {
+                    "title": "Partner Webhooks",
+                    "path": "events-webhooks",
+                    "icon": "plug"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "Ελληνικά",
+        "icon": "languages",
+        "tabs": [
+          {
+            "tab": "Τεκμηρίωση",
+            "icon": "book",
+            "groups": [
+              {
+                "group": "Ξεκινώντας",
+                "icon": "rocket",
+                "pages": [
+                  {
+                    "title": "Εισαγωγή",
+                    "path": "el/introduction",
+                    "icon": "home"
+                  },
+                  {
+                    "title": "Partner Portal",
+                    "path": "el/partner-portal",
+                    "icon": "key"
+                  },
+                  {
+                    "title": "Onboarding Εταίρων",
+                    "path": "el/partner-onboarding",
+                    "icon": "users"
+                  }
+                ]
+              },
+              {
+                "group": "Οδηγοί",
+                "icon": "wand-magic-sparkles",
+                "pages": [
+                  {
+                    "title": "Συνηθισμένες Ροές Εργασίας",
+                    "path": "el/common-workflows",
+                    "icon": "list-check"
+                  }
+                ]
+              },
+              {
+                "group": "Matter",
+                "icon": "cpu",
+                "pages": [
+                  {
+                    "title": "Matter Clusters",
+                    "path": "el/matter-clusters",
+                    "icon": "database"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Αναφορά API",
+            "icon": "code",
+            "groups": [
+              {
+                "group": "Endpoints",
+                "icon": "terminal",
+                "openapi": "openapi.yaml"
+              }
+            ]
+          },
+          {
+            "tab": "Events",
+            "icon": "zap",
+            "groups": [
+              {
+                "group": "Οδηγός",
+                "icon": "book",
+                "pages": [
+                  {
+                    "title": "Επισκόπηση",
+                    "path": "el/events-overview",
+                    "icon": "activity"
+                  },
+                  {
+                    "title": "Event Catalog",
+                    "path": "el/events-catalog",
+                    "icon": "list"
+                  },
+                  {
+                    "title": "Partner Webhooks",
+                    "path": "el/events-webhooks",
+                    "icon": "plug"
+                  }
+                ]
               }
             ]
           }

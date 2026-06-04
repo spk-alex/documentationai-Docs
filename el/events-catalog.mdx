@@ -1,0 +1,380 @@
+---
+title: Event Catalog
+description: Τεκμηρίωση αναφοράς για τα events του EventBridge της SmartphoneKey που είναι διαθέσιμα στους εταίρους.
+---
+
+Αυτός ο κατάλογος περιγράφει τα events με τη μεγαλύτερη αξία που δημοσιεύει η SmartphoneKey. Για κάθε event θα βρείτε την πηγή, πότε ενεργοποιείται, και τα βασικά πεδία του payload του.
+
+Για την πλήρη λίστα κάθε `detail-type` που εκπέμπεται, δείτε [Partner Webhooks](/el/events-webhooks).
+
+Όλα τα events `spk.api` μοιράζονται την ίδια δομή φακέλου (envelope). Το domain payload τυλίγεται σε ένα αντικείμενο `detail` που φέρει metadata της προβολής (projection) μαζί με το αρχικό event κάτω από το `data`:
+
+```json
+{
+  "source": "spk.api",
+  "detail-type": "<EventName>",
+  "detail": {
+    "partnerId": "<your-orgId>",
+    "aggregateType": "<lock|user|hub|...>",
+    "aggregateId": "<aggregate uuid>",
+    "version": 7,
+    "timestamp": 1745922600123,
+    "data": { /* payload ειδικό για το event — δείτε παρακάτω */ }
+  }
+}
+```
+
+Το `detail.timestamp` είναι ο χρόνος της προβολής (projection) σε **epoch milliseconds** (αριθμός). Η χρονοσφραγίδα ISO-8601 μέσα στο `detail.data.timestamp` είναι ο χρόνος του domain event. Τα πεδία που τεκμηριώνονται παρακάτω περιγράφουν το `detail.data` — το πραγματικό domain event.
+
+---
+
+## Lock Events
+
+### LockCreated
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `LockCreated` |
+| **aggregateType** | `lock` |
+
+Ενεργοποιείται όταν δημιουργείται μια νέα κλειδαριά στο σύστημα.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `lockId` | number | Αριθμητικό ID κλειδαριάς |
+| `uuid` | string | UUID κλειδαριάς |
+| `serialNumber` | string\|null | Σειριακός αριθμός hardware |
+| `ownerId` | string\|null | ID χρήστη-ιδιοκτήτη |
+| `keys` | array\|null | Αρχική λίστα κλειδιών `{ uuid, indexNumber?, userId? }` |
+| `thingName` | string\|null | Όνομα AWS IoT thing |
+| `thingArn` | string\|null | ARN AWS IoT thing |
+| `timestamp` | string | Χρονοσφραγίδα ISO |
+
+**Δείγμα:**
+
+```json
+{
+  "type": "LockCreated",
+  "lockId": 4321,
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "serialNumber": "SPK-1234",
+  "ownerId": "user-uuid",
+  "keys": [],
+  "timestamp": "2026-04-30T10:30:00.123Z"
+}
+```
+
+### OwnerSet
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `OwnerSet` |
+
+Ενεργοποιείται όταν ανατίθεται ή αλλάζει ο ιδιοκτήτης μιας κλειδαριάς.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `lockId` | number | Αριθμητικό ID κλειδαριάς |
+| `uuid` | string | UUID κλειδαριάς |
+| `userId` | string | ID χρήστη του νέου ιδιοκτήτη |
+| `timestamp` | string | Χρονοσφραγίδα ISO |
+
+### KeyAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `KeyAdded` |
+
+Ενεργοποιείται όταν προστίθεται ένα φυσικό κλειδί σε μια κλειδαριά.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `lockId` | number | Αριθμητικό ID κλειδαριάς |
+| `uuid` | string | UUID κλειδαριάς |
+| `keyUuid` | string | UUID του κλειδιού |
+| `keyIndexNumber` | number\|null | Index της θέσης (slot) του κλειδιού |
+| `userId` | string\|null | Χρήστης στον οποίο έχει ανατεθεί το κλειδί |
+| `timestamp` | string | Χρονοσφραγίδα ISO |
+
+**Δείγμα:**
+
+```json
+{
+  "type": "KeyAdded",
+  "lockId": 4321,
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "keyUuid": "0f5b84e0-1d56-4d2f-8d6c-1f2e3a4b5c6d",
+  "keyIndexNumber": 3,
+  "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
+  "timestamp": "2026-04-30T10:30:00.123Z"
+}
+```
+
+### KeyRemoved
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `KeyRemoved` |
+
+Ενεργοποιείται όταν αφαιρείται ένα φυσικό κλειδί από μια κλειδαριά.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `lockId` | number | Αριθμητικό ID κλειδαριάς |
+| `uuid` | string | UUID κλειδαριάς |
+| `keyUuid` | string | UUID του κλειδιού που αφαιρέθηκε |
+| `keyIndexNumber` | number\|null | Index της θέσης (slot) του κλειδιού |
+| `timestamp` | string | Χρονοσφραγίδα ISO |
+
+### ResidentAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `ResidentAdded` |
+
+Ενεργοποιείται όταν παραχωρείται σε έναν ένοικο πρόσβαση σε μια κλειδαριά.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `lockId` | number | Αριθμητικό ID κλειδαριάς |
+| `uuid` | string | UUID κλειδαριάς |
+| `userId` | string | ID χρήστη ενοίκου (προκύπτει από το email) |
+| `name` | string | Όνομα εμφάνισης ενοίκου |
+| `email` | string\|null | Email ενοίκου (προαιρετικό) |
+| `timestamp` | string | Χρονοσφραγίδα ISO |
+
+**Δείγμα:**
+
+```json
+{
+  "type": "ResidentAdded",
+  "lockId": 4321,
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
+  "name": "Jane Resident",
+  "email": "resident@example.com",
+  "timestamp": "2026-04-30T10:30:00.123Z"
+}
+```
+
+### ResidentRemoved
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `ResidentRemoved` |
+
+Ενεργοποιείται όταν ανακαλείται η πρόσβαση ενός ενοίκου σε μια κλειδαριά.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `lockId` | number | Αριθμητικό ID κλειδαριάς |
+| `uuid` | string | UUID κλειδαριάς |
+| `userId` | string | ID χρήστη ενοίκου |
+| `email` | string\|null | Email ενοίκου (προαιρετικό) |
+| `timestamp` | string | Χρονοσφραγίδα ISO |
+
+---
+
+## User Events
+
+### PhysicalKeyAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `PhysicalKeyAdded` |
+| **aggregateType** | `user` |
+
+Ενεργοποιείται όταν εκδίδεται ένα φυσικό κλειδί σε έναν χρήστη.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `userId` | string | ID χρήστη |
+| `number` | number | Αριθμός κλειδιού |
+| `orgId` | string | Οργανισμός που το εκδίδει |
+| `orgName` | string\|null | Όνομα εμφάνισης οργανισμού |
+| `note` | string\|null | Ελεύθερη σημείωση |
+| `addedAt` | number | Unix epoch ms |
+
+### PhysicalKeyRemoved
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `PhysicalKeyRemoved` |
+
+Ενεργοποιείται όταν αφαιρείται ένα φυσικό κλειδί από έναν χρήστη.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `userId` | string | ID χρήστη |
+| `number` | number | Αριθμός κλειδιού |
+| `removedAt` | number | Unix epoch ms |
+
+### AccessibleLockAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `AccessibleLockAdded` |
+
+Ενεργοποιείται όταν παραχωρείται σε έναν χρήστη πρόσβαση σε μια κλειδαριά.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `userId` | string | ID χρήστη |
+| `lockId` | string | UUID κλειδαριάς |
+| `lockName` | string | Όνομα εμφάνισης κλειδαριάς |
+| `accessLevel` | enum | `OWNER` \| `ADMIN` \| `USER` \| `GUEST` |
+| `grantedBy` | string | ID χρήστη που παραχώρησε την πρόσβαση |
+
+**Δείγμα:**
+
+```json
+{
+  "type": "AccessibleLockAdded",
+  "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
+  "lockId": "550e8400-e29b-41d4-a716-446655440000",
+  "lockName": "Front Door",
+  "accessLevel": "USER",
+  "grantedBy": "1c1c1c1c-1c1c-1c1c-1c1c-1c1c1c1c1c1c"
+}
+```
+
+### LicensePlateAdded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `LicensePlateAdded` |
+
+Ενεργοποιείται όταν καταχωρείται μια πινακίδα κυκλοφορίας σε έναν χρήστη (χρησιμοποιείται από ροές πρόσβασης βασισμένες σε ALPR / κάμερα).
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `userId` | string | ID χρήστη |
+| `plate` | string | Συμβολοσειρά πινακίδας κυκλοφορίας |
+| `label` | string | Φιλική ετικέτα |
+| `addedAt` | number | Unix epoch ms |
+
+---
+
+## Hub Events
+
+### HubProvisioned
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `HubProvisioned` |
+| **aggregateType** | `hub` |
+
+Ενεργοποιείται όταν ένα hub καταχωρείται στο σύστημα (συνήθως κατά την κατασκευή).
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `hubId` | string | UUID hub |
+| `serial` | string | Σειριακός αριθμός hardware |
+| `model` | string | Μοντέλο hardware |
+| `thingName` | string | Όνομα AWS IoT thing |
+| `vendorName` | string\|null | Όνομα κατασκευαστή (vendor) |
+| `provisionedAt` | number | Unix epoch ms |
+
+### HubClaimed
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `HubClaimed` |
+
+Ενεργοποιείται όταν ένα hub διεκδικείται (claimed) από έναν οργανισμό και ανατίθεται σε ένα site.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `hubId` | string | UUID hub |
+| `orgId` | string | Οργανισμός που το διεκδικεί |
+| `siteId` | string | Site όπου είναι εγκατεστημένο το hub |
+| `claimedBy` | string | ID χρήστη που το διεκδίκησε |
+| `claimedAt` | number | Unix epoch ms |
+
+---
+
+## Camera Events
+
+### CameraRegistered
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `CameraRegistered` |
+| **aggregateType** | `camera` |
+
+Ενεργοποιείται όταν καταχωρείται μια κάμερα για έναν tenant.
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `cameraId` | string | UUID κάμερας |
+| `threeDeyeCameraId` | string | ID κάμερας από την πλευρά του 3dEye |
+| `cameraType` | enum | `generic` \| `onvif` \| `pnp` |
+| `name` | string | Όνομα εμφάνισης κάμερας |
+| `orgId` | string | Οργανισμός-ιδιοκτήτης |
+| `ownerId` | string | ID χρήστη-ιδιοκτήτη |
+| `httpUrl` | string | HTTP stream URL |
+| `rtspUrl` | string | RTSP stream URL |
+| `registrationCode` | string | Κωδικός καταχώρησης που χρησιμοποιήθηκε |
+| `registeredAt` | number | Unix epoch ms |
+
+---
+
+## IoT Events
+
+### Shadow Update
+
+| | |
+|--|--|
+| **Source** | `spk.iot.shadow` |
+| **detail-type** | `Shadow Update` |
+
+Ενεργοποιείται όταν μια συσκευή IoT hub ενημερώνει το AWS IoT Device Shadow της. Περιέχει ένα πλήρες στιγμιότυπο της κατάστασης shadow, συμπεριλαμβανομένων της επιθυμητής κατάστασης (desired state), της αναφερόμενης κατάστασης (reported state) και του delta.
+
+Αυτό το event έχει **διαφορετικό φάκελο (envelope)** από τα events `spk.api` — δεν υπάρχει wrapper `detail.data`. Τα πεδία shadow βρίσκονται απευθείας στο `detail`.
+
+**Πεδία payload (στο ανώτερο επίπεδο `detail`):**
+
+| Πεδίο | Τύπος | Περιγραφή |
+|-------|------|-------------|
+| `thingName` | string | Όνομα AWS IoT thing της συσκευής |
+| `partnerId` | string\|null | Εταίρος που σχετίζεται με αυτή τη συσκευή |
+| `version` | number | Έκδοση του εγγράφου shadow |
+| `desiredState` | string | Στόχος κατάστασης που ορίζει η εφαρμογή (συμβολοσειρά JSON) |
+| `reportedState` | string | Κατάσταση που ανέφερε πίσω η συσκευή (συμβολοσειρά JSON) |
+| `deltaState` | string | Διαφορά μεταξύ επιθυμητής και αναφερόμενης κατάστασης (συμβολοσειρά JSON)· μη κενή όταν η συσκευή δεν έχει εφαρμόσει όλες τις αλλαγές |
+| `metadata` | string | Metadata του AWS IoT shadow με χρονοσφραγίδες ανά πεδίο (συμβολοσειρά JSON) |
+
+**Παράδειγμα payload:**
+
+```json
+{
+  "source": "spk.iot.shadow",
+  "detail-type": "Shadow Update",
+  "detail": {
+    "partnerId": "<tenant-org-id>",
+    "thingName": "<device-uuid>",
+    "reportedState": "<stringified JSON of reported state>",
+    "desiredState": "<stringified JSON of desired state>",
+    "deltaState": "{}",
+    "metadata": "<stringified IoT shadow metadata>",
+    "version": 42
+  }
+}
+```
+
+Σημείωση: τα `reportedState`, `desiredState`, `deltaState` και `metadata` είναι **stringified JSON** ενσωματωμένα μέσα στο εξωτερικό αντικείμενο JSON. Οι εταίροι πρέπει να καλέσουν `JSON.parse()` σε καθένα από αυτά τα πεδία πριν προσπελάσουν το περιεχόμενό τους.

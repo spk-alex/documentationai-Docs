@@ -1,0 +1,487 @@
+---
+title: Matter Clusters
+description: Attributes των Matter clusters, πεδία πληροφοριών συσκευής και υποστηριζόμενες εντολές για τις συσκευές Matter της SmartphoneKey.
+---
+
+# Τεκμηρίωση Matter Cluster
+
+## Τι είναι το Matter;
+
+Το Matter είναι ένα πρότυπο διαλειτουργικότητας έξυπνων συσκευών. Αντί κάθε κατασκευαστής να επινοεί ένα εντελώς διαφορετικό μοντέλο δεδομένων συσκευής, το Matter ορίζει μια κοινή δομή ώστε controllers, εφαρμογές, hubs και cloud συστήματα να μπορούν να κατανοούν τις συσκευές με προβλέψιμο τρόπο.
+
+Τα σημαντικότερα δομικά στοιχεία είναι:
+
+- **Node**: ολόκληρη η φυσική συσκευή στο δίκτυο.
+- **Endpoint**: ένα λειτουργικό τμήμα της συσκευής. Ένα φυσικό προϊόν μπορεί να εκθέτει πολλαπλά endpoints.
+- **Cluster**: μια ομάδα σχετικών λειτουργιών ή ιδιοτήτων. Σκεφτείτε ένα cluster ως μια θεματική περιοχή, όπως *Door Lock*, *Battery* ή *Temperature Measurement*.
+- **Attribute**: μία συγκεκριμένη τιμή μέσα σε ένα cluster, όπως `LockState` ή `BatVoltage`.
+- **Command**: μια ενέργεια που μπορείτε να στείλετε σε ένα cluster, όπως lock/unlock για μια συσκευή κλειδαριάς.
+
+## Πώς να διαβάσετε τον πίνακα
+
+- Το **Endpoint** σας λέει σε ποιο λειτουργικό τμήμα της συσκευής ανήκει η γραμμή.
+- Το **Cluster** δίνει το ανθρώπινα αναγνώσιμο όνομα του cluster ακολουθούμενο από το αριθμητικό του ID σε παρενθέσεις, για παράδειγμα `Basic Information (40)`.
+- Το **Attribute** είναι η ακριβής ιδιότητα που εκθέτει το cluster.
+- Το **Path** χρησιμοποιεί τη μορφή `endpoint/cluster/attribute` και εμφανίζεται ως inline code.
+
+Λεπτομερής σημασία, σημασιολογία τιμών και παραδείγματα για κάθε attribute υπάρχουν στις αναπτυσσόμενες κάρτες κάτω από κάθε πίνακα.
+
+## Σημαντική σημείωση για αρχάριους
+
+Ένα cluster δεν είναι το ίδιο πράγμα με έναν τύπο συσκευής.
+
+Για παράδειγμα, το cluster **Boolean State** δίνει μόνο μια τιμή `true/false`. Αυτή η τιμή μπορεί να σημαίνει πολύ διαφορετικά πράγματα ανάλογα με τον τύπο συσκευής του endpoint:
+
+- για έναν αισθητήρα επαφής (contact sensor), μπορεί να σημαίνει **ανοιχτό/κλειστό**
+- για έναν αισθητήρα διαρροής (leak sensor), μπορεί να σημαίνει **διαρροή/χωρίς διαρροή**
+
+Έτσι τα δεδομένα Matter πρέπει πάντα να ερμηνεύονται χρησιμοποιώντας και τα δύο:
+
+1. το cluster και το attribute
+2. το πλαίσιο του ρόλου / τύπου συσκευής του endpoint
+
+## Δεδομένα πληροφοριών συσκευής
+
+Αυτή η ενότητα τεκμηριώνει τιμές που αναφέρονται από τα clusters συσκευών Matter. Αυτά τα πεδία είναι attributes δεδομένων που χρησιμοποιούνται για inventory, state shadows, διαγνωστικά, κατάσταση τροφοδοσίας και μετρήσεις αισθητήρων. Δεν είναι εντολές.
+
+### Πληροφορίες root συσκευής / συστήματος
+
+Αυτές οι γραμμές περιγράφουν τη συνολική ταυτότητα της συσκευής και πληροφορίες διαγνωστικών/διαχείρισης δικτύου. Είναι σημαντικές για inventory, troubleshooting και υποστήριξη, αλλά δεν ελέγχουν άμεσα την κύρια λειτουργία κλειδαριάς που βλέπει ο χρήστης.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 0 | Basic Information (40) | VendorName | `0/40/1` |
+| 0 | Basic Information (40) | ProductName | `0/40/3` |
+| 0 | Basic Information (40) | HardwareVersionString | `0/40/8` |
+| 0 | Basic Information (40) | SoftwareVersionString | `0/40/10` |
+| 0 | Basic Information (40) | ManufacturingDate/DateCode | `0/40/11` |
+| 0 | Basic Information (40) | SerialNumber | `0/40/15` |
+| 0 | Basic Information (40) | VendorID | `0/40/2` |
+| 0 | Basic Information (40) | ProductURL | `0/40/14` |
+| 0 | General Diagnostics (51) | UpTime | `0/51/2` |
+| 0 | General Diagnostics (51) | TotalOperationalHours | `0/51/3` |
+| 0 | General Diagnostics (51) | BootReason | `0/51/4` |
+| 0 | Thread Network Diagnostics (53) | NeighborTable | `0/53/7` |
+| 0 | Thread Network Diagnostics (53) | RoutingRole | `0/53/1` |
+| 0 | Thread Network Diagnostics (53) | NetworkName | `0/53/2` |
+| 0 | Wi-Fi Network Diagnostics (54) | RSSI | `0/54/4` |
+| 0 | ICD Management (70) | IdleModeDuration | `0/70/0` |
+| 0 | ICD Management (70) | ActiveModeDuration | `0/70/1` |
+| 0 | ICD Management (70) | ActiveModeThreshold | `0/70/2` |
+| 0 | ICD Management (70) | UserActiveModeTriggerHint | `0/70/6` |
+| 0 | ICD Management (70) | UserActiveModeTriggerInstruction | `0/70/7` |
+
+## Λεπτομέρειες πεδίων
+
+**VendorName** — Ανθρώπινα αναγνώσιμο όνομα κατασκευαστή. Παράδειγμα: `"SmartphoneKey Systems Inc"`. Τιμή string. Δεν είναι enum. Είναι το όνομα εμφάνισης του κατασκευαστή που αναφέρει η συσκευή, οπότε διαφορετικοί κατασκευαστές επιστρέφουν διαφορετικό κείμενο.
+
+**ProductName** — Ανθρώπινα αναγνώσιμο όνομα προϊόντος. Παράδειγμα: `"SmartphoneKey Reader"`. Τιμή string. Είναι το όνομα εμφάνισης προϊόντος/μοντέλου που εκθέτει το node, όχι enum τύπου συσκευής.
+
+**HardwareVersionString** — String έκδοσης hardware. Παράδειγμα: `"release"`. Τιμή string. Συνήθως μια ανθρώπινα αναγνώσιμη αναθεώρηση hardware, αναθεώρηση πλακέτας ή ετικέτα έκδοσης. Αντιμετωπίστε το ως κείμενο που ορίζεται από τον κατασκευαστή.
+
+**SoftwareVersionString** — String έκδοσης λογισμικού/firmware. Παράδειγμα: `"1.26.1+1"`. Τιμή string. Συνήθως έκδοση firmware/λογισμικού. Χρησιμοποιήστε το ως κείμενο, επειδή οι κατασκευαστές μπορεί να περιλαμβάνουν semantic versions, build metadata ή προσαρμοσμένες ετικέτες.
+
+**ManufacturingDate/DateCode** — Ημερομηνία κατασκευής ή date code που παρέχει η συσκευή. Παράδειγμα: `"20250903"`. Τιμή string/date-code. Η μορφή παρέχεται από τον κατασκευαστή. Σε αυτό το export μοιάζει με `YYYYMMDD`, αλλά μην υποθέσετε ότι όλες οι συσκευές χρησιμοποιούν την ίδια μορφή.
+
+**SerialNumber** — String σειριακού αριθμού. Παράδειγμα: `"11064672519639222187"`. Τιμή string. Φυσικός σειριακός αριθμός. Μπορεί να φαίνεται αριθμητικός αλλά θα πρέπει να αποθηκεύεται ως κείμενο για να μη χαθούν αρχικά μηδενικά ή η μορφοποίηση.
+
+**VendorID** — Αναγνωριστικό κατασκευαστή. Παράδειγμα: `4619`. Αριθμητικό αναγνωριστικό κατασκευαστή που αποδίδεται μέσω της διαδικασίας vendor ID του Matter/CSA. Αποθηκεύστε το ως αριθμό, αλλά η εμφάνιση σε δεκαεξαδική μορφή (hex) μπορεί επίσης να είναι χρήσιμη για engineering logs.
+
+**ProductURL** — URL προϊόντος αν υλοποιείται. Παράδειγμα: `""`. Τιμή URL (string) όταν υλοποιείται. Το κενό string σημαίνει ότι η συσκευή δεν παρείχε URL προϊόντος/υποστήριξης.
+
+**UpTime** — Τρέχον uptime. Παράδειγμα: `588758`. Αριθμητική διάρκεια σε δευτερόλεπτα. Σημαίνει ότι η συσκευή είναι σε λειτουργία για 588.758 δευτερόλεπτα από την τελευταία εκκίνηση. Μια ξαφνική χαμηλή τιμή συνήθως σημαίνει ότι το node επανεκκινήθηκε πρόσφατα.
+
+**TotalOperationalHours** — Συνολικές ώρες λειτουργίας. Παράδειγμα: `163`. Αριθμητική διάρκεια σε ώρες. Σημαίνει ότι η συσκευή αναφέρει 163 συνολικές ώρες λειτουργίας. Αυτή η τιμή είναι αθροιστική αν η συσκευή τη διατηρεί (persists).
+
+**BootReason** — Λόγος της πιο πρόσφατης εκκίνησης. Παράδειγμα: `6`. Τιμή enum. Συνηθισμένες σημασίες Matter περιλαμβάνουν `0 = Unspecified`, `1 = PowerOnReboot`, `2 = BrownOutReset`, `3 = SoftwareWatchdogReset`, `4 = HardwareWatchdogReset`, `5 = SoftwareUpdateCompleted`, `6 = SoftwareReset`. Εδώ το `6` σημαίνει reset/reboot που ενεργοποιήθηκε από λογισμικό.
+
+**NeighborTable** — Καταχωρήσεις πίνακα γειτόνων (neighbor table). Παράδειγμα: `[{"averageRssi": -25, ...}]` ή απλοποιημένα ως `[-25]`. Τιμή πίνακα/λίστας. Κάθε καταχώρηση περιγράφει έναν γείτονα Thread. Οι τιμές RSSI είναι κανονικά αρνητικά dBm: όσο πιο κοντά στο 0, τόσο ισχυρότερο· γύρω στο `-25` είναι πολύ ισχυρό, `-50` είναι καλό, `-70` είναι αδύναμο.
+
+**RoutingRole** — Τρέχων ρόλος δρομολόγησης Thread. Παράδειγμα: `6`. Τιμή enum που περιγράφει τον ρόλο Thread. Τυπικές τιμές είναι καταστάσεις τύπου ρόλου όπως disabled, detached, child/end device, router, leader ή ρόλος με δυνατότητα border-router, ανάλογα με την υλοποίηση/έκδοση προδιαγραφής. Χρησιμοποιήστε το κυρίως για διαγνωστικά, όχι ως business state.
+
+**NetworkName** — Όνομα δικτύου Thread. Παράδειγμα: `"OpenThread-952e"`. Τιμή string. Όνομα δικτύου Thread. Θα πρέπει να ταιριάζει με το αναμενόμενο Thread mesh αν η συσκευή συνδέθηκε στο σωστό δίκτυο.
+
+**RSSI** — Δείκτης ισχύος λαμβανόμενου σήματος (Received signal strength indicator). Παράδειγμα: `nan`. Αριθμητικό RSSI σε dBm όταν αναφέρεται. Το RSSI του Wi-Fi είναι συνήθως αρνητικό: όσο πιο κοντά στο 0, τόσο ισχυρότερο. `nan`, null ή απουσία συνήθως σημαίνει ότι δεν χρησιμοποιείται Wi-Fi ή ότι η συσκευή δεν το αναφέρει.
+
+**IdleModeDuration** — Διάρκεια idle mode για συμπεριφορά ICD. Παράδειγμα: `300`. Αριθμητική διάρκεια σε δευτερόλεπτα. Για συσκευές ICD αυτό είναι το διάστημα idle-mode όπου η συσκευή μπορεί να κοιμάται ή να είναι λιγότερο άμεσα προσβάσιμη.
+
+**ActiveModeDuration** — Διάρκεια active mode για συμπεριφορά ICD. Παράδειγμα: `300`. Αριθμητική διάρκεια σε milliseconds στους ορισμούς Matter ICD. Περιγράφει για πόσο μένει η συσκευή σε active mode μετά από wake/active συμπεριφορά πριν επιστρέψει σε idle.
+
+**ActiveModeThreshold** — Κατώφλι για είσοδο σε active mode. Παράδειγμα: `300`. Αριθμητικό κατώφλι σε milliseconds. Χρησιμοποιείται από τη συμπεριφορά ICD για να αποφασίσει τον χρονισμό/απόκριση του active-mode. Μεγαλύτερες τιμές συνήθως κρατούν τη συσκευή responsive για περισσότερο, αλλά μπορεί να επηρεάσουν τη μπαταρία.
+
+**UserActiveModeTriggerHint** — Hint που περιγράφει πώς να ενεργοποιηθεί το active mode. Παράδειγμα: `4381`. Τιμή bitmap/bitmask. Κάθε bit υπαινίσσεται μια πιθανή ενέργεια χρήστη που μπορεί να ξυπνήσει ή να ενεργοποιήσει τη συσκευή. Αποκωδικοποιήστε το ως flags, όχι ως έναν απλό αριθμό. Συνδυάστε το με το `UserActiveModeTriggerInstruction` για ανθρώπινα αναγνώσιμες οδηγίες.
+
+**UserActiveModeTriggerInstruction** — Κείμενο οδηγιών για active mode που ενεργοποιεί ο χρήστης. Παράδειγμα: `"Restart the application"`. Τιμή string. Ανθρώπινα αναγνώσιμη οδηγία για το πώς ένας χρήστης μπορεί να ενεργοποιήσει το active mode. Είναι κείμενο άμεσα εμφανίσιμο αν χρειαστεί.
+
+### Door lock / έλεγχος πρόσβασης
+
+Αυτές οι γραμμές περιγράφουν τη συμπεριφορά ελέγχου πρόσβασης της συσκευής. Αυτή είναι η πιο κρίσιμη για τη λειτουργία (business-critical) ομάδα για όσους εργάζονται με λογική εισόδου από πόρτα, credentials, απομακρυσμένες λειτουργίες και συμπεριφορά φυσικής ασφάλειας.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 1 | Door Lock (257) | LockState | `1/257/0` |
+| 1 | Door Lock (257) | NumberOfTotalUsersSupported | `1/257/17` |
+| 1 | Door Lock (257) | NumberOfPINUsersSupported | `1/257/18` |
+| 1 | Door Lock (257) | NumberOfCredentialsSupportedPerUser | `1/257/23` |
+| 1 | Door Lock (257) | AutoRelockTime | `1/257/27` |
+| 1 | Door Lock (257) | SoundVolume | `1/257/28` |
+| 1 | Door Lock (257) | LEDSettings | `1/257/41` |
+| 1 | Door Lock (257) | AutoRelockBehavior | `1/257/43` |
+| 1 | Door Lock (257) | WrongCodeEntryLimit | `1/257/48` |
+| 1 | Door Lock (257) | UserCodeTemporaryDisableTime | `1/257/49` |
+| 1 | Door Lock (257) | RequirePINforRemoteOperation | `1/257/51` |
+
+
+### Μπαταρία / πηγή τροφοδοσίας
+
+Αυτές οι γραμμές περιγράφουν πώς τροφοδοτείται η συσκευή και αν μπορεί να χρειάζεται συντήρηση. Αυτό είναι ιδιαίτερα σημαντικό για ομάδες υποστήριξης πεδίου και για πλατφόρμες που χρειάζεται να εμφανίζουν την υγεία της μπαταρίας.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 1 | Power Source (47) | Status | `1/47/0` |
+| 1 | Power Source (47) | BatVoltage | `1/47/11` |
+| 1 | Power Source (47) | BatPercentRemaining | `1/47/12` |
+| 1 | Power Source (47) | BatChargeLevel | `1/47/14` |
+| 1 | Power Source (47) | BatReplacementNeeded | `1/47/15` |
+| 1 | Power Source (47) | BatReplacementDescription | `1/47/19` |
+| 1 | Power Source (47) | BatReplacementNeededLevel | `1/47/24` |
+| 1 | Power Source (47) | BatQuantity | `1/47/25` |
+
+
+### Αισθητήρας υγρασίας
+
+Αυτές οι γραμμές δείχνουν δεδομένα περιβαλλοντικής μέτρησης υγρασίας. Παρόλο που το κύριο προϊόν είναι μια συσκευή προσανατολισμένη σε reader/lock, αυτό το export εκθέτει επίσης πληροφορίες μέτρησης υγρασίας σε ένα endpoint.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 1 | Relative Humidity Measurement (1029) | MeasuredValue | `1/1029/0` |
+
+**MeasuredValue** — Τρέχουσα μετρούμενη τιμή σχετικής υγρασίας. Παράδειγμα: `3011`. Αριθμητική μετρούμενη υγρασία σε εκατοστά του τοις εκατό. Μετατρέψτε με `value / 100`, οπότε το `3011` σημαίνει `30.11% RH`.
+
+### Αισθητήρας κατοίκησης / παρουσίας
+
+Αυτές οι γραμμές δείχνουν αν το endpoint ανιχνεύει αυτή τη στιγμή κατοίκηση ή παρουσία. Αυτό χρησιμοποιείται συνήθως από συστήματα αυτοματισμού και παρακολούθησης παρά από βασικές ροές κλειδαριάς.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 1 | Occupancy Sensing (1030) | Occupancy | `1/1030/0` |
+
+**Occupancy** — Τρέχουσα κατάσταση κατοίκησης/παρουσίας. Παράδειγμα: `0`. Τιμή bitmap. Το bit 0 υποδεικνύει ότι ανιχνεύθηκε κατοίκηση/παρουσία. `0` σημαίνει ότι δεν ανιχνεύθηκε κατοίκηση· `1` σημαίνει ότι ανιχνεύθηκε. Μελλοντικά/πρόσθετα bits μπορεί να αναπαριστούν περισσότερους τρόπους ανίχνευσης.
+
+### Ερμηνεία αισθητήρα επαφής (contact sensor)
+
+Αυτή η ενότητα απομονώνει τη γραμμή Boolean State που τεκμηριώνεται ως ερμηνεία τύπου αισθητήρα επαφής/πόρτας. Έχει διαχωριστεί σκόπιμα για να δείξει ότι το Boolean State χρειάζεται το πλαίσιο του τύπου συσκευής.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 1 | Boolean State (69) | StateValue | `1/69/0` |
+
+**StateValue** — Δυαδική τιμή κατάστασης. Για αυτόν τον αισθητήρα πόρτας αντιστοιχίζεται σε κατάσταση επαφής ανοιχτό/κλειστό. Παράδειγμα: `true`. Τιμή boolean. Για ένα endpoint αισθητήρα επαφής, αντιστοιχίστε με το πλαίσιο του endpoint: συνήθως `true = ανοιχτό/επαφή ενεργή`, `false = κλειστό/ανενεργό`, αλλά επαληθεύστε με τη συγκεκριμένη συμπεριφορά της συσκευής.
+
+### Ερμηνεία αισθητήρα διαρροής νερού (water leak sensor)
+
+Αυτή η ενότητα απομονώνει τη γραμμή Boolean State που τεκμηριώνεται ως ερμηνεία διαρροής νερού. Έχει διαχωριστεί σκόπιμα για να δείξει ότι το ίδιο cluster Boolean State μπορεί να αναπαριστά μια εντελώς διαφορετική πραγματική συνθήκη.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 1 | Boolean State (69) | StateValue | `1/69/0` |
+
+<ExpandableGroup>
+  <Expandable title="StateValue">
+
+Δυαδική τιμή κατάστασης. Σε αυτή την ερμηνεία αντιστοιχίζεται σε κατάσταση διαρροής νερού, επειδή το endpoint αναφέρει Water Leak Detector. Παράδειγμα: `false`. Τιμή boolean. Για ένα endpoint ανιχνευτή διαρροής νερού, το `true` κανονικά σημαίνει ότι ανιχνεύθηκε διαρροή/ενεργός συναγερμός· το `false` σημαίνει ότι δεν ανιχνεύθηκε διαρροή.
+
+  </Expandable>
+</ExpandableGroup>
+
+### Αισθητήρας θερμοκρασίας
+
+Αυτές οι γραμμές δείχνουν δεδομένα μέτρησης θερμοκρασίας από το endpoint που αναφέρει θερμοκρασία. Όπως και με την υγρασία, η ακατέργαστη τιμή κανονικά χρειάζεται μετατροπή πριν την εμφάνιση στον τελικό χρήστη.
+
+| Endpoint | Cluster | Attribute | Path |
+| --- | --- | --- | --- |
+| 2 | Temperature Measurement (1026) | MeasuredValue | `2/1026/0` |
+
+**MeasuredValue** — Τρέχουσα μετρούμενη τιμή θερμοκρασίας. Παράδειγμα: `2591`. Αριθμητική μετρούμενη θερμοκρασία σε εκατοστά του βαθμού Κελσίου. Μετατρέψτε με `value / 100`, οπότε το `2591` σημαίνει `25.91 °C`.
+
+## Υποστηριζόμενες εντολές
+
+Αυτή η ενότητα τεκμηριώνει τις δυνατότητες εντολών. Αυτά τα πεδία περιγράφουν τι μπορεί να δεχτεί η συσκευή ως ενέργειες. Στο Matter, η υποστήριξη εντολών κανονικά ανακαλύπτεται από το global attribute `AcceptedCommandList`, με μορφή path `endpoint/cluster/65529`.
+
+Χρησιμοποιήστε αυτή την ενότητα ξεχωριστά από τα **Δεδομένα πληροφοριών συσκευής**:
+
+- **Δεδομένα πληροφοριών συσκευής** = attributes που αναφέρει η συσκευή, για παράδειγμα `0/40/1`, `1/257/0` ή `1/47/12`.
+- **Υποστηριζόμενες εντολές** = ενέργειες που δέχεται η συσκευή/cluster, για παράδειγμα `LockDoor`, `UnlockDoor`, `GetUser` ή γενικές εντολές commissioning.
+
+### Πεδία δυνατότητας εντολών Matter
+
+Το Matter εκθέτει τη δυνατότητα εντολών μέσω global attributes cluster. Στη μορφή `endpoint/cluster/attribute`, τα σημαντικότερα paths δυνατότητας-εντολών είναι:
+
+| Attribute ID | Hex | Όνομα Attribute | Σημασία |
+| --- | --- | --- | --- |
+| 65529 | `0xFFF9` | AcceptedCommandList | Λίστα των command IDs που δέχεται αυτός ακριβώς ο cluster server. Χρησιμοποιήστε το για να αποφασίσετε αν το bridge/API σας μπορεί να στείλει μια εντολή. |
+| 65528 | `0xFFF8` | GeneratedCommandList | Λίστα των command IDs που αυτό το cluster μπορεί να παράγει ως responses/events. Χρήσιμο για χειρισμό command-response, αλλά όχι ο κύριος έλεγχος δυνατότητας. |
+
+Παράδειγμα path: `0/49/65529` σημαίνει endpoint `0`, cluster `49`, attribute `65529`. Αυτό σας λέει ποιες εντολές δέχεται το cluster Network Commissioning στο endpoint `0`.
+
+### Γενικές εντολές endpoint 0 για όλους τους τύπους συσκευών Matter
+
+Το endpoint `0` είναι το root/system endpoint. Αυτές οι εντολές δεν είναι ειδικές για κλειδαριές. Είναι κοινές δυνατότητες συστήματος, commissioning, διαγνωστικών, ασφάλειας και διαχείρισης fabric του Matter. Οποιοσδήποτε τύπος συσκευής μπορεί να εκθέτει ορισμένα από αυτά τα clusters ανάλογα με το τι υποστηρίζει.
+
+| Path | Endpoint | Cluster ID | Όνομα Cluster | Accepted Command IDs | Αποκωδικοποιημένες εντολές | Τι σημαίνει αυτό |
+| --- | ---: | ---: | --- | --- | --- | --- |
+| `0/48/65529` | 0 | 48 / `0x0030` | General Commissioning | `[0, 2, 4]` | `0 / 0x00 = ArmFailSafe`<br />`2 / 0x02 = SetRegulatoryConfig`<br />`4 / 0x04 = CommissioningComplete` | Η συσκευή υποστηρίζει την τυπική ροή ασφάλειας commissioning. Αυτές οι εντολές χρησιμοποιούνται κατά την προσθήκη της συσκευής σε ένα Matter fabric. |
+| `0/49/65529` | 0 | 49 / `0x0031` | Network Commissioning | `[0, 3, 4, 6, 8]` | `0 / 0x00 = ScanNetworks`<br />`3 / 0x03 = AddOrUpdateThreadNetwork`<br />`4 / 0x04 = RemoveNetwork`<br />`6 / 0x06 = ConnectNetwork`<br />`8 / 0x08 = ReorderNetwork` | Η συσκευή υποστηρίζει λειτουργίες network commissioning. Επειδή αυτή η λίστα έχει `AddOrUpdateThreadNetwork` και όχι εντολές δικτύου Wi-Fi, αυτό μοιάζει με δυνατότητα commissioning Thread. |
+| `0/50/65529` | 0 | 50 / `0x0032` | Diagnostic Logs | `[0]` | `0 / 0x00 = RetrieveLogsRequest` | Ο controller μπορεί να ζητήσει διαγνωστικά logs από τη συσκευή αν η συσκευή έχει διαθέσιμα logs. |
+| `0/51/65529` | 0 | 51 / `0x0033` | General Diagnostics | `[0, 1]` | `0 / 0x00 = TestEventTrigger`<br />`1 / 0x01 = TimeSnapshot` | Η συσκευή υποστηρίζει διαγνωστικές εντολές. Αυτές είναι κυρίως χρήσιμες για δοκιμές, πιστοποίηση, troubleshooting και διαγνωστικά time snapshot. |
+| `0/53/65529` | 0 | 53 / `0x0035` | Thread Network Diagnostics | `[0]` | `0 / 0x00 = ResetCounts` | Ο controller μπορεί να μηδενίσει τους μετρητές διαγνωστικών Thread. Αυτό είναι μόνο για διαγνωστικά και δεν ελέγχει την κύρια λειτουργία της συσκευής. |
+| `0/60/65529` | 0 | 60 / `0x003C` | Administrator Commissioning | `[0, 1, 2]` | `0 / 0x00 = OpenCommissioningWindow`<br />`1 / 0x01 = OpenBasicCommissioningWindow`<br />`2 / 0x02 = RevokeCommissioning` | Η συσκευή μπορεί να ανοίξει ή να ανακαλέσει ένα commissioning window. Αυτό χρησιμοποιείται για την προσθήκη άλλου controller/admin ή για να τεθεί η συσκευή ξανά σε λειτουργία commissioning. |
+| `0/62/65529` | 0 | 62 / `0x003E` | Operational Credentials | `[0, 2, 4, 6, 7, 9, 10, 11]` | `0 / 0x00 = AttestationRequest`<br />`2 / 0x02 = CertificateChainRequest`<br />`4 / 0x04 = CSRRequest`<br />`6 / 0x06 = AddNOC`<br />`7 / 0x07 = UpdateNOC`<br />`9 / 0x09 = UpdateFabricLabel`<br />`10 / 0x0A = RemoveFabric`<br />`11 / 0x0B = AddTrustedRootCertificate` | Η συσκευή υποστηρίζει λειτουργίες πιστοποιητικών fabric/ασφάλειας του Matter. Αυτές οι εντολές χρησιμοποιούνται κατά το commissioning, τη ρύθμιση fabric, το multi-admin και τη διαχείριση operational credentials. |
+| `0/63/65529` | 0 | 63 / `0x003F` | Group Key Management | `[0, 1, 3, 4]` | `0 / 0x00 = KeySetWrite`<br />`1 / 0x01 = KeySetRead`<br />`3 / 0x03 = KeySetRemove`<br />`4 / 0x04 = KeySetReadAllIndices` | Η συσκευή υποστηρίζει group key management για ασφαλή επικοινωνία Matter group. Αυτή δεν είναι ενέργεια συσκευής που βλέπει ο χρήστης. |
+
+Για την υλοποίηση bridge, αυτές οι λίστες εντολών του endpoint `0` θα πρέπει συνήθως να αντιμετωπίζονται ως δυνατότητες συστήματος. Είναι χρήσιμες για commissioning, διαγνωστικά, ρύθμιση δικτύου και διαχείριση fabric, αλλά δεν θα πρέπει να εκτίθενται ως κανονικές εντολές χρήστη όπως lock/unlock, ανάγνωση θερμοκρασίας ή κατάσταση διαρροής.
+
+### Υποστηριζόμενες εντολές του cluster Door Lock
+
+Το cluster Door Lock έχει ένα σύνολο εντολών για λειτουργία κλειδαριάς, διαχείριση user/PIN/RFID, schedules, credentials, logs και ρύθμιση Aliro reader. Σημαντικό: μια πραγματική κλειδαριά μπορεί να υποστηρίζει μόνο ένα υποσύνολο αυτών των εντολών. Για να μάθετε τι υποστηρίζει μία ακριβώς συσκευή, διαβάστε το τυπικό global attribute `AcceptedCommandList` για το cluster `257` στο endpoint της κλειδαριάς, για παράδειγμα path `1/257/65529` όταν χρησιμοποιείτε τη μορφή `endpoint/cluster/attribute`.
+
+Για χρήση python-matter-server / bridge, οι εντολές κανονικά στέλνονται στο cluster `257` στο endpoint της κλειδαριάς, συνήθως το endpoint `1`. Στο payload σας AWS IoT, το bridge θα πρέπει να αναλύσει (resolve) `device_uuid -> node_id`, και μετά να στείλει την εντολή με `node_id`, `endpoint_id`, όνομα εντολής cluster, και ορίσματα ειδικά για την εντολή.
+
+| Command ID | Hex | Όνομα εντολής | Περιοχή | Τι κάνει | Τυπικά ορίσματα / λεπτομέρειες τιμών |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 0x00 | LockDoor | Λειτουργία κλειδαριάς | Κλειδώνει την πόρτα. | Συνήθως χωρίς ορίσματα. Ορισμένες κλειδαριές μπορεί να απαιτούν `PINCode` αν το `RequirePINforRemoteOperation` είναι `true`. Το αποτέλεσμα θα πρέπει να ελέγχεται, γιατί η εντολή μπορεί να αποτύχει αν η κλειδαριά είναι μη διαθέσιμη, μπλοκαρισμένη, ήδη κινείται ή απαιτεί επιπλέον δεδομένα credential. |
+| 1 | 0x01 | UnlockDoor | Λειτουργία κλειδαριάς | Ξεκλειδώνει την πόρτα. | Συνήθως χωρίς ορίσματα, εκτός αν η κλειδαριά απαιτεί PIN για απομακρυσμένη λειτουργία. Εντολή ευαίσθητη ως προς την ασφάλεια. Το API σας θα πρέπει να την αντιμετωπίζει ως ελεγχόμενη απομακρυσμένη λειτουργία και να καταγράφει ποιος/τι την ενεργοποίησε. |
+| 2 | 0x02 | Toggle | Λειτουργία κλειδαριάς | Εναλλάσσει μεταξύ κλειδωμένης και ξεκλείδωτης κατάστασης. | Συνήθως χωρίς ορίσματα. Δεν συνιστάται για ροές cloud/API όταν έχει σημασία η ακριβής επιθυμητή κατάσταση, επειδή το αποτέλεσμα εξαρτάται από την τρέχουσα φυσική κατάσταση. Προτιμήστε `LockDoor` ή `UnlockDoor` για ντετερμινιστική συμπεριφορά. |
+| 3 | 0x03 | UnlockWithTimeout | Λειτουργία κλειδαριάς | Ξεκλειδώνει την πόρτα προσωρινά, και μετά η κλειδαριά θα πρέπει να ξανακλειδώσει μετά το timeout. | Συνηθισμένο όρισμα: `timeout` ή `timeoutInSeconds` ανάλογα με το SDK binding. Η τιμή είναι μια διάρκεια, κανονικά σε δευτερόλεπτα. Χρησιμοποιήστε το όταν θέλετε προσωρινή πρόσβαση αντί για μόνιμο ξεκλείδωμα. |
+| 4 | 0x04 | GetLogRecord | Έλεγχος/logs | Διαβάζει μία εγγραφή log από το audit log της κλειδαριάς αν υποστηρίζεται. | Συνηθισμένο όρισμα: `logIndex`. Χρησιμοποιείται για troubleshooting/ιστορικό audit. Πολλές καταναλωτικές κλειδαριές μπορεί να μην υλοποιούν πλήρη ανάκτηση log. |
+| 5 | 0x05 | SetPINCode | Διαχείριση PIN (legacy) | Δημιουργεί ή ενημερώνει έναν κωδικό PIN σε ένα legacy PIN slot. | Τυπικά ορίσματα περιλαμβάνουν `userIndex`, `userStatus`, `userType`, `pinCode`. Αυτό είναι παλαιότερο API ειδικό για PIN. Νεότερες κλειδαριές μπορεί να προτιμούν `SetUser` συν `SetCredential`. |
+| 6 | 0x06 | GetPINCode | Διαχείριση PIN (legacy) | Διαβάζει πληροφορίες PIN για έναν user/slot αν υποστηρίζεται. | Τυπικό όρισμα: `userIndex`. Ορισμένες συσκευές σκόπιμα δεν επιστρέφουν το μυστικό υλικό PIN για λόγους ασφάλειας, ακόμη κι αν η εντολή υπάρχει. |
+| 7 | 0x07 | ClearPINCode | Διαχείριση PIN (legacy) | Καθαρίζει έναν κωδικό PIN/το PIN slot ενός user. | Τυπικό όρισμα: `userIndex`. Χρησιμοποιήστε το προσεκτικά γιατί αφαιρεί την πρόσβαση για αυτό το PIN slot. |
+| 8 | 0x08 | ClearAllPINCodes | Διαχείριση PIN (legacy) | Καθαρίζει όλους τους κωδικούς PIN. | Συνήθως χωρίς ορίσματα. Επικίνδυνη μαζική λειτουργία. Θα πρέπει να προστατεύεται στο backend/API γιατί μπορεί να αφαιρέσει κάθε πρόσβαση βασισμένη σε PIN. |
+| 9 | 0x09 | SetUserStatus | Διαχείριση χρηστών (legacy) | Ορίζει την κατάσταση για μια εγγραφή user. | Τυπικά ορίσματα: `userIndex`, `userStatus`. Οι τιμές user status είναι τύπου enum, συνήθως καταστάσεις τύπου available/enabled/disabled ανάλογα με την έκδοση Matter. |
+| 10 | 0x0A | GetUserStatus | Διαχείριση χρηστών (legacy) | Διαβάζει την κατάσταση για μια εγγραφή user. | Τυπικό όρισμα: `userIndex`. Χρήσιμο για να ελέγξετε αν ένα user slot είναι active/enabled πριν ορίσετε credentials. |
+| 11 | 0x0B | SetWeekDaySchedule | Χρονοπρογραμματισμός | Ορίζει ένα επαναλαμβανόμενο εβδομαδιαίο πρόγραμμα πρόσβασης για έναν user. | Τυπικά ορίσματα περιλαμβάνουν `weekDayIndex`, `userIndex`, `daysMask`, `startHour`, `startMinute`, `endHour`, `endMinute`. Χρησιμοποιείται για επαναλαμβανόμενα παράθυρα πρόσβασης όπως καθημερινές 09:00-17:00. |
+| 12 | 0x0C | GetWeekDaySchedule | Χρονοπρογραμματισμός | Διαβάζει ένα επαναλαμβανόμενο εβδομαδιαίο πρόγραμμα. | Τυπικά ορίσματα: `weekDayIndex`, `userIndex`. Επιστρέφει τα πεδία του προγράμματος όταν υπάρχουν. |
+| 13 | 0x0D | ClearWeekDaySchedule | Χρονοπρογραμματισμός | Καθαρίζει ένα επαναλαμβανόμενο εβδομαδιαίο πρόγραμμα. | Τυπικά ορίσματα: `weekDayIndex`, `userIndex`. Αφαιρεί μόνο αυτό το παράθυρο προγράμματος, όχι απαραίτητα τον user ή το credential. |
+| 14 | 0x0E | SetYearDaySchedule | Χρονοπρογραμματισμός | Ορίζει ένα εφάπαξ/εύρους ημερομηνιών πρόγραμμα για έναν user. | Τυπικά ορίσματα περιλαμβάνουν `yearDayIndex`, `userIndex`, `localStartTime`, `localEndTime`. Χρησιμοποιείται για προσωρινά παράθυρα πρόσβασης βάσει ημερομηνίας. |
+| 15 | 0x0F | GetYearDaySchedule | Χρονοπρογραμματισμός | Διαβάζει ένα πρόγραμμα εύρους ημερομηνιών. | Τυπικά ορίσματα: `yearDayIndex`, `userIndex`. Επιστρέφει χρόνο start/end όταν υπάρχει. |
+| 16 | 0x10 | ClearYearDaySchedule | Χρονοπρογραμματισμός | Καθαρίζει ένα πρόγραμμα εύρους ημερομηνιών. | Τυπικά ορίσματα: `yearDayIndex`, `userIndex`. Αφαιρεί αυτό το προσωρινό πρόγραμμα. |
+| 17 | 0x11 | SetHolidaySchedule | Χρονοπρογραμματισμός | Ορίζει ένα πρόγραμμα αργιών / πρόγραμμα εξαίρεσης. | Τυπικά ορίσματα περιλαμβάνουν `holidayIndex`, `localStartTime`, `localEndTime`, `operatingModeDuringHoliday`. Χρησιμοποιείται για αλλαγή της συμπεριφοράς της κλειδαριάς κατά τη διάρκεια ειδικών ημερολογιακών περιόδων. |
+| 18 | 0x12 | GetHolidaySchedule | Χρονοπρογραμματισμός | Διαβάζει ένα πρόγραμμα αργιών. | Τυπικό όρισμα: `holidayIndex`. Επιστρέφει πληροφορίες προγράμματος αργιών αν υποστηρίζεται και έχει ρυθμιστεί. |
+| 19 | 0x13 | ClearHolidaySchedule | Χρονοπρογραμματισμός | Καθαρίζει ένα πρόγραμμα αργιών. | Τυπικό όρισμα: `holidayIndex`. Αφαιρεί αυτή την εξαίρεση αργίας. |
+| 20 | 0x14 | SetUserType | Διαχείριση χρηστών (legacy) | Ορίζει τον τύπο/κατηγορία ενός user. | Τυπικά ορίσματα: `userIndex`, `userType`. Ο τύπος user μπορεί να αναπαριστά unrestricted user, schedule-restricted user, programming user κ.λπ., ανάλογα με τις υποστηριζόμενες τιμές enum. |
+| 21 | 0x15 | GetUserType | Διαχείριση χρηστών (legacy) | Διαβάζει τον τύπο/κατηγορία ενός user. | Τυπικό όρισμα: `userIndex`. Χρήσιμο για να κατανοήσετε πώς είναι ρυθμισμένο ένα user slot. |
+| 22 | 0x16 | SetRFIDCode | Διαχείριση RFID (legacy) | Δημιουργεί ή ενημερώνει ένα credential RFID σε ένα legacy RFID slot. | Τυπικά ορίσματα περιλαμβάνουν `userIndex`, `userStatus`, `userType`, `rfidCode`. Παλαιότερο API ειδικό για RFID· νεότερες συσκευές μπορεί να χρησιμοποιούν γενικό `SetCredential`. |
+| 23 | 0x17 | GetRFIDCode | Διαχείριση RFID (legacy) | Διαβάζει πληροφορίες credential RFID αν υποστηρίζεται. | Τυπικό όρισμα: `userIndex`. Οι συσκευές μπορεί να αποφεύγουν την επιστροφή μυστικού υλικού credential. |
+| 24 | 0x18 | ClearRFIDCode | Διαχείριση RFID (legacy) | Καθαρίζει ένα credential RFID. | Τυπικό όρισμα: `userIndex`. Αφαιρεί την πρόσβαση RFID για αυτό το slot/user. |
+| 25 | 0x19 | ClearAllRFIDCodes | Διαχείριση RFID (legacy) | Καθαρίζει όλα τα credentials RFID. | Συνήθως χωρίς ορίσματα. Επικίνδυνη μαζική λειτουργία· θα πρέπει να είναι admin-only. |
+| 26 | 0x1A | SetUser | Διαχείριση χρηστών | Δημιουργεί ή ενημερώνει μια σύγχρονη εγγραφή user του Door Lock. | Τυπικά ορίσματα περιλαμβάνουν `userIndex`, `userName`, `userUniqueID`, `userStatus`, `userType`, `credentialRule`. Αυτό είναι το σύγχρονο API user που χρησιμοποιείται πριν/μαζί με credentials. |
+| 27 | 0x1B | GetUser | Διαχείριση χρηστών | Διαβάζει μία σύγχρονη εγγραφή user του Door Lock. | Τυπικό όρισμα: `userIndex`. Η απόκριση μπορεί να περιλαμβάνει `userName`, `userUniqueID`, `userStatus`, `userType`, `credentialRule`, λίστα credentials και fabric indexes. Στο έργο σας αυτό είναι χρήσιμο επειδή το `userName` μπορεί να χρησιμοποιηθεί ως σταθερή ταυτότητα όταν είναι διαθέσιμο. |
+| 29 | 0x1D | ClearUser | Διαχείριση χρηστών | Καθαρίζει μία σύγχρονη εγγραφή user. | Τυπικό όρισμα: `userIndex`. Αφαιρεί τον user και μπορεί επίσης να επηρεάσει credentials που συνδέονται με αυτόν τον user ανάλογα με τη συμπεριφορά της συσκευής. |
+| 34 | 0x22 | SetCredential | Διαχείριση credentials | Προσθέτει ή ενημερώνει ένα credential όπως PIN, RFID, fingerprint, face, Aliro ή άλλον υποστηριζόμενο τύπο credential. | Τυπικά ορίσματα περιλαμβάνουν `operationType`, `credential`, `credentialData`, `userIndex`, `userStatus`, `userType`. Η δομή `credential` κανονικά περιέχει `credentialType` και `credentialIndex`. |
+| 36 | 0x24 | GetCredentialStatus | Διαχείριση credentials | Ελέγχει αν ένα credential slot υπάρχει/έχει δεδομένα και σε ποιον ανήκει. | Τυπικό όρισμα: `credential` με `credentialType` και `credentialIndex`. Χρήσιμο πριν την εγγραφή ή τον καθαρισμό credentials. |
+| 38 | 0x26 | ClearCredential | Διαχείριση credentials | Καθαρίζει ένα credential, ή ένα credential που ταιριάζει με τη δομή credential που δόθηκε. | Τυπικό όρισμα: `credential`. Χρησιμοποιήστε το προσεκτικά γιατί αφαιρεί την πρόσβαση για αυτό το credential. |
+| 39 | 0x27 | UnboltDoor | Λειτουργία κλειδαριάς | Αποσύρει/ξεμανταλώνει την πόρτα όταν η συσκευή υποστηρίζει ξεχωριστή ενέργεια unbolt. | Συνήθως χωρίς ορίσματα ή προαιρετικό PIN ανάλογα με την πολιτική της κλειδαριάς. Δεν διακρίνουν όλες οι κλειδαριές το `UnlockDoor` από το `UnboltDoor`. |
+| 40 | 0x28 | SetAliroReaderConfig | Ρύθμιση Aliro / reader | Ρυθμίζει τη συμπεριφορά Aliro reader σε συμβατές κλειδαριές/readers. | Τα ορίσματα είναι πεδία ρύθμισης reader ειδικά για Aliro. Υποστηρίζεται μόνο από συσκευές με δυνατότητα Aliro reader. Αντιμετωπίστε το ως προχωρημένη/ειδική για vendor/ecosystem λειτουργία. |
+| 41 | 0x29 | ClearAliroReaderConfig | Ρύθμιση Aliro / reader | Καθαρίζει τη ρύθμιση Aliro reader. | Συνήθως χωρίς ορίσματα ή με selector ειδικό για Aliro ανάλογα με την υλοποίηση. Υποστηρίζεται μόνο από συσκευές με δυνατότητα Aliro. |
+
+#### Έλεγχος υποστήριξης εντολών Door Lock
+
+Η υποστήριξη εντολών Door Lock είναι ξεχωριστή από τις γενικές εντολές συστήματος του endpoint `0` παραπάνω. Μην υποθέσετε ότι κάθε κλειδαριά Matter υποστηρίζει κάθε εντολή που παρατίθεται παραπάνω. Ο πρακτικός έλεγχος υποστήριξης είναι:
+
+| Path | Attribute | Τι σας λέει | Παράδειγμα / Λεπτομέρειες τιμών |
+| --- | --- | --- | --- |
+| `1/257/65529` | AcceptedCommandList | Εντολές που δέχεται αυτή ακριβώς η κλειδαριά στο endpoint `1`, cluster `257`. | Παράδειγμα: `[0, 1, 26, 27, 29, 34, 36, 38]` σημαίνει ότι αυτή η κλειδαριά υποστηρίζει `LockDoor`, `UnlockDoor`, `SetUser`, `GetUser`, `ClearUser`, `SetCredential`, `GetCredentialStatus` και `ClearCredential`. Χρησιμοποιήστε αυτή τη λίστα για να αποφασίσετε ποια κουμπιά/λειτουργίες API θα εκθέσετε. |
+| `1/257/65528` | GeneratedCommandList | Responses/events που παράγει αυτό το cluster για εντολές, ανάλογα με την υλοποίηση. | Χρήσιμο για χειρισμό command/response, αλλά το `AcceptedCommandList` είναι το κύριο για να αποφασίσετε αν μπορεί να σταλεί μια εντολή. |
+
+---
+
+## Αντιστοίχιση τύπων συσκευών Matter
+
+### Πηγή αλήθειας (Source of Truth)
+
+Οι τύποι συσκευών Matter διαβάζονται από το cluster Matter Descriptor:
+
+```text
+<endpoint>/29/0
+```
+
+Όπου:
+
+```text
+29 = Descriptor cluster
+0  = DeviceTypeList attribute
+```
+
+Το `python-matter-server` επιστρέφει την τιμή σε δεκαδική μορφή:
+
+```json
+"1/29/0": [
+  {
+    "0": 21,
+    "1": 1
+  }
+]
+```
+
+Σημασία:
+
+```text
+"0" = Matter Device Type ID
+"1" = Device Type Revision
+```
+
+Το επίσημο data model του Matter SDK δημοσιεύει τον χάρτη device type ID του Matter 1.5 στο `connectedhomeip/data_model/1.5/device_types/device_type_ids.json`.
+
+Πηγή:
+
+- https://github.com/project-chip/connectedhomeip/blob/master/data_model/1.5/device_types/device_type_ids.json
+
+### Κανόνες Bridge
+
+#### Shadow `device_info`
+
+Το shadow `device_info` αποθηκεύει τον αριθμητικό τύπο συσκευής Matter κάτω από το πραγματικό Matter path.
+
+Παράδειγμα για Contact Sensor:
+
+```json
+{
+  "1/29/0": 21
+}
+```
+
+Μην γράφετε αυτό το προσαρμοσμένο πεδίο στο `device_info`:
+
+```json
+{
+  "device_type": "contact_sensor"
+}
+```
+
+#### Κανόνες σύνθετων αισθητήρων (Composite Sensor)
+
+Ορισμένες φυσικές συσκευές εκθέτουν πολλαπλά endpoints αισθητήρων.
+
+Παράδειγμα:
+
+```text
+770 = Temperature Sensor
+775 = Humidity Sensor
+```
+
+Το bridge τα συνδυάζει σε:
+
+```text
+temperature_humidity_sensor
+```
+
+Το shadow `device_info` εξακολουθεί να αποθηκεύει μόνο ένα επιλεγμένο αριθμητικό Matter path, για παράδειγμα:
+
+```json
+{
+  "1/29/0": 770
+}
+```
+
+Αλλά ο εσωτερικός τύπος bridge και το AWS IoT Thing Type γίνονται:
+
+```text
+temperature_humidity_sensor
+```
+
+### Πλήρης λίστα τύπων συσκευών Matter
+
+| Δεκαδική τιμή | Τύπος συσκευής Matter           | Bridge Internal Type               |
+| ------------: | ------------------------------ | ---------------------------------- |
+|        `10` | Door Lock                      | `lock`                           |
+|        `11` | Door Lock Controller           | `door_lock_controller`           |
+|        `14` | Aggregator                     | `aggregator`                     |
+|        `15` | Generic Switch                 | `switch`                         |
+|        `17` | Power Source                   | `power_source`                   |
+|        `18` | OTA Requestor                  | `ota_requestor`                  |
+|        `19` | Bridged Node                   | `bridged_node`                   |
+|        `20` | OTA Provider                   | `ota_provider`                   |
+|        `21` | Contact Sensor                 | `contact_sensor`                 |
+|        `22` | Root Node                      | `root_node`                      |
+|        `23` | Solar Power                    | `solar_power`                    |
+|        `24` | Battery Storage                | `battery_storage`                |
+|        `25` | Secondary Network Interface    | `secondary_network_interface`    |
+|        `34` | Speaker                        | `speaker`                        |
+|        `35` | Casting Video Player           | `casting_video_player`           |
+|        `36` | Content App                    | `content_app`                    |
+|        `39` | Mode Select                    | `mode_select`                    |
+|        `40` | Basic Video Player             | `basic_video_player`             |
+|        `41` | Casting Video Client           | `casting_video_client`           |
+|        `42` | Video Remote Control           | `video_remote_control`           |
+|        `43` | Fan                            | `fan`                            |
+|        `44` | Air Quality Sensor             | `air_quality_sensor`             |
+|        `45` | Air Purifier                   | `air_purifier`                   |
+|        `64` | Irrigation System              | `irrigation_system`              |
+|        `65` | Water Freeze Detector          | `water_freeze_detector`          |
+|        `66` | Water Valve                    | `water_valve`                    |
+|        `67` | Water Leak Detector            | `water_leak_detector`            |
+|        `68` | Rain Sensor                    | `rain_sensor`                    |
+|        `69` | Soil Sensor                    | `soil_sensor`                    |
+|       `112` | Refrigerator                   | `refrigerator`                   |
+|       `113` | Temperature Controlled Cabinet | `temperature_controlled_cabinet` |
+|       `114` | Room Air Conditioner           | `room_air_conditioner`           |
+|       `115` | Laundry Washer                 | `laundry_washer`                 |
+|       `116` | Robotic Vacuum Cleaner         | `robotic_vacuum_cleaner`         |
+|       `117` | Dishwasher                     | `dishwasher`                     |
+|       `118` | Smoke CO Alarm                 | `smoke_co_alarm`                 |
+|       `119` | Cook Surface                   | `cook_surface`                   |
+|       `120` | Cooktop                        | `cooktop`                        |
+|       `121` | Microwave Oven                 | `microwave_oven`                 |
+|       `122` | Extractor Hood                 | `extractor_hood`                 |
+|       `123` | Oven                           | `oven`                           |
+|       `124` | Laundry Dryer                  | `laundry_dryer`                  |
+|       `144` | Network Infrastructure Manager | `network_infrastructure_manager` |
+|       `145` | Thread Border Router           | `thread_border_router`           |
+|       `256` | On/Off Light                   | `on_off_light`                   |
+|       `257` | Dimmable Light                 | `dimmable_light`                 |
+|       `259` | On/Off Light Switch            | `on_off_light_switch`            |
+|       `260` | Dimmer Switch                  | `dimmer_switch`                  |
+|       `261` | Color Dimmer Switch            | `color_dimmer_switch`            |
+|       `262` | Light Sensor                   | `light_sensor`                   |
+|       `263` | Occupancy Sensor               | `occupancy_sensor`               |
+|       `266` | On/Off Plug-in Unit            | `on_off_plug`                    |
+|       `267` | Dimmable Plug-In Unit          | `dimmable_plug`                  |
+|       `268` | Color Temperature Light        | `color_temperature_light`        |
+|       `269` | Extended Color Light           | `extended_color_light`           |
+|       `271` | Mounted On/Off Control         | `mounted_on_off_control`         |
+|       `272` | Mounted Dimmable Load Control  | `mounted_dimmable_load_control`  |
+|       `304` | Joint Fabric Administrator     | `joint_fabric_administrator`     |
+|       `320` | Intercom                       | `intercom`                       |
+|       `321` | Audio Doorbell                 | `audio_doorbell`                 |
+|       `322` | Camera                         | `camera`                         |
+|       `323` | Video Doorbell                 | `video_doorbell`                 |
+|       `324` | Floodlight Camera              | `floodlight_camera`              |
+|       `325` | Snapshot Camera                | `snapshot_camera`                |
+|       `326` | Chime                          | `chime`                          |
+|       `327` | Camera Controller              | `camera_controller`              |
+|       `328` | Doorbell                       | `doorbell`                       |
+|       `514` | Window Covering                | `window_covering`                |
+|       `515` | Window Covering Controller     | `window_covering_controller`     |
+|       `560` | Closure                        | `closure`                        |
+|       `561` | Closure Panel                  | `closure_panel`                  |
+|       `574` | Closure Controller             | `closure_controller`             |
+|       `769` | Thermostat                     | `thermostat`                     |
+|       `770` | Temperature Sensor             | `temperature_sensor`             |
+|       `771` | Pump                           | `pump`                           |
+|       `772` | Pump Controller                | `pump_controller`                |
+|       `773` | Pressure Sensor                | `pressure_sensor`                |
+|       `774` | Flow Sensor                    | `flow_sensor`                    |
+|       `775` | Humidity Sensor                | `humidity_sensor`                |
+|       `777` | Heat Pump                      | `heat_pump`                      |
+|       `778` | Thermostat Controller          | `thermostat_controller`          |
+|      `1292` | Energy EVSE                    | `energy_evse`                    |
+|      `1293` | Device Energy Management       | `device_energy_management`       |
+|      `1295` | Water Heater                   | `water_heater`                   |
+|      `1296` | Electrical Sensor              | `electrical_sensor`              |
+|      `1297` | Electrical Utility Meter       | `electrical_utility_meter`       |
+|      `1298` | Meter Reference Point          | `meter_reference_point`          |
+|      `1299` | Electrical Energy Tariff       | `electrical_energy_tariff`       |
+|      `1300` | Electrical Meter               | `electrical_meter`               |
+|      `2112` | Control Bridge                 | `control_bridge`                 |
+|      `2128` | On/Off Sensor                  | `on_off_sensor`                  |

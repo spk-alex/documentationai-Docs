@@ -1,0 +1,353 @@
+---
+title: Partner Webhooks
+description: Πώς να λαμβάνετε events της SmartphoneKey μέσω HTTP webhooks — ρύθμιση, αυθεντικοποίηση, παράδοση και συμπεριφορά retry.
+---
+
+Τα partner webhooks επιτρέπουν στο σύστημά σας να λαμβάνει ειδοποιήσεις σε πραγματικό χρόνο όταν συμβαίνουν events στη SmartphoneKey. Όταν ενεργοποιείται ένα event στο οποίο έχετε εγγραφεί, η SmartphoneKey κάνει ένα HTTP POST στο καταχωρημένο endpoint σας με το payload του event.
+
+## Πώς λειτουργεί
+
+1. Καταχωρείτε μια συνδρομή webhook με ένα URL προορισμού και (προαιρετικά) τους τύπους event που θέλετε να λαμβάνετε.
+2. Όταν ενεργοποιείται ένα event που ταιριάζει, η SmartphoneKey το παραδίδει στο endpoint σας ως HTTP POST.
+3. Το endpoint σας απαντά με κωδικό κατάστασης `2xx` για να επιβεβαιώσει τη λήψη.
+4. Αν η παράδοση αποτύχει, το AWS EventBridge κάνει αυτόματα retry.
+
+Στο παρασκήνιο, κάθε webhook υποστηρίζεται από έναν κανόνα EventBridge + API destination που έχει παρασχεθεί (provisioned) για το `partnerId` σας. Το EventBridge φιλτράρει events με βάση το `detail.partnerId == <your orgId>`, ώστε να βλέπετε πάντα μόνο events για τον δικό σας tenant.
+
+## Διαθέσιμοι τύποι event
+
+Η SmartphoneKey δημοσιεύει events από δύο πηγές:
+
+| Πηγή | Περιγραφή |
+|--------|-------------|
+| `spk.api` | Domain events από το B2C API (κλειδαριές, χρήστες, hubs, κάμερες, κλειδιά) |
+| `spk.iot.shadow` | Shadow updates του AWS IoT από συνδεδεμένες συσκευές hub |
+
+Το `detail-type` κάθε event ταιριάζει με το όνομα του event σε **PascalCase** που παρατίθεται παρακάτω.
+
+### Lock events (`spk.api`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `LockCreated` | Δημιουργήθηκε μια νέα κλειδαριά στο σύστημα |
+| `OwnerSet` | Ανατέθηκε ή άλλαξε ο ιδιοκτήτης μιας κλειδαριάς |
+| `OrganizationSet` | Μια κλειδαριά μετακινήθηκε σε διαφορετικό οργανισμό |
+| `KeyAdded` | Προστέθηκε ένα φυσικό κλειδί σε μια κλειδαριά |
+| `KeyRemoved` | Αφαιρέθηκε ένα φυσικό κλειδί από μια κλειδαριά |
+| `KeyWriteRequested` | Ζητήθηκε εγγραφή κλειδιού σε φυσικό hardware NFC |
+| `LockOpenRequested` | Ζητήθηκε ξεκλείδωμα για μια κλειδαριά |
+| `ResidentAdded` | Παραχωρήθηκε σε έναν ένοικο πρόσβαση σε μια κλειδαριά |
+| `ResidentRemoved` | Ανακλήθηκε η πρόσβαση ενός ενοίκου σε μια κλειδαριά |
+| `LockUuidChanged` | Αντικαταστάθηκε το UUID μιας κλειδαριάς |
+
+### User events (`spk.api`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `UserCreated` | Καταχωρήθηκε ένας νέος χρήστης |
+| `ProfileUpdated` | Άλλαξαν τα πεδία προφίλ ενός χρήστη |
+| `PhysicalKeyAdded` | Εκδόθηκε ένα φυσικό κλειδί σε έναν χρήστη |
+| `PhysicalKeyRemoved` | Αφαιρέθηκε ένα φυσικό κλειδί από έναν χρήστη |
+| `WalletKeyPrepared` | Ένα wallet key (Apple/Google) βρίσκεται υπό provisioning |
+| `WalletKeyCommitted` | Εκδόθηκε ένα wallet key και το pass είναι διαθέσιμο |
+| `WalletKeyRolledBack` | Μια προσπάθεια provisioning wallet key έγινε rollback |
+| `WalletKeyRemoved` | Αφαιρέθηκε ένα wallet key από έναν χρήστη |
+| `WalletKeyAdded` | Προστέθηκε ένα wallet key (legacy μονοβηματική διαδρομή) |
+| `AccessibleLockAdded` | Παραχωρήθηκε σε έναν χρήστη πρόσβαση σε μια κλειδαριά |
+| `AccessibleLockRemoved` | Ένας χρήστης έχασε την πρόσβαση σε μια κλειδαριά |
+| `UserSuspended` | Ένας χρήστης τέθηκε σε αναστολή |
+| `UserReactivated` | Ένας χρήστης που είχε ανασταλεί επανενεργοποιήθηκε |
+| `LicensePlateAdded` | Καταχωρήθηκε μια πινακίδα κυκλοφορίας σε έναν χρήστη |
+| `LicensePlateRemoved` | Αφαιρέθηκε μια πινακίδα κυκλοφορίας από έναν χρήστη |
+| `DeviceAdded` | Συνδέθηκε μια συσκευή με έναν χρήστη |
+| `DeviceRemoved` | Αποσυνδέθηκε μια συσκευή από έναν χρήστη |
+
+### Hub events (`spk.api`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `HubProvisioned` | Έγινε provisioned ένα hub (κατασκευάστηκε / έγινε γνωστό στο σύστημα) |
+| `HubClaimed` | Ένα hub διεκδικήθηκε από έναν οργανισμό + site |
+| `HubReClaimed` | Ένα hub μετακινήθηκε από έναν org/site σε άλλον |
+| `HubRoleSet` | Ορίστηκε ο πρωτεύων/δευτερεύων ρόλος ενός hub |
+| `HubSuspended` | Ένα hub τέθηκε σε αναστολή |
+| `HubDecommissioned` | Ένα hub αποσύρθηκε (decommissioned) |
+| `MigrationStarted` | Ξεκίνησε μια μετάβαση (migration) συσκευής από hub σε hub |
+| `DeviceMigrationStatusUpdated` | Άλλαξε η κατάσταση migration μιας συσκευής |
+| `MigrationCompleted` | Ολοκληρώθηκε μια μετάβαση συσκευής από hub σε hub |
+
+### Camera events (`spk.api`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `CameraRegistered` | Καταχωρήθηκε μια κάμερα |
+| `CameraUpdated` | Άλλαξαν τα metadata ή τα stream URLs μιας κάμερας |
+| `CameraDisabled` | Απενεργοποιήθηκε μια κάμερα |
+| `CameraDeleted` | Διαγράφηκε μια κάμερα |
+| `CameraLinkedToLock` | Μια κάμερα συσχετίστηκε με μια κλειδαριά |
+| `CameraUnlinkedFromLock` | Μια κάμερα αποσυσχετίστηκε από μια κλειδαριά |
+| `CameraRoleCreated` | Δημιουργήθηκε ένας ρόλος πρόσβασης 3dEye |
+| `CameraRoleDeleted` | Διαγράφηκε ένας ρόλος πρόσβασης 3dEye |
+| `CameraRoleUserAssigned` | Προστέθηκε ένας χρήστης σε έναν ρόλο κάμερας |
+| `CameraRoleUserRemoved` | Αφαιρέθηκε ένας χρήστης από έναν ρόλο κάμερας |
+| `CameraRoleCameraAssigned` | Προστέθηκε μια κάμερα σε έναν ρόλο |
+| `CameraRoleCameraRemoved` | Αφαιρέθηκε μια κάμερα από έναν ρόλο |
+
+### RTSP camera events (`spk.api`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `RtspCameraRegistered` | Καταχωρήθηκε μια κάμερα RTSP |
+| `RtspCameraDeleted` | Διαγράφηκε μια κάμερα RTSP |
+
+### Temporary key events (`spk.api`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `TempKeyCreated` | Εκδόθηκε ένα προσωρινό κλειδί |
+| `TempKeyUsed` | Χρησιμοποιήθηκε ένα προσωρινό κλειδί για ξεκλείδωμα |
+| `TempKeyUpdated` | Άλλαξε το χρονικό παράθυρο ισχύος ή οι κανόνες ενός προσωρινού κλειδιού |
+| `TempKeyDeleted` | Διαγράφηκε ένα προσωρινό κλειδί |
+
+### Matter device events (`spk.api`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `MatterDeviceCreated` | Καταχωρήθηκε μια συσκευή Matter |
+| `ReportedShadowUpdated` | Μια συσκευή ανέφερε νέα κατάσταση shadow |
+| `DesiredShadowUpdated` | Προωθήθηκε μια νέα επιθυμητή κατάσταση shadow |
+
+> **Σημείωση:** Τα `ReportedShadowUpdated` και `DesiredShadowUpdated` μπορούν να οριστούν σε μια συνδρομή, αλλά **δεν αναδημοσιεύονται σε partner webhooks** — γίνεται deduplication τους έναντι της διαδρομής IoT shadow. Για να παρακολουθείτε την κατάσταση shadow μιας συσκευής, εγγραφείτε στο `Shadow Update` αντί αυτών. Από τα Matter events, μόνο το `MatterDeviceCreated` παραδίδεται.
+
+### IoT events (`spk.iot.shadow`)
+
+| `detail-type` | Πότε ενεργοποιείται |
+|---------------|----------------|
+| `Shadow Update` | Μια συσκευή IoT hub ενημέρωσε το AWS IoT Device Shadow της |
+
+Δείτε το [Event Catalog](/el/events-catalog) για τις μορφές payload των events με τη μεγαλύτερη αξία.
+
+## Payload Webhook
+
+Το endpoint σας λαμβάνει ολόκληρο το event του EventBridge ως σώμα JSON. Το αντικείμενο `detail` περιέχει τα δεδομένα που είναι ειδικά για το event· για events `spk.api` το πραγματικό domain event βρίσκεται κάτω από το `detail.data`.
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "source": "spk.api",
+  "detail-type": "ResidentAdded",
+  "time": "2026-04-30T10:30:00Z",
+  "region": "eu-west-1",
+  "account": "123456789012",
+  "version": "0",
+  "resources": [],
+  "detail": {
+    "partnerId": "acme-corp",
+    "aggregateType": "lock",
+    "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+    "version": 7,
+    "timestamp": 1745922600123,
+    "data": {
+      "type": "ResidentAdded",
+      "lockId": 4321,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "userId": "9b3e1d5e-7c6a-4d4d-8b1a-2e4f6a8c0d1e",
+      "name": "Jane Resident",
+      "email": "resident@example.com",
+      "timestamp": "2026-04-30T10:30:00.123Z"
+    }
+  }
+}
+```
+
+Τα πεδία που θα χρησιμοποιείτε πιο συχνά:
+
+| Πεδίο | Σκοπός |
+|-------|---------|
+| `id` | Το ID του φακέλου (envelope) EventBridge που δημιουργεί η AWS — χρησιμοποιήστε το ως κλειδί deduplication |
+| `source` | `spk.api` ή `spk.iot.shadow` |
+| `detail-type` | Το όνομα του event σε PascalCase (π.χ. `ResidentAdded`) |
+| `detail.partnerId` | Το `orgId` του tenant σας — έχει ήδη φιλτραριστεί από το EventBridge |
+| `detail.aggregateType` / `aggregateId` | Προσδιορίζει το aggregate που παρήγαγε το event |
+| `detail.timestamp` | Χρόνος προβολής (projection) σε **epoch milliseconds** (αριθμός) — διαφορετικός από το `detail.data.timestamp`, που είναι ο χρόνος ISO-8601 του domain event |
+| `detail.data` | Το πλήρες payload του event (δείτε το Event Catalog) |
+
+### Payload IoT Shadow Update
+
+Το `source` είναι `spk.iot.shadow` και αρκετά πεδία του `detail` είναι **stringified JSON** — ο handler σας πρέπει να καλέσει `JSON.parse()` σε αυτά πριν προσπελάσει τις εμφωλευμένες τιμές.
+
+```json
+{
+  "source": "spk.iot.shadow",
+  "detail-type": "Shadow Update",
+  "detail": {
+    "partnerId": "<tenant-org-id>",
+    "thingName": "<device-uuid>",
+    "reportedState": "<stringified JSON of reported state>",
+    "desiredState": "<stringified JSON of desired state>",
+    "deltaState": "{}",
+    "metadata": "<stringified IoT shadow metadata>",
+    "version": 42
+  }
+}
+```
+
+Τα `reportedState`, `desiredState`, `deltaState` και `metadata` είναι stringified JSON ενσωματωμένα μέσα στο εξωτερικό αντικείμενο JSON. Κάντε parse κάθε πεδίο ξεχωριστά πριν προσπελάσετε το περιεχόμενό του.
+
+## Self-Service Εταίρων
+
+Οι εταίροι μπορούν να διαχειρίζονται τα δικά τους διαπιστευτήρια και το webhook URL τους χωρίς να περνούν από την υποστήριξη της SmartphoneKey.
+
+### Partner Portal
+
+Διατίθεται ένα web περιβάλλον ανά περιβάλλον (environment):
+
+| Περιβάλλον | URL |
+|-------------|-----|
+| Dev | `https://partner-portal.spk-dev.workers.dev/` |
+| Stage | `https://partner-portal.spk-stage.workers.dev/` |
+| Nonprod | `https://partner-portal.spk-nonprod.workers.dev/` |
+| Prod | `https://partner-portal.spk-prod.workers.dev/` |
+
+Οι εταίροι συνδέονται με Auth0 και μπορούν να:
+
+- Δουν το `orgId` τους και το ενεργό API key τους (αποκαλύπτεται μία φορά κατά την πρώτη έκδοση, μασκαρισμένο στη συνέχεια)
+- Περιστρέψουν το API key τους — ανακαλεί ακαριαία το προηγούμενο
+- Δημιουργήσουν ή ενημερώσουν το webhook URL τους
+
+Δείτε τον [οδηγό Partner Portal](/el/partner-portal) για μια ξενάγηση.
+
+### Ενημέρωση Webhook URL μέσω API
+
+Αν προτιμάτε να το αυτοματοποιήσετε, μπορείτε να ενημερώσετε το webhook URL σας με το `X-API-Key` σας:
+
+```bash
+curl -X PATCH "https://admin-api.spk-dev.workers.dev/webhooks/$WEBHOOK_ID" \
+  -H "X-API-Key: $YOUR_PARTNER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/webhooks/spk-v2"}'
+```
+
+Σημειώσεις:
+
+- Μόνο το πεδίο `url` είναι τροποποιήσιμο μέσω αυτού του endpoint — για να αλλάξετε τη λίστα events ή να περιστρέψετε το secret, επικοινωνήστε με τον account manager σας.
+- Το HTTPS απαιτείται σε κάθε περιβάλλον για self-service ενημερώσεις εταίρων.
+- Η κατάσταση του webhook επαναφέρεται σε `pending` μέχρι το EventBridge να επαληθεύσει ξανά το νέο URL.
+
+## Αυθεντικοποίηση Webhook
+
+Ώστε το endpoint σας να μπορεί να επιβεβαιώνει ότι τα εισερχόμενα αιτήματα προέρχονται πραγματικά από τη SmartphoneKey, μια παράδοση μπορεί να φέρει ένα **στατικό secret** που η SmartphoneKey συμπεριλαμβάνει σε κάθε αίτημα. Αυτό ρυθμίζεται από την πλευρά του διαχειριστή στο EventBridge connection — επικοινωνήστε με τον account manager σας για να το ρυθμίσετε.
+
+### Υποστηριζόμενοι τύποι αυθεντικοποίησης
+
+| `auth_type` | Περιγραφή |
+|-------------|-------------|
+| `none` | Δεν προστίθεται κεφαλίδα αυθεντικοποίησης. Αυτό είναι το προεπιλεγμένο για self-service webhooks. |
+| `apiKeyHeader` | Ένα στατικό secret αποστέλλεται σε μια προσαρμοσμένη κεφαλίδα αιτήματος της επιλογής σας. |
+| `bearerToken` | Ένα στατικό token αποστέλλεται στην κεφαλίδα `Authorization: Bearer <token>`. |
+
+> **Η υπογραφή σώματος HMAC ανά αίτημα δεν είναι προς το παρόν διαθέσιμη.** Δεν υπάρχει HMAC `X-SPK-Signature` του σώματος του αιτήματος — μην χτίσετε επαλήθευση γύρω από κάτι τέτοιο. Τα webhooks που δημιουργούνται μέσω self-service έχουν προεπιλογή `none`· για να επισυνάψει η SmartphoneKey μια στατική κεφαλίδα ή bearer token, ζητήστε από τον account manager σας να ρυθμίσει `apiKeyHeader` ή `bearerToken`.
+
+### Επαλήθευση ενός στατικού token
+
+Όταν έχει ρυθμιστεί μια στατική κεφαλίδα ή bearer token, συγκρίνετε την τιμή που λάβατε με το αποθηκευμένο secret σας χρησιμοποιώντας **σύγκριση σταθερού χρόνου (constant-time)** για να αποφύγετε επιθέσεις χρονισμού (timing attacks):
+
+```python
+import hmac
+
+def verify_token(received: str, expected: str) -> bool:
+    return hmac.compare_digest(received.encode(), expected.encode())
+```
+
+```typescript
+import { timingSafeEqual } from 'crypto';
+
+function verifyToken(received: string, expected: string): boolean {
+  const a = Buffer.from(received);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+```
+
+Ως άμυνα σε βάθος (defense in depth), επιβεβαιώστε επίσης ότι το `detail.partnerId` ισούται με το `orgId` σας, και εξυπηρετείτε πάντα το webhook endpoint σας μόνο μέσω HTTPS.
+
+## Πολιτική παράδοσης και retry
+
+Η SmartphoneKey παραδίδει webhooks μέσω AWS EventBridge API destinations, τα οποία κάνουν retry σύμφωνα με τη ρυθμισμένη πολιτική τους:
+
+| Παράμετρος | Τιμή |
+|-----------|-------|
+| **Μοντέλο παράδοσης** | At-least-once |
+| **Retries** | Σύμφωνα με την πολιτική retry του EventBridge API destination (υπόκειται σε αλλαγές) |
+| **Backoff retry** | Εκθετικό |
+| **Triggers retry** | Αποκρίσεις `5xx` και timeouts |
+
+Επειδή η παράδοση είναι at-least-once, σχεδιάστε το endpoint σας να είναι **idempotent** — χρησιμοποιήστε το πεδίο `id` στον φάκελο EventBridge ως κλειδί deduplication. Τα events που εξαντλούν τα retries τους απορρίπτονται· επικοινωνήστε με την υποστήριξη αν χρειάζεστε ανάκτηση events που χάθηκαν.
+
+### Απαιτήσεις απόκρισης
+
+Το endpoint σας πρέπει να:
+
+- Επιστρέφει HTTP `2xx` εντός του παραθύρου timeout για να επιβεβαιώσει τη λήψη.
+- Οι αποκρίσεις `4xx` αντιμετωπίζονται ως μόνιμες αποτυχίες και **δεν** γίνονται retried.
+- Οι αποκρίσεις `5xx` ή τα timeouts ενεργοποιούν retry με εκθετικό backoff.
+
+Η επιστροφή `2xx` αμέσως και η ασύγχρονη επεξεργασία συνιστάται για webhooks που ενεργοποιούν βαριά εργασία.
+
+## Φιλτράρισμα events
+
+Κάθε συνδρομή webhook φιλτράρεται αυτόματα σε events των οποίων το `detail.partnerId` ισούται με το `orgId` σας. Δεν χρειάζεται να κάνετε φιλτράρισμα ανά event για το tenancy.
+
+Μπορείτε επιπλέον να φιλτράρετε με βάση το `detail-type` (όνομα event) κατά την εγγραφή. Εγγραφείτε μόνο στους τύπους event που χρειάζεται η ενσωμάτωσή σας — αυτό μειώνει τον θόρυβο και την περιττή κίνηση προς το endpoint σας.
+
+## Βέλτιστες πρακτικές ασφάλειας
+
+- **Επαληθεύστε το token όταν είναι ρυθμισμένο** — Αν σας έχει ρυθμιστεί μια στατική κεφαλίδα ή bearer token, ελέγξτε το (constant-time) πριν την επεξεργασία, και επιβεβαιώστε ότι το `detail.partnerId` ταιριάζει με το `orgId` σας.
+- **Χρησιμοποιήστε HTTPS** — Καταχωρείτε μόνο HTTPS endpoints. Το HTTP απορρίπτεται εκτός του περιβάλλοντος dev.
+- **Απαντήστε γρήγορα** — Επιστρέψτε `2xx` πριν κάνετε βαριά επεξεργασία. Βάλτε τα events σε ουρά για ασύγχρονη επεξεργασία αν χρειάζεται.
+- **Να είστε idempotent** — Το ίδιο event μπορεί να παραδοθεί περισσότερες από μία φορές. Χρησιμοποιήστε το `id` από τον φάκελο για deduplication.
+- **Περιστρέφετε τα secrets περιοδικά** — Ενημερώνετε το webhook secret σας τακτικά και υποστηρίξτε ένα σύντομο παράθυρο επικάλυψης κατά την περιστροφή.
+
+## Αποσφαλμάτωση παραδόσεων
+
+Αν το endpoint σας δεν λαμβάνει events:
+
+1. Επιβεβαιώστε ότι το endpoint σας επιστρέφει `2xx` για ένα δοκιμαστικό POST.
+2. Ελέγξτε ότι η συνδρομή σας περιλαμβάνει τους σωστούς τύπους event — περάστε `events: ['*']` για να λαμβάνετε κάθε event για τον tenant σας.
+3. Επαληθεύστε ότι το URL του endpoint σας είναι προσβάσιμο από το δημόσιο internet (όχι localhost ή ιδιωτικό δίκτυο).
+4. Ελέγξτε τον έλεγχο auth/token σας (αν είναι ρυθμισμένος) — μια απόκριση `4xx` από το endpoint σας αντιμετωπίζεται ως μόνιμη αποτυχία και **δεν** θα γίνει retried. Μόνο αποκρίσεις `5xx` και timeouts ενεργοποιούν retries.
+5. Ελέγξτε αν τα events ενεργοποιούνται καθόλου χρησιμοποιώντας το [Event Catalog](/el/events-catalog) για να επιβεβαιώσετε πότε θα έπρεπε να παράγονται τα events που περιμένετε.
+
+## Εγγραφή σε όλα τα events
+
+Περάστε `events: ['*']` κατά τη δημιουργία μιας συνδρομής webhook για να λαμβάνετε κάθε event που φέρει το `partnerId` σας. Το wildcard καταρρέει σε ένα κενό φίλτρο `detail-type` στον υποκείμενο κανόνα EventBridge — το EventBridge τότε παραδίδει τα πάντα για τον tenant σας και ο handler σας μπορεί να κάνει switch στο `detail-type` για να τα κατανείμει (fan out).
+
+```json
+{
+  "url": "https://your-api.example.com/webhooks/spk",
+  "events": ["*"]
+}
+```
+
+Για να περιορίσετε αργότερα, αντικαταστήστε το `events` με μια ρητή λίστα από `detail-type` σε PascalCase από τους πίνακες παραπάνω.
+
+## Σχήμα & Δημιουργία κώδικα (Code Generation)
+
+Κατεβάστε το σχήμα OpenAPI για να σκαλώσετε (scaffold) τον webhook handler σας:
+
+**Λήψη:** [eventbridge-schemas.yaml](https://raw.githubusercontent.com/spk-alex/documentationai-Docs/main/eventbridge-schemas.yaml)
+
+Δημιουργήστε έναν typed client:
+
+```bash
+# TypeScript
+npx openapi-generator-cli generate -i eventbridge-schemas.yaml -g typescript-fetch -o ./generated
+
+# Python
+openapi-generator-cli generate -i eventbridge-schemas.yaml -g python -o ./generated
+
+# Go
+openapi-generator-cli generate -i eventbridge-schemas.yaml -g go -o ./generated
+```
+
+Το συνοδευτικό σχήμα προς το παρόν υστερεί σε σχέση με τον πλήρη κατάλογο events παραπάνω — η αναδημιουργία του από την πηγή b2c-api παρακολουθείται ξεχωριστά. Χρησιμοποιήστε τους πίνακες αυτής της σελίδας ως την έγκυρη (authoritative) λίστα των `detail-type` που εκπέμπονται στο μεταξύ.

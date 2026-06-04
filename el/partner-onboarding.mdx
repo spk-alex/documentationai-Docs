@@ -1,0 +1,231 @@
+---
+title: Onboarding Εταίρων
+description: Πώς οι εταίροι κάνουν onboarding μόνοι τους μέσω του Partner Portal, καθώς και το Admin API για αυτοματοποιημένο/scripted onboarding.
+---
+
+Η SmartphoneKey παραδίδει events στα συστήματα των εταίρων μέσω webhooks. Οι περισσότεροι εταίροι κάνουν onboarding μόνοι τους μέσω του [Partner Portal](/el/partner-portal): σύνδεση με Auth0, αντιγραφή του API key, ορισμός ενός webhook URL, τέλος. Αν χρειάζεστε scripted ή αυτοματοποιημένο onboarding — ή οποιαδήποτε αλλαγή πέρα από το URL (φίλτρο events, περιστροφή secret, πολλαπλά webhooks) — διατίθεται ένα Admin API, το οποίο τεκμηριώνεται παρακάτω σε αυτή τη σελίδα.
+
+## Quickstart: Self-Service μέσω του Partner Portal
+
+Για εταίρους που έχουν ήδη λογαριασμό SmartphoneKey στο Auth0:
+
+1. **Επισκεφθείτε το partner portal για το περιβάλλον σας.** Για παράδειγμα, το dev βρίσκεται στο `https://partner-portal.spk-dev.workers.dev/`. (Κάθε περιβάλλον έχει το δικό του URL portal — ο account manager σας θα σας δώσει το σωστό για stage / nonprod / prod.)
+2. **Συνδεθείτε με Auth0.** Κάντε κλικ στο **Sign in with Auth0** και ολοκληρώστε τη ροή OIDC.
+3. **Ολοκληρώστε το onboarding (μόνο στην πρώτη σύνδεση).** Οι νέοι εταίροι οδηγούνται σε μια σύντομη φόρμα onboarding για να επιλέξουν ένα **organization ID** και όνομα. Η υποβολή της καταχωρεί τον tenant σας και εκδίδει το αρχικό σας API key.
+4. **Αντιγράψτε το API key που εμφανίζεται μία φορά.** Ολόκληρο το key εμφανίζεται μόνο μία φορά, στον πίνακα ελέγχου, αμέσως μετά την έκδοσή του — αντιγράψτε το και αποθηκεύστε το στον secret manager σας τώρα. Μετά από αυτό, είναι ορατό μόνο ένα μασκαρισμένο πρόθεμα.
+5. **Ορίστε το webhook URL σας στον πίνακα ελέγχου.** Εισαγάγετε το HTTPS endpoint του συστήματός σας που θα λαμβάνει events.
+6. **Τέλος — τα events αρχίζουν να φτάνουν.** Το webhook σας δημιουργείται με κατάσταση `active`, και τα events για το `orgId` σας παραδίδονται στο URL σας.
+
+Μπορείτε να επιστρέψετε στον πίνακα ελέγχου ανά πάσα στιγμή για να περιστρέψετε το API key ή να ενημερώσετε το webhook URL.
+
+Δείτε το [Partner Portal](/el/partner-portal) για την πλήρη ξενάγηση στο περιβάλλον.
+
+## Λήψη events
+
+Τα events φτάνουν στο webhook URL σας ως αιτήματα HTTP POST που φέρουν έναν φάκελο (envelope) AWS EventBridge. Το πεδίο `detail` περιλαμβάνει ένα `partnerId` που ταιριάζει με το `orgId` σας, ώστε να λαμβάνετε events μόνο για τον οργανισμό σας. Οι αποτυχημένες παραδόσεις επαναλαμβάνονται αυτόματα.
+
+Για τις μορφές των payload, την αυθεντικοποίηση παράδοσης, τη συμπεριφορά retry και τις βέλτιστες πρακτικές ασφάλειας, δείτε [Ρύθμιση Webhooks](/el/events-webhooks) και το [Event Catalog](/el/events-catalog).
+
+## Τι μπορούν να κάνουν οι εταίροι χωρίς βοήθεια διαχειριστή
+
+| Ενέργεια | Self-Service (Portal) | Admin API |
+|--------|-----------------------|-----------|
+| Καταχώρηση tenant + δημιουργία αρχικού API key | Ναι (μέσω φόρμας onboarding στην πρώτη σύνδεση) | Ναι (`POST /tenants/{orgId}/register`, μετά `POST /api-keys`) |
+| Προβολή μασκαρισμένου API key | Ναι | Ναι (list/get tenants) |
+| Περιστροφή API key | Ναι | Ναι |
+| Ορισμός/ενημέρωση webhook URL | Ναι | Ναι |
+| Ενημέρωση φίλτρου events | Όχι | Ναι (admin-only) |
+| Περιστροφή webhook secret | Όχι | Ναι (admin-only) |
+| Πολλαπλά webhooks ανά εταίρο | Όχι | Ναι (admin-only) |
+
+## Προγραμματιστικό onboarding (Admin API)
+
+Το υπόλοιπο αυτής της σελίδας τεκμηριώνει το Admin API. Χρησιμοποιήστε το για αυτοματισμό, integration tests ή λειτουργίες διαχειριστή που δεν καλύπτει το portal (φίλτρα events, περιστροφή secret, πολλαπλά webhooks ανά εταίρο).
+
+### Προαπαιτούμενα
+
+- Admin API Key (`X-Admin-API-Key`) — αποθηκευμένο στο Doppler ως `ADMIN_API_KEY`
+- Admin JWT Token (`Authorization: Bearer <token>`) — πρέπει να έχει `email` με domain `@smartphonekey.com`
+
+Και οι δύο κεφαλίδες απαιτούνται σε κάθε αίτημα προς το admin-api.
+
+### Περιβάλλοντα
+
+| Περιβάλλον | Admin API URL |
+|-------------|---------------|
+| Dev | `https://admin-api.spk-dev.workers.dev` |
+| Nonprod | `https://admin-api.spk-nonprod.workers.dev` |
+| Stage | `https://admin-api.spk-stage.workers.dev` |
+| Prod | `https://admin-api.spk-prod.workers.dev` |
+
+### Βήμα 1: Καταχώρηση του Εταίρου (Tenant)
+
+Καταχωρήστε τον tenant **πριν** δημιουργήσετε ένα API key. Το `orgId` είναι το τμήμα του path (`acme-corp` παρακάτω).
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/register" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orgName": "ACME Corporation",
+    "ownerEmail": "owner@acme-corp.com"
+  }'
+```
+
+Αυτό πρέπει να πετύχει πρώτα — το `POST /api-keys` επιστρέφει `404 Tenant not registered` αν ο tenant δεν υπάρχει ακόμη.
+
+### Βήμα 2: Δημιουργία του API Key
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/api-keys" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orgId": "acme-corp",
+    "orgName": "ACME Corporation"
+  }'
+```
+
+Γίνεται επίσης δεκτό ένα προαιρετικό πεδίο `expiresAt` (ISO 8601) για την έκδοση ενός key με χρονικό περιορισμό.
+
+**Απόκριση:** (HTTP `201`)
+```json
+{
+  "apiKey": "xK7mP9qR2wT5vN8jL4hG6cF3bA0eD1iY...",
+  "orgId": "acme-corp",
+  "orgName": "ACME Corporation",
+  "createdAt": "2026-04-02T10:00:00.000Z",
+  "createdBy": "admin@smartphonekey.com",
+  "expiresAt": null
+}
+```
+
+Αποθηκεύστε το `apiKey` — δεν θα εμφανιστεί ξανά (μόνο το πρόθεμα είναι ορατό στα endpoints λίστας).
+
+**Σημειώσεις:**
+- Ένα ενεργό API key ανά οργανισμό
+- Αν ο οργανισμός έχει ήδη ένα ενεργό key, θα λάβετε `409 Conflict`
+- Το API key αποτελείται από 40 τυχαίους αλφαριθμητικούς χαρακτήρες
+
+### Βήμα 3: Ρύθμιση Webhook
+
+Καταχωρήστε ένα webhook URL για να λαμβάνετε events για αυτόν τον εταίρο. Δείτε [Ρύθμιση Webhooks](/el/events-webhooks) για όλες τις επιλογές ρύθμισης, συμπεριλαμβανομένης της αυθεντικοποίησης και της συμπεριφοράς retry.
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.com/webhooks/smartphonekey",
+    "events": [
+      "LockCreated",
+      "KeyAdded"
+    ]
+  }'
+```
+
+**Απόκριση:**
+```json
+{
+  "success": true,
+  "aggregateId": "acme-corp",
+  "version": 1
+}
+```
+
+**Σημειώσεις:**
+- Το URL πρέπει να είναι HTTPS σε production (επιτρέπεται HTTP σε dev)
+- Δημιουργείται αυτόματα ένα webhook secret αν δεν παρασχεθεί
+- Το webhook υποστηρίζεται από το AWS EventBridge — events που ταιριάζουν με το `orgId` του εταίρου παραδίδονται στο URL
+
+#### Διαθέσιμοι τύποι event
+
+Μπορείτε να εγγραφείτε σε οποιονδήποτε από τους τύπους domain event του `spk.api` (π.χ. `LockCreated`, `OwnerSet`, `KeyAdded`, `KeyRemoved`, `ResidentAdded`, `ResidentRemoved`, καθώς και events για User, Hub, Camera, Temp-key και Matter) όπως επίσης και στο `Shadow Update` (ο μοναδικός τύπος που προέρχεται από το `spk.iot.shadow`).
+
+| Για εγγραφή σε… | Περάστε στο `events` |
+|------------------|------------------|
+| Συγκεκριμένα events | Το(τα) `detail-type` σε PascalCase, π.χ. `["LockCreated", "KeyAdded"]` |
+| Όλα για τον οργανισμό σας | `["*"]` (wildcard) |
+| Shadow updates IoT hub | `["Shadow Update"]` |
+
+Δείτε [Partner Webhooks](/el/events-webhooks) για την πλήρη λίστα των `detail-type` και το [Event Catalog](/el/events-catalog) για τις μορφές των payload.
+
+### Βήμα 4: Επαλήθευση Webhook
+
+Ελέγξτε ότι το webhook δημιουργήθηκε και την κατάστασή του:
+
+```bash
+curl "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+**Απόκριση:**
+```json
+{
+  "webhooks": [
+    {
+      "id": "32bc72f9-1676-4cd5-b568-15a39a80536e",
+      "url": "https://acme-corp.com/webhooks/smartphonekey",
+      "events": ["LockCreated", "KeyAdded"],
+      "status": "active",
+      "createdAt": "2026-04-02T10:01:00.000Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+(Η απόκριση είναι συντομευμένη — κάθε webhook περιλαμβάνει επίσης τα πεδία `verifiedAt`, `updatedAt` και πεδία τελευταίου σφάλματος, ενώ το ανώτερο επίπεδο περιλαμβάνει `limit`/`offset`.)
+
+Ένα νεοδημιουργημένο webhook είναι `active` αμέσως. Αν αργότερα αλλάξετε το URL του, η κατάσταση επαναφέρεται σε `pending` μέχρι να επαληθευτεί ξανά το νέο endpoint.
+
+### Ενημέρωση ενός Webhook
+
+```bash
+curl -X PUT "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.com/webhooks/v2",
+    "events": ["LockCreated", "KeyAdded"]
+  }'
+```
+
+Πρέπει να παρασχεθεί τουλάχιστον ένα πεδίο (`url`, `events` ή `secret`).
+
+### Διαγραφή ενός Webhook
+
+```bash
+curl -X DELETE "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+### Εμφάνιση λίστας Εταίρων
+
+```bash
+curl "https://admin-api.spk-dev.workers.dev/tenants" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+## Πώς ρέουν τα events προς τα Webhooks
+
+1. Μια ενέργεια συμβαίνει στο B2C API (π.χ. άνοιγμα κλειδαριάς, ανάθεση κλειδιού)
+2. Το event δημοσιεύεται στο AWS EventBridge με `source: "spk.api"` και `partnerId` που ταιριάζει με τον οργανισμό της κλειδαριάς
+3. Το EventBridge αντιστοιχίζει το event με τους κανόνες συνδρομής webhook
+4. Το event παραδίδεται στο webhook URL του εταίρου
+
+Τα events περιλαμβάνουν το `partnerId` στο `detail`, ώστε οι εταίροι να λαμβάνουν μόνο events για τον οργανισμό τους.
+
+## Επόμενα βήματα
+
+- [Partner Portal](/el/partner-portal) — Self-service περιβάλλον για εταίρους ώστε να βλέπουν το key τους και να ενημερώνουν το webhook URL τους
+- [Επισκόπηση Events](/el/events-overview) — Κατανοήστε πώς η SmartphoneKey δημοσιεύει events μέσω EventBridge
+- [Ρύθμιση Webhooks](/el/events-webhooks) — Πλήρης ρύθμιση webhook: αυθεντικοποίηση, παράδοση, συμπεριφορά retry και βέλτιστες πρακτικές ασφάλειας
+- [Event Catalog](/el/events-catalog) — Πλήρης αναφορά για τα payload events με τη μεγαλύτερη αξία
