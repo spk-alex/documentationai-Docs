@@ -10418,7 +10418,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "Temporary key UUID"
             },
             "required": true,
@@ -10519,7 +10518,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "Temporary key UUID"
             },
             "required": true,
@@ -14171,7 +14169,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
               "description": "Temporary key UUID"
             },
             "required": true,
