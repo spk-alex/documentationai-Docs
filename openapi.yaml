@@ -50,6 +50,191 @@
     "parameters": {}
   },
   "paths": {
+    "/admin/threedeye/users/{userId}/reset": {
+      "post": {
+        "tags": [
+          "Admin",
+          "3dEye"
+        ],
+        "summary": "Reset 3dEye provisioning for a user",
+        "description": "Clears the local threedeye_users/recovery rows (force re-provision) and optionally deletes the remote 3dEye account when visible in our customer. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "post_ResetThreeDeyeUserRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "b2c user UUID"
+            },
+            "required": true,
+            "description": "b2c user UUID",
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clearMapping": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Delete the local threedeye_users + recovery rows so the next fetch re-provisions."
+                  },
+                  "deleteRemote": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Also delete the remote 3dEye account if it is visible in our customer. Cannot remove accounts that live outside our customer."
+                  },
+                  "reprovision": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "After clearing, immediately re-run provisioning instead of waiting for the next fetch."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reset completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "clearedMapping": {
+                      "type": "boolean"
+                    },
+                    "clearedRecovery": {
+                      "type": "boolean"
+                    },
+                    "remote": {
+                      "type": "object",
+                      "properties": {
+                        "attemptedDelete": {
+                          "type": "boolean"
+                        },
+                        "deletedThreedeyeUserId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "notVisible": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "attemptedDelete",
+                        "deletedThreedeyeUserId",
+                        "notVisible"
+                      ]
+                    },
+                    "reprovision": {
+                      "type": "object",
+                      "properties": {
+                        "attempted": {
+                          "type": "boolean"
+                        },
+                        "threedeyeUserId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "error": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "attempted",
+                        "threedeyeUserId",
+                        "error"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "email",
+                    "clearedMapping",
+                    "clearedRecovery",
+                    "remote",
+                    "reprovision"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/cleanup/hubs/{hubId}": {
       "delete": {
         "tags": [
@@ -491,6 +676,246 @@
                   "required": [
                     "success",
                     "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/threedeye/users/{userId}": {
+      "get": {
+        "tags": [
+          "Admin",
+          "3dEye"
+        ],
+        "summary": "3dEye provisioning diagnostics for a user",
+        "description": "Read-only snapshot of a user's 3dEye provisioning state across D1 and 3dEye: the b2c user row, the threedeye_users mapping, any recovery row, and a live customer-scoped probe (user count + whether the email is visible). Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_GetThreeDeyeUserStatusRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "b2c user UUID"
+            },
+            "required": true,
+            "description": "b2c user UUID",
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "3dEye diagnostics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "found": {
+                          "type": "boolean"
+                        },
+                        "email": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "found",
+                        "email"
+                      ]
+                    },
+                    "mapping": {
+                      "type": "object",
+                      "properties": {
+                        "found": {
+                          "type": "boolean"
+                        },
+                        "threedeyeUserId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "hasPassword": {
+                          "type": "boolean"
+                        },
+                        "createdAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "remoteAccountExists": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "found",
+                        "threedeyeUserId",
+                        "hasPassword",
+                        "createdAt",
+                        "remoteAccountExists"
+                      ]
+                    },
+                    "recovery": {
+                      "type": "object",
+                      "properties": {
+                        "found": {
+                          "type": "boolean"
+                        },
+                        "roleIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "found",
+                        "roleIds"
+                      ]
+                    },
+                    "remote": {
+                      "type": "object",
+                      "properties": {
+                        "configured": {
+                          "type": "boolean"
+                        },
+                        "customerId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "customerUserCount": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "emailPresentInCustomer": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "match": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string"
+                            },
+                            "roleCount": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "email",
+                            "roleCount"
+                          ]
+                        },
+                        "sampleEmails": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "error": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "configured",
+                        "customerId",
+                        "customerUserCount",
+                        "emailPresentInCustomer",
+                        "match",
+                        "sampleEmails",
+                        "error"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "user",
+                    "mapping",
+                    "recovery",
+                    "remote"
                   ]
                 }
               }
