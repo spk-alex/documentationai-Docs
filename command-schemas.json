@@ -1,5 +1,5 @@
 {
-  "version": "0e0a9a23",
+  "version": "8bb5f3cb",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -436,6 +436,28 @@
       "required": [
         "userId",
         "email"
+      ],
+      "additionalProperties": false
+    },
+    "UpdatePhoneNumber": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "phoneNumber": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Phone number to set; null to remove the existing phone number"
+        }
+      },
+      "required": [
+        "phoneNumber"
       ],
       "additionalProperties": false
     },
