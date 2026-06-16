@@ -8636,6 +8636,10 @@
                       "null"
                     ],
                     "exclusiveMinimum": 0
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
                   }
                 },
                 "required": [
