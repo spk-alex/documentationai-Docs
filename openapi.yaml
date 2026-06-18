@@ -1473,6 +1473,200 @@
         }
       }
     },
+    "/admin/dlq/purge": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Purge projection dead-letter queue records",
+        "description": "Deletes failed-projection records from the DLQ bucket, optionally scoped by projector and/or age. Clears the queue/dashboard count — it does NOT replay. The underlying events remain in the event store, so a purge is recoverable via /admin/resync-projections. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "post_DlqPurgeRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Limit the purge to one projector id (e.g. \"spacetimedb\"). Omit to purge all."
+            },
+            "required": false,
+            "description": "Limit the purge to one projector id (e.g. \"spacetimedb\"). Omit to purge all.",
+            "name": "projector",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only delete records older than this many days. Omit to purge all ages."
+            },
+            "required": false,
+            "description": "Only delete records older than this many days. Omit to purge all ages.",
+            "name": "olderThanDays",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Purge completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "scanned": {
+                      "type": "number"
+                    },
+                    "deleted": {
+                      "type": "number"
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    },
+                    "projector": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "olderThanDays": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "auditLogPath": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "configured",
+                    "scanned",
+                    "deleted",
+                    "truncated",
+                    "projector",
+                    "olderThanDays",
+                    "auditLogPath"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query (e.g. non-positive-integer olderThanDays)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/debug/registry": {
       "get": {
         "tags": [
@@ -1626,6 +1820,205 @@
           },
           "403": {
             "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/overview": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Operational overview (DLQ + Sentry) for this environment",
+        "description": "Read-only dashboard data: count of failed projection events in the DLQ (by projector) and the number of unresolved Sentry issues for this environment. Each section degrades to `configured: false` when its binding/secret is absent. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_OpsOverviewRoute",
+        "responses": {
+          "200": {
+            "description": "Operational overview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "environment": {
+                      "type": "string"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "dlq": {
+                      "type": "object",
+                      "properties": {
+                        "configured": {
+                          "type": "boolean"
+                        },
+                        "total": {
+                          "type": "number"
+                        },
+                        "truncated": {
+                          "type": "boolean"
+                        },
+                        "byProjector": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          }
+                        },
+                        "latestFailureAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "configured",
+                        "total",
+                        "truncated",
+                        "byProjector",
+                        "latestFailureAt"
+                      ]
+                    },
+                    "sentry": {
+                      "type": "object",
+                      "properties": {
+                        "configured": {
+                          "type": "boolean"
+                        },
+                        "openIssues": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "capped": {
+                          "type": "boolean"
+                        },
+                        "project": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "url": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "topIssues": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shortId": {
+                                "type": "string"
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "string"
+                              },
+                              "level": {
+                                "type": "string"
+                              },
+                              "lastSeen": {
+                                "type": "string"
+                              },
+                              "permalink": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "shortId",
+                              "title",
+                              "count",
+                              "level",
+                              "lastSeen",
+                              "permalink"
+                            ]
+                          }
+                        },
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "configured",
+                        "openIssues",
+                        "capped",
+                        "project",
+                        "url",
+                        "topIssues"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "environment",
+                    "generatedAt",
+                    "dlq",
+                    "sentry"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
             "content": {
               "application/json": {
                 "schema": {
