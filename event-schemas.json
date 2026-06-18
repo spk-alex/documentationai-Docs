@@ -1,5 +1,5 @@
 {
-  "version": "ec666a07",
+  "version": "28e76d86",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "LockCreated": {
@@ -1754,7 +1754,7 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "rtspCameraId": {
+        "cameraId": {
           "type": "string"
         },
         "name": {
@@ -1763,10 +1763,19 @@
         "rtspUrl": {
           "type": "string"
         },
-        "httpSnapshotUrl": {
+        "rtspHash": {
+          "type": "string"
+        },
+        "streamId": {
           "type": "string"
         },
         "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "httpSnapshotUrl": {
           "type": "string"
         },
         "ownerId": {
@@ -1780,10 +1789,50 @@
         }
       },
       "required": [
-        "rtspCameraId",
+        "cameraId",
         "name",
         "rtspUrl",
+        "rtspHash",
+        "streamId",
         "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraUpdated": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rtspUrl": {
+          "type": "string"
+        },
+        "rtspHash": {
+          "type": "string"
+        },
+        "streamId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "httpSnapshotUrl": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "updatedAt"
       ],
       "additionalProperties": false
     },
@@ -1791,7 +1840,7 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "rtspCameraId": {
+        "cameraId": {
           "type": "string"
         },
         "deletedAt": {
@@ -1802,8 +1851,104 @@
         }
       },
       "required": [
-        "rtspCameraId",
+        "cameraId",
         "deletedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraAccessGranted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "manager"
+          ]
+        },
+        "grantedAt": {
+          "type": "string"
+        },
+        "grantedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "userId",
+        "role",
+        "grantedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraAccessRevoked": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "revokedAt": {
+          "type": "string"
+        },
+        "revokedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "userId",
+        "revokedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraStreamStarted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string"
+        },
+        "startedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "startedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraStreamStopped": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "stoppedAt": {
+          "type": "string"
+        },
+        "stoppedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "stoppedAt"
       ],
       "additionalProperties": false
     }

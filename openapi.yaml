@@ -50,6 +50,241 @@
     "parameters": {}
   },
   "paths": {
+    "/admin/rtsp-cameras/{id}/users/{userId}": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Revoke RTSP camera access (admin)",
+        "operationId": "delete_AdminRevokeRtspAccessRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Target user ID"
+            },
+            "required": true,
+            "description": "Target user ID",
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access revoked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rtsp-cameras/{id}/streams/start": {
+      "post": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "start RTSP camera stream (admin)",
+        "operationId": "post_AdminStartRtspStreamRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stream start command accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rtsp-cameras/{id}/streams/stop": {
+      "post": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "stop RTSP camera stream (admin)",
+        "operationId": "post_AdminStopRtspStreamRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stream stop command accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/threedeye/users/{userId}/reset": {
       "post": {
         "tags": [
@@ -208,6 +443,421 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/cleanup/rtsp-cameras/{cameraId}": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "Cleanup",
+          "RtspCamera"
+        ],
+        "summary": "Delete RTSP camera aggregate",
+        "description": "Admin-only cleanup for a RTSP camera. Optionally archives + deletes the R2 event stream, removes the DO instance, and asks the spk-vms worker to stop the live stream. Requires dual auth (X-Admin-API-Key + JWT with @smartphonekey.com domain).",
+        "operationId": "delete_AdminDeleteRtspCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "cameraId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DELETE_DO_ONLY",
+                "DELETE_DO_AND_EVENTS"
+              ],
+              "description": "Deletion mode: DELETE_DO_ONLY preserves R2 events, DELETE_DO_AND_EVENTS archives and removes everything"
+            },
+            "required": true,
+            "description": "Deletion mode: DELETE_DO_ONLY preserves R2 events, DELETE_DO_AND_EVENTS archives and removes everything",
+            "name": "mode",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RTSP camera deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "operations": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "deletionSummary": {
+                      "type": "string"
+                    },
+                    "auditLogPath": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "number"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId",
+                    "mode",
+                    "operations",
+                    "auditLogPath",
+                    "duration",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid mode parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rtsp-cameras/{cameraId}/full": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Full-delete a RTSP camera (admin)",
+        "description": "Admin-only full delete for a RTSP camera. Archives and deletes R2 events, removes the Durable Object instance, removes SpacetimeDB read-model rows, and best-effort stops the spk-vms stream. Requires dual auth.",
+        "operationId": "delete_AdminFullDeleteRtspCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "cameraId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DELETE_DO_AND_EVENTS"
+              ],
+              "default": "DELETE_DO_AND_EVENTS"
+            },
+            "required": false,
+            "name": "mode",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RTSP camera fully deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "operations": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "deletionSummary": {
+                      "type": "string"
+                    },
+                    "auditLogPath": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "number"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId",
+                    "mode",
+                    "operations",
+                    "auditLogPath",
+                    "duration",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rtsp-cameras/{id}/users": {
+      "post": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Grant RTSP camera access (admin)",
+        "operationId": "post_AdminGrantRtspAccessRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access granted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
@@ -1333,6 +1983,81 @@
                   "required": [
                     "success",
                     "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rtsp-cameras/{id}": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Soft-delete a RTSP camera (admin)",
+        "operationId": "delete_AdminSoftDeleteRtspCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Camera soft-deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
                   ]
                 }
               }
@@ -10907,17 +11632,16 @@
           "RtspCamera",
           "Command"
         ],
-        "summary": "Delete an RTSP camera",
-        "description": "Soft-deletes an RTSP camera aggregate (status transitions to Deleted)",
+        "summary": "Soft-delete a RTSP camera",
         "operationId": "post_DeleteRtspCameraRoute",
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "description": "RTSP Camera UUID"
+              "description": "RTSP camera UUID (aggregate id)"
             },
             "required": true,
-            "description": "RTSP Camera UUID",
+            "description": "RTSP camera UUID (aggregate id)",
             "name": "id",
             "in": "path"
           }
@@ -10969,7 +11693,7 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "rtspCameraId": {
+                            "cameraId": {
                               "type": "string"
                             },
                             "deletedAt": {
@@ -10980,7 +11704,7 @@
                             }
                           },
                           "required": [
-                            "rtspCameraId",
+                            "cameraId",
                             "deletedAt"
                           ]
                         }
@@ -11001,95 +11725,8 @@
               }
             }
           },
-          "400": {
-            "description": "Camera is already deleted.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        false
-                      ]
-                    },
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized — missing or invalid authentication credentials.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        false
-                      ]
-                    },
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden — you do not own this camera.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "enum": [
-                        false
-                      ]
-                    },
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
           "404": {
-            "description": "Not found — the camera does not exist.",
+            "description": "RTSP camera not found.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11124,27 +11761,55 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Business rule violated (e.g. camera already deleted).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
           }
         }
       }
     },
-    "/rtsp-cameras/{id}/RegisterRtspCamera": {
+    "/rtsp-cameras/{id}/GrantAccess": {
       "post": {
         "tags": [
           "RtspCamera",
           "Command"
         ],
-        "summary": "Register a new RTSP camera",
-        "description": "Creates a new RTSP camera aggregate for a simple plug-and-play camera",
-        "operationId": "post_RegisterRtspCameraRoute",
+        "summary": "Grant a user access to a RTSP camera",
+        "operationId": "post_GrantAccessRoute",
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "description": "RTSP Camera UUID"
+              "description": "RTSP camera UUID (aggregate id)"
             },
             "required": true,
-            "description": "RTSP Camera UUID",
+            "description": "RTSP camera UUID (aggregate id)",
             "name": "id",
             "in": "path"
           }
@@ -11155,45 +11820,27 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "rtspCameraId": {
-                    "type": "string",
-                    "description": "Camera UUID (caller-supplied or server-generated)"
-                  },
-                  "name": {
+                  "userId": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Human-readable camera name"
+                    "description": "User to grant access to"
                   },
-                  "rtspUrl": {
+                  "role": {
                     "type": "string",
-                    "minLength": 1,
-                    "description": "RTSP stream URL (e.g. rtsp://192.168.1.1:554/stream)"
+                    "enum": [
+                      "viewer",
+                      "manager"
+                    ],
+                    "description": "Role to grant"
                   },
-                  "httpSnapshotUrl": {
+                  "grantedBy": {
                     "type": "string",
-                    "description": "HTTP snapshot URL for still image capture"
-                  },
-                  "username": {
-                    "type": "string",
-                    "description": "Camera authentication username"
-                  },
-                  "password": {
-                    "type": "string",
-                    "description": "Camera authentication password"
-                  },
-                  "ownerId": {
-                    "type": "string",
-                    "description": "User ID who owns this camera (B2C)"
-                  },
-                  "orgId": {
-                    "type": "string",
-                    "description": "Organisation ID that owns this camera (B2B)"
+                    "description": "Actor who issued the grant"
                   }
                 },
                 "required": [
-                  "rtspCameraId",
-                  "name",
-                  "rtspUrl"
+                  "userId",
+                  "role"
                 ]
               }
             }
@@ -11201,7 +11848,7 @@
         },
         "responses": {
           "200": {
-            "description": "RTSP camera already registered — idempotent no-op (event: null)",
+            "description": "Access granted successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -11225,42 +11872,37 @@
                         "type": {
                           "type": "string",
                           "enum": [
-                            "RtspCameraRegistered"
+                            "RtspCameraAccessGranted"
                           ]
                         },
                         "data": {
                           "type": "object",
                           "properties": {
-                            "rtspCameraId": {
+                            "cameraId": {
                               "type": "string"
                             },
-                            "name": {
+                            "userId": {
                               "type": "string"
                             },
-                            "rtspUrl": {
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "viewer",
+                                "manager"
+                              ]
+                            },
+                            "grantedAt": {
                               "type": "string"
                             },
-                            "httpSnapshotUrl": {
-                              "type": "string"
-                            },
-                            "username": {
-                              "type": "string"
-                            },
-                            "ownerId": {
-                              "type": "string"
-                            },
-                            "orgId": {
-                              "type": "string"
-                            },
-                            "createdAt": {
+                            "grantedBy": {
                               "type": "string"
                             }
                           },
                           "required": [
-                            "rtspCameraId",
-                            "name",
-                            "rtspUrl",
-                            "createdAt"
+                            "cameraId",
+                            "userId",
+                            "role",
+                            "grantedAt"
                           ]
                         }
                       },
@@ -11280,7 +11922,148 @@
               }
             }
           },
-          "201": {
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business rule violated (camera deleted / cannot grant to owner).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/RegisterRtspCamera": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Register a new RTSP camera",
+        "description": "Creates a new RtspCameraAggregate (source of truth for camera metadata, ownership, and access grants) and tells the spk-vms worker to start streaming. External-first ordering — if the worker call fails, the event is NOT emitted, preventing aggregate/worker drift. If the worker is not configured (offline dev), the worker call is skipped and the event is emitted regardless.",
+        "operationId": "post_RegisterRtspCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string",
+                    "description": "Camera UUID (caller-supplied or server-generated)"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable camera name"
+                  },
+                  "rtspUrl": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "RTSP source URL (e.g. rtsp://1.2.3.4:554/stream)"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "RTSP authentication username"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "RTSP authentication password"
+                  },
+                  "httpSnapshotUrl": {
+                    "type": "string",
+                    "description": "Optional HTTP JPEG/PNG snapshot endpoint"
+                  },
+                  "ownerId": {
+                    "type": "string",
+                    "description": "B2C user ID who owns this camera"
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "description": "B2B organisation that owns this camera"
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "name",
+                  "rtspUrl"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
             "description": "RTSP camera registered successfully",
             "content": {
               "application/json": {
@@ -11311,7 +12094,7 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "rtspCameraId": {
+                            "cameraId": {
                               "type": "string"
                             },
                             "name": {
@@ -11320,10 +12103,19 @@
                             "rtspUrl": {
                               "type": "string"
                             },
-                            "httpSnapshotUrl": {
+                            "rtspHash": {
+                              "type": "string"
+                            },
+                            "streamId": {
                               "type": "string"
                             },
                             "username": {
+                              "type": "string"
+                            },
+                            "password": {
+                              "type": "string"
+                            },
+                            "httpSnapshotUrl": {
                               "type": "string"
                             },
                             "ownerId": {
@@ -11337,9 +12129,11 @@
                             }
                           },
                           "required": [
-                            "rtspCameraId",
+                            "cameraId",
                             "name",
                             "rtspUrl",
+                            "rtspHash",
+                            "streamId",
                             "createdAt"
                           ]
                         }
@@ -11388,6 +12182,859 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "Conflict — camera already registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/RevokeAccess": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Revoke a user access from a RTSP camera",
+        "operationId": "post_RevokeAccessRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "User to revoke access from"
+                  },
+                  "revokedBy": {
+                    "type": "string",
+                    "description": "Actor who issued the revocation"
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access revoked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraAccessRevoked"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "string"
+                            },
+                            "revokedAt": {
+                              "type": "string"
+                            },
+                            "revokedBy": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "userId",
+                            "revokedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business rule violated (camera deleted / grant not found).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/StartStream": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Start the camera stream on the spk-vms worker",
+        "operationId": "post_StartStreamRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stream-start command sent to worker (or skipped in offline dev).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraStreamStarted"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "startedAt": {
+                              "type": "string"
+                            },
+                            "startedBy": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "startedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Camera is deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Worker returned a server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/StopStream": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Stop the camera stream on the spk-vms worker",
+        "operationId": "post_StopStreamRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stream-stop command sent to worker (or skipped in offline dev).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraStreamStopped"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "stoppedAt": {
+                              "type": "string"
+                            },
+                            "stoppedBy": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "stoppedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Worker returned a server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/UpdateRtspCamera": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Update RTSP camera metadata",
+        "operationId": "post_UpdateRtspCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rtspUrl": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "httpSnapshotUrl": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RTSP camera updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "rtspUrl": {
+                              "type": "string"
+                            },
+                            "rtspHash": {
+                              "type": "string"
+                            },
+                            "streamId": {
+                              "type": "string"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "password": {
+                              "type": "string"
+                            },
+                            "httpSnapshotUrl": {
+                              "type": "string"
+                            },
+                            "updatedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "updatedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another camera already uses this RTSP URL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business rule violated (camera deleted).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/internal/active-streams": {
+      "get": {
+        "tags": [
+          "RtspCamera",
+          "Internal"
+        ],
+        "summary": "List active streams for worker boot reconciliation",
+        "description": "Returns all working cameras with RTSP credentials. Called by spk-vms on startup. Requires `X-VMS-Secret` header matching `VMS_WORKER_SECRET`.",
+        "operationId": "get_GetActiveStreamsRoute",
+        "responses": {
+          "200": {
+            "description": "Working stream list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "streams": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cameraId": {
+                            "type": "string"
+                          },
+                          "streamId": {
+                            "type": "string"
+                          },
+                          "rtspUrl": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          },
+                          "password": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cameraId",
+                          "streamId",
+                          "rtspUrl"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "streams"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing worker secret"
           }
         }
       }
@@ -14891,6 +16538,292 @@
         }
       }
     },
+    "/admin/rtsp-cameras": {
+      "post": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Create a RTSP camera (admin)",
+        "description": "Admin-only camera registration. Forwards to RtspCameraAggregate RegisterCamera and optionally applies initial ACL grants. Requires dual auth.",
+        "operationId": "post_AdminCreateRtspCameraRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string",
+                    "description": "Camera UUID"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rtspUrl": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "httpSnapshotUrl": {
+                    "type": "string"
+                  },
+                  "ownerId": {
+                    "type": "string"
+                  },
+                  "orgId": {
+                    "type": "string"
+                  },
+                  "initialUserIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "description": "Optional users to grant read access to right after camera creation"
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "name",
+                  "rtspUrl"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Camera already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "List RTSP cameras (admin)",
+        "description": "Returns cameras from the SpacetimeDB read model with optional filters.",
+        "operationId": "get_AdminListRtspCamerasRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "working",
+                "stopped",
+                "deleted"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "ownerId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "orgId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Camera list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameras": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cameraId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "working",
+                              "stopped",
+                              "deleted"
+                            ]
+                          },
+                          "streamId": {
+                            "type": "string"
+                          },
+                          "hlsPath": {
+                            "type": "string"
+                          },
+                          "signedHlsUrl": {
+                            "type": "string"
+                          },
+                          "hlsExpiresAt": {
+                            "type": "number"
+                          },
+                          "httpSnapshotUrl": {
+                            "type": "string"
+                          },
+                          "ownerId": {
+                            "type": "string"
+                          },
+                          "orgId": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cameraId",
+                          "name",
+                          "status",
+                          "streamId",
+                          "hlsPath",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "cameras",
+                    "total"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/backfill-threedeye": {
       "post": {
         "tags": [
@@ -15430,6 +17363,162 @@
         }
       }
     },
+    "/rtsp-cameras/{id}": {
+      "get": {
+        "tags": [
+          "RtspCamera",
+          "Query"
+        ],
+        "summary": "Get RTSP camera state",
+        "operationId": "get_GetRtspCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RTSP camera state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "working",
+                        "stopped",
+                        "deleted"
+                      ]
+                    },
+                    "streamId": {
+                      "type": "string"
+                    },
+                    "hlsPath": {
+                      "type": "string"
+                    },
+                    "signedHlsUrl": {
+                      "type": "string"
+                    },
+                    "hlsExpiresAt": {
+                      "type": "number"
+                    },
+                    "httpSnapshotUrl": {
+                      "type": "string"
+                    },
+                    "signedPreviewUrl": {
+                      "type": "string"
+                    },
+                    "previewExpiresAt": {
+                      "type": "number"
+                    },
+                    "ownerId": {
+                      "type": "string"
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "accessGrants": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userId": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "viewer",
+                              "manager"
+                            ]
+                          },
+                          "grantedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "userId",
+                          "role",
+                          "grantedAt"
+                        ]
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cameraId",
+                    "name",
+                    "status",
+                    "streamId",
+                    "hlsPath",
+                    "accessGrants",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/temp-keys/{uuid}": {
       "get": {
         "tags": [
@@ -15695,6 +17784,138 @@
                   },
                   "required": [
                     "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras": {
+      "get": {
+        "tags": [
+          "RtspCamera",
+          "Query"
+        ],
+        "summary": "List RTSP cameras accessible to the authenticated user",
+        "description": "Returns cameras the JWT user owns or has an active access grant for. Each item includes the user's effective role (`manager` for owners).",
+        "operationId": "get_GetMyRtspCamerasRoute",
+        "responses": {
+          "200": {
+            "description": "Camera list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameras": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cameraId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "working",
+                              "stopped",
+                              "deleted"
+                            ]
+                          },
+                          "streamId": {
+                            "type": "string"
+                          },
+                          "hlsPath": {
+                            "type": "string"
+                          },
+                          "signedHlsUrl": {
+                            "type": "string"
+                          },
+                          "hlsExpiresAt": {
+                            "type": "number"
+                          },
+                          "httpSnapshotUrl": {
+                            "type": "string"
+                          },
+                          "signedPreviewUrl": {
+                            "type": "string"
+                          },
+                          "previewExpiresAt": {
+                            "type": "number"
+                          },
+                          "ownerId": {
+                            "type": "string"
+                          },
+                          "orgId": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "viewer",
+                              "manager"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cameraId",
+                          "name",
+                          "status",
+                          "streamId",
+                          "hlsPath",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "cameras",
+                    "total"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
                   ]
                 }
               }

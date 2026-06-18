@@ -1,5 +1,5 @@
 {
-  "version": "ec666a07",
+  "version": "28e76d86",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -1251,7 +1251,7 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "rtspCameraId": {
+        "cameraId": {
           "type": "string",
           "description": "Camera UUID (caller-supplied or server-generated)"
         },
@@ -1263,34 +1263,58 @@
         "rtspUrl": {
           "type": "string",
           "minLength": 1,
-          "description": "RTSP stream URL (e.g. rtsp://192.168.1.1:554/stream)"
-        },
-        "httpSnapshotUrl": {
-          "description": "HTTP snapshot URL for still image capture",
-          "type": "string"
+          "description": "RTSP source URL (e.g. rtsp://1.2.3.4:554/stream)"
         },
         "username": {
-          "description": "Camera authentication username",
+          "description": "RTSP authentication username",
           "type": "string"
         },
         "password": {
-          "description": "Camera authentication password",
+          "description": "RTSP authentication password",
+          "type": "string"
+        },
+        "httpSnapshotUrl": {
+          "description": "Optional HTTP JPEG/PNG snapshot endpoint",
           "type": "string"
         },
         "ownerId": {
-          "description": "User ID who owns this camera (B2C)",
+          "description": "B2C user ID who owns this camera",
           "type": "string"
         },
         "orgId": {
-          "description": "Organisation ID that owns this camera (B2B)",
+          "description": "B2B organisation that owns this camera",
           "type": "string"
         }
       },
       "required": [
-        "rtspCameraId",
+        "cameraId",
         "name",
         "rtspUrl"
       ],
+      "additionalProperties": false
+    },
+    "UpdateRtspCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rtspUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "httpSnapshotUrl": {
+          "type": "string"
+        }
+      },
       "additionalProperties": false
     },
     "DeleteRtspCamera": {
@@ -1302,6 +1326,65 @@
           "type": "string"
         }
       },
+      "additionalProperties": false
+    },
+    "StartStream": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "StopStream": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "GrantAccess": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "User to grant access to"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "manager"
+          ],
+          "description": "Role to grant"
+        },
+        "grantedBy": {
+          "description": "Actor who issued the grant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "RevokeAccess": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "User to revoke access from"
+        },
+        "revokedBy": {
+          "description": "Actor who issued the revocation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
       "additionalProperties": false
     }
   }
