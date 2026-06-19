@@ -1386,6 +1386,233 @@
         }
       }
     },
+    "/admin/aggregates/{type}/{id}": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Aggregates"
+        ],
+        "summary": "Inspect an aggregate (state + event history)",
+        "description": "Returns the registry row, live Durable Object state, and R2 event history for a single aggregate. `type` accepts the canonical aggregate type (e.g. LockAggregate) or its friendly slug (e.g. lock). Requires dual admin auth (X-Admin-API-Key + JWT with an allowed email domain).",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_GetAggregateRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Aggregate type or slug, e.g. \"lock\" or \"LockAggregate\""
+            },
+            "required": true,
+            "description": "Aggregate type or slug, e.g. \"lock\" or \"LockAggregate\"",
+            "name": "type",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Aggregate id (== state.id used for DO routing)"
+            },
+            "required": true,
+            "description": "Aggregate id (== state.id used for DO routing)",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Max events to return (default 200)."
+            },
+            "required": false,
+            "description": "Max events to return (default 200).",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregate state and event history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "aggregateType": {
+                      "type": "string"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "doId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "registry": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "orgId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "orgId",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    },
+                    "stateFound": {
+                      "type": "boolean"
+                    },
+                    "state": {},
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "version": {
+                            "type": "number"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string"
+                          },
+                          "orgId": {
+                            "type": "string"
+                          },
+                          "event": {}
+                        },
+                        "required": [
+                          "version",
+                          "type",
+                          "timestamp",
+                          "orgId"
+                        ]
+                      }
+                    },
+                    "eventCount": {
+                      "type": "number"
+                    },
+                    "eventsTruncated": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "aggregateType",
+                    "aggregateId",
+                    "doId",
+                    "registry",
+                    "stateFound",
+                    "events",
+                    "eventCount",
+                    "eventsTruncated"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown aggregate type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/threedeye/users/{userId}": {
       "get": {
         "tags": [
@@ -2172,6 +2399,159 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/aggregates/backfill": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Aggregates"
+        ],
+        "summary": "Backfill the aggregate registry from R2",
+        "description": "Scans the R2 event store and upserts a registry row for every aggregate found (optionally limited to one `type`). Idempotent. Requires dual admin auth (X-Admin-API-Key + JWT with an allowed email domain).",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_BackfillAggregatesRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Limit the scan to one aggregate type or slug."
+            },
+            "required": false,
+            "description": "Limit the scan to one aggregate type or slug.",
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Backfill summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "scannedTypes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "upserted": {
+                      "type": "number"
+                    },
+                    "byType": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    },
+                    "durationMs": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "scannedTypes",
+                    "upserted",
+                    "byType",
+                    "truncated",
+                    "durationMs"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown aggregate type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid email domain",
             "content": {
               "application/json": {
                 "schema": {
@@ -17443,6 +17823,211 @@
                   },
                   "required": [
                     "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/aggregates": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Aggregates"
+        ],
+        "summary": "List tracked aggregates",
+        "description": "Lists rows from the aggregate registry (newest-updated first) with an optional `type` filter and `q` id-substring search. Requires dual admin auth (X-Admin-API-Key + JWT with an allowed email domain).",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_ListAggregatesRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by aggregate type or slug."
+            },
+            "required": false,
+            "description": "Filter by aggregate type or slug.",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Case-insensitive substring match on aggregate id."
+            },
+            "required": false,
+            "description": "Case-insensitive substring match on aggregate id.",
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registry rows + known types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "offset": {
+                      "type": "number"
+                    },
+                    "knownTypes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "binding": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "label",
+                          "binding"
+                        ]
+                      }
+                    },
+                    "aggregates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "aggregateType": {
+                            "type": "string"
+                          },
+                          "aggregateId": {
+                            "type": "string"
+                          },
+                          "doId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "orgId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "aggregateType",
+                          "aggregateId",
+                          "doId",
+                          "orgId",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "limit",
+                    "offset",
+                    "knownTypes",
+                    "aggregates"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
                   ]
                 }
               }
