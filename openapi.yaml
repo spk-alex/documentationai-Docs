@@ -1626,6 +1626,139 @@
         }
       }
     },
+    "/admin/workflows/{instanceId}/terminate": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Workflows"
+        ],
+        "summary": "Terminate (stop) a workflow run",
+        "description": "Stops a workflow instance. The stop is recorded authoritatively in the registry (and is immutable thereafter) and the engine terminate is invoked best-effort. Stopping an already-finished instance is an idempotent success. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "post_TerminateWorkflowRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Workflow instance id"
+            },
+            "required": true,
+            "description": "Workflow instance id",
+            "name": "instanceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stop recorded; see status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "instanceId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status after the terminate attempt"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "instanceId",
+                    "status"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workflow run in the registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locks/{id}/debug/messages": {
       "get": {
         "tags": [
@@ -2572,6 +2705,201 @@
         }
       }
     },
+    "/admin/workflows/{instanceId}": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Workflows"
+        ],
+        "summary": "Get one workflow run (state + progress log)",
+        "description": "Fetches a single workflow run: its launch parameters, the step-by-step progress it self-reported, and its live engine status/output/error. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_GetWorkflowRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Workflow instance id"
+            },
+            "required": true,
+            "description": "Workflow instance id",
+            "name": "instanceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workflow run",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "instanceId": {
+                      "type": "string"
+                    },
+                    "workflowName": {
+                      "type": "string",
+                      "description": "Workflow name from wrangler config, e.g. resync-projections-workflow"
+                    },
+                    "binding": {
+                      "type": "string",
+                      "description": "Env binding name used to control the instance, e.g. RESYNC_PROJECTIONS_WORKFLOW"
+                    },
+                    "label": {
+                      "type": "string",
+                      "description": "Human-friendly workflow label"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "liveStatus": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "params": {
+                      "description": "Parsed launch parameters"
+                    },
+                    "progress": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string",
+                            "description": "ISO timestamp the entry was recorded"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "message"
+                        ]
+                      }
+                    },
+                    "result": {
+                      "description": "Final output (engine or self-reported), when finished"
+                    },
+                    "error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "createdBy": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "instanceId",
+                    "workflowName",
+                    "binding",
+                    "label",
+                    "status",
+                    "liveStatus",
+                    "progress",
+                    "error",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such workflow run in the registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/ops/overview": {
       "get": {
         "tags": [
@@ -2935,6 +3263,123 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/workflows/canary": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Workflows"
+        ],
+        "summary": "Start the Workflows canary (non-prod)",
+        "description": "Launches a harmless sleeping canary workflow so the engine can be exercised and the Workflows view has a running instance to observe/stop. Disabled in prod. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "post_StartCanaryWorkflowRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Total seconds the canary should run (default: 60)."
+            },
+            "required": false,
+            "description": "Total seconds the canary should run (default: 60).",
+            "name": "seconds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Number of sleep/progress steps to split the run into (default: 6)."
+            },
+            "required": false,
+            "description": "Number of sleep/progress steps to split the run into (default: 6).",
+            "name": "steps",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canary started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "instanceId": {
+                      "type": "string"
+                    },
+                    "seconds": {
+                      "type": "number"
+                    },
+                    "steps": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "instanceId",
+                    "seconds",
+                    "steps"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed, or canary disabled in prod",
             "content": {
               "application/json": {
                 "schema": {
@@ -16998,6 +17443,200 @@
                   },
                   "required": [
                     "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/workflows": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Workflows"
+        ],
+        "summary": "List recent workflow runs",
+        "description": "Lists recently launched Cloudflare Workflow instances from the registry (newest first), each enriched with its live engine status. Filter by recorded status (e.g. ?status=running). Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_ListWorkflowsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter to one recorded status (e.g. running). Omit for all."
+            },
+            "required": false,
+            "description": "Filter to one recorded status (e.g. running). Omit for all.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Max runs to return, newest first (default: 50)."
+            },
+            "required": false,
+            "description": "Max runs to return, newest first (default: 50).",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent workflow runs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "runs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "instanceId": {
+                            "type": "string"
+                          },
+                          "workflowName": {
+                            "type": "string",
+                            "description": "Workflow name from wrangler config, e.g. resync-projections-workflow"
+                          },
+                          "binding": {
+                            "type": "string",
+                            "description": "Env binding name used to control the instance, e.g. RESYNC_PROJECTIONS_WORKFLOW"
+                          },
+                          "label": {
+                            "type": "string",
+                            "description": "Human-friendly workflow label"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "liveStatus": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "params": {
+                            "description": "Parsed launch parameters"
+                          },
+                          "progress": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "at": {
+                                  "type": "string",
+                                  "description": "ISO timestamp the entry was recorded"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "at",
+                                "message"
+                              ]
+                            }
+                          },
+                          "result": {
+                            "description": "Final output (engine or self-reported), when finished"
+                          },
+                          "error": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdBy": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "instanceId",
+                          "workflowName",
+                          "binding",
+                          "label",
+                          "status",
+                          "liveStatus",
+                          "progress",
+                          "error",
+                          "createdBy",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "runs",
+                    "total"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
                   ]
                 }
               }
