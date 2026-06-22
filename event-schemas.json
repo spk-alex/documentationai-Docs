@@ -1,5 +1,5 @@
 {
-  "version": "24655519",
+  "version": "44108f49",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "LockCreated": {
@@ -1747,6 +1747,71 @@
         "thingName",
         "desired",
         "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "MatterPinSet": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "userIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "credentialIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "userIndex",
+        "credentialIndex",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "MatterPinCleared": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "userIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "credentialIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "credentialIndex",
+        "timestamp"
       ],
       "additionalProperties": false
     },

@@ -470,6 +470,100 @@
         }
       }
     },
+    "/collective-temp-keys/{uuid}/doors/{doorId}/open": {
+      "post": {
+        "tags": [
+          "TempKey",
+          "Collective",
+          "Web"
+        ],
+        "summary": "Open a door via a collective key",
+        "description": "Validates a collective access key (validity window) and opens the given door via the LockAggregate (same path as the single temp-key open flow).",
+        "operationId": "post_OpenCollectiveDoorRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Collective temporary key UUID"
+            },
+            "required": true,
+            "description": "Collective temporary key UUID",
+            "name": "uuid",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Door id within the collective key"
+            },
+            "required": true,
+            "description": "Door id within the collective key",
+            "name": "doorId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Door opened, redirecting to confirmation"
+          },
+          "400": {
+            "description": "Credential is outside its validity window",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Credential or door not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/cleanup/rtsp-cameras/{cameraId}": {
       "delete": {
         "tags": [
@@ -6788,6 +6882,76 @@
         }
       }
     },
+    "/collective-temp-keys/{uuid}/confirmation": {
+      "get": {
+        "tags": [
+          "TempKey",
+          "Collective",
+          "Web"
+        ],
+        "summary": "Render the collective open-confirmation page",
+        "description": "HTML page confirming a collective door open command was sent, with a link back to the access page.",
+        "operationId": "get_CollectiveConfirmationRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Collective temporary key UUID"
+            },
+            "required": true,
+            "description": "Collective temporary key UUID",
+            "name": "uuid",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Door that was opened"
+            },
+            "required": false,
+            "description": "Door that was opened",
+            "name": "door",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "Device was offline when command was sent"
+            },
+            "required": false,
+            "description": "Device was offline when command was sent",
+            "name": "offline",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmation page",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/hubs/{id}/ClaimHub": {
       "post": {
         "tags": [
@@ -11936,6 +12100,155 @@
         }
       }
     },
+    "/matter-devices/{id}/ClearMatterPin": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Clear a PIN from a Matter Door Lock",
+        "description": "Removes a PIN credential from a Matter lock via the Door Lock ClearCredential command.",
+        "operationId": "post_ClearMatterPinRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "credentialIndex": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "userIndex": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "credentialIndex"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PIN cleared (ClearCredential pushed to the device)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MatterPinCleared"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "userIndex": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "credentialIndex": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "timestamp": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "deviceId",
+                            "thingName",
+                            "credentialIndex",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or device not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/matter-devices/{id}/CreateMatterDevice": {
       "post": {
         "tags": [
@@ -12137,6 +12450,160 @@
           },
           "400": {
             "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matter-devices/{id}/SetMatterPin": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Provision a PIN on a Matter Door Lock",
+        "description": "Runs the Yale Door Lock create-user + set-credential flow to provision a temporary PIN on a Matter lock. PIN is 4–8 digits and base64-encoded before sending.",
+        "operationId": "post_SetMatterPinRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pinCode": {
+                    "type": "string",
+                    "pattern": "^\\d&#123;4,8&#125;$"
+                  },
+                  "userIndex": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "credentialIndex": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "pinCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PIN provisioned (SetUser + SetCredential pushed to the device)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MatterPinSet"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "userIndex": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "credentialIndex": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "timestamp": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "deviceId",
+                            "thingName",
+                            "userIndex",
+                            "credentialIndex",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or device not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -18587,6 +19054,160 @@
         }
       }
     },
+    "/collective-temp-keys/{uuid}": {
+      "delete": {
+        "tags": [
+          "TempKey",
+          "Collective"
+        ],
+        "summary": "Revoke a collective / shared access key",
+        "description": "Deletes a shared credential and all of its doors. The caller must be authenticated AND authorized for every lock the key touches (same check as create).",
+        "operationId": "delete_DeleteCollectiveTempKeyRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Collective temporary key UUID"
+            },
+            "required": true,
+            "description": "Collective temporary key UUID",
+            "name": "uuid",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collective access key deleted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized for one of the key’s locks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "TempKey",
+          "Collective",
+          "Web"
+        ],
+        "summary": "Render the collective access page",
+        "description": "Returns the HTML guest page for a shared/collective access key. Shows all included doors, their access methods (key/code), validity and instructions.",
+        "operationId": "get_GetCollectiveTempKeyRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Collective temporary key UUID"
+            },
+            "required": true,
+            "description": "Collective temporary key UUID",
+            "name": "uuid",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collective access page",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rtsp-cameras/{id}": {
       "get": {
         "tags": [
@@ -18997,6 +19618,251 @@
           },
           "503": {
             "description": "Database not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collective-temp-keys": {
+      "post": {
+        "tags": [
+          "TempKey",
+          "Collective"
+        ],
+        "summary": "Create a collective / shared temporary access key",
+        "description": "Generates one shared guest credential that grants access to multiple doors. Each door can be opened via a door key (slide-to-open), a PIN code, or both — PIN codes are generated server-side and scheduled onto the lock keypad for the validity window (provisioned at validFrom, cleared at validUntil). The caller must be authorized for every lock included. A code/both door whose lock is known not to support a keypad PIN is rejected (422). Returns the guest-facing URL and the per-door codes.",
+        "operationId": "post_CreateCollectiveTempKeyRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "validFrom": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "validUntil": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "doors": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lockId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "minLength": 1,
+                          "description": "Lock id the door opens (caller must be authorized for it)"
+                        },
+                        "label": {
+                          "type": "string",
+                          "maxLength": 120,
+                          "description": "Friendly name, e.g. \"Building entrance\""
+                        },
+                        "accessMethod": {
+                          "type": "string",
+                          "enum": [
+                            "key",
+                            "code",
+                            "both"
+                          ],
+                          "default": "key",
+                          "description": "How the guest opens this door: door key (slide-to-open), keypad PIN code, or both. PINs are generated server-side."
+                        }
+                      }
+                    },
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "description": "Doors/rooms/zones included in this shared credential"
+                  }
+                },
+                "required": [
+                  "validFrom",
+                  "validUntil",
+                  "doors"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Collective access key created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "uuid": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "Guest-facing access page path"
+                    },
+                    "validFrom": {
+                      "type": "string"
+                    },
+                    "validUntil": {
+                      "type": "string"
+                    },
+                    "doors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "lockId": {
+                            "type": "string"
+                          },
+                          "lockUuid": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "accessMethod": {
+                            "type": "string",
+                            "enum": [
+                              "key",
+                              "code",
+                              "both"
+                            ]
+                          },
+                          "pinCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Generated keypad PIN for code/both doors; null for key-only doors"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "lockId",
+                          "lockUuid",
+                          "accessMethod"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "uuid",
+                    "url",
+                    "validFrom",
+                    "validUntil",
+                    "doors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized for one of the requested locks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "One of the requested locks does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A code/both door targets a lock that does not support a keypad PIN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {
