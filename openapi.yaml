@@ -18298,6 +18298,209 @@
         }
       }
     },
+    "/admin/dlq": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "List projection dead-letter queue records",
+        "description": "Reads failed-projection records (incl. the rejection message/stack) from the DLQ bucket, optionally scoped to one projector and capped by limit. Read-only — use /admin/resync-projections to re-apply and /admin/dlq/purge to clear. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_GetDlqRecordsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter to one projector id (e.g. \"spacetimedb\"). Omit for all."
+            },
+            "required": false,
+            "description": "Filter to one projector id (e.g. \"spacetimedb\"). Omit for all.",
+            "name": "projector",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Max records to read+return (default 50)."
+            },
+            "required": false,
+            "description": "Max records to read+return (default 50).",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DLQ records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "scanned": {
+                      "type": "number"
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string"
+                          },
+                          "projector": {
+                            "type": "string"
+                          },
+                          "eventType": {
+                            "type": "string"
+                          },
+                          "aggregateType": {
+                            "type": "string"
+                          },
+                          "aggregateId": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "number"
+                          },
+                          "error": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "number"
+                              },
+                              "stack": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "message"
+                            ]
+                          },
+                          "payload": {}
+                        },
+                        "required": [
+                          "key",
+                          "timestamp",
+                          "projector",
+                          "eventType",
+                          "aggregateType",
+                          "aggregateId",
+                          "version",
+                          "error"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "total",
+                    "scanned",
+                    "truncated",
+                    "records"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/aggregates": {
       "get": {
         "tags": [
