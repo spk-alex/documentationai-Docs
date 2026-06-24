@@ -194,12 +194,6 @@ Turns the endpoint OFF.
 ## Payload
 
 ```json
-{}
-```
-
-## Bridge Command Example
-
-```json
 {
   "message_id": "601",
   "command": "device_command",
@@ -239,12 +233,6 @@ Turns the endpoint ON.
 | Command name | `On` |
 
 ## Payload
-
-```json
-{}
-```
-
-## Bridge Command Example
 
 ```json
 {
@@ -292,10 +280,6 @@ Changes the endpoint to the opposite state.
 
 ## Payload
 
-```json
-{}
-```
-
 ## Bridge Command Example
 
 ```json
@@ -332,24 +316,6 @@ This command is usually used for lighting endpoints.
 | Command name | `OffWithEffect` |
 
 ## Payload
-
-Recommended payload format:
-
-```json
-{
-  "effectIdentifier": 0,
-  "effectVariant": 0
-}
-```
-
-Some Matter libraries may require PascalCase field names:
-
-```json
-{
-  "EffectIdentifier": 0,
-  "EffectVariant": 0
-}
-```
 
 Use the field naming expected by your bridge / `python-matter-server`.
 
@@ -444,12 +410,6 @@ Turns the endpoint ON and recalls global scene state.
 ## Payload
 
 ```json
-{}
-```
-
-## Bridge Command Example
-
-```json
 {
   "message_id": "605",
   "command": "device_command",
@@ -491,26 +451,6 @@ After the timer expires, the endpoint may turn OFF automatically.
 | Command name | `OnWithTimedOff` |
 
 ## Payload
-
-Recommended payload format:
-
-```json
-{
-  "onOffControl": 0,
-  "onTime": 300,
-  "offWaitTime": 0
-}
-```
-
-Some Matter libraries may require PascalCase field names:
-
-```json
-{
-  "OnOffControl": 0,
-  "OnTime": 300,
-  "OffWaitTime": 0
-}
-```
 
 Use the field naming expected by your bridge / `python-matter-server`.
 
@@ -719,71 +659,6 @@ Meaning:
 
 ```text
 Endpoint 1 accepts all six standard Cluster 6 commands.
-```
-
----
-
-# Backend Interpretation
-
-Given this shadow:
-
-```json
-{
-  "1/6/0": true,
-  "1/6/65529": [0, 1, 2, 64, 65, 66]
-}
-```
-
-Interpretation:
-
-```text
-Endpoint 1 is currently ON.
-Endpoint 1 supports:
-- Off
-- On
-- Toggle
-- OffWithEffect
-- OnWithRecallGlobalScene
-- OnWithTimedOff
-```
-
-## Command Validation Example
-
-```python
-COMMAND_IDS = {
-    "Off": 0,
-    "On": 1,
-    "Toggle": 2,
-    "OffWithEffect": 64,
-    "OnWithRecallGlobalScene": 65,
-    "OnWithTimedOff": 66,
-}
-
-def can_send_cluster6_command(shadow: dict, endpoint_id: int, command_name: str) -> bool:
-    accepted_key = f"{endpoint_id}/6/65529"
-    accepted = shadow.get(accepted_key, [])
-    command_id = COMMAND_IDS.get(command_name)
-
-    if command_id is None:
-        return False
-
-    return command_id in accepted
-```
-
-## State Interpretation Example
-
-```python
-def get_cluster6_state(shadow: dict, endpoint_id: int) -> str:
-    state_key = f"{endpoint_id}/6/0"
-    value = shadow.get(state_key)
-
-    if value is True:
-        return "on"
-
-    if value is False:
-        return "off"
-
-    return "unknown"
 ```
 
 ---
