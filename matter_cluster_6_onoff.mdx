@@ -1,0 +1,833 @@
+---
+title: "Matter Cluster 6 — On/Off Cluster"
+description: "Documentation for Matter Cluster 6, including attributes, commands, payload examples, and backend interpretation."
+clusterId: 6
+clusterHex: "0x0006"
+clusterName: "On/Off"
+---
+
+# Matter Cluster 6 — On/Off Cluster
+
+<Callout type="info">
+Matter Cluster <code>6</code>, also written as <code>0x0006</code>, is the <strong>On/Off Cluster</strong>.  
+It is used for endpoints that can be switched between <strong>ON</strong> and <strong>OFF</strong>.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `6` |
+| Cluster ID hex | `0x0006` |
+| Cluster name | `On/Off` |
+
+---
+
+## Shadow Path Format
+
+Cluster 6 values in the device shadow usually use this format:
+
+```text
+endpoint_id / cluster_id / attribute_id
+```
+
+For Cluster 6:
+
+```text
+endpoint_id / 6 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/6/0": true
+}
+```
+
+Meaning:
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `6` | On/Off Cluster |
+| `0` | OnOff attribute |
+| `true` | Endpoint is ON |
+
+---
+
+# Main State Attribute
+
+## Attribute `0` — `OnOff`
+
+Path example:
+
+```text
+1/6/0
+```
+
+This attribute stores the current ON/OFF state of the endpoint.
+
+| Value | Meaning |
+|---|---|
+| `true` | Endpoint is ON |
+| `false` | Endpoint is OFF |
+
+Example ON state:
+
+```json
+{
+  "1/6/0": true
+}
+```
+
+Example OFF state:
+
+```json
+{
+  "1/6/0": false
+}
+```
+
+Recommended UI mapping:
+
+```text
+true  -> ON
+false -> OFF
+```
+
+---
+
+# Cluster 6 Commands
+
+Cluster 6 has **6 standard Matter commands**.
+
+| Decimal ID | Hex ID | Command name | Description |
+|---:|---:|---|---|
+| `0` | `0x00` | `Off` | Turns endpoint OFF |
+| `1` | `0x01` | `On` | Turns endpoint ON |
+| `2` | `0x02` | `Toggle` | Changes endpoint to opposite state |
+| `64` | `0x40` | `OffWithEffect` | Turns endpoint OFF with an effect |
+| `65` | `0x41` | `OnWithRecallGlobalScene` | Turns endpoint ON and recalls global scene state |
+| `66` | `0x42` | `OnWithTimedOff` | Turns endpoint ON for a limited time |
+
+---
+
+# AcceptedCommandList
+
+Cluster 6 exposes a metadata attribute called `AcceptedCommandList`.
+
+In the shadow, it appears as:
+
+```text
+endpoint_id / 6 / 65529
+```
+
+Example:
+
+```json
+{
+  "1/6/65529": [0, 1, 2, 64, 65, 66]
+}
+```
+
+This means endpoint `1` supports all 6 standard Cluster 6 commands.
+
+| ID | Command |
+|---:|---|
+| `0` | `Off` |
+| `1` | `On` |
+| `2` | `Toggle` |
+| `64` | `OffWithEffect` |
+| `65` | `OnWithRecallGlobalScene` |
+| `66` | `OnWithTimedOff` |
+
+<Callout type="warning">
+Before sending a Cluster 6 command, check that the command ID exists in <code>endpoint/6/65529</code>.
+</Callout>
+
+---
+
+# Bridge Command Payload Format
+
+Your bridge uses this structure:
+
+```json
+{
+  "message_id": "501",
+  "command": "device_command",
+  "args": {
+    "node_id": 5,
+    "endpoint_id": 1,
+    "cluster_id": 6,
+    "command_name": "On",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 6, always use:
+
+```json
+{
+  "cluster_id": 6
+}
+```
+
+---
+
+# Command: `Off`
+
+## Purpose
+
+Turns the endpoint OFF.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Off` |
+
+## Payload
+
+```json
+{}
+```
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "601",
+  "command": "device_command",
+  "args": {
+    "node_id": 5,
+    "endpoint_id": 1,
+    "cluster_id": 6,
+    "command_name": "Off",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+```json
+{
+  "1/6/0": false
+}
+```
+
+---
+
+# Command: `On`
+
+## Purpose
+
+Turns the endpoint ON.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `On` |
+
+## Payload
+
+```json
+{}
+```
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "602",
+  "command": "device_command",
+  "args": {
+    "node_id": 5,
+    "endpoint_id": 1,
+    "cluster_id": 6,
+    "command_name": "On",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+```json
+{
+  "1/6/0": true
+}
+```
+
+---
+
+# Command: `Toggle`
+
+## Purpose
+
+Changes the endpoint to the opposite state.
+
+| Current state | Result after `Toggle` |
+|---|---|
+| `true` / ON | `false` / OFF |
+| `false` / OFF | `true` / ON |
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `Toggle` |
+
+## Payload
+
+```json
+{}
+```
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "603",
+  "command": "device_command",
+  "args": {
+    "node_id": 5,
+    "endpoint_id": 1,
+    "cluster_id": 6,
+    "command_name": "Toggle",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+---
+
+# Command: `OffWithEffect`
+
+## Purpose
+
+Turns the endpoint OFF using an effect.
+
+This command is usually used for lighting endpoints.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `64` |
+| Command hex | `0x40` |
+| Command name | `OffWithEffect` |
+
+## Payload
+
+Recommended payload format:
+
+```json
+{
+  "effectIdentifier": 0,
+  "effectVariant": 0
+}
+```
+
+Some Matter libraries may require PascalCase field names:
+
+```json
+{
+  "EffectIdentifier": 0,
+  "EffectVariant": 0
+}
+```
+
+Use the field naming expected by your bridge / `python-matter-server`.
+
+## Payload Fields
+
+| Field | Description |
+|---|---|
+| `effectIdentifier` | Selects the off effect type |
+| `effectVariant` | Selects the variant of that effect |
+
+## Effect Identifiers
+
+| Value | Name | Description |
+|---:|---|---|
+| `0` | `DelayedAllOff` | Delayed all-off effect |
+| `1` | `DyingLight` | Dying-light style effect |
+
+## Variants for `DelayedAllOff`
+
+Used when:
+
+```json
+{
+  "effectIdentifier": 0
+}
+```
+
+| Value | Name | Description |
+|---:|---|---|
+| `0` | `DelayedOffFastFade` | Fast fade to OFF |
+| `1` | `NoFade` | Turn OFF without fade |
+| `2` | `DelayedOffSlowFade` | Slow fade to OFF |
+
+## Variants for `DyingLight`
+
+Used when:
+
+```json
+{
+  "effectIdentifier": 1
+}
+```
+
+| Value | Name | Description |
+|---:|---|---|
+| `0` | `DyingLightFadeOff` | Dying-light fade-off effect |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "604",
+  "command": "device_command",
+  "args": {
+    "node_id": 5,
+    "endpoint_id": 1,
+    "cluster_id": 6,
+    "command_name": "OffWithEffect",
+    "payload": {
+      "effectIdentifier": 0,
+      "effectVariant": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected Final State
+
+```json
+{
+  "1/6/0": false
+}
+```
+
+---
+
+# Command: `OnWithRecallGlobalScene`
+
+## Purpose
+
+Turns the endpoint ON and recalls global scene state.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `65` |
+| Command hex | `0x41` |
+| Command name | `OnWithRecallGlobalScene` |
+
+## Payload
+
+```json
+{}
+```
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "605",
+  "command": "device_command",
+  "args": {
+    "node_id": 5,
+    "endpoint_id": 1,
+    "cluster_id": 6,
+    "command_name": "OnWithRecallGlobalScene",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+```json
+{
+  "1/6/0": true
+}
+```
+
+---
+
+# Command: `OnWithTimedOff`
+
+## Purpose
+
+Turns the endpoint ON for a limited time.
+
+After the timer expires, the endpoint may turn OFF automatically.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `66` |
+| Command hex | `0x42` |
+| Command name | `OnWithTimedOff` |
+
+## Payload
+
+Recommended payload format:
+
+```json
+{
+  "onOffControl": 0,
+  "onTime": 300,
+  "offWaitTime": 0
+}
+```
+
+Some Matter libraries may require PascalCase field names:
+
+```json
+{
+  "OnOffControl": 0,
+  "OnTime": 300,
+  "OffWaitTime": 0
+}
+```
+
+Use the field naming expected by your bridge / `python-matter-server`.
+
+## Payload Fields
+
+| Field | Description |
+|---|---|
+| `onOffControl` | Control flags |
+| `onTime` | Time endpoint should remain ON |
+| `offWaitTime` | Wait/guard time after turning OFF |
+
+## `onOffControl`
+
+| Value | Description |
+|---:|---|
+| `0` | Normal timed-on command |
+| `1` | Accept command only when endpoint is already ON |
+
+For most cases, use:
+
+```json
+{
+  "onOffControl": 0
+}
+```
+
+## `onTime`
+
+`onTime` is normally expressed in **1/10 second units**.
+
+| `onTime` | Duration |
+|---:|---|
+| `10` | 1 second |
+| `100` | 10 seconds |
+| `300` | 30 seconds |
+| `600` | 60 seconds |
+| `1200` | 120 seconds |
+
+## `offWaitTime`
+
+For simple usage:
+
+```json
+{
+  "offWaitTime": 0
+}
+```
+
+## Bridge Command Example: Turn ON for 30 seconds
+
+```json
+{
+  "message_id": "606",
+  "command": "device_command",
+  "args": {
+    "node_id": 5,
+    "endpoint_id": 1,
+    "cluster_id": 6,
+    "command_name": "OnWithTimedOff",
+    "payload": {
+      "onOffControl": 0,
+      "onTime": 300,
+      "offWaitTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+Immediately after command:
+
+```json
+{
+  "1/6/0": true
+}
+```
+
+After the timer expires:
+
+```json
+{
+  "1/6/0": false
+}
+```
+
+---
+
+# Other Cluster 6 Attributes
+
+## Attribute `16384` / `0x4000` — `GlobalSceneControl`
+
+Path example:
+
+```text
+1/6/16384
+```
+
+Description:
+
+```text
+Controls global scene behavior for the On/Off cluster.
+```
+
+---
+
+## Attribute `16385` / `0x4001` — `OnTime`
+
+Path example:
+
+```text
+1/6/16385
+```
+
+Description:
+
+```text
+Time the endpoint remains ON during timed-on behavior.
+```
+
+Usually related to `OnWithTimedOff`.
+
+---
+
+## Attribute `16386` / `0x4002` — `OffWaitTime`
+
+Path example:
+
+```text
+1/6/16386
+```
+
+Description:
+
+```text
+Wait/guard time used after timed-off behavior.
+```
+
+Usually related to `OnWithTimedOff`.
+
+---
+
+## Attribute `16387` / `0x4003` — `StartUpOnOff`
+
+Path example:
+
+```text
+1/6/16387
+```
+
+Description:
+
+```text
+Defines what the endpoint should do after power cycle or reboot.
+```
+
+Possible values:
+
+| Value | Description |
+|---:|---|
+| `0` | Start OFF |
+| `1` | Start ON |
+| `2` | Toggle from previous state |
+| `null` | Device default behavior |
+
+Example:
+
+```json
+{
+  "1/6/16387": 0
+}
+```
+
+Meaning:
+
+```text
+After power recovery, endpoint 1 should start OFF.
+```
+
+---
+
+# Cluster 6 Metadata Attributes
+
+These are global Matter metadata attributes for Cluster 6.
+
+They describe the cluster itself.
+
+| Attribute ID | Name | Description |
+|---:|---|---|
+| `65528` | `GeneratedCommandList` | Commands this cluster may generate/send |
+| `65529` | `AcceptedCommandList` | Commands this cluster accepts |
+| `65531` | `AttributeList` | Attributes available on this cluster |
+| `65532` | `FeatureMap` | Enabled feature bits |
+| `65533` | `ClusterRevision` | Cluster revision/version |
+
+Example:
+
+```json
+{
+  "1/6/65529": [0, 1, 2, 64, 65, 66]
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 accepts all six standard Cluster 6 commands.
+```
+
+---
+
+# Backend Interpretation
+
+Given this shadow:
+
+```json
+{
+  "1/6/0": true,
+  "1/6/65529": [0, 1, 2, 64, 65, 66]
+}
+```
+
+Interpretation:
+
+```text
+Endpoint 1 is currently ON.
+Endpoint 1 supports:
+- Off
+- On
+- Toggle
+- OffWithEffect
+- OnWithRecallGlobalScene
+- OnWithTimedOff
+```
+
+## Command Validation Example
+
+```python
+COMMAND_IDS = {
+    "Off": 0,
+    "On": 1,
+    "Toggle": 2,
+    "OffWithEffect": 64,
+    "OnWithRecallGlobalScene": 65,
+    "OnWithTimedOff": 66,
+}
+
+def can_send_cluster6_command(shadow: dict, endpoint_id: int, command_name: str) -> bool:
+    accepted_key = f"{endpoint_id}/6/65529"
+    accepted = shadow.get(accepted_key, [])
+    command_id = COMMAND_IDS.get(command_name)
+
+    if command_id is None:
+        return False
+
+    return command_id in accepted
+```
+
+## State Interpretation Example
+
+```python
+def get_cluster6_state(shadow: dict, endpoint_id: int) -> str:
+    state_key = f"{endpoint_id}/6/0"
+    value = shadow.get(state_key)
+
+    if value is True:
+        return "on"
+
+    if value is False:
+        return "off"
+
+    return "unknown"
+```
+
+---
+
+# Final Summary
+
+Cluster 6 is the Matter **On/Off Cluster**.
+
+Main state:
+
+```text
+endpoint/6/0
+```
+
+Possible values:
+
+```text
+true  = ON
+false = OFF
+```
+
+Supported command list:
+
+```text
+endpoint/6/65529
+```
+
+All standard Cluster 6 commands:
+
+```text
+0  = Off
+1  = On
+2  = Toggle
+64 = OffWithEffect
+65 = OnWithRecallGlobalScene
+66 = OnWithTimedOff
+```
+
+If the shadow has:
+
+```json
+{
+  "1/6/65529": [0, 1, 2, 64, 65, 66]
+}
+```
+
+Then endpoint `1` supports all standard Cluster 6 commands.

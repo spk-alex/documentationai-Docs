@@ -59,6 +59,11 @@
                     "title": "Matter Clusters",
                     "path": "matter-clusters",
                     "icon": "database"
+                  },
+                  {
+                    "title": "Cluster 6 — On/Off",
+                    "path": "matter_cluster_6_onoff",
+                    "icon": "toggle-right"
                   }
                 ]
               }
@@ -152,6 +157,11 @@
                     "title": "Matter Clusters",
                     "path": "el/matter-clusters",
                     "icon": "database"
+                  },
+                  {
+                    "title": "Cluster 6 — On/Off",
+                    "path": "matter_cluster_6_onoff",
+                    "icon": "toggle-right"
                   }
                 ]
               }
