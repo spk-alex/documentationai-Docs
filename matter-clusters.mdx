@@ -204,6 +204,62 @@ These rows show temperature measurement data from the endpoint that reports temp
 
 **MeasuredValue** — Current temperature measured value. Example: `2591`. Numeric measured temperature in hundredths of a degree Celsius. Convert with `value / 100`, so `2591` means `25.91 °C`.
 
+### Smoke detector
+
+These rows show whether the endpoint currently detects smoke locally or receives a smoke alarm state from another interconnected smoke detector.
+
+| Cluster | Attribute | Path |
+|---|---|---|
+| Smoke CO Alarm (92) | SmokeState | `1/92/0` |
+| Smoke CO Alarm (92) | InterconnectSmokeAlarm | `1/92/7` |
+
+**SmokeState** — Local smoke state of this exact detector.
+
+```text
+0 = Normal / no local smoke detected
+1 = Warning / local smoke warning
+2 = Critical / local smoke alarm
+```
+
+**InterconnectSmokeAlarm** — Smoke alarm state received from another detector in the same interconnected alarm group.
+
+```text
+0 = Normal / no interconnected smoke alarm
+1 = Warning / another detector reports smoke warning
+2 = Critical / another detector reports critical smoke alarm
+```
+
+#### Difference
+
+`SmokeState` means this detector itself detects smoke.
+
+`InterconnectSmokeAlarm` means another linked detector reports smoke, and this detector exposes that alarm state.
+
+Example:
+
+```json
+{
+  "1/92/0": 0,
+  "1/92/7": 2
+}
+```
+
+This means this detector does not detect smoke locally, but another interconnected detector reports a critical smoke alarm.
+
+#### Interpretation
+
+| `1/92/0` SmokeState | `1/92/7` InterconnectSmokeAlarm | Local smoke | Interconnected smoke | Final status |
+|---|---|---|---|---|
+| `0` | `0` | No | No | Normal / no smoke detected |
+| `1` | `0` | Warning | No | Local smoke warning |
+| `2` | `0` | Critical | No | Local critical smoke alarm |
+| `0` | `1` | No | Warning | Another detector reports smoke warning |
+| `0` | `2` | No | Critical | Another detector reports critical smoke alarm |
+| `1` | `1` | Warning | Warning | Local and interconnected smoke warning |
+| `1` | `2` | Warning | Critical | Interconnected critical smoke alarm active |
+| `2` | `1` | Critical | Warning | Local critical smoke alarm active |
+| `2` | `2` | Critical | Critical | Critical smoke alarm active |
+
 ## Supported commands
 
 This section documents command capabilities. These fields describe what the device can accept as actions. In Matter, command support is normally discovered from the global `AcceptedCommandList` attribute, path format `endpoint/cluster/65529`.
