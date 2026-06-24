@@ -19702,6 +19702,20 @@
             "description": "Seconds to wait between batches (default: 3)",
             "name": "delaySeconds",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "When true, wipe the rebuildable SpacetimeDB projection tables before replaying (turns the resync into an authoritative rebuild that also removes orphaned rows). Only allowed for a full resync — omit aggregateType and aggregateId. identity_map and IoT shadow tables are preserved."
+            },
+            "required": false,
+            "description": "When true, wipe the rebuildable SpacetimeDB projection tables before replaying (turns the resync into an authoritative rebuild that also removes orphaned rows). Only allowed for a full resync — omit aggregateType and aggregateId. identity_map and IoT shadow tables are preserved.",
+            "name": "clearFirst",
+            "in": "query"
           }
         ],
         "responses": {
@@ -19735,6 +19749,10 @@
                     },
                     "batches": {
                       "type": "number"
+                    },
+                    "clearFirst": {
+                      "type": "boolean",
+                      "description": "Whether the projections were cleared before replaying."
                     },
                     "counts": {
                       "type": "object",
@@ -19777,6 +19795,7 @@
                     "batchSize",
                     "delaySeconds",
                     "batches",
+                    "clearFirst",
                     "counts",
                     "errors"
                   ]
