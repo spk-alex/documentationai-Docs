@@ -285,6 +285,750 @@
         }
       }
     },
+    "/admin/aggregates/{type}/{id}/events": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Aggregates"
+        ],
+        "summary": "Browse an aggregate's R2 event stream (paginated, filterable)",
+        "description": "Returns the ordered R2 event stream for an aggregate with version-range (fromVersion/toVersion) and event-type filters, forward cursor pagination, and the latest snapshot version. `type` accepts the canonical aggregate type (e.g. LockAggregate) or its slug (e.g. lock). Read-only; requires dual admin auth (X-Admin-API-Key + JWT). Audit-logged.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_GetAggregateEventsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Aggregate type or slug, e.g. \"lock\" or \"LockAggregate\""
+            },
+            "required": true,
+            "description": "Aggregate type or slug, e.g. \"lock\" or \"LockAggregate\"",
+            "name": "type",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Aggregate id (== state.id used for DO routing)"
+            },
+            "required": true,
+            "description": "Aggregate id (== state.id used for DO routing)",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Only return events with version >= fromVersion (inclusive)."
+            },
+            "required": false,
+            "description": "Only return events with version >= fromVersion (inclusive).",
+            "name": "fromVersion",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Only return events with version &lt;= toVersion (inclusive)."
+            },
+            "required": false,
+            "description": "Only return events with version &lt;= toVersion (inclusive).",
+            "name": "toVersion",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only return events whose type matches this exact event-type string."
+            },
+            "required": false,
+            "description": "Only return events whose type matches this exact event-type string.",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Max events to return in this page (default 100)."
+            },
+            "required": false,
+            "description": "Max events to return in this page (default 100).",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "description": "Pagination cursor: return events with version > cursor. Use nextCursor from the previous page."
+            },
+            "required": false,
+            "description": "Pagination cursor: return events with version > cursor. Use nextCursor from the previous page.",
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ordered event stream page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "aggregateType": {
+                      "type": "string"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "totalEvents": {
+                      "type": "number"
+                    },
+                    "snapshot": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "version": {
+                          "type": "number"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "timestamp"
+                      ]
+                    },
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "version": {
+                            "type": "number"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string"
+                          },
+                          "orgId": {
+                            "type": "string"
+                          },
+                          "event": {}
+                        },
+                        "required": [
+                          "version",
+                          "type",
+                          "timestamp",
+                          "orgId"
+                        ]
+                      }
+                    },
+                    "nextCursor": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "filter": {
+                      "type": "object",
+                      "properties": {
+                        "fromVersion": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "toVersion": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "fromVersion",
+                        "toVersion",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "aggregateType",
+                    "aggregateId",
+                    "totalEvents",
+                    "snapshot",
+                    "events",
+                    "nextCursor",
+                    "filter"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown aggregate type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/spacetimedb/users/{userId}/device-visibility": {
+      "get": {
+        "tags": [
+          "Admin",
+          "SpacetimeDB"
+        ],
+        "summary": "Diff a user's authoritative devices vs the SpacetimeDB projection",
+        "description": "Read-only diff of UserAggregate.state.devices vs SpacetimeDB device_permission / device_visibility / device_state (+ shadow presence). Flags orphans (visible in SpacetimeDB but not authoritative) and gaps (authoritative but missing from SpacetimeDB). Optional deviceUuid scopes the diff to one device. Requires dual admin auth (X-Admin-API-Key + JWT). Audit-logged.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_GetUserDeviceVisibilityRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "B2C user UUID (UserAggregate id)."
+            },
+            "required": true,
+            "description": "B2C user UUID (UserAggregate id).",
+            "name": "userId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Scope the diff/prune to a single device UUID instead of all of the user's devices."
+            },
+            "required": false,
+            "description": "Scope the diff/prune to a single device UUID instead of all of the user's devices.",
+            "name": "deviceUuid",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative-vs-SpacetimeDB device diff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "userFound": {
+                      "type": "boolean"
+                    },
+                    "authoritativeCount": {
+                      "type": "number"
+                    },
+                    "spacetimedbCount": {
+                      "type": "number"
+                    },
+                    "orphanCount": {
+                      "type": "number"
+                    },
+                    "gapCount": {
+                      "type": "number"
+                    },
+                    "lockCount": {
+                      "type": "number"
+                    },
+                    "unknownCount": {
+                      "type": "number"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deviceUuid": {
+                            "type": "string"
+                          },
+                          "authoritative": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "deviceType": {
+                                "type": "string"
+                              },
+                              "orgId": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "addedAt": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "deviceType",
+                              "orgId"
+                            ]
+                          },
+                          "spacetimedb": {
+                            "type": "object",
+                            "properties": {
+                              "hasPermission": {
+                                "type": "boolean"
+                              },
+                              "hasVisibility": {
+                                "type": "boolean"
+                              },
+                              "role": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "deviceStateFound": {
+                                "type": "boolean"
+                              },
+                              "deviceType": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "thingName": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "hasShadow": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "hasPermission",
+                              "hasVisibility",
+                              "role",
+                              "deviceStateFound",
+                              "deviceType",
+                              "thingName",
+                              "hasShadow"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "ok",
+                              "gap",
+                              "orphan",
+                              "lock",
+                              "unknown"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "deviceUuid",
+                          "authoritative",
+                          "spacetimedb",
+                          "status"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "userFound",
+                    "authoritativeCount",
+                    "spacetimedbCount",
+                    "orphanCount",
+                    "gapCount",
+                    "lockCount",
+                    "unknownCount",
+                    "rows"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid userId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/spacetimedb/users/{userId}/prune-orphans": {
+      "post": {
+        "tags": [
+          "Admin",
+          "SpacetimeDB"
+        ],
+        "summary": "Prune a user's orphaned SpacetimeDB device-access rows",
+        "description": "Deletes device_permission + device_visibility rows for the user's orphaned devices (visible in SpacetimeDB but not in UserAggregate.state.devices). The orphan set is recomputed server-side. Optional deviceUuid scopes the prune. device_state and shadows are left intact. Requires dual admin auth + confirm:true. Audit-logged.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_PruneUserDeviceVisibilityRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "B2C user UUID (UserAggregate id)."
+            },
+            "required": true,
+            "description": "B2C user UUID (UserAggregate id).",
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceUuid": {
+                    "type": "string",
+                    "description": "Prune only this orphaned device. Omit to prune every orphan for the user."
+                  },
+                  "confirm": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ],
+                    "description": "Must be true — confirms the prune is intentional."
+                  }
+                },
+                "required": [
+                  "confirm"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prune result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "pruned": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deviceUuid": {
+                            "type": "string"
+                          },
+                          "permissionsDeleted": {
+                            "type": "boolean"
+                          },
+                          "visibilityDeleted": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "deviceUuid",
+                          "permissionsDeleted",
+                          "visibilityDeleted"
+                        ]
+                      }
+                    },
+                    "prunedCount": {
+                      "type": "number"
+                    },
+                    "auditLogPath": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "userId",
+                    "pruned",
+                    "prunedCount",
+                    "auditLogPath",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/threedeye/users/{userId}/reset": {
       "post": {
         "tags": [
