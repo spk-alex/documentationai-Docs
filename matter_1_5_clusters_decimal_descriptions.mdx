@@ -1,0 +1,156 @@
+# Matter 1.5 Clusters — Decimal IDs and Descriptions
+
+This document lists Matter 1.5 clusters using the decimal cluster ID format commonly seen in backend paths and shadows.
+
+For a Matter shadow path like:
+
+```text
+1/257/0
+```
+
+Interpret it as:
+
+```text
+endpoint_id / cluster_id_decimal / attribute_id_decimal
+```
+
+So `1/257/0` means:
+
+```text
+Endpoint 1 / Door Lock cluster / Attribute 0
+```
+
+> Note: This table is intended for backend/device-shadow documentation. Vendor-specific, test-only, or implementation-specific clusters may appear in SDK data models but should not usually be exposed as normal production device functionality.
+
+| Decimal | Cluster | Description |
+|---:|---|---|
+| 3 | Identify | Allows a device or endpoint to visually/audibly identify itself, usually for pairing, setup, or troubleshooting. |
+| 4 | Groups | Manages group membership so one command can control multiple endpoints together. |
+| 6 | On/Off | Basic binary control for turning a device or feature on or off. |
+| 8 | Level Control | Controls a numeric level such as brightness, fan level, or other stepped/continuous output. |
+| 29 | Descriptor | Describes an endpoint, including device types, server/client clusters, and endpoint composition. |
+| 30 | Binding | Defines local bindings between endpoints so one device can send commands directly to another. |
+| 31 | Access Control | Defines which fabrics, nodes, subjects, or groups are allowed to access specific privileges. |
+| 37 | Actions | Represents predefined actions or action lists that can be triggered on a device. |
+| 40 | Basic Information | Provides core device information such as vendor, product, serial number, software version, and node label. |
+| 41 | OTA Software Update Provider | Provides OTA update images to other Matter nodes. |
+| 42 | OTA Software Update Requestor | Lets a device check for, download, and apply OTA software updates. |
+| 43 | Localization Configuration | Configures localization preferences such as active locale. |
+| 44 | Time Format Localization | Configures localized time display preferences such as 12-hour or 24-hour format. |
+| 45 | Unit Localization | Configures preferred measurement units, such as Celsius/Fahrenheit or metric/imperial. |
+| 46 | Power Source Configuration | Describes how endpoint power sources are assigned and prioritized. |
+| 47 | Power Source | Reports information about a specific power source, such as battery, wired supply, charging, or fault state. |
+| 48 | General Commissioning | Handles general commissioning steps such as regulatory configuration and commissioning completion. |
+| 49 | Network Commissioning | Adds, removes, scans, and configures Wi-Fi, Thread, or Ethernet network connectivity. |
+| 50 | Diagnostic Logs | Provides access to device diagnostic logs for support and troubleshooting. |
+| 51 | General Diagnostics | Reports general device diagnostics such as reboot count, uptime, network interfaces, and faults. |
+| 52 | Software Diagnostics | Reports software-level diagnostics such as thread/task metrics and heap usage. |
+| 53 | Thread Network Diagnostics | Reports Thread-specific diagnostics, counters, topology, and network state. |
+| 54 | Wi-Fi Network Diagnostics | Reports Wi-Fi-specific diagnostics such as RSSI, BSSID, security type, and packet counters. |
+| 55 | Ethernet Network Diagnostics | Reports Ethernet-specific diagnostics such as PHY rate, packet counters, and link state. |
+| 56 | Time Synchronization | Provides time synchronization, time zone, DST, and trusted time source information. |
+| 57 | Bridged Device Basic Information | Provides basic information for a bridged/non-Matter device represented by a Matter bridge. |
+| 59 | Switch | Represents switch input events such as press, release, long press, and multi-press. |
+| 60 | Administrator Commissioning | Opens or controls commissioning windows for adding new administrators/fabrics. |
+| 62 | Operational Credentials | Manages Matter fabrics, certificates, NOCs, trusted roots, and fabric removal. |
+| 63 | Group Key Management | Manages group keys used for secure group communication. |
+| 64 | Fixed Label | Provides manufacturer-defined static labels for an endpoint. |
+| 65 | User Label | Provides user-configurable labels for an endpoint. |
+| 69 | Boolean State | Reports a simple boolean sensor state, such as open/closed or detected/not detected. |
+| 70 | ICD Management | Manages Intermittently Connected Device behavior for sleepy or low-power devices. |
+| 71 | Timer | Represents timer functionality, including starting, stopping, pausing, and remaining time. |
+| 72 | Oven Cavity Operational State | Reports operational state for an oven cavity, such as running, paused, or stopped. |
+| 73 | Oven Mode | Selects and reports oven operating modes. |
+| 74 | Laundry Dryer Controls | Controls dryer-specific settings and supported options. |
+| 80 | Mode Select | Generic mode-selection cluster for devices with selectable operating modes. |
+| 81 | Laundry Washer Mode | Selects and reports washing machine operating modes. |
+| 82 | Refrigerator and Temperature Controlled Cabinet Mode | Selects and reports refrigerator or temperature-controlled cabinet modes. |
+| 83 | RVC Run Mode | Selects and reports robotic vacuum cleaner run modes. |
+| 84 | RVC Clean Mode | Selects and reports robotic vacuum cleaner cleaning modes. |
+| 85 | Temperature Control | Controls target temperature and temperature setpoints for supported appliances. |
+| 86 | Refrigerator Alarm | Reports refrigerator or cabinet alarm states. |
+| 87 | Dishwasher Mode | Selects and reports dishwasher operating modes. |
+| 89 | Operational State | Reports generic operational state for appliances or devices with a running process. |
+| 90 | RVC Operational State | Reports robotic vacuum cleaner operational state, errors, and phase. |
+| 91 | Scenes Management | Stores, recalls, copies, and manages scenes for one or more clusters. |
+| 92 | Smoke CO Alarm | Reports smoke, carbon monoxide, alarm, hush, test, interconnect, and contamination states. |
+| 93 | Dishwasher Alarm | Reports dishwasher-specific alarm and fault states. |
+| 94 | Microwave Oven Mode | Selects and reports microwave oven operating modes. |
+| 95 | Microwave Oven Control | Controls microwave cooking parameters such as cook time and power. |
+| 96 | Operational State Base | Base model for operational state clusters used by appliances. |
+| 97 | Oven Operational State | Reports oven-specific operational state and errors. |
+| 98 | Scenes | Legacy/common scene storage and recall functionality for supported clusters. |
+| 103 | Device Energy Management | Supports energy management, scheduling, forecasting, and power adjustment for devices. |
+| 104 | Energy EVSE | Controls and monitors electric vehicle supply equipment charging behavior. |
+| 105 | Energy Preference | Represents energy-related user or device preferences. |
+| 106 | Power Topology | Describes how power flows between sources, loads, batteries, and endpoints. |
+| 107 | Energy EVSE Mode | Selects and reports EVSE charging modes. |
+| 108 | Water Heater Mode | Selects and reports water heater operating modes. |
+| 109 | Device Energy Management Mode | Selects and reports device energy-management operating modes. |
+| 110 | Electrical Power Measurement | Reports active/reactive/apparent power, voltage, current, frequency, and related electrical measurements. |
+| 111 | Electrical Energy Measurement | Reports imported/exported electrical energy and cumulative energy measurements. |
+| 112 | Water Heater Management | Controls and monitors water heater behavior, targets, boost, and heating demand. |
+| 113 | Solar Power | Represents solar power generation and related status information. |
+| 114 | Battery Storage | Represents battery storage, charge/discharge behavior, and energy availability. |
+| 115 | Heat Pump | Represents heat pump operation and related energy behavior. |
+| 116 | Demand Response Load Control | Supports demand-response events and load-control behavior from energy providers or controllers. |
+| 117 | Messages | Provides device/user messages, alerts, and message confirmation behavior. |
+| 118 | Device Energy Management | Device energy-management functionality for forecasting, scheduling, and power adjustment. |
+| 119 | Energy Preference | Energy preference functionality for user or controller-defined energy choices. |
+| 128 | Boolean State Configuration | Configures sensitivity, alarms, and behavior for boolean-state sensors. |
+| 129 | Valve Configuration and Control | Controls valve position, open duration, close behavior, and valve status. |
+| 144 | Chime | Controls and reports chime behavior, sounds, and supported chime modes. |
+| 145 | Ecosystem Information | Provides information about ecosystem-specific or fabric-related device associations. |
+| 257 | Door Lock | Controls and reports door lock state, users, PIN/RFID credentials, schedules, and lock events. |
+| 258 | Window Covering | Controls and reports blinds, shades, curtains, lift, tilt, and position. |
+| 259 | Closure Control | Generic closure control for devices that open/close along one or more dimensions. |
+| 260 | Closure Dimension | Represents one controlled dimension of a closure, such as lift, tilt, or another movement axis. |
+| 512 | Pump Configuration and Control | Controls and reports pump operation, pressure, speed, flow, and pump status. |
+| 513 | Thermostat | Controls heating/cooling setpoints, modes, schedules, occupancy, and HVAC state. |
+| 514 | Fan Control | Controls fan speed, fan mode, airflow direction, and related fan features. |
+| 516 | Thermostat User Interface Configuration | Configures thermostat UI behavior such as display units and keypad lockout. |
+| 768 | Color Control | Controls color-capable lighting, including hue, saturation, color temperature, and color loops. |
+| 1024 | Illuminance Measurement | Reports measured light level. |
+| 1026 | Temperature Measurement | Reports measured temperature. |
+| 1027 | Pressure Measurement | Reports measured pressure. |
+| 1028 | Flow Measurement | Reports measured flow rate. |
+| 1029 | Relative Humidity Measurement | Reports measured relative humidity. |
+| 1030 | Occupancy Sensing | Reports occupancy or motion/presence detection state. |
+| 1036 | Carbon Monoxide Concentration Measurement | Reports carbon monoxide concentration and related measurement status. |
+| 1037 | Carbon Dioxide Concentration Measurement | Reports carbon dioxide concentration and related measurement status. |
+| 1038 | Nitrogen Dioxide Concentration Measurement | Reports nitrogen dioxide concentration and related measurement status. |
+| 1043 | Ozone Concentration Measurement | Reports ozone concentration and related measurement status. |
+| 1045 | PM2.5 Concentration Measurement | Reports fine particulate matter PM2.5 concentration. |
+| 1046 | Formaldehyde Concentration Measurement | Reports formaldehyde concentration and related measurement status. |
+| 1066 | PM1 Concentration Measurement | Reports PM1 particulate matter concentration. |
+| 1067 | PM10 Concentration Measurement | Reports PM10 particulate matter concentration. |
+| 1068 | Total Volatile Organic Compounds Concentration Measurement | Reports TVOC concentration and related measurement status. |
+| 1069 | Radon Concentration Measurement | Reports radon concentration and related measurement status. |
+| 1070 | Air Quality | Reports summarized air quality level and may relate multiple concentration measurements. |
+| 1283 | Wake on LAN | Supports waking a media device over the local network. |
+| 1284 | Channel | Controls and reports media channels. |
+| 1285 | Target Navigator | Navigates media targets such as inputs, apps, or menu destinations. |
+| 1286 | Media Playback | Controls playback actions such as play, pause, stop, next, previous, seek, and playback state. |
+| 1287 | Media Input | Selects and reports media inputs such as HDMI or other source inputs. |
+| 1289 | Low Power | Requests or reports low-power behavior for supported media devices. |
+| 1290 | Keypad Input | Sends keypad-style input such as arrows, select, back, numbers, and remote-control keys. |
+| 1291 | Content Launcher | Launches or searches media content on a device or application. |
+| 1292 | Audio Output | Selects and reports audio output devices such as speakers or audio sinks. |
+| 1293 | Application Launcher | Launches applications on a media device. |
+| 1294 | Application Basic | Provides basic information about an application running on a media device. |
+| 1295 | Account Login | Supports account login/logout flows for content applications. |
+| 1296 | Content Control | Controls media content restrictions, ratings, and related content-control features. |
+| 1297 | Content App Observer | Observes content application status and related media-app information. |
+| 1344 | Joint Fabric Datastore | Stores and manages data used for joint-fabric or shared-fabric administration. |
+| 1345 | Joint Fabric Administrator | Administers joint-fabric or shared-fabric relationships. |
+| 1360 | Camera A/V Settings User-Level Management | Manages user-level camera audio/video settings and preferences. |
+| 1361 | Camera A/V Stream Management | Manages camera audio/video stream configuration and state. |
+| 1362 | Push A/V Stream Transport | Supports transport of pushed audio/video streams. |
+| 1363 | Zone Management | Manages camera or sensor zones used for detection or monitoring. |
+| 1536 | Meter Identification | Provides meter identity, type, and related utility-metering information. |
+| 1537 | Commodity Metering | Reports metered commodity usage, such as electricity, gas, water, or thermal energy. |
+| 1538 | Commodity Price | Reports commodity pricing information for energy or utility use. |
+| 1539 | Commodity Tariff | Reports tariff, billing, or rate information for utility/energy use. |
+| 1540 | Electrical Grid Conditions | Reports grid conditions relevant to energy management and demand response. |
+| 4294048773 | Unit Testing Cluster | SDK/test cluster used for unit testing; not normal production functionality. |
+| 4294048774 | Sample MEI Cluster | SDK/sample manufacturer extension cluster; not normal standard production functionality. |
