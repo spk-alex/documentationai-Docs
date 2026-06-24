@@ -48,28 +48,28 @@ This section documents values reported by Matter device clusters. These fields a
 
 These rows describe the overall device identity and diagnostic/network-management information. They are important for inventory, troubleshooting, and support, but they do not directly control the main user-facing lock function.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 0 | Basic Information (40) | VendorName | `0/40/1` |
-| 0 | Basic Information (40) | ProductName | `0/40/3` |
-| 0 | Basic Information (40) | HardwareVersionString | `0/40/8` |
-| 0 | Basic Information (40) | SoftwareVersionString | `0/40/10` |
-| 0 | Basic Information (40) | ManufacturingDate/DateCode | `0/40/11` |
-| 0 | Basic Information (40) | SerialNumber | `0/40/15` |
-| 0 | Basic Information (40) | VendorID | `0/40/2` |
-| 0 | Basic Information (40) | ProductURL | `0/40/14` |
-| 0 | General Diagnostics (51) | UpTime | `0/51/2` |
-| 0 | General Diagnostics (51) | TotalOperationalHours | `0/51/3` |
-| 0 | General Diagnostics (51) | BootReason | `0/51/4` |
-| 0 | Thread Network Diagnostics (53) | NeighborTable | `0/53/7` |
-| 0 | Thread Network Diagnostics (53) | RoutingRole | `0/53/1` |
-| 0 | Thread Network Diagnostics (53) | NetworkName | `0/53/2` |
-| 0 | Wi-Fi Network Diagnostics (54) | RSSI | `0/54/4` |
-| 0 | ICD Management (70) | IdleModeDuration | `0/70/0` |
-| 0 | ICD Management (70) | ActiveModeDuration | `0/70/1` |
-| 0 | ICD Management (70) | ActiveModeThreshold | `0/70/2` |
-| 0 | ICD Management (70) | UserActiveModeTriggerHint | `0/70/6` |
-| 0 | ICD Management (70) | UserActiveModeTriggerInstruction | `0/70/7` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Basic Information (40) | VendorName | `0/40/1` |
+| Basic Information (40) | ProductName | `0/40/3` |
+| Basic Information (40) | HardwareVersionString | `0/40/8` |
+| Basic Information (40) | SoftwareVersionString | `0/40/10` |
+| Basic Information (40) | ManufacturingDate/DateCode | `0/40/11` |
+| Basic Information (40) | SerialNumber | `0/40/15` |
+| Basic Information (40) | VendorID | `0/40/2` |
+| Basic Information (40) | ProductURL | `0/40/14` |
+| General Diagnostics (51) | UpTime | `0/51/2` |
+| General Diagnostics (51) | TotalOperationalHours | `0/51/3` |
+| General Diagnostics (51) | BootReason | `0/51/4` |
+| Thread Network Diagnostics (53) | NeighborTable | `0/53/7` |
+| Thread Network Diagnostics (53) | RoutingRole | `0/53/1` |
+| Thread Network Diagnostics (53) | NetworkName | `0/53/2` |
+| Wi-Fi Network Diagnostics (54) | RSSI | `0/54/4` |
+| ICD Management (70) | IdleModeDuration | `0/70/0` |
+| ICD Management (70) | ActiveModeDuration | `0/70/1` |
+| ICD Management (70) | ActiveModeThreshold | `0/70/2` |
+| ICD Management (70) | UserActiveModeTriggerHint | `0/70/6` |
+| ICD Management (70) | UserActiveModeTriggerInstruction | `0/70/7` |
 
 ## Field details
 
@@ -117,44 +117,44 @@ These rows describe the overall device identity and diagnostic/network-managemen
 
 These rows describe the access-control behavior of the device. This is the most business-critical group for teams working with door-entry logic, credentials, remote operations, and physical security behavior.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 1 | Door Lock (257) | LockState | `1/257/0` |
-| 1 | Door Lock (257) | NumberOfTotalUsersSupported | `1/257/17` |
-| 1 | Door Lock (257) | NumberOfPINUsersSupported | `1/257/18` |
-| 1 | Door Lock (257) | NumberOfCredentialsSupportedPerUser | `1/257/23` |
-| 1 | Door Lock (257) | AutoRelockTime | `1/257/27` |
-| 1 | Door Lock (257) | SoundVolume | `1/257/28` |
-| 1 | Door Lock (257) | LEDSettings | `1/257/41` |
-| 1 | Door Lock (257) | AutoRelockBehavior | `1/257/43` |
-| 1 | Door Lock (257) | WrongCodeEntryLimit | `1/257/48` |
-| 1 | Door Lock (257) | UserCodeTemporaryDisableTime | `1/257/49` |
-| 1 | Door Lock (257) | RequirePINforRemoteOperation | `1/257/51` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Door Lock (257) | LockState | `1/257/0` |
+| Door Lock (257) | NumberOfTotalUsersSupported | `1/257/17` |
+| Door Lock (257) | NumberOfPINUsersSupported | `1/257/18` |
+| Door Lock (257) | NumberOfCredentialsSupportedPerUser | `1/257/23` |
+| Door Lock (257) | AutoRelockTime | `1/257/27` |
+| Door Lock (257) | SoundVolume | `1/257/28` |
+| Door Lock (257) | LEDSettings | `1/257/41` |
+| Door Lock (257) | AutoRelockBehavior | `1/257/43` |
+| Door Lock (257) | WrongCodeEntryLimit | `1/257/48` |
+| Door Lock (257) | UserCodeTemporaryDisableTime | `1/257/49` |
+| Door Lock (257) | RequirePINforRemoteOperation | `1/257/51` |
 
 
 ### Battery / power source
 
 These rows describe how the device is powered and whether maintenance may be needed. This is especially important for field support teams and for platforms that need to show battery health.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 1 | Power Source (47) | Status | `1/47/0` |
-| 1 | Power Source (47) | BatVoltage | `1/47/11` |
-| 1 | Power Source (47) | BatPercentRemaining | `1/47/12` |
-| 1 | Power Source (47) | BatChargeLevel | `1/47/14` |
-| 1 | Power Source (47) | BatReplacementNeeded | `1/47/15` |
-| 1 | Power Source (47) | BatReplacementDescription | `1/47/19` |
-| 1 | Power Source (47) | BatReplacementNeededLevel | `1/47/24` |
-| 1 | Power Source (47) | BatQuantity | `1/47/25` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Power Source (47) | Status | `1/47/0` |
+| Power Source (47) | BatVoltage | `1/47/11` |
+| Power Source (47) | BatPercentRemaining | `1/47/12` |
+| Power Source (47) | BatChargeLevel | `1/47/14` |
+| Power Source (47) | BatReplacementNeeded | `1/47/15` |
+| Power Source (47) | BatReplacementDescription | `1/47/19` |
+| Power Source (47) | BatReplacementNeededLevel | `1/47/24` |
+| Power Source (47) | BatQuantity | `1/47/25` |
 
 
 ### Humidity sensor
 
 These rows show environmental humidity sensing data. Even though the main product is a reader/lock-oriented device, this export also exposes humidity measurement information on one endpoint.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 1 | Relative Humidity Measurement (1029) | MeasuredValue | `1/1029/0` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Relative Humidity Measurement (1029) | MeasuredValue | `1/1029/0` |
 
 **MeasuredValue** — Current relative humidity measured value. Example: `3011`. Numeric measured humidity in hundredths of a percent. Convert with `value / 100`, so `3011` means `30.11% RH`.
 
@@ -162,9 +162,9 @@ These rows show environmental humidity sensing data. Even though the main produc
 
 These rows show whether the endpoint currently detects occupancy or presence. This is typically used by automation and monitoring systems rather than by core lock workflows.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 1 | Occupancy Sensing (1030) | Occupancy | `1/1030/0` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Occupancy Sensing (1030) | Occupancy | `1/1030/0` |
 
 **Occupancy** — Current occupancy/presence state. Example: `0`. Bitmap value. Bit 0 indicates occupied/presence detected. `0` means no occupancy detected; `1` means occupied. Future/additional bits may represent more sensing modes.
 
@@ -172,9 +172,9 @@ These rows show whether the endpoint currently detects occupancy or presence. Th
 
 This section isolates the Boolean State row that is documented as a contact/door-sensor style interpretation. It is separated on purpose to show that Boolean State needs device-type context.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 1 | Boolean State (69) | StateValue | `1/69/0` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Boolean State (69) | StateValue | `1/69/0` |
 
 **StateValue** — Binary state value. For this door sensor it maps to open/closed contact state. Example: `true`. Boolean value. For a contact sensor endpoint, map with endpoint context: commonly `true = open/contact active`, `false = closed/inactive`, but verify with the specific device behavior.
 
@@ -182,9 +182,9 @@ This section isolates the Boolean State row that is documented as a contact/door
 
 This section isolates the Boolean State row that is documented as a water-leak interpretation. It is separated on purpose to show that the same Boolean State cluster can represent a completely different real-world condition.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 1 | Boolean State (69) | StateValue | `1/69/0` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Boolean State (69) | StateValue | `1/69/0` |
 
 <ExpandableGroup>
   <Expandable title="StateValue">
@@ -198,9 +198,9 @@ Binary state value. On this interpretation it maps to water leak state because t
 
 These rows show temperature measurement data from the endpoint that reports temperature. As with humidity, the raw value normally needs conversion before end-user display.
 
-| Endpoint | Cluster | Attribute | Path |
-| --- | --- | --- | --- |
-| 2 | Temperature Measurement (1026) | MeasuredValue | `2/1026/0` |
+| Cluster | Attribute | Path |
+| --- | --- | --- |
+| Temperature Measurement (1026) | MeasuredValue | `2/1026/0` |
 
 **MeasuredValue** — Current temperature measured value. Example: `2591`. Numeric measured temperature in hundredths of a degree Celsius. Convert with `value / 100`, so `2591` means `25.91 °C`.
 
@@ -218,7 +218,7 @@ Use this section separately from **Device info data**:
 Matter exposes command capability through global cluster attributes. In the `endpoint/cluster/attribute` format, the most important command-capability paths are:
 
 | Attribute ID | Hex | Attribute Name | Meaning |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | 65529 | `0xFFF9` | AcceptedCommandList | List of command IDs that this exact cluster server accepts. Use this to decide whether your bridge/API can send a command. |
 | 65528 | `0xFFF8` | GeneratedCommandList | List of command IDs that this cluster may generate as responses/events. Useful for command-response handling, but not the main capability check. |
 
@@ -228,16 +228,16 @@ Example path: `0/49/65529` means endpoint `0`, cluster `49`, attribute `65529`. 
 
 Endpoint `0` is the root/system endpoint. These commands are not lock-specific. They are common Matter system, commissioning, diagnostics, security, and fabric-management capabilities. Any device type may expose some of these clusters depending on what it supports.
 
-| Path | Endpoint | Cluster ID | Cluster Name | Accepted Command IDs | Decoded Commands | What this means |
-| --- | ---: | ---: | --- | --- | --- | --- |
-| `0/48/65529` | 0 | 48 / `0x0030` | General Commissioning | `[0, 2, 4]` | `0 / 0x00 = ArmFailSafe`<br />`2 / 0x02 = SetRegulatoryConfig`<br />`4 / 0x04 = CommissioningComplete` | Device supports the standard commissioning safety flow. These commands are used while adding the device to a Matter fabric. |
-| `0/49/65529` | 0 | 49 / `0x0031` | Network Commissioning | `[0, 3, 4, 6, 8]` | `0 / 0x00 = ScanNetworks`<br />`3 / 0x03 = AddOrUpdateThreadNetwork`<br />`4 / 0x04 = RemoveNetwork`<br />`6 / 0x06 = ConnectNetwork`<br />`8 / 0x08 = ReorderNetwork` | Device supports network commissioning operations. Because this list has `AddOrUpdateThreadNetwork` and not Wi-Fi network commands, this looks like Thread commissioning capability. |
-| `0/50/65529` | 0 | 50 / `0x0032` | Diagnostic Logs | `[0]` | `0 / 0x00 = RetrieveLogsRequest` | Controller can request diagnostic logs from the device if the device has logs available. |
-| `0/51/65529` | 0 | 51 / `0x0033` | General Diagnostics | `[0, 1]` | `0 / 0x00 = TestEventTrigger`<br />`1 / 0x01 = TimeSnapshot` | Device supports diagnostic commands. These are mainly useful for testing, certification, troubleshooting, and time snapshot diagnostics. |
-| `0/53/65529` | 0 | 53 / `0x0035` | Thread Network Diagnostics | `[0]` | `0 / 0x00 = ResetCounts` | Controller can reset Thread diagnostic counters. This is diagnostics-only and does not control the main device function. |
-| `0/60/65529` | 0 | 60 / `0x003C` | Administrator Commissioning | `[0, 1, 2]` | `0 / 0x00 = OpenCommissioningWindow`<br />`1 / 0x01 = OpenBasicCommissioningWindow`<br />`2 / 0x02 = RevokeCommissioning` | Device can open or revoke a commissioning window. This is used for adding another controller/admin or putting the device back into commissioning mode. |
-| `0/62/65529` | 0 | 62 / `0x003E` | Operational Credentials | `[0, 2, 4, 6, 7, 9, 10, 11]` | `0 / 0x00 = AttestationRequest`<br />`2 / 0x02 = CertificateChainRequest`<br />`4 / 0x04 = CSRRequest`<br />`6 / 0x06 = AddNOC`<br />`7 / 0x07 = UpdateNOC`<br />`9 / 0x09 = UpdateFabricLabel`<br />`10 / 0x0A = RemoveFabric`<br />`11 / 0x0B = AddTrustedRootCertificate` | Device supports Matter fabric/security certificate operations. These commands are used during commissioning, fabric setup, multi-admin, and operational credential management. |
-| `0/63/65529` | 0 | 63 / `0x003F` | Group Key Management | `[0, 1, 3, 4]` | `0 / 0x00 = KeySetWrite`<br />`1 / 0x01 = KeySetRead`<br />`3 / 0x03 = KeySetRemove`<br />`4 / 0x04 = KeySetReadAllIndices` | Device supports group key management for secure Matter group communication. This is not a user-facing device action. |
+| Path | Cluster ID | Cluster Name | Accepted Command IDs | Decoded Commands | What this means |
+| --- | ---: | --- | --- | --- | --- |
+| `0/48/65529` | 48 / `0x0030` | General Commissioning | `[0, 2, 4]` | `0 / 0x00 = ArmFailSafe`<br />`2 / 0x02 = SetRegulatoryConfig`<br />`4 / 0x04 = CommissioningComplete` | Device supports the standard commissioning safety flow. These commands are used while adding the device to a Matter fabric. |
+| `0/49/65529` | 49 / `0x0031` | Network Commissioning | `[0, 3, 4, 6, 8]` | `0 / 0x00 = ScanNetworks`<br />`3 / 0x03 = AddOrUpdateThreadNetwork`<br />`4 / 0x04 = RemoveNetwork`<br />`6 / 0x06 = ConnectNetwork`<br />`8 / 0x08 = ReorderNetwork` | Device supports network commissioning operations. Because this list has `AddOrUpdateThreadNetwork` and not Wi-Fi network commands, this looks like Thread commissioning capability. |
+| `0/50/65529` | 50 / `0x0032` | Diagnostic Logs | `[0]` | `0 / 0x00 = RetrieveLogsRequest` | Controller can request diagnostic logs from the device if the device has logs available. |
+| `0/51/65529` | 51 / `0x0033` | General Diagnostics | `[0, 1]` | `0 / 0x00 = TestEventTrigger`<br />`1 / 0x01 = TimeSnapshot` | Device supports diagnostic commands. These are mainly useful for testing, certification, troubleshooting, and time snapshot diagnostics. |
+| `0/53/65529` | 53 / `0x0035` | Thread Network Diagnostics | `[0]` | `0 / 0x00 = ResetCounts` | Controller can reset Thread diagnostic counters. This is diagnostics-only and does not control the main device function. |
+| `0/60/65529` | 60 / `0x003C` | Administrator Commissioning | `[0, 1, 2]` | `0 / 0x00 = OpenCommissioningWindow`<br />`1 / 0x01 = OpenBasicCommissioningWindow`<br />`2 / 0x02 = RevokeCommissioning` | Device can open or revoke a commissioning window. This is used for adding another controller/admin or putting the device back into commissioning mode. |
+| `0/62/65529` | 62 / `0x003E` | Operational Credentials | `[0, 2, 4, 6, 7, 9, 10, 11]` | `0 / 0x00 = AttestationRequest`<br />`2 / 0x02 = CertificateChainRequest`<br />`4 / 0x04 = CSRRequest`<br />`6 / 0x06 = AddNOC`<br />`7 / 0x07 = UpdateNOC`<br />`9 / 0x09 = UpdateFabricLabel`<br />`10 / 0x0A = RemoveFabric`<br />`11 / 0x0B = AddTrustedRootCertificate` | Device supports Matter fabric/security certificate operations. These commands are used during commissioning, fabric setup, multi-admin, and operational credential management. |
+| `0/63/65529` | 63 / `0x003F` | Group Key Management | `[0, 1, 3, 4]` | `0 / 0x00 = KeySetWrite`<br />`1 / 0x01 = KeySetRead`<br />`3 / 0x03 = KeySetRemove`<br />`4 / 0x04 = KeySetReadAllIndices` | Device supports group key management for secure Matter group communication. This is not a user-facing device action. |
 
 For bridge implementation, these endpoint `0` command lists should usually be treated as system capabilities. They are useful for commissioning, diagnostics, network setup, and fabric administration, but they should not be exposed as normal user commands like lock/unlock, temperature read, or leak state.
 
@@ -248,7 +248,7 @@ The Door Lock cluster has a command set for lock operation, user/PIN/RFID manage
 For python-matter-server / bridge usage, commands are normally sent to cluster `257` on the lock endpoint, usually endpoint `1`. In your AWS IoT payload, the bridge should resolve `device_uuid -> node_id`, then send the command with `node_id`, `endpoint_id`, cluster command name, and command-specific args.
 
 | Command ID | Hex | Command Name | Area | What it does | Typical args / value details |
-| --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | 0 | 0x00 | LockDoor | Lock operation | Locks the door. | Usually no args. Some locks may require `PINCode` if `RequirePINforRemoteOperation` is `true`. Result should be checked because the command can fail if the lock is unavailable, blocked, already moving, or requires extra credential data. |
 | 1 | 0x01 | UnlockDoor | Lock operation | Unlocks the door. | Usually no args, unless the lock requires a PIN for remote operation. Security-sensitive command. Your API should treat it as a controlled remote operation and log who/what triggered it. |
 | 2 | 0x02 | Toggle | Lock operation | Toggles between locked and unlocked state. | Usually no args. Not recommended for cloud/API workflows when exact desired state matters, because result depends on current physical state. Prefer `LockDoor` or `UnlockDoor` for deterministic behavior. |
@@ -290,7 +290,7 @@ For python-matter-server / bridge usage, commands are normally sent to cluster `
 Door Lock command support is separate from the general endpoint `0` system commands above. Do not assume every Matter lock supports every command listed above. The practical support check is:
 
 | Path | Attribute | What it tells you | Example / Value Details |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | `1/257/65529` | AcceptedCommandList | Commands this specific lock accepts on endpoint `1`, cluster `257`. | Example: `[0, 1, 26, 27, 29, 34, 36, 38]` means this lock supports `LockDoor`, `UnlockDoor`, `SetUser`, `GetUser`, `ClearUser`, `SetCredential`, `GetCredentialStatus`, and `ClearCredential`. Use this list to decide which API buttons/functions to expose. |
 | `1/257/65528` | GeneratedCommandList | Responses/events generated by this cluster for commands, depending on implementation. | Useful for command/response handling, but `AcceptedCommandList` is the main one for deciding whether a command can be sent. |
 
