@@ -61,7 +61,7 @@
                     "icon": "list"
                   },
                   {
-                    "title": "Matter Clusters",
+                    "title": "Matter Device Attributes & Commands",
                     "path": "matter-clusters",
                     "icon": "database"
                   },
@@ -164,7 +164,7 @@
                     "icon": "list"
                   },
                   {
-                    "title": "Matter Clusters",
+                    "title": "Matter Device Attributes & Commands",
                     "path": "el/matter-clusters",
                     "icon": "database"
                   },
