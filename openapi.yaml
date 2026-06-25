@@ -571,21 +571,21 @@
         }
       }
     },
-    "/admin/spacetimedb/users/{userId}/device-visibility": {
+    "/admin/spacetimedb/users/{userId}/devices": {
       "get": {
         "tags": [
           "Admin",
           "SpacetimeDB"
         ],
-        "summary": "Diff a user's authoritative devices vs the SpacetimeDB projection",
-        "description": "Read-only diff of UserAggregate.state.devices vs SpacetimeDB device_permission / device_visibility / device_state (+ shadow presence). Flags orphans (visible in SpacetimeDB but not authoritative) and gaps (authoritative but missing from SpacetimeDB). Optional deviceUuid scopes the diff to one device. Requires dual admin auth (X-Admin-API-Key + JWT). Audit-logged.",
+        "summary": "Inspect a user's raw SpacetimeDB device rows",
+        "description": "Read-only dump of the user's device_permission + device_visibility rows joined with device_state (device_type / lock_id / thing_name / online). No classification, no mutation. Requires dual admin auth (X-Admin-API-Key + JWT). Audit-logged.",
         "security": [
           {
             "adminApiKey": [],
             "bearerAuth": []
           }
         ],
-        "operationId": "get_GetUserDeviceVisibilityRoute",
+        "operationId": "get_GetUserSpacetimeDevicesRoute",
         "parameters": [
           {
             "schema": {
@@ -596,21 +596,11 @@
             "description": "B2C user UUID (UserAggregate id).",
             "name": "userId",
             "in": "path"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "description": "Scope the diff/prune to a single device UUID instead of all of the user's devices."
-            },
-            "required": false,
-            "description": "Scope the diff/prune to a single device UUID instead of all of the user's devices.",
-            "name": "deviceUuid",
-            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Authoritative-vs-SpacetimeDB device diff",
+            "description": "Raw SpacetimeDB device rows for the user",
             "content": {
               "application/json": {
                 "schema": {
@@ -619,25 +609,13 @@
                     "userId": {
                       "type": "string"
                     },
-                    "userFound": {
-                      "type": "boolean"
-                    },
-                    "authoritativeCount": {
+                    "permissionCount": {
                       "type": "number"
                     },
-                    "spacetimedbCount": {
+                    "visibilityCount": {
                       "type": "number"
                     },
-                    "orphanCount": {
-                      "type": "number"
-                    },
-                    "gapCount": {
-                      "type": "number"
-                    },
-                    "lockCount": {
-                      "type": "number"
-                    },
-                    "unknownCount": {
+                    "deviceStateCount": {
                       "type": "number"
                     },
                     "rows": {
@@ -648,103 +626,77 @@
                           "deviceUuid": {
                             "type": "string"
                           },
-                          "authoritative": {
+                          "role": {
                             "type": [
-                              "object",
+                              "string",
                               "null"
-                            ],
-                            "properties": {
-                              "deviceType": {
-                                "type": "string"
-                              },
-                              "orgId": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "addedAt": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "deviceType",
-                              "orgId"
                             ]
                           },
-                          "spacetimedb": {
-                            "type": "object",
-                            "properties": {
-                              "hasPermission": {
-                                "type": "boolean"
-                              },
-                              "hasVisibility": {
-                                "type": "boolean"
-                              },
-                              "role": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ]
-                              },
-                              "deviceStateFound": {
-                                "type": "boolean"
-                              },
-                              "deviceType": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ]
-                              },
-                              "thingName": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ]
-                              },
-                              "hasShadow": {
-                                "type": "boolean"
-                              }
-                            },
-                            "required": [
-                              "hasPermission",
-                              "hasVisibility",
-                              "role",
-                              "deviceStateFound",
-                              "deviceType",
-                              "thingName",
-                              "hasShadow"
+                          "permissionRows": {
+                            "type": "number"
+                          },
+                          "visibilityRows": {
+                            "type": "number"
+                          },
+                          "duplicate": {
+                            "type": "boolean"
+                          },
+                          "hasPermission": {
+                            "type": "boolean"
+                          },
+                          "hasVisibility": {
+                            "type": "boolean"
+                          },
+                          "deviceStateFound": {
+                            "type": "boolean"
+                          },
+                          "deviceType": {
+                            "type": [
+                              "string",
+                              "null"
                             ]
                           },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "ok",
-                              "gap",
-                              "orphan",
-                              "lock",
-                              "unknown"
+                          "lockId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "thingName": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "online": {
+                            "type": [
+                              "boolean",
+                              "null"
                             ]
                           }
                         },
                         "required": [
                           "deviceUuid",
-                          "authoritative",
-                          "spacetimedb",
-                          "status"
+                          "role",
+                          "permissionRows",
+                          "visibilityRows",
+                          "duplicate",
+                          "hasPermission",
+                          "hasVisibility",
+                          "deviceStateFound",
+                          "deviceType",
+                          "lockId",
+                          "thingName",
+                          "online"
                         ]
                       }
                     }
                   },
                   "required": [
                     "userId",
-                    "userFound",
-                    "authoritativeCount",
-                    "spacetimedbCount",
-                    "orphanCount",
-                    "gapCount",
-                    "lockCount",
-                    "unknownCount",
+                    "permissionCount",
+                    "visibilityCount",
+                    "deviceStateCount",
                     "rows"
                   ]
                 }
@@ -753,203 +705,6 @@
           },
           "400": {
             "description": "Invalid userId",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Invalid email domain",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/spacetimedb/users/{userId}/prune-orphans": {
-      "post": {
-        "tags": [
-          "Admin",
-          "SpacetimeDB"
-        ],
-        "summary": "Prune a user's orphaned SpacetimeDB device-access rows",
-        "description": "Deletes device_permission + device_visibility rows for the user's orphaned devices (visible in SpacetimeDB but not in UserAggregate.state.devices). The orphan set is recomputed server-side. Optional deviceUuid scopes the prune. device_state and shadows are left intact. Requires dual admin auth + confirm:true. Audit-logged.",
-        "security": [
-          {
-            "adminApiKey": [],
-            "bearerAuth": []
-          }
-        ],
-        "operationId": "post_PruneUserDeviceVisibilityRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "B2C user UUID (UserAggregate id)."
-            },
-            "required": true,
-            "description": "B2C user UUID (UserAggregate id).",
-            "name": "userId",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "deviceUuid": {
-                    "type": "string",
-                    "description": "Prune only this orphaned device. Omit to prune every orphan for the user."
-                  },
-                  "confirm": {
-                    "type": "boolean",
-                    "enum": [
-                      true
-                    ],
-                    "description": "Must be true — confirms the prune is intentional."
-                  }
-                },
-                "required": [
-                  "confirm"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Prune result",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "userId": {
-                      "type": "string"
-                    },
-                    "pruned": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "deviceUuid": {
-                            "type": "string"
-                          },
-                          "permissionsDeleted": {
-                            "type": "boolean"
-                          },
-                          "visibilityDeleted": {
-                            "type": "boolean"
-                          }
-                        },
-                        "required": [
-                          "deviceUuid",
-                          "permissionsDeleted",
-                          "visibilityDeleted"
-                        ]
-                      }
-                    },
-                    "prunedCount": {
-                      "type": "number"
-                    },
-                    "auditLogPath": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "errors": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "userId",
-                    "pruned",
-                    "prunedCount",
-                    "auditLogPath",
-                    "errors"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
             "content": {
               "application/json": {
                 "schema": {
