@@ -16118,8 +16118,7 @@
                   }
                 },
                 "required": [
-                  "userId",
-                  "email"
+                  "userId"
                 ]
               }
             }
@@ -16160,18 +16159,6 @@
                             "userId": {
                               "type": "string"
                             },
-                            "email": {
-                              "type": "string"
-                            },
-                            "firstName": {
-                              "type": "string"
-                            },
-                            "lastName": {
-                              "type": "string"
-                            },
-                            "phoneNumber": {
-                              "type": "string"
-                            },
                             "status": {
                               "type": "string",
                               "enum": [
@@ -16183,7 +16170,6 @@
                           },
                           "required": [
                             "userId",
-                            "email",
                             "status"
                           ]
                         }
@@ -16248,18 +16234,6 @@
                             "userId": {
                               "type": "string"
                             },
-                            "email": {
-                              "type": "string"
-                            },
-                            "firstName": {
-                              "type": "string"
-                            },
-                            "lastName": {
-                              "type": "string"
-                            },
-                            "phoneNumber": {
-                              "type": "string"
-                            },
                             "status": {
                               "type": "string",
                               "enum": [
@@ -16271,7 +16245,6 @@
                           },
                           "required": [
                             "userId",
-                            "email",
                             "status"
                           ]
                         }
@@ -20268,8 +20241,8 @@
           "User",
           "Query"
         ],
-        "summary": "Find user by phone number",
-        "description": "Looks up a user by their phone number in D1. Returns 404 if no user has that number. Unlike /users/by-email this never creates a user — a phone number alone is not enough to provision one.",
+        "summary": "Find or create user by phone number",
+        "description": "Looks up a user by their phone number in D1. If none matches, creates the user in both D1 (read model) and the UserAggregate (event sourcing) — the same find-or-create behaviour as /users/by-email — storing the phone number on the new D1 row. A user can have a phone number, an email, or both: pass `email` to also record one. Idempotent.",
         "operationId": "get_GetUserByPhoneRoute",
         "parameters": [
           {
@@ -20282,11 +20255,32 @@
             "description": "Phone number to look up (exact match)",
             "name": "phoneNumber",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "email",
+              "description": "Optional email to also set on the user when one is created. A user can have a phone number, an email, or both — omitting this still creates a phone-only user on a miss."
+            },
+            "required": false,
+            "description": "Optional email to also set on the user when one is created. A user can have a phone number, an email, or both — omitting this still creates a phone-only user on a miss.",
+            "name": "email",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Optional UUID to assign when creating a new user (must not already exist)"
+            },
+            "required": false,
+            "description": "Optional UUID to assign when creating a new user (must not already exist)",
+            "name": "uuid",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "User found",
+            "description": "User found or created",
             "content": {
               "application/json": {
                 "schema": {
@@ -20296,7 +20290,10 @@
                       "type": "string"
                     },
                     "email": {
-                      "type": "string",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "format": "email"
                     },
                     "phoneNumber": {
@@ -20319,8 +20316,26 @@
               }
             }
           },
-          "404": {
-            "description": "No user with that phone number",
+          "409": {
+            "description": "Requested UUID already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {

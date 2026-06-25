@@ -1,5 +1,5 @@
 {
-  "version": "28e4af69",
+  "version": "471e6d89",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "LockCreated": {
@@ -316,18 +316,6 @@
         "userId": {
           "type": "string"
         },
-        "email": {
-          "type": "string"
-        },
-        "firstName": {
-          "type": "string"
-        },
-        "lastName": {
-          "type": "string"
-        },
-        "phoneNumber": {
-          "type": "string"
-        },
         "status": {
           "type": "string",
           "enum": [
@@ -339,7 +327,6 @@
       },
       "required": [
         "userId",
-        "email",
         "status"
       ],
       "additionalProperties": false

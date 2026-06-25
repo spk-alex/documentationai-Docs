@@ -1,5 +1,5 @@
 {
-  "version": "28e4af69",
+  "version": "471e6d89",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -419,10 +419,10 @@
           "description": "User UUID"
         },
         "email": {
+          "description": "User email",
           "type": "string",
           "format": "email",
-          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
-          "description": "User email"
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
         },
         "firstName": {
           "description": "First name",
@@ -438,8 +438,7 @@
         }
       },
       "required": [
-        "userId",
-        "email"
+        "userId"
       ],
       "additionalProperties": false
     },
