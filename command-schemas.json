@@ -1,5 +1,5 @@
 {
-  "version": "8015b246",
+  "version": "9ba29b4a",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -69,6 +69,7 @@
       "properties": {
         "keyUuid": {
           "type": "string",
+          "minLength": 1,
           "description": "Key identifier"
         },
         "keyIndexNumber": {
@@ -93,7 +94,8 @@
       "properties": {
         "keyUuid": {
           "description": "Key identifier",
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "keyIndexNumber": {
           "description": "Physical key index",

@@ -9100,6 +9100,7 @@
                 "properties": {
                   "keyUuid": {
                     "type": "string",
+                    "minLength": 1,
                     "description": "Key identifier"
                   },
                   "keyIndexNumber": {
@@ -10149,6 +10150,7 @@
                 "properties": {
                   "keyUuid": {
                     "type": "string",
+                    "minLength": 1,
                     "description": "Key identifier"
                   },
                   "keyIndexNumber": {
