@@ -4380,6 +4380,291 @@
         }
       }
     },
+    "/matter-devices/{id}/ReportSensorState": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Alarm",
+          "Command"
+        ],
+        "summary": "Report a sensor reading and detect alarm transitions",
+        "description": "Edge-detects an alarm transition for a single sensor channel and emits AlarmTriggered / AlarmCleared (or NO_EVENT when unchanged).",
+        "operationId": "post_ReportSensorStateRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "boolean_state",
+                      "smoke",
+                      "smoke_interconnect"
+                    ],
+                    "description": "Which sensor channel this reading is for"
+                  },
+                  "matterPath": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Matter cluster/attribute path, e.g. \"1/69/0\""
+                  },
+                  "value": {
+                    "type": "number",
+                    "description": "Reported value (0/1 for boolean state, 0/1/2 for smoke)"
+                  },
+                  "deviceTypeId": {
+                    "type": "integer",
+                    "description": "Matter device type id (1/29/0) — required to interpret boolean_state"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "description": "ISO timestamp of the reading"
+                  }
+                },
+                "required": [
+                  "channel",
+                  "matterPath",
+                  "value"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sensor reading processed. `event` is the emitted AlarmTriggered/AlarmCleared transition, or null when the reading caused no transition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AlarmTriggered"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "channel": {
+                                  "type": "string",
+                                  "enum": [
+                                    "boolean_state",
+                                    "smoke",
+                                    "smoke_interconnect"
+                                  ]
+                                },
+                                "alarmType": {
+                                  "type": "string",
+                                  "enum": [
+                                    "contact",
+                                    "water_leak",
+                                    "smoke"
+                                  ]
+                                },
+                                "severity": {
+                                  "type": "string",
+                                  "enum": [
+                                    "warning",
+                                    "critical"
+                                  ]
+                                },
+                                "matterPath": {
+                                  "type": "string"
+                                },
+                                "deviceTypeId": {
+                                  "type": "integer"
+                                },
+                                "rawValue": {
+                                  "type": "number"
+                                },
+                                "timestamp": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "channel",
+                                "alarmType",
+                                "severity",
+                                "matterPath",
+                                "timestamp"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AlarmCleared"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "channel": {
+                                  "type": "string",
+                                  "enum": [
+                                    "boolean_state",
+                                    "smoke",
+                                    "smoke_interconnect"
+                                  ]
+                                },
+                                "alarmType": {
+                                  "type": "string",
+                                  "enum": [
+                                    "contact",
+                                    "water_leak",
+                                    "smoke"
+                                  ]
+                                },
+                                "matterPath": {
+                                  "type": "string"
+                                },
+                                "deviceTypeId": {
+                                  "type": "integer"
+                                },
+                                "rawValue": {
+                                  "type": "number"
+                                },
+                                "timestamp": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "channel",
+                                "alarmType",
+                                "matterPath",
+                                "timestamp"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Emitted transition event, or null when the reading caused no transition"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing API key authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — the matter device does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/camera-roles/{id}/AssignCamera": {
       "post": {
         "tags": [

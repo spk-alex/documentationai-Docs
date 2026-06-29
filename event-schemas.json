@@ -1,7 +1,109 @@
 {
-  "version": "9ba29b4a",
+  "version": "22af1db4",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
+    "AlarmTriggered": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "boolean_state",
+            "smoke",
+            "smoke_interconnect"
+          ]
+        },
+        "alarmType": {
+          "type": "string",
+          "enum": [
+            "contact",
+            "water_leak",
+            "smoke"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "warning",
+            "critical"
+          ]
+        },
+        "matterPath": {
+          "type": "string"
+        },
+        "deviceTypeId": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "rawValue": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deviceId",
+        "channel",
+        "alarmType",
+        "severity",
+        "matterPath",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "AlarmCleared": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "boolean_state",
+            "smoke",
+            "smoke_interconnect"
+          ]
+        },
+        "alarmType": {
+          "type": "string",
+          "enum": [
+            "contact",
+            "water_leak",
+            "smoke"
+          ]
+        },
+        "matterPath": {
+          "type": "string"
+        },
+        "deviceTypeId": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "rawValue": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deviceId",
+        "channel",
+        "alarmType",
+        "matterPath",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
     "LockCreated": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
