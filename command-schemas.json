@@ -1,5 +1,5 @@
 {
-  "version": "22af1db4",
+  "version": "cefb1cd6",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -861,8 +861,8 @@
         },
         "commissioningCode": {
           "type": "string",
-          "pattern": "^(\\d{11}|\\d{22}|MT:.+)$",
-          "description": "Matter commissioning code (11 or 22 digits, or MT:<code>)"
+          "pattern": "^(\\d{11}|\\d{21}|MT:.+)$",
+          "description": "Matter commissioning code (11 or 21 digits, or MT:<code>)"
         }
       },
       "required": [
