@@ -9569,19 +9569,28 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "description": "Resident email — server resolves to the user UUID via D1"
-                  },
                   "name": {
                     "type": "string",
                     "minLength": 1,
                     "description": "Resident name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Resident email — resolved to the user UUID via D1"
+                  },
+                  "phoneNumber": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Resident phone number — resolved to the user UUID via D1 (phone-only users)"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Resident user UUID — used directly (unambiguous)"
                   }
                 },
                 "required": [
-                  "email",
                   "name"
                 ]
               }
@@ -9661,8 +9670,7 @@
                     "success",
                     "aggregateId",
                     "version",
-                    "event",
-                    "email"
+                    "event"
                   ]
                 }
               }
@@ -10642,11 +10650,18 @@
                     "type": "string",
                     "format": "email",
                     "description": "Resident email to remove"
+                  },
+                  "phoneNumber": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Resident phone number to remove (phone-only users)"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Resident user UUID to remove"
                   }
-                },
-                "required": [
-                  "email"
-                ]
+                }
               }
             }
           }
@@ -10720,8 +10735,7 @@
                     "success",
                     "aggregateId",
                     "version",
-                    "event",
-                    "email"
+                    "event"
                   ]
                 }
               }
@@ -12310,11 +12324,16 @@
                           },
                           "email": {
                             "type": "string"
+                          },
+                          "hasPhone": {
+                            "type": "boolean",
+                            "description": "True when a phone number is on file for this resident (the number itself is never exposed here)"
                           }
                         },
                         "required": [
                           "userId",
-                          "name"
+                          "name",
+                          "hasPhone"
                         ]
                       }
                     }
