@@ -61,6 +61,11 @@
                     "icon": "list"
                   },
                   {
+                    "title": "Matter Bridge Clusters — Detailed Reference",
+                    "path": "matter_bridge_clusters_detailed_updated",
+                    "icon": "list-tree"
+                  },
+                  {
                     "title": "Matter Device Attributes & Commands",
                     "path": "matter-clusters",
                     "icon": "database"
@@ -162,6 +167,11 @@
                     "title": "Matter 1.5 Cluster Descriptions",
                     "path": "matter_1_5_clusters_decimal_descriptions",
                     "icon": "list"
+                  },
+                  {
+                    "title": "Matter Bridge Clusters — Detailed Reference",
+                    "path": "matter_bridge_clusters_detailed_updated",
+                    "icon": "list-tree"
                   },
                   {
                     "title": "Matter Device Attributes & Commands",
