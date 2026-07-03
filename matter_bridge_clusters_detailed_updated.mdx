@@ -767,34 +767,6 @@ A bridged child device uses:
 
 Use this cluster to represent bridged child identity and availability.
 
-Recommended normalized fields:
-
-```ts
-{
-  vendorName: string,
-  vendorId: number,
-  productName: string,
-  productId: number,
-  nodeLabel: string,
-  softwareVersion: string | null,
-  serialNumber: string | null,
-  uniqueId: string | null,
-  reachable: boolean
-}
-```
-
-Most important availability rule:
-
-```ts
-const childAvailable = bridgeAvailable && bridgedDeviceReachable;
-```
-
-where:
-
-```ts
-const bridgedDeviceReachable = cluster57.attribute17;
-```
-
 ---
 
 # 3. Device-Specific Application Clusters
@@ -1123,68 +1095,6 @@ Normalize to:
 }
 ```
 
----
-
-# 4. Global Matter Attribute IDs
-
-These attributes are common metadata attributes that appear in many clusters.
-
----
-
-## Attribute `65528` — AcceptedCommandList
-
-### Description
-
-Lists command IDs that the cluster accepts.
-
-Use this to know which commands can be sent to the cluster.
-
----
-
-## Attribute `65529` — GeneratedCommandList
-
-### Description
-
-Lists command IDs that the cluster can generate as responses or callbacks.
-
-Use this to know which responses may be received.
-
----
-
-## Attribute `65531` — AttributeList
-
-### Description
-
-Lists all attribute IDs supported by the cluster.
-
-Use this for dynamic parsing.
-
----
-
-## Attribute `65532` — FeatureMap
-
-### Description
-
-Bitmask describing optional features supported by the cluster.
-
-Examples:
-
-- Door Lock feature support.
-- Power Source feature support.
-- Scenes feature support.
-- On/Off feature support.
-
----
-
-## Attribute `65533` — ClusterRevision
-
-### Description
-
-Revision of the cluster implementation.
-
-Use this for compatibility handling when behavior differs between Matter versions.
-
----
 
 # 5. Important Device Types — Not Clusters
 
