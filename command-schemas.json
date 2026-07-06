@@ -1,5 +1,5 @@
 {
-  "version": "c497fe9d",
+  "version": "008ae74b",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -479,6 +479,22 @@
       },
       "required": [
         "phoneNumber"
+      ],
+      "additionalProperties": false
+    },
+    "UpdateEmail": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+          "description": "Email to set on a user that currently has none"
+        }
+      },
+      "required": [
+        "email"
       ],
       "additionalProperties": false
     },

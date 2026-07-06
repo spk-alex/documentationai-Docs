@@ -1,5 +1,5 @@
 {
-  "version": "c497fe9d",
+  "version": "008ae74b",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -513,6 +513,35 @@
         },
         "maskedPhoneNumber": {
           "description": "Obfuscated number (last 4 digits, e.g. \"***4567\") — present only when action is \"set\"",
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "action",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "UserEmailUpdated": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "set",
+            "removed"
+          ]
+        },
+        "maskedEmail": {
+          "description": "Obfuscated email (first initial + domain, e.g. \"a***@example.com\") — present only when action is \"set\"",
           "type": "string"
         },
         "timestamp": {

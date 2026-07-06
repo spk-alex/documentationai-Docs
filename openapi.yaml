@@ -1063,6 +1063,117 @@
         }
       }
     },
+    "/temp-keys/{uuid}/doors/{doorId}/open": {
+      "post": {
+        "tags": [
+          "TempKey",
+          "Web"
+        ],
+        "summary": "Open a specific door via a temp key",
+        "description": "Validates a temporary key (revocation, expiration, usage limits, authorization) and opens the given door via its LockAggregate plus the Door Lock cluster UnlockDoor command to the device shadow.",
+        "operationId": "post_OpenTempKeyDoorRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Collective temporary key UUID"
+            },
+            "required": true,
+            "description": "Collective temporary key UUID",
+            "name": "uuid",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Door id within the collective key"
+            },
+            "required": true,
+            "description": "Door id within the collective key",
+            "name": "doorId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Door opened, redirecting to confirmation"
+          },
+          "400": {
+            "description": "Key invalid or the door has no slide-to-open",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User not authorized to use this temporary key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Key or door not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/cleanup/rtsp-cameras/{cameraId}": {
       "delete": {
         "tags": [
@@ -15142,8 +15253,8 @@
           "TempKey",
           "Web"
         ],
-        "summary": "Open lock via temp key",
-        "description": "Validates a temporary key (expiration, usage limits, authorization) and sends an OpenLock command to the LockAggregate Durable Object. On success, increments the usage counter and redirects back to the temp key page. Public keys need no auth; user-whitelist keys require a JWT with a whitelisted userId.",
+        "summary": "Open lock via temp key (first door)",
+        "description": "Validates a temporary key (revocation, expiration, usage limits, authorization) and opens its first slide-capable door: OpenLock to the LockAggregate plus the Door Lock cluster UnlockDoor command to the device shadow. Public keys need no auth; user-whitelist keys require a JWT with a whitelisted userId.",
         "operationId": "post_OpenTempKeyRoute",
         "parameters": [
           {
@@ -15159,10 +15270,10 @@
         ],
         "responses": {
           "303": {
-            "description": "Lock opened successfully, redirecting to temp key page"
+            "description": "Lock opened successfully, redirecting to confirmation"
           },
           "400": {
-            "description": "Temporary key is invalid (not yet valid, expired, or used up)",
+            "description": "Temporary key is invalid (revoked, not yet valid, expired, or used up)",
             "content": {
               "application/json": {
                 "schema": {
@@ -15243,7 +15354,7 @@
           "Web"
         ],
         "summary": "Render temp key confirmation page",
-        "description": "Returns an HTML page confirming the door open command was sent. Displays lock info and a link back to the temp key page.",
+        "description": "Returns an HTML page confirming the door open command was sent, with a link back to the temp key page.",
         "operationId": "get_TempKeyConfirmationRoute",
         "parameters": [
           {
@@ -15255,6 +15366,17 @@
             "description": "Temporary key UUID",
             "name": "uuid",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Door that was opened"
+            },
+            "required": false,
+            "description": "Door that was opened",
+            "name": "door",
+            "in": "query"
           },
           {
             "schema": {
@@ -18444,6 +18566,189 @@
         }
       }
     },
+    "/users/{id}/UpdateEmail": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Profile"
+        ],
+        "summary": "Add an email to a user that has none",
+        "description": "Writes the email (PII) to D1 and emits a UserEmailUpdated audit event carrying only a masked (first-initial + domain) form — the raw address never enters the event log. Only sets the email when the user currently has none; returns 409 if an email is already on file or the address belongs to another user.",
+        "operationId": "post_UpdateUserEmailRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email to set on a user that currently has none"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email added (raw value in D1, masked audit event emitted)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "UserEmailUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "set",
+                                "removed"
+                              ]
+                            },
+                            "maskedEmail": {
+                              "type": "string",
+                              "description": "Obfuscated email (first initial + domain, e.g. \"a***@example.com\") — present only when action is \"set\""
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "action",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already has an email, or the email belongs to another user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/UpdatePhoneNumber": {
       "post": {
         "tags": [
@@ -20208,6 +20513,159 @@
         }
       }
     },
+    "/temp-keys/{uuid}": {
+      "delete": {
+        "tags": [
+          "TempKey",
+          "Collective"
+        ],
+        "summary": "Revoke a collective / shared access key",
+        "description": "Deletes a shared credential and all of its doors. The caller must be authenticated AND authorized for every lock the key touches (same check as create).",
+        "operationId": "delete_DeleteUnifiedTempKeyRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Collective temporary key UUID"
+            },
+            "required": true,
+            "description": "Collective temporary key UUID",
+            "name": "uuid",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collective access key deleted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized for one of the key’s locks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "TempKey",
+          "Web"
+        ],
+        "summary": "Render temp key web page",
+        "description": "Returns the HTML guest page for a temporary access key (1..N doors). Validates the key status (revocation, expiration, usage limits, user authorization) and renders the appropriate UI. Public keys are accessible without authentication; user-whitelist keys require a valid JWT.",
+        "operationId": "get_GetTempKeyRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Temporary key UUID"
+            },
+            "required": true,
+            "description": "Temporary key UUID",
+            "name": "uuid",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Temporary key page rendered successfully",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Temporary key not found",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rtsp-cameras/{id}": {
       "get": {
         "tags": [
@@ -20357,61 +20815,6 @@
                     "success",
                     "errors"
                   ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/temp-keys/{uuid}": {
-      "get": {
-        "tags": [
-          "TempKey",
-          "Web"
-        ],
-        "summary": "Render temp key web page",
-        "description": "Returns an HTML page for a temporary key link. Validates the key status (expiration, usage limits, user authorization) and renders the appropriate UI. Public keys are accessible without authentication; user-whitelist keys require a valid JWT.",
-        "operationId": "get_GetTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Temporary key UUID"
-            },
-            "required": true,
-            "description": "Temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Temporary key page rendered successfully",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Temporary key not found",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
                 }
               }
             }
@@ -20686,7 +21089,7 @@
           "Collective"
         ],
         "summary": "Create a collective / shared temporary access key",
-        "description": "Generates one shared guest credential that grants access to multiple doors. Each door can be opened via a door key (slide-to-open), a PIN code, or both — PIN codes are generated server-side and scheduled onto the lock keypad for the validity window (provisioned at validFrom, cleared at validUntil). The caller must be authorized for every lock included. A code/both door whose lock is known not to support a keypad PIN is rejected (422). Returns the guest-facing URL and the per-door codes.",
+        "description": "Generates one shared guest credential that grants slide-to-open access to multiple doors. The caller must be authorized for every lock included. Keypad PINs are managed per lock (SetMatterPin), not per temp key. Returns the guest-facing URL and the doors.",
         "operationId": "post_CreateCollectiveTempKeyRoute",
         "requestBody": {
           "content": {
@@ -20727,12 +21130,10 @@
                         "accessMethod": {
                           "type": "string",
                           "enum": [
-                            "key",
-                            "code",
-                            "both"
+                            "key"
                           ],
                           "default": "key",
-                          "description": "How the guest opens this door: door key (slide-to-open), keypad PIN code, or both. PINs are generated server-side."
+                          "description": "Doors are opened via the guest page (slide-to-open). Keypad PINs are managed per lock (SetMatterPin), not per temp key — requesting one here is rejected."
                         }
                       }
                     },
@@ -20801,13 +21202,6 @@
                               "code",
                               "both"
                             ]
-                          },
-                          "pinCode": {
-                            "type": [
-                              "string",
-                              "null"
-                            ],
-                            "description": "Generated keypad PIN for code/both doors; null for key-only doors"
                           }
                         },
                         "required": [
@@ -20885,8 +21279,403 @@
               }
             }
           },
-          "422": {
-            "description": "A code/both door targets a lock that does not support a keypad PIN",
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/temp-keys": {
+      "post": {
+        "tags": [
+          "TempKey",
+          "Collective"
+        ],
+        "summary": "Create a collective / shared temporary access key",
+        "description": "Generates one shared guest credential that grants slide-to-open access to multiple doors. The caller must be authorized for every lock included. Keypad PINs are managed per lock (SetMatterPin), not per temp key. Returns the guest-facing URL and the doors.",
+        "operationId": "post_CreateUnifiedTempKeyRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "validFrom": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "validUntil": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "doors": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lockId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "minLength": 1,
+                          "description": "Lock id the door opens (caller must be authorized for it)"
+                        },
+                        "label": {
+                          "type": "string",
+                          "maxLength": 120,
+                          "description": "Friendly name, e.g. \"Building entrance\""
+                        },
+                        "accessMethod": {
+                          "type": "string",
+                          "enum": [
+                            "key"
+                          ],
+                          "default": "key",
+                          "description": "Doors are opened via the guest page (slide-to-open). Keypad PINs are managed per lock (SetMatterPin), not per temp key — requesting one here is rejected."
+                        }
+                      }
+                    },
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "description": "Doors/rooms/zones included in this shared credential"
+                  }
+                },
+                "required": [
+                  "validFrom",
+                  "validUntil",
+                  "doors"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Collective access key created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "uuid": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "Guest-facing access page path"
+                    },
+                    "validFrom": {
+                      "type": "string"
+                    },
+                    "validUntil": {
+                      "type": "string"
+                    },
+                    "doors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "lockId": {
+                            "type": "string"
+                          },
+                          "lockUuid": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "accessMethod": {
+                            "type": "string",
+                            "enum": [
+                              "key",
+                              "code",
+                              "both"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "lockId",
+                          "lockUuid",
+                          "accessMethod"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "uuid",
+                    "url",
+                    "validFrom",
+                    "validUntil",
+                    "doors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized for one of the requested locks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "One of the requested locks does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "TempKey"
+        ],
+        "summary": "List temporary access keys",
+        "description": "Lists unified temp keys. With ?lockId= returns every key touching that lock (requires authorization for the lock); without a filter returns the keys created by the caller.",
+        "operationId": "get_ListUnifiedTempKeysRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter to keys touching this lock (caller must be authorized for it)"
+            },
+            "required": false,
+            "description": "Filter to keys touching this lock (caller must be authorized for it)",
+            "name": "lockId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Temp keys",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tempKeys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "uuid": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          },
+                          "validFrom": {
+                            "type": "string"
+                          },
+                          "validUntil": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdBy": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "revokedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "doors": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "lockId": {
+                                  "type": "string"
+                                },
+                                "lockUuid": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "accessMethod": {
+                                  "type": "string",
+                                  "enum": [
+                                    "key",
+                                    "code",
+                                    "both"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "lockId",
+                                "lockUuid",
+                                "accessMethod"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "uuid",
+                          "url",
+                          "validFrom",
+                          "validUntil",
+                          "description",
+                          "createdBy",
+                          "createdAt",
+                          "revokedAt",
+                          "doors"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "tempKeys"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not authorized for the requested lock",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lock not found",
             "content": {
               "application/json": {
                 "schema": {
