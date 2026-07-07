@@ -1,0 +1,2439 @@
+# Matter Cluster 8 — Level Control Cluster
+
+Documentation for Matter Cluster 8, including attributes, commands, payload examples, shadow paths, and backend interpretation.
+
+# Matter Cluster 8 — Level Control Cluster
+
+Matter Cluster `8`, also written as `0x0008`, is the Level Control Cluster.
+
+It is used for endpoints that support level-based control.
+
+For lighting devices, Cluster 8 usually represents brightness / dimming level.
+
+For other device types, it may represent another adjustable level.
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `8` |
+| Cluster ID hex | `0x0008` |
+| Cluster name | `Level Control` |
+| Full cluster name | `Level Control Cluster` |
+| Matter version | `1.5` |
+| Cluster revision | `6` |
+| Scope | `Endpoint` |
+| Role | `Application` |
+| Hierarchy | `Base` |
+| PICS code | `LVL` |
+
+---
+
+## Shadow Path Format
+
+Cluster 8 values in the device shadow usually use this format:
+
+```text
+endpoint_id / cluster_id / attribute_id
+```
+
+For Cluster 8:
+
+```text
+endpoint_id / 8 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/8/0": 113
+}
+```
+
+Meaning:
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `8` | Level Control Cluster |
+| `0` | CurrentLevel attribute |
+| `113` | Current level value |
+
+---
+
+# Main State Attribute
+
+## Attribute `0` — `CurrentLevel`
+
+Path example:
+
+```text
+1/8/0
+```
+
+This attribute stores the current level of the endpoint.
+
+For a dimmable light, this usually means current brightness level.
+
+| Value | Meaning |
+|---|---|
+| `0` | Lowest level / OFF-related level depending on device behavior |
+| `1` | Minimum lighting level for many Matter lighting devices |
+| `254` | Maximum standard level |
+| `null` | Current level is unknown or unavailable |
+
+Example:
+
+```json
+{
+  "1/8/0": 113
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 current level is 113.
+```
+
+Recommended UI mapping for brightness:
+
+```text
+brightness_percent = round(CurrentLevel / 254 * 100)
+```
+
+Example:
+
+```text
+113 / 254 * 100 = 44.5%
+```
+
+Recommended UI value:
+
+```text
+45%
+```
+
+Important:
+
+```text
+CurrentLevel is not the same thing as ON/OFF state.
+```
+
+Use Cluster 6 together with Cluster 8:
+
+```text
+1/6/0 = OnOff state
+1/8/0 = Current level / brightness
+```
+
+---
+
+# Cluster 8 Features
+
+Cluster 8 can expose feature bits through the global `FeatureMap` attribute.
+
+FeatureMap path:
+
+```text
+endpoint_id / 8 / 65532
+```
+
+Example:
+
+```json
+{
+  "1/8/65532": 3
+}
+```
+
+Meaning:
+
+```text
+Feature bits 0 and 1 are enabled.
+```
+
+## Feature Bits
+
+| Bit | Code | Name | Description |
+|---|---|---|---|
+| `0` | `OO` | `OnOff` | Dependency with the On/Off cluster |
+| `1` | `LT` | `Lighting` | Behavior that supports lighting applications |
+| `2` | `FQ` | `Frequency` | Supports frequency attributes and behavior |
+
+## Common FeatureMap Values
+
+| FeatureMap value | Enabled features | Meaning |
+|---|---|---|
+| `0` | none | Basic level control |
+| `1` | `OO` | Level control depends on On/Off cluster |
+| `2` | `LT` | Lighting behavior |
+| `3` | `OO + LT` | Common dimmable light behavior |
+| `4` | `FQ` | Frequency-capable device |
+
+Most dimmable Matter lights usually support:
+
+```text
+OO + LT
+```
+
+That usually means:
+
+```json
+{
+  "1/8/65532": 3
+}
+```
+
+---
+
+# Data Types
+
+## `MoveModeEnum`
+
+Used by:
+
+```text
+Move
+MoveWithOnOff
+```
+
+| Value | Name | Description |
+|---|---|---|
+| `0` | `Up` | Increase the level |
+| `1` | `Down` | Decrease the level |
+
+---
+
+## `StepModeEnum`
+
+Used by:
+
+```text
+Step
+StepWithOnOff
+```
+
+| Value | Name | Description |
+|---|---|---|
+| `0` | `Up` | Step level upward |
+| `1` | `Down` | Step level downward |
+
+---
+
+## `OptionsBitmap`
+
+Used by:
+
+```text
+Options attribute
+OptionsMask command field
+OptionsOverride command field
+```
+
+| Bit | Name | Description |
+|---|---|---|
+| `0` | `ExecuteIfOff` | Allows level commands to execute when the endpoint is OFF |
+| `1` | `CoupleColorTempToLevel` | Couples color temperature behavior to level changes |
+
+---
+
+# Main Level Attributes
+
+## Attribute `0` / `0x0000` — `CurrentLevel`
+
+Path example:
+
+```text
+1/8/0
+```
+
+Description:
+
+```text
+Current level of the endpoint.
+```
+
+For lighting:
+
+```text
+CurrentLevel usually means brightness.
+```
+
+Value range:
+
+```text
+MinLevel <= CurrentLevel <= MaxLevel
+```
+
+Typical lighting range:
+
+```text
+1..254
+```
+
+Example:
+
+```json
+{
+  "1/8/0": 113
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 brightness level is 113.
+```
+
+Recommended UI mapping:
+
+```text
+113 -> about 45%
+```
+
+---
+
+## Attribute `1` / `0x0001` — `RemainingTime`
+
+Path example:
+
+```text
+1/8/1
+```
+
+Description:
+
+```text
+Remaining transition time while the endpoint is moving from one level to another.
+```
+
+This is mainly useful when a command uses non-zero transition time.
+
+Example command:
+
+```json
+{
+  "level": 200,
+  "transitionTime": 50
+}
+```
+
+Meaning:
+
+```text
+Move to level 200 over a transition period.
+```
+
+During transition, the device may report:
+
+```json
+{
+  "1/8/1": 30
+}
+```
+
+Meaning:
+
+```text
+There is still transition time remaining.
+```
+
+For instant transitions:
+
+```json
+{
+  "transitionTime": 0
+}
+```
+
+`RemainingTime` is usually `0` or not important.
+
+---
+
+## Attribute `2` / `0x0002` — `MinLevel`
+
+Path example:
+
+```text
+1/8/2
+```
+
+Description:
+
+```text
+Minimum supported level for this endpoint.
+```
+
+For lighting devices, this is commonly:
+
+```text
+1
+```
+
+For non-lighting level-control devices, it can be:
+
+```text
+0
+```
+
+Example:
+
+```json
+{
+  "1/8/2": 1
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 minimum supported level is 1.
+```
+
+Important practical behavior:
+
+```text
+Some lights do not report CurrentLevel = 0.
+They may turn OFF through Cluster 6 but keep CurrentLevel at MinLevel = 1.
+```
+
+Example:
+
+```json
+{
+  "1/6/0": false,
+  "1/8/0": 1
+}
+```
+
+Meaning:
+
+```text
+Light is OFF.
+Stored/current brightness level is minimum level 1.
+```
+
+This is normal behavior for many Matter lights.
+
+---
+
+## Attribute `3` / `0x0003` — `MaxLevel`
+
+Path example:
+
+```text
+1/8/3
+```
+
+Description:
+
+```text
+Maximum supported level for this endpoint.
+```
+
+Default / common value:
+
+```text
+254
+```
+
+Example:
+
+```json
+{
+  "1/8/3": 254
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 maximum level is 254.
+```
+
+Recommended UI mapping:
+
+```text
+CurrentLevel / MaxLevel * 100
+```
+
+Example:
+
+```text
+127 / 254 * 100 = 50%
+```
+
+---
+
+# Frequency Attributes
+
+Frequency attributes are used only when the `FQ` feature is supported.
+
+Most regular dimmable lights do not use these attributes.
+
+## Attribute `4` / `0x0004` — `CurrentFrequency`
+
+Path example:
+
+```text
+1/8/4
+```
+
+Description:
+
+```text
+Current frequency value of a frequency-capable endpoint.
+```
+
+Only used when FeatureMap includes:
+
+```text
+FQ
+```
+
+Example:
+
+```json
+{
+  "1/8/4": 60
+}
+```
+
+Meaning:
+
+```text
+Current frequency is 60.
+```
+
+---
+
+## Attribute `5` / `0x0005` — `MinFrequency`
+
+Path example:
+
+```text
+1/8/5
+```
+
+Description:
+
+```text
+Minimum supported frequency value.
+```
+
+Only used when FeatureMap includes:
+
+```text
+FQ
+```
+
+Example:
+
+```json
+{
+  "1/8/5": 20
+}
+```
+
+Meaning:
+
+```text
+Minimum supported frequency is 20.
+```
+
+---
+
+## Attribute `6` / `0x0006` — `MaxFrequency`
+
+Path example:
+
+```text
+1/8/6
+```
+
+Description:
+
+```text
+Maximum supported frequency value.
+```
+
+Only used when FeatureMap includes:
+
+```text
+FQ
+```
+
+Example:
+
+```json
+{
+  "1/8/6": 100
+}
+```
+
+Meaning:
+
+```text
+Maximum supported frequency is 100.
+```
+
+---
+
+# Options Attribute
+
+## Attribute `15` / `0x000F` — `Options`
+
+Path example:
+
+```text
+1/8/15
+```
+
+Description:
+
+```text
+Default options controlling how Level Control commands behave.
+```
+
+`Options` is a bitmap.
+
+| Bit | Name | Description |
+|---|---|---|
+| `0` | `ExecuteIfOff` | Allows level commands to execute while endpoint is OFF |
+| `1` | `CoupleColorTempToLevel` | Couples color temperature to level changes |
+
+Example:
+
+```json
+{
+  "1/8/15": 1
+}
+```
+
+Meaning:
+
+```text
+ExecuteIfOff is enabled.
+```
+
+Example:
+
+```json
+{
+  "1/8/15": 0
+}
+```
+
+Meaning:
+
+```text
+No option bits are enabled.
+```
+
+Command-level override fields:
+
+```text
+OptionsMask
+OptionsOverride
+```
+
+These allow one command to override the default `Options` behavior.
+
+For most simple bridge commands, use:
+
+```json
+{
+  "optionsMask": 0,
+  "optionsOverride": 0
+}
+```
+
+Or omit them if `python-matter-server` accepts defaults.
+
+---
+
+# On/Off Related Level Attributes
+
+These attributes are normally useful for lighting devices and endpoints that combine Cluster 8 with Cluster 6.
+
+## Attribute `16` / `0x0010` — `OnOffTransitionTime`
+
+Path example:
+
+```text
+1/8/16
+```
+
+Description:
+
+```text
+Default transition time used when changing between ON and OFF level states.
+```
+
+Example:
+
+```json
+{
+  "1/8/16": 0
+}
+```
+
+Meaning:
+
+```text
+Use immediate transition.
+```
+
+---
+
+## Attribute `17` / `0x0011` — `OnLevel`
+
+Path example:
+
+```text
+1/8/17
+```
+
+Description:
+
+```text
+Level value used when the endpoint is turned ON.
+```
+
+Example:
+
+```json
+{
+  "1/8/17": 113
+}
+```
+
+Meaning:
+
+```text
+When endpoint turns ON, it should use level 113.
+```
+
+If `OnLevel` is `null`:
+
+```json
+{
+  "1/8/17": null
+}
+```
+
+Meaning:
+
+```text
+Device may restore previous level or use its own default.
+```
+
+---
+
+## Attribute `18` / `0x0012` — `OnTransitionTime`
+
+Path example:
+
+```text
+1/8/18
+```
+
+Description:
+
+```text
+Transition time used when moving to ON level.
+```
+
+Example:
+
+```json
+{
+  "1/8/18": 20
+}
+```
+
+Meaning:
+
+```text
+Use transition time 20 when turning ON.
+```
+
+If value is `null`:
+
+```json
+{
+  "1/8/18": null
+}
+```
+
+Meaning:
+
+```text
+No specific ON transition time is configured.
+```
+
+---
+
+## Attribute `19` / `0x0013` — `OffTransitionTime`
+
+Path example:
+
+```text
+1/8/19
+```
+
+Description:
+
+```text
+Transition time used when moving to OFF.
+```
+
+Example:
+
+```json
+{
+  "1/8/19": 20
+}
+```
+
+Meaning:
+
+```text
+Use transition time 20 when turning OFF.
+```
+
+If value is `null`:
+
+```json
+{
+  "1/8/19": null
+}
+```
+
+Meaning:
+
+```text
+No specific OFF transition time is configured.
+```
+
+---
+
+## Attribute `20` / `0x0014` — `DefaultMoveRate`
+
+Path example:
+
+```text
+1/8/20
+```
+
+Description:
+
+```text
+Default rate used for Move commands when no command-specific rate is provided.
+```
+
+Example:
+
+```json
+{
+  "1/8/20": 10
+}
+```
+
+Meaning:
+
+```text
+Default continuous move rate is 10.
+```
+
+This is related to commands like:
+
+```text
+Move
+MoveWithOnOff
+```
+
+---
+
+# Startup Attribute
+
+## Attribute `16384` / `0x4000` — `StartUpCurrentLevel`
+
+Path example:
+
+```text
+1/8/16384
+```
+
+Description:
+
+```text
+Defines what CurrentLevel should be after power cycle, reboot, or restart.
+```
+
+Usually used by lighting devices.
+
+Example:
+
+```json
+{
+  "1/8/16384": 254
+}
+```
+
+Meaning:
+
+```text
+After startup, endpoint should restore level 254.
+```
+
+Example:
+
+```json
+{
+  "1/8/16384": 113
+}
+```
+
+Meaning:
+
+```text
+After startup, endpoint should restore level 113.
+```
+
+Example:
+
+```json
+{
+  "1/8/16384": null
+}
+```
+
+Meaning:
+
+```text
+Device uses its own startup/default behavior.
+```
+
+---
+
+# Cluster 8 Commands
+
+Cluster 8 has 9 standard Matter commands.
+
+| Decimal ID | Hex ID | Command name | Description |
+|---|---|---|---|
+| `0` | `0x00` | `MoveToLevel` | Move to a specific level |
+| `1` | `0x01` | `Move` | Move level continuously up or down |
+| `2` | `0x02` | `Step` | Change level by a fixed step |
+| `3` | `0x03` | `Stop` | Stop an active level movement |
+| `4` | `0x04` | `MoveToLevelWithOnOff` | Move to level and update On/Off state |
+| `5` | `0x05` | `MoveWithOnOff` | Move continuously and update On/Off behavior |
+| `6` | `0x06` | `StepWithOnOff` | Step level and update On/Off behavior |
+| `7` | `0x07` | `StopWithOnOff` | Stop movement with On/Off behavior |
+| `8` | `0x08` | `MoveToClosestFrequency` | Move to closest supported frequency |
+
+---
+
+# AcceptedCommandList
+
+Cluster 8 exposes a metadata attribute called `AcceptedCommandList`.
+
+In the shadow, it appears as:
+
+```text
+endpoint_id / 8 / 65529
+```
+
+Example:
+
+```json
+{
+  "1/8/65529": [0, 1, 2, 3, 4, 5, 6, 7]
+}
+```
+
+This means endpoint `1` supports the common Level Control commands except frequency command `8`.
+
+Example with frequency support:
+
+```json
+{
+  "1/8/65529": [0, 1, 2, 3, 4, 5, 6, 7, 8]
+}
+```
+
+This means endpoint `1` supports all standard Cluster 8 commands, including `MoveToClosestFrequency`.
+
+| ID | Command |
+|---|---|
+| `0` | `MoveToLevel` |
+| `1` | `Move` |
+| `2` | `Step` |
+| `3` | `Stop` |
+| `4` | `MoveToLevelWithOnOff` |
+| `5` | `MoveWithOnOff` |
+| `6` | `StepWithOnOff` |
+| `7` | `StopWithOnOff` |
+| `8` | `MoveToClosestFrequency` |
+
+Before sending a Cluster 8 command, check that the command ID exists in:
+
+```text
+endpoint/8/65529
+```
+
+---
+
+# Bridge Command Payload Format
+
+Your bridge uses this structure:
+
+```json
+{
+  "message_id": "501",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToLevelWithOnOff",
+    "payload": {
+      "level": 113,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 8, always use:
+
+```json
+{
+  "cluster_id": 8
+}
+```
+
+For direct Matter devices, use:
+
+```json
+{
+  "endpoint_id": 1,
+  "cluster_id": 8,
+  "command_name": "MoveToLevelWithOnOff",
+  "payload": {
+    "level": 113,
+    "transitionTime": 0
+  }
+}
+```
+
+For bridged Zigbee devices through your Matter bridge, the backend may omit `node_id` and sometimes omit `endpoint_id` depending on how the MatterBridge resolves the device.
+
+---
+
+# Command: `MoveToLevel`
+
+## Purpose
+
+Moves the endpoint to a specific level.
+
+This command changes the level but does not necessarily update the On/Off state.
+
+For user-facing light brightness control, `MoveToLevelWithOnOff` is usually better.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `MoveToLevel` |
+
+## Payload Fields
+
+| Field | Description |
+|---|---|
+| `level` | Target level, usually `0..254` |
+| `transitionTime` | Time used to move to target level |
+| `optionsMask` | Selects which option bits to override |
+| `optionsOverride` | Override values for selected option bits |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "801",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToLevel",
+    "payload": {
+      "level": 113,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+```json
+{
+  "1/8/0": 113
+}
+```
+
+Important:
+
+```text
+This command may not turn the light ON if the endpoint is currently OFF.
+```
+
+Use `MoveToLevelWithOnOff` if ON/OFF state should follow the level.
+
+---
+
+# Command: `Move`
+
+## Purpose
+
+Starts moving the level continuously up or down.
+
+The movement continues until the endpoint reaches the minimum/maximum level or receives a stop command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `Move` |
+
+## Payload Fields
+
+| Field | Description |
+|---|---|
+| `moveMode` | Direction: `0` = Up, `1` = Down |
+| `rate` | Rate of level movement |
+| `optionsMask` | Selects which option bits to override |
+| `optionsOverride` | Override values for selected option bits |
+
+## Move Modes
+
+| Value | Name | Description |
+|---|---|---|
+| `0` | `Up` | Increase the level |
+| `1` | `Down` | Decrease the level |
+
+## Bridge Command Example: Move Up
+
+```json
+{
+  "message_id": "802",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "Move",
+    "payload": {
+      "moveMode": 0,
+      "rate": 10
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Bridge Command Example: Move Down
+
+```json
+{
+  "message_id": "803",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "Move",
+    "payload": {
+      "moveMode": 1,
+      "rate": 10
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+While moving, the device should report changing level values:
+
+```json
+{
+  "1/8/0": 120
+}
+```
+
+Then:
+
+```json
+{
+  "1/8/0": 130
+}
+```
+
+To stop movement, send:
+
+```text
+Stop
+```
+
+---
+
+# Command: `Step`
+
+## Purpose
+
+Changes the endpoint level by a fixed step amount.
+
+This is useful for brightness up / brightness down buttons.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `Step` |
+
+## Payload Fields
+
+| Field | Description |
+|---|---|
+| `stepMode` | Direction: `0` = Up, `1` = Down |
+| `stepSize` | Amount to increase or decrease |
+| `transitionTime` | Time used for this step |
+| `optionsMask` | Selects which option bits to override |
+| `optionsOverride` | Override values for selected option bits |
+
+## Step Modes
+
+| Value | Name | Description |
+|---|---|---|
+| `0` | `Up` | Increase level by `stepSize` |
+| `1` | `Down` | Decrease level by `stepSize` |
+
+## Bridge Command Example: Step Up
+
+```json
+{
+  "message_id": "804",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "Step",
+    "payload": {
+      "stepMode": 0,
+      "stepSize": 20,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+If current level is:
+
+```json
+{
+  "1/8/0": 113
+}
+```
+
+Expected new level:
+
+```json
+{
+  "1/8/0": 133
+}
+```
+
+## Bridge Command Example: Step Down
+
+```json
+{
+  "message_id": "805",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "Step",
+    "payload": {
+      "stepMode": 1,
+      "stepSize": 20,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+If current level is:
+
+```json
+{
+  "1/8/0": 113
+}
+```
+
+Expected new level:
+
+```json
+{
+  "1/8/0": 93
+}
+```
+
+---
+
+# Command: `Stop`
+
+## Purpose
+
+Stops an active level movement.
+
+This is usually used after `Move`.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `Stop` |
+
+## Payload Fields
+
+| Field | Description |
+|---|---|
+| `optionsMask` | Selects which option bits to override |
+| `optionsOverride` | Override values for selected option bits |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "806",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "Stop",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+The level remains at the current value when movement stops.
+
+Example:
+
+```json
+{
+  "1/8/0": 147
+}
+```
+
+---
+
+# Command: `MoveToLevelWithOnOff`
+
+## Purpose
+
+Moves the endpoint to a specific level and updates the On/Off state.
+
+This is the recommended command for user-facing dimmable light control.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `MoveToLevelWithOnOff` |
+
+## Payload Fields
+
+This command uses the same base payload behavior as `MoveToLevel`.
+
+| Field | Description |
+|---|---|
+| `level` | Target level, usually `0..254` |
+| `transitionTime` | Time used to move to target level |
+| `optionsMask` | Optional options mask if supported by bridge/server |
+| `optionsOverride` | Optional options override if supported by bridge/server |
+
+## Bridge Command Example: Turn OFF by Level
+
+```json
+{
+  "message_id": "807",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToLevelWithOnOff",
+    "payload": {
+      "level": 0,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+```json
+{
+  "1/6/0": false
+}
+```
+
+Cluster 8 may report:
+
+```json
+{
+  "1/8/0": 0
+}
+```
+
+or:
+
+```json
+{
+  "1/8/0": 1
+}
+```
+
+Both can be normal depending on `MinLevel` and device behavior.
+
+## Bridge Command Example: Turn ON to 45%
+
+```json
+{
+  "message_id": "808",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToLevelWithOnOff",
+    "payload": {
+      "level": 113,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 113
+}
+```
+
+Meaning:
+
+```text
+Endpoint is ON.
+Brightness level is 113.
+Approximate UI brightness is 45%.
+```
+
+---
+
+# Command: `MoveWithOnOff`
+
+## Purpose
+
+Starts moving the level continuously and updates On/Off behavior.
+
+Use this when a brightness button is pressed and held.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `MoveWithOnOff` |
+
+## Payload Fields
+
+This command uses the same base payload behavior as `Move`.
+
+| Field | Description |
+|---|---|
+| `moveMode` | Direction: `0` = Up, `1` = Down |
+| `rate` | Rate of level movement |
+| `optionsMask` | Optional options mask |
+| `optionsOverride` | Optional options override |
+
+## Bridge Command Example: Hold Brightness Up
+
+```json
+{
+  "message_id": "809",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveWithOnOff",
+    "payload": {
+      "moveMode": 0,
+      "rate": 10
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Bridge Command Example: Hold Brightness Down
+
+```json
+{
+  "message_id": "810",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveWithOnOff",
+    "payload": {
+      "moveMode": 1,
+      "rate": 10
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+The endpoint reports changing values:
+
+```json
+{
+  "1/8/0": 140
+}
+```
+
+When moving up, the endpoint should usually be ON:
+
+```json
+{
+  "1/6/0": true
+}
+```
+
+---
+
+# Command: `StepWithOnOff`
+
+## Purpose
+
+Changes level by a fixed step and updates On/Off behavior.
+
+This is recommended for brightness up/down buttons.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `StepWithOnOff` |
+
+## Payload Fields
+
+This command uses the same base payload behavior as `Step`.
+
+| Field | Description |
+|---|---|
+| `stepMode` | Direction: `0` = Up, `1` = Down |
+| `stepSize` | Amount to increase or decrease |
+| `transitionTime` | Time used for the step |
+| `optionsMask` | Optional options mask |
+| `optionsOverride` | Optional options override |
+
+## Bridge Command Example: Brightness Up
+
+```json
+{
+  "message_id": "811",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "StepWithOnOff",
+    "payload": {
+      "stepMode": 0,
+      "stepSize": 25,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Bridge Command Example: Brightness Down
+
+```json
+{
+  "message_id": "812",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "StepWithOnOff",
+    "payload": {
+      "stepMode": 1,
+      "stepSize": 25,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+Example before:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 113
+}
+```
+
+After `StepWithOnOff` up by `25`:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 138
+}
+```
+
+After `StepWithOnOff` down by `25`:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 88
+}
+```
+
+If stepping down reaches the minimum/off behavior, the endpoint may report:
+
+```json
+{
+  "1/6/0": false,
+  "1/8/0": 1
+}
+```
+
+---
+
+# Command: `StopWithOnOff`
+
+## Purpose
+
+Stops active level movement while preserving On/Off-coupled behavior.
+
+Usually used after `MoveWithOnOff`.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `StopWithOnOff` |
+
+## Payload Fields
+
+This command uses the same base payload behavior as `Stop`.
+
+| Field | Description |
+|---|---|
+| `optionsMask` | Optional options mask |
+| `optionsOverride` | Optional options override |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "813",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "StopWithOnOff",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+The endpoint stops at the current level.
+
+Example:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 147
+}
+```
+
+---
+
+# Command: `MoveToClosestFrequency`
+
+## Purpose
+
+Moves the endpoint to the closest supported frequency.
+
+This command is only used when the endpoint supports the `FQ` feature.
+
+Most standard dimmable lights do not support this command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `MoveToClosestFrequency` |
+
+## Payload Fields
+
+| Field | Description |
+|---|---|
+| `frequency` | Requested target frequency |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "814",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToClosestFrequency",
+    "payload": {
+      "frequency": 60
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+## Expected State
+
+If supported, endpoint may report:
+
+```json
+{
+  "1/8/4": 60
+}
+```
+
+Meaning:
+
+```text
+CurrentFrequency is 60.
+```
+
+If the exact requested frequency is not supported, the device should move to the closest supported value.
+
+---
+
+# Other Cluster 8 Attributes
+
+## Attribute `65528` / `0xFFF8` — `GeneratedCommandList`
+
+Path example:
+
+```text
+1/8/65528
+```
+
+Description:
+
+```text
+Commands this cluster may generate/send.
+```
+
+Example:
+
+```json
+{
+  "1/8/65528": []
+}
+```
+
+---
+
+## Attribute `65529` / `0xFFF9` — `AcceptedCommandList`
+
+Path example:
+
+```text
+1/8/65529
+```
+
+Description:
+
+```text
+Commands this cluster accepts.
+```
+
+Example:
+
+```json
+{
+  "1/8/65529": [0, 1, 2, 3, 4, 5, 6, 7]
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 accepts standard Level Control commands except frequency command.
+```
+
+---
+
+## Attribute `65531` / `0xFFFB` — `AttributeList`
+
+Path example:
+
+```text
+1/8/65531
+```
+
+Description:
+
+```text
+Attributes available on this cluster for this endpoint.
+```
+
+Example:
+
+```json
+{
+  "1/8/65531": [0, 1, 2, 3, 15, 17, 65528, 65529, 65531, 65532, 65533]
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 exposes CurrentLevel, RemainingTime, MinLevel, MaxLevel, Options, OnLevel, and global metadata attributes.
+```
+
+---
+
+## Attribute `65532` / `0xFFFC` — `FeatureMap`
+
+Path example:
+
+```text
+1/8/65532
+```
+
+Description:
+
+```text
+Enabled feature bits for Cluster 8.
+```
+
+Example:
+
+```json
+{
+  "1/8/65532": 3
+}
+```
+
+Meaning:
+
+```text
+OO + LT features are enabled.
+```
+
+Feature bits:
+
+| Bit | Code | Name |
+|---|---|---|
+| `0` | `OO` | `OnOff` |
+| `1` | `LT` | `Lighting` |
+| `2` | `FQ` | `Frequency` |
+
+---
+
+## Attribute `65533` / `0xFFFD` — `ClusterRevision`
+
+Path example:
+
+```text
+1/8/65533
+```
+
+Description:
+
+```text
+Cluster revision/version.
+```
+
+For Matter 1.5 Level Control:
+
+```json
+{
+  "1/8/65533": 6
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 implements Level Control cluster revision 6.
+```
+
+---
+
+# Backend Interpretation
+
+## Recommended State Mapping
+
+When shadow contains:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 113
+}
+```
+
+Backend/UI should interpret:
+
+```text
+Device is ON.
+Brightness level is 113.
+Brightness percent is about 45%.
+```
+
+Recommended normalized state:
+
+```json
+{
+  "available": true,
+  "on": true,
+  "level": 113,
+  "brightness": 45
+}
+```
+
+---
+
+## OFF State with Stored Level
+
+When shadow contains:
+
+```json
+{
+  "1/6/0": false,
+  "1/8/0": 113
+}
+```
+
+Backend/UI should interpret:
+
+```text
+Device is OFF.
+Previous/stored brightness level is 113.
+```
+
+Recommended normalized state:
+
+```json
+{
+  "available": true,
+  "on": false,
+  "level": 113,
+  "brightness": 45
+}
+```
+
+UI should show:
+
+```text
+OFF
+```
+
+not:
+
+```text
+45% ON
+```
+
+because Cluster 6 OnOff state is false.
+
+---
+
+## OFF State with Minimum Level
+
+When shadow contains:
+
+```json
+{
+  "1/6/0": false,
+  "1/8/0": 1
+}
+```
+
+Backend/UI should interpret:
+
+```text
+Device is OFF.
+Level value is at minimum level.
+```
+
+Recommended normalized state:
+
+```json
+{
+  "available": true,
+  "on": false,
+  "level": 1,
+  "brightness": 0
+}
+```
+
+For UI, when `1/6/0` is false, show brightness as OFF even if `1/8/0` is `1`.
+
+---
+
+# Practical Examples From MatterBridge Logs
+
+Example command:
+
+```json
+{
+  "cluster_id": 8,
+  "command_name": "MoveToLevelWithOnOff",
+  "payload": {
+    "level": 0,
+    "transitionTime": 0
+  }
+}
+```
+
+Expected Matter attribute updates:
+
+```json
+{
+  "1/6/0": false,
+  "1/8/0": 1
+}
+```
+
+Meaning:
+
+```text
+Endpoint turned OFF.
+CurrentLevel reported as minimum level 1.
+```
+
+Example command:
+
+```json
+{
+  "cluster_id": 8,
+  "command_name": "MoveToLevelWithOnOff",
+  "payload": {
+    "level": 113,
+    "transitionTime": 0
+  }
+}
+```
+
+Expected Matter attribute updates:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 113
+}
+```
+
+Meaning:
+
+```text
+Endpoint turned ON.
+Brightness level changed to 113.
+```
+
+---
+
+# Recommended UI Rules
+
+## Rule 1 — Use Cluster 6 for ON/OFF
+
+```text
+endpoint/6/0
+```
+
+Values:
+
+```text
+true  = ON
+false = OFF
+```
+
+## Rule 2 — Use Cluster 8 for Brightness / Level
+
+```text
+endpoint/8/0
+```
+
+Values:
+
+```text
+0..254
+```
+
+## Rule 3 — Convert Level to Percent
+
+Recommended formula:
+
+```text
+brightness_percent = round(CurrentLevel / 254 * 100)
+```
+
+Examples:
+
+| CurrentLevel | Approx UI brightness |
+|---|---|
+| `1` | `0%` or minimum |
+| `64` | `25%` |
+| `113` | `45%` |
+| `127` | `50%` |
+| `191` | `75%` |
+| `254` | `100%` |
+
+## Rule 4 — OFF Overrides Brightness Display
+
+If:
+
+```json
+{
+  "1/6/0": false,
+  "1/8/0": 113
+}
+```
+
+UI should show:
+
+```text
+OFF
+```
+
+Brightness level can still be stored internally as:
+
+```text
+113
+```
+
+---
+
+# Recommended Commands for UI
+
+## Turn OFF
+
+Use:
+
+```json
+{
+  "message_id": "901",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToLevelWithOnOff",
+    "payload": {
+      "level": 0,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+Expected final state:
+
+```json
+{
+  "1/6/0": false
+}
+```
+
+---
+
+## Turn ON to Brightness
+
+Use:
+
+```json
+{
+  "message_id": "902",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToLevelWithOnOff",
+    "payload": {
+      "level": 113,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+Expected final state:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 113
+}
+```
+
+---
+
+## Brightness Slider
+
+When user moves slider to 45%:
+
+```text
+level = round(45 / 100 * 254)
+level = 114
+```
+
+Send:
+
+```json
+{
+  "message_id": "903",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 8,
+    "command_name": "MoveToLevelWithOnOff",
+    "payload": {
+      "level": 114,
+      "transitionTime": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+Expected state:
+
+```json
+{
+  "1/6/0": true,
+  "1/8/0": 114
+}
+```
+
+---
+
+# Cluster 8 Metadata Attributes
+
+These are global Matter metadata attributes for Cluster 8.
+
+They describe the cluster itself.
+
+| Attribute ID | Name | Description |
+|---|---|---|
+| `65528` | `GeneratedCommandList` | Commands this cluster may generate/send |
+| `65529` | `AcceptedCommandList` | Commands this cluster accepts |
+| `65531` | `AttributeList` | Attributes available on this cluster |
+| `65532` | `FeatureMap` | Enabled feature bits |
+| `65533` | `ClusterRevision` | Cluster revision/version |
+
+Example:
+
+```json
+{
+  "1/8/65529": [0, 1, 2, 3, 4, 5, 6, 7]
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 accepts common Level Control commands.
+```
+
+Example:
+
+```json
+{
+  "1/8/65532": 3
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 supports OnOff + Lighting features.
+```
+
+Example:
+
+```json
+{
+  "1/8/65533": 6
+}
+```
+
+Meaning:
+
+```text
+Endpoint 1 implements Cluster 8 revision 6.
+```
+
+---
+
+# Final Summary
+
+Cluster 8 is the Matter Level Control Cluster.
+
+Main state:
+
+```text
+endpoint/8/0
+```
+
+Main meaning:
+
+```text
+CurrentLevel / brightness / dimming level
+```
+
+Common level range:
+
+```text
+0..254
+```
+
+For most lighting devices:
+
+```text
+1   = minimum level
+254 = maximum level
+```
+
+Most important command:
+
+```text
+MoveToLevelWithOnOff
+```
+
+Recommended command for brightness control:
+
+```json
+{
+  "cluster_id": 8,
+  "command_name": "MoveToLevelWithOnOff",
+  "payload": {
+    "level": 113,
+    "transitionTime": 0
+  }
+}
+```
+
+Supported command list:
+
+```text
+endpoint/8/65529
+```
+
+All standard Cluster 8 commands:
+
+```text
+0 = MoveToLevel
+1 = Move
+2 = Step
+3 = Stop
+4 = MoveToLevelWithOnOff
+5 = MoveWithOnOff
+6 = StepWithOnOff
+7 = StopWithOnOff
+8 = MoveToClosestFrequency
+```
+
+If the shadow has:
+
+```json
+{
+  "1/8/65529": [0, 1, 2, 3, 4, 5, 6, 7]
+}
+```
+
+Then endpoint `1` supports common Level Control commands.
+
+If the shadow has:
+
+```json
+{
+  "1/8/65529": [0, 1, 2, 3, 4, 5, 6, 7, 8]
+}
+```
+
+Then endpoint `1` supports all standard Cluster 8 commands, including frequency control.
+
+For UI, always combine:
+
+```text
+endpoint/6/0 = ON/OFF state
+endpoint/8/0 = brightness/level state
+```
+
+Recommended interpretation:
+
+```text
+If endpoint/6/0 is false, show OFF.
+If endpoint/6/0 is true, show brightness from endpoint/8/0.
+```

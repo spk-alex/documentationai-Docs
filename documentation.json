@@ -74,6 +74,11 @@
                     "title": "Cluster 6 — On/Off",
                     "path": "matter_cluster_6_onoff",
                     "icon": "toggle-right"
+                  },
+                  {
+                    "title": "Cluster 8 — Level Control",
+                    "path": "matter_cluster_8_level_control",
+                    "icon": "sliders"
                   }
                 ]
               }
@@ -182,6 +187,11 @@
                     "title": "Cluster 6 — On/Off",
                     "path": "matter_cluster_6_onoff",
                     "icon": "toggle-right"
+                  },
+                  {
+                    "title": "Cluster 8 — Level Control",
+                    "path": "matter_cluster_8_level_control",
+                    "icon": "sliders"
                   }
                 ]
               }
