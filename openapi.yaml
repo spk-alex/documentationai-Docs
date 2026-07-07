@@ -20378,7 +20378,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Collective access key deleted"
+            "description": "Collective access key deleted. If a concurrent actor deleted the key between this request’s lookup and its delete, the response carries alreadyRevoked: true — the end-state (key gone) holds either way."
           },
           "401": {
             "description": "Unauthorized",
@@ -20532,7 +20532,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Collective access key deleted"
+            "description": "Collective access key deleted. If a concurrent actor deleted the key between this request’s lookup and its delete, the response carries alreadyRevoked: true — the end-state (key gone) holds either way."
           },
           "401": {
             "description": "Unauthorized",
