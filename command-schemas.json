@@ -1,5 +1,5 @@
 {
-  "version": "1e96825e",
+  "version": "d70853c2",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -915,15 +915,11 @@
         },
         "command": {
           "type": "string",
-          "enum": [
-            "get_nodes",
-            "server_info",
-            "set_wifi_credentials"
-          ],
-          "description": "Hub command type"
+          "minLength": 1,
+          "description": "Hub command name, forwarded verbatim to the device shadow (e.g. get_nodes, server_info, set_wifi_credentials)"
         },
         "args": {
-          "description": "Command arguments",
+          "description": "Command arguments, forwarded verbatim (e.g. set_wifi_credentials → { ssid, credentials })",
           "type": "object",
           "propertyNames": {
             "type": "string"

@@ -8747,7 +8747,7 @@
           "Command"
         ],
         "summary": "Send hub command",
-        "description": "Sends hub-level commands (get_nodes, server_info, set_wifi_credentials)",
+        "description": "Passthrough: forwards &#123; command, args &#125; verbatim to the hub device shadow. The command is not allow-listed and args are not validated — the device is the validator and responds asynchronously on its reported topic.",
         "operationId": "post_SendHubCommandRoute",
         "parameters": [
           {
@@ -8773,17 +8773,13 @@
                   },
                   "command": {
                     "type": "string",
-                    "enum": [
-                      "get_nodes",
-                      "server_info",
-                      "set_wifi_credentials"
-                    ],
-                    "description": "Hub command type"
+                    "minLength": 1,
+                    "description": "Hub command name, forwarded verbatim to the device shadow (e.g. get_nodes, server_info, set_wifi_credentials)"
                   },
                   "args": {
                     "type": "object",
                     "additionalProperties": {},
-                    "description": "Command arguments"
+                    "description": "Command arguments, forwarded verbatim (e.g. set_wifi_credentials → &#123; ssid, credentials &#125;)"
                   }
                 },
                 "required": [
@@ -8826,7 +8822,7 @@
             }
           },
           "400": {
-            "description": "Invalid request — invalid command type or missing arguments.",
+            "description": "Invalid request — malformed body (missing hubId, empty command, or non-object args).",
             "content": {
               "application/json": {
                 "schema": {
@@ -8884,7 +8880,7 @@
             }
           },
           "502": {
-            "description": "Hub offline — the hub is not currently connected to the network.",
+            "description": "Shadow update failed (e.g. AWS IoT error).",
             "content": {
               "application/json": {
                 "schema": {
