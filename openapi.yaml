@@ -3609,6 +3609,156 @@
         }
       }
     },
+    "/admin/users/email-collisions": {
+      "get": {
+        "tags": [
+          "Admin",
+          "User"
+        ],
+        "summary": "List users whose emails collide after normalization",
+        "description": "Read-only report of sets of users rows that collapse to the same normalized email (trim + lowercase) but are stored as distinct rows — legacy duplicates the email-normalization migration could not auto-fold. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_GetEmailCollisionsRoute",
+        "responses": {
+          "200": {
+            "description": "Colliding email groups (empty when the table is clean)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "description": "Number of colliding email groups"
+                    },
+                    "groups": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "normalizedEmail": {
+                            "type": "string",
+                            "description": "The normalized address the rows collide on"
+                          },
+                          "users": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "uuid": {
+                                  "type": "string"
+                                },
+                                "email": {
+                                  "type": "string",
+                                  "description": "The raw (un-normalized) address stored on the row"
+                                },
+                                "created_at": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "uuid",
+                                "email",
+                                "created_at"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "normalizedEmail",
+                          "users"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "groups"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/debug/registry": {
       "get": {
         "tags": [
@@ -9683,7 +9833,6 @@
                   },
                   "email": {
                     "type": "string",
-                    "format": "email",
                     "description": "Resident email — resolved to the user UUID via D1"
                   },
                   "phoneNumber": {
@@ -10755,7 +10904,6 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "format": "email",
                     "description": "Resident email to remove"
                   },
                   "phoneNumber": {
@@ -16547,7 +16695,6 @@
                   },
                   "email": {
                     "type": "string",
-                    "format": "email",
                     "description": "User email"
                   },
                   "firstName": {
@@ -18614,7 +18761,6 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "format": "email",
                     "description": "Email to set on a user that currently has none"
                   }
                 },
@@ -20853,7 +20999,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "email",
               "description": "User email address"
             },
             "required": true,
@@ -20986,7 +21131,6 @@
           {
             "schema": {
               "type": "string",
-              "format": "email",
               "description": "Optional email to also set on the user when one is created. A user can have a phone number, an email, or both — omitting this still creates a phone-only user on a miss."
             },
             "required": false,
@@ -21886,7 +22030,6 @@
                         "properties": {
                           "user_name": {
                             "type": "string",
-                            "format": "email",
                             "description": "User email from Auth0"
                           },
                           "user_id": {
