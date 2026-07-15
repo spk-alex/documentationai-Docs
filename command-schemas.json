@@ -1,5 +1,5 @@
 {
-  "version": "d6d038e3",
+  "version": "7002535c",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -20,11 +20,15 @@
         },
         "serialNumber": {
           "description": "Serial number",
-          "type": "string"
+          "type": "string",
+          "maxLength": 800,
+          "pattern": "^[a-zA-Z0-9_.,@/:#=[\\]-]*$"
         },
         "vendorName": {
           "description": "Vendor/manufacturer name",
-          "type": "string"
+          "type": "string",
+          "maxLength": 800,
+          "pattern": "^[a-zA-Z0-9_.,@/:#=[\\]-]*$"
         },
         "ownerId": {
           "description": "Owner user ID",

@@ -10250,10 +10250,14 @@
                   },
                   "serialNumber": {
                     "type": "string",
+                    "maxLength": 800,
+                    "pattern": "^[a-zA-Z0-9_.,@/:#=[\\]-]*$",
                     "description": "Serial number"
                   },
                   "vendorName": {
                     "type": "string",
+                    "maxLength": 800,
+                    "pattern": "^[a-zA-Z0-9_.,@/:#=[\\]-]*$",
                     "description": "Vendor/manufacturer name"
                   },
                   "ownerId": {
