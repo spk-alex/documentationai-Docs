@@ -7051,6 +7051,334 @@
         }
       }
     },
+    "/cameras/{id}/RegisterPnpCamera": {
+      "post": {
+        "tags": [
+          "Camera",
+          "Command"
+        ],
+        "summary": "Register plug-and-play (push-module) camera",
+        "description": "Registers a plug-and-play camera in 3dEye by its registration code (POST /v3/cameras/pnp/create) and persists the registration event.",
+        "operationId": "post_RegisterPnpCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Camera ID"
+            },
+            "required": true,
+            "description": "Camera ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string",
+                    "description": "Camera ID"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Camera name"
+                  },
+                  "registrationCode": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Registration code of the plug-and-play camera (printed on the device / provided by its push module)"
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Organization ID — opaque string, conventionally but not always a UUID"
+                  },
+                  "ownerId": {
+                    "type": "string",
+                    "description": "Owner user ID"
+                  },
+                  "login": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Camera admin login name (required by 3dEye)"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Camera admin password (required by 3dEye)"
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "name",
+                  "registrationCode",
+                  "orgId",
+                  "ownerId",
+                  "login",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera already registered — idempotent no-op (event: null)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRegistered"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "threeDeyeCameraId": {
+                              "type": "string"
+                            },
+                            "cameraType": {
+                              "type": "string",
+                              "enum": [
+                                "generic",
+                                "onvif",
+                                "pnp"
+                              ]
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "ownerId": {
+                              "type": "string"
+                            },
+                            "httpUrl": {
+                              "type": "string"
+                            },
+                            "rtspUrl": {
+                              "type": "string"
+                            },
+                            "registrationCode": {
+                              "type": "string"
+                            },
+                            "registeredAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "threeDeyeCameraId",
+                            "cameraType",
+                            "name",
+                            "orgId",
+                            "ownerId",
+                            "httpUrl",
+                            "rtspUrl",
+                            "registeredAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Plug-and-play camera registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CameraRegistered"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "threeDeyeCameraId": {
+                              "type": "string"
+                            },
+                            "cameraType": {
+                              "type": "string",
+                              "enum": [
+                                "generic",
+                                "onvif",
+                                "pnp"
+                              ]
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "ownerId": {
+                              "type": "string"
+                            },
+                            "httpUrl": {
+                              "type": "string"
+                            },
+                            "rtspUrl": {
+                              "type": "string"
+                            },
+                            "registrationCode": {
+                              "type": "string"
+                            },
+                            "registeredAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "threeDeyeCameraId",
+                            "cameraType",
+                            "name",
+                            "orgId",
+                            "ownerId",
+                            "httpUrl",
+                            "rtspUrl",
+                            "registeredAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed or business rule violated. registrationCode, login and password are required (3dEye requires a registration code + AdminName/AdminPassword).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/cameras/{id}/UnlinkCameraFromLock": {
       "post": {
         "tags": [

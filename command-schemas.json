@@ -1,5 +1,5 @@
 {
-  "version": "7002535c",
+  "version": "d8e77eea",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -1005,6 +1005,59 @@
         "type",
         "httpUrl",
         "rtspUrl",
+        "orgId",
+        "ownerId",
+        "login",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "RegisterPnpCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Camera ID"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Camera name"
+        },
+        "registrationCode": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Registration code of the plug-and-play camera (printed on the device / provided by its push module)"
+        },
+        "orgId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organization ID — opaque string, conventionally but not always a UUID"
+        },
+        "ownerId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Owner user ID"
+        },
+        "login": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Camera admin login name (required by 3dEye)"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Camera admin password (required by 3dEye)"
+        }
+      },
+      "required": [
+        "cameraId",
+        "name",
+        "registrationCode",
         "orgId",
         "ownerId",
         "login",
