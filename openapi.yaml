@@ -14310,6 +14310,261 @@
         }
       }
     },
+    "/rtsp-cameras/{id}/ApplyPlacementResult": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Internal"
+        ],
+        "summary": "Apply an asynchronous video placement result",
+        "operationId": "post_ApplyPlacementResultRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "aggregateVersion": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "placementGeneration": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "running",
+                      "failed",
+                      "released"
+                    ]
+                  },
+                  "workerId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "error": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "internalSecret": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "aggregateVersion",
+                  "placementGeneration",
+                  "status",
+                  "internalSecret"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Placement result applied or ignored as an idempotent duplicate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "RtspCameraPlaced"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "cameraId": {
+                                  "type": "string"
+                                },
+                                "workerId": {
+                                  "type": "string"
+                                },
+                                "placementGeneration": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "sourceEventVersion": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                },
+                                "placedAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "cameraId",
+                                "workerId",
+                                "placementGeneration",
+                                "sourceEventVersion",
+                                "placedAt"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "RtspCameraPlacementFailed"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "cameraId": {
+                                  "type": "string"
+                                },
+                                "placementGeneration": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "sourceEventVersion": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                },
+                                "error": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "failedAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "cameraId",
+                                "placementGeneration",
+                                "sourceEventVersion",
+                                "error",
+                                "failedAt"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid internal control-plane secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Placement result does not belong to this camera.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rtsp-cameras/{id}/DeleteRtspCamera": {
       "post": {
         "tags": [
@@ -14682,7 +14937,7 @@
           "Command"
         ],
         "summary": "Register a new RTSP camera",
-        "description": "Creates a new RtspCameraAggregate (source of truth for camera metadata, ownership, and access grants) and tells the spk-vms worker to start streaming. External-first ordering — if the worker call fails, the event is NOT emitted, preventing aggregate/worker drift. If the worker is not configured (offline dev), the worker call is skipped and the event is emitted regardless.",
+        "description": "Creates a new RtspCameraAggregate. With video control enabled, encrypted source staging happens first and the response reports placementStatus=pending; the rollout flag can temporarily restore the legacy direct-VMS path.",
         "operationId": "post_RegisterRtspCameraRoute",
         "parameters": [
           {
@@ -14763,6 +15018,13 @@
                     "version": {
                       "type": "number"
                     },
+                    "placementStatus": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "running"
+                      ]
+                    },
                     "event": {
                       "type": [
                         "object",
@@ -14808,6 +15070,12 @@
                             "orgId": {
                               "type": "string"
                             },
+                            "placementMode": {
+                              "type": "string",
+                              "enum": [
+                                "async"
+                              ]
+                            },
                             "createdAt": {
                               "type": "string"
                             }
@@ -14815,7 +15083,6 @@
                           "required": [
                             "cameraId",
                             "name",
-                            "rtspUrl",
                             "rtspHash",
                             "streamId",
                             "createdAt"
@@ -14832,6 +15099,7 @@
                     "success",
                     "aggregateId",
                     "version",
+                    "placementStatus",
                     "event"
                   ]
                 }
@@ -15540,6 +15808,12 @@
                             "httpSnapshotUrl": {
                               "type": "string"
                             },
+                            "sourceChanged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            },
                             "updatedAt": {
                               "type": "string"
                             }
@@ -15660,65 +15934,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/rtsp-cameras/internal/active-streams": {
-      "get": {
-        "tags": [
-          "RtspCamera",
-          "Internal"
-        ],
-        "summary": "List active streams for worker boot reconciliation",
-        "description": "Returns all working cameras with RTSP credentials. Called by spk-vms on startup. Requires `X-VMS-Secret` header matching `VMS_WORKER_SECRET`.",
-        "operationId": "get_GetActiveStreamsRoute",
-        "responses": {
-          "200": {
-            "description": "Working stream list",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "streams": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "cameraId": {
-                            "type": "string"
-                          },
-                          "streamId": {
-                            "type": "string"
-                          },
-                          "rtspUrl": {
-                            "type": "string"
-                          },
-                          "username": {
-                            "type": "string"
-                          },
-                          "password": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "cameraId",
-                          "streamId",
-                          "rtspUrl"
-                        ]
-                      }
-                    }
-                  },
-                  "required": [
-                    "streams"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Invalid or missing worker secret"
           }
         }
       }
@@ -19615,6 +19830,18 @@
                               "deleted"
                             ]
                           },
+                          "placementStatus": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "running",
+                              "failed",
+                              "released"
+                            ]
+                          },
+                          "placementError": {
+                            "type": "string"
+                          },
                           "streamId": {
                             "type": "string"
                           },
@@ -19647,6 +19874,7 @@
                           "cameraId",
                           "name",
                           "status",
+                          "placementStatus",
                           "streamId",
                           "hlsPath",
                           "createdAt",
@@ -21204,6 +21432,18 @@
                         "deleted"
                       ]
                     },
+                    "placementStatus": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "running",
+                        "failed",
+                        "released"
+                      ]
+                    },
+                    "placementError": {
+                      "type": "string"
+                    },
                     "streamId": {
                       "type": "string"
                     },
@@ -21268,6 +21508,7 @@
                     "cameraId",
                     "name",
                     "status",
+                    "placementStatus",
                     "streamId",
                     "hlsPath",
                     "accessGrants",
@@ -22214,7 +22455,7 @@
           "Query"
         ],
         "summary": "List RTSP cameras accessible to the authenticated user",
-        "description": "Returns cameras the JWT user owns or has an active access grant for. Each item includes the user's effective role (`manager` for owners).",
+        "description": "Returns cameras the JWT user owns or has an active access grant for. Each item includes the user's effective role (`manager` for owners). Preview URLs are intentionally omitted from the list and can be lazy-loaded from the camera details endpoint.",
         "operationId": "get_GetMyRtspCamerasRoute",
         "responses": {
           "200": {
@@ -22242,6 +22483,18 @@
                               "stopped",
                               "deleted"
                             ]
+                          },
+                          "placementStatus": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "running",
+                              "failed",
+                              "released"
+                            ]
+                          },
+                          "placementError": {
+                            "type": "string"
                           },
                           "streamId": {
                             "type": "string"
@@ -22288,6 +22541,7 @@
                           "cameraId",
                           "name",
                           "status",
+                          "placementStatus",
                           "streamId",
                           "hlsPath",
                           "createdAt",

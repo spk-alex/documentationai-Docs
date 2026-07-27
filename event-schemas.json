@@ -1,5 +1,5 @@
 {
-  "version": "3e931952",
+  "version": "7af982d2",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1967,6 +1967,10 @@
         "orgId": {
           "type": "string"
         },
+        "placementMode": {
+          "type": "string",
+          "const": "async"
+        },
         "createdAt": {
           "type": "string"
         }
@@ -1974,7 +1978,6 @@
       "required": [
         "cameraId",
         "name",
-        "rtspUrl",
         "rtspHash",
         "streamId",
         "createdAt"
@@ -2008,6 +2011,10 @@
         },
         "httpSnapshotUrl": {
           "type": "string"
+        },
+        "sourceChanged": {
+          "type": "boolean",
+          "const": true
         },
         "updatedAt": {
           "type": "string"
@@ -2132,6 +2139,73 @@
       "required": [
         "cameraId",
         "stoppedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraPlaced": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "workerId": {
+          "type": "string"
+        },
+        "placementGeneration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "sourceEventVersion": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "placedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "workerId",
+        "placementGeneration",
+        "sourceEventVersion",
+        "placedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraPlacementFailed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "placementGeneration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "sourceEventVersion": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1
+        },
+        "failedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "placementGeneration",
+        "sourceEventVersion",
+        "error",
+        "failedAt"
       ],
       "additionalProperties": false
     }
