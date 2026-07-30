@@ -14985,11 +14985,13 @@
                   },
                   "ownerId": {
                     "type": "string",
+                    "minLength": 1,
                     "description": "B2C user ID who owns this camera"
                   },
                   "orgId": {
                     "type": "string",
-                    "description": "B2B organisation that owns this camera"
+                    "minLength": 1,
+                    "description": "B2B organisation associated with this camera"
                   }
                 },
                 "required": [
@@ -19661,10 +19663,12 @@
                     "type": "string"
                   },
                   "ownerId": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "orgId": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "initialUserIds": {
                     "type": "array",
