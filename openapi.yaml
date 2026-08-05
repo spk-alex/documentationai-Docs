@@ -3939,6 +3939,220 @@
         }
       }
     },
+    "/admin/shadow-log/{thingName}": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Read a Matter device's recent shadow changes",
+        "description": "Returns the last ~100 shadow updates recorded for one device — inbound reported state from AWS IoT and outbound desired writes we sent. Kept in Durable Object storage as a bounded ring buffer, deliberately NOT in the event log. PIN codes are redacted and oversized payloads truncated. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_GetShadowLogRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id."
+            },
+            "required": true,
+            "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id.",
+            "name": "thingName",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Max entries to return, newest first (default/max 100 — the retained window)."
+            },
+            "required": false,
+            "description": "Max entries to return, newest first (default/max 100 — the retained window).",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "reported",
+                "desired"
+              ],
+              "description": "Filter to inbound device reports or outbound desired writes. Omit for both."
+            },
+            "required": false,
+            "description": "Filter to inbound device reports or outbound desired writes. Omit for both.",
+            "name": "direction",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recorded shadow updates, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "thingName": {
+                      "type": "string"
+                    },
+                    "capacity": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "seq": {
+                            "type": "number"
+                          },
+                          "at": {
+                            "type": "string"
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": [
+                              "reported",
+                              "desired"
+                            ]
+                          },
+                          "shadowName": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": [
+                              "shadow-webhook",
+                              "update-desired-shadow",
+                              "device-command"
+                            ]
+                          },
+                          "version": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "payload": {
+                            "type": "string"
+                          },
+                          "truncated": {
+                            "type": "boolean"
+                          },
+                          "note": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "seq",
+                          "at",
+                          "direction",
+                          "shadowName",
+                          "source",
+                          "version",
+                          "payload",
+                          "truncated"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "thingName",
+                    "capacity",
+                    "total",
+                    "entries"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/workflows/{instanceId}": {
       "get": {
         "tags": [
