@@ -3946,7 +3946,7 @@
           "Ops"
         ],
         "summary": "Read a Matter device's recent shadow changes",
-        "description": "Returns the last ~100 shadow updates recorded for one device — inbound reported state from AWS IoT and outbound desired writes we sent. Kept in Durable Object storage as a bounded ring buffer, deliberately NOT in the event log. PIN codes are redacted and oversized payloads truncated. Requires dual auth: X-Admin-API-Key + JWT.",
+        "description": "Returns the last ~200 shadow records for one device — the reported and desired halves of each inbound AWS IoT shadow event, plus outbound desired writes we sent. Every arrival is kept, including repeats. Kept in Durable Object storage as a bounded ring buffer, deliberately NOT in the event log. PIN codes are redacted and oversized payloads truncated. Requires dual auth: X-Admin-API-Key + JWT.",
         "operationId": "get_GetShadowLogRoute",
         "parameters": [
           {
@@ -3964,11 +3964,11 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 100,
-              "description": "Max entries to return, newest first (default/max 100 — the retained window)."
+              "maximum": 200,
+              "description": "Max entries to return, newest first (default/max 200 — the retained window)."
             },
             "required": false,
-            "description": "Max entries to return, newest first (default/max 100 — the retained window).",
+            "description": "Max entries to return, newest first (default/max 200 — the retained window).",
             "name": "limit",
             "in": "query"
           },
@@ -3979,10 +3979,10 @@
                 "reported",
                 "desired"
               ],
-              "description": "Filter to inbound device reports or outbound desired writes. Omit for both."
+              "description": "Filter to the reported or the desired half of the record stream. Omit for both."
             },
             "required": false,
-            "description": "Filter to inbound device reports or outbound desired writes. Omit for both.",
+            "description": "Filter to the reported or the desired half of the record stream. Omit for both.",
             "name": "direction",
             "in": "query"
           }
