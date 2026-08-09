@@ -3946,7 +3946,7 @@
           "Ops"
         ],
         "summary": "Read a Matter device's recent shadow changes",
-        "description": "Returns the last ~200 shadow records for one device — the reported and desired halves of each inbound AWS IoT shadow event, plus outbound desired writes we sent. Every arrival is kept, including repeats. Kept in Durable Object storage as a bounded ring buffer, deliberately NOT in the event log. Payloads are stored VERBATIM so the exact wire document is readable — nothing is masked, including PIN codes on Door Lock commands — and are truncated only if oversized. Requires dual auth: X-Admin-API-Key + JWT.",
+        "description": "Returns the last ~200 shadow records for one device — the reported and desired halves of each inbound AWS IoT shadow event, plus outbound desired writes we sent. Every arrival is kept, including repeats. Kept in Durable Object storage as a bounded ring buffer, deliberately NOT in the event log. Payloads are stored VERBATIM and WHOLE so the exact wire document is readable — nothing is masked (including PIN codes on Door Lock commands) and nothing is size-trimmed short of the DO storage limit itself (~100 KB), so document tails like reported.lastCommand survive. Requires dual auth: X-Admin-API-Key + JWT.",
         "operationId": "get_GetShadowLogRoute",
         "parameters": [
           {
