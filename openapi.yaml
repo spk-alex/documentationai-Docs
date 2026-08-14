@@ -10379,8 +10379,7 @@
                   },
                   "phoneNumber": {
                     "type": "string",
-                    "minLength": 1,
-                    "description": "Resident phone number — resolved to the user UUID via D1 (phone-only users)"
+                    "description": "Resident phone number in international form (\"+48123456789\" or \"0048123456789\") — resolved to the user UUID via D1 (phone-only users)"
                   },
                   "userId": {
                     "type": "string",
@@ -11454,8 +11453,7 @@
                   },
                   "phoneNumber": {
                     "type": "string",
-                    "minLength": 1,
-                    "description": "Resident phone number to remove (phone-only users)"
+                    "description": "Resident phone number to remove, in international form (\"+48123456789\" or \"0048123456789\") — phone-only users"
                   },
                   "userId": {
                     "type": "string",
@@ -17468,7 +17466,7 @@
                   },
                   "phoneNumber": {
                     "type": "string",
-                    "description": "Phone number"
+                    "description": "Phone number in international form (\"+48123456789\" or \"0048123456789\"). Validated but not stored — use UpdatePhoneNumber to set it."
                   }
                 },
                 "required": [
@@ -19707,8 +19705,7 @@
                       "string",
                       "null"
                     ],
-                    "minLength": 1,
-                    "description": "Phone number to set; null to remove the existing phone number"
+                    "description": "Phone number to set, in international form (\"+48123456789\" or \"0048123456789\"); null to remove the existing phone number"
                   }
                 },
                 "required": [
@@ -21779,8 +21776,8 @@
           "User",
           "Query"
         ],
-        "summary": "Find user by email address",
-        "description": "Looks up a user by email address. If the user does not exist, creates them in both D1 (read model) and UserAggregate (event sourcing). This endpoint is idempotent — safe to call multiple times for the same email.",
+        "summary": "Find (or create) user by email address",
+        "description": "Looks up a user by email address. By default, if the user does not exist, creates them in both D1 (read model) and UserAggregate (event sourcing). This endpoint is idempotent — safe to call multiple times for the same email. Pass `searchOnly=true` to look up ONLY: a miss then answers 404 and nothing is created.",
         "operationId": "get_GetUserByEmailRoute",
         "parameters": [
           {
@@ -21801,6 +21798,20 @@
             "required": false,
             "description": "Optional UUID to assign to the new user",
             "name": "uuid",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "When true, only look the user up — do not create one on a miss (404 instead). Defaults to false, which keeps the existing find-or-create behaviour."
+            },
+            "required": false,
+            "description": "When true, only look the user up — do not create one on a miss (404 instead). Defaults to false, which keeps the existing find-or-create behaviour.",
+            "name": "searchOnly",
             "in": "query"
           }
         ],
@@ -21838,7 +21849,43 @@
             }
           },
           "400": {
-            "description": "Missing email parameter",
+            "description": "Missing or malformed query parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No user has this email (only possible with searchOnly=true)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Requested UUID already exists",
             "content": {
               "application/json": {
                 "schema": {
@@ -21900,18 +21947,17 @@
           "User",
           "Query"
         ],
-        "summary": "Find or create user by phone number",
-        "description": "Looks up a user by their phone number in D1. If none matches, creates the user in both D1 (read model) and the UserAggregate (event sourcing) — the same find-or-create behaviour as /users/by-email — storing the phone number on the new D1 row. A user can have a phone number, an email, or both: pass `email` to also record one. Idempotent.",
+        "summary": "Find (or create) user by phone number",
+        "description": "Looks up a user by their phone number in D1. By default, if none matches, creates the user in both D1 (read model) and the UserAggregate (event sourcing) — the same find-or-create behaviour as /users/by-email — storing the phone number on the new D1 row. A user can have a phone number, an email, or both: pass `email` to also record one. Idempotent. Pass `searchOnly=true` to look up ONLY: a miss then answers 404 and nothing is created.",
         "operationId": "get_GetUserByPhoneRoute",
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "description": "Phone number to look up (exact match)"
+              "description": "Phone number to look up, in international form. \"+48123456789\", \"+48 123 456 789\" and \"0048123456789\" all resolve to the same user; a number without a leading \"+\" or \"00\" is rejected."
             },
             "required": true,
-            "description": "Phone number to look up (exact match)",
+            "description": "Phone number to look up, in international form. \"+48123456789\", \"+48 123 456 789\" and \"0048123456789\" all resolve to the same user; a number without a leading \"+\" or \"00\" is rejected.",
             "name": "phoneNumber",
             "in": "query"
           },
@@ -21933,6 +21979,20 @@
             "required": false,
             "description": "Optional UUID to assign when creating a new user (must not already exist)",
             "name": "uuid",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "When true, only look the user up — do not create one on a miss (404 instead). Defaults to false, which keeps the existing find-or-create behaviour."
+            },
+            "required": false,
+            "description": "When true, only look the user up — do not create one on a miss (404 instead). Defaults to false, which keeps the existing find-or-create behaviour.",
+            "name": "searchOnly",
             "in": "query"
           }
         ],
@@ -21969,6 +22029,42 @@
                     "email",
                     "phoneNumber",
                     "created_at"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed query parameter — a phoneNumber that is not a valid international number, or a searchOnly other than true/false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No user has this phone number (only possible with searchOnly=true)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }

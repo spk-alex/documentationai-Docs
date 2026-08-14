@@ -1,5 +1,5 @@
 {
-  "version": "de8493b1",
+  "version": "1c38d5ff",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -55,17 +55,14 @@
             },
             "required": [
               "uuid"
-            ],
-            "additionalProperties": false
+            ]
           }
         }
       },
       "required": [
         "index",
-        "uuid",
-        "keys"
-      ],
-      "additionalProperties": false
+        "uuid"
+      ]
     },
     "AddKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -89,8 +86,7 @@
       },
       "required": [
         "keyUuid"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RemoveKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -107,8 +103,7 @@
           "minimum": -9007199254740991,
           "maximum": 9007199254740991
         }
-      },
-      "additionalProperties": false
+      }
     },
     "WriteKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -128,8 +123,7 @@
       },
       "required": [
         "keyUuid"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AddResident": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -142,14 +136,11 @@
         },
         "email": {
           "description": "Resident email — resolved to the user UUID via D1",
-          "type": "string",
-          "format": "email",
-          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          "type": "string"
         },
         "phoneNumber": {
-          "description": "Resident phone number — resolved to the user UUID via D1 (phone-only users)",
-          "type": "string",
-          "minLength": 1
+          "description": "Resident phone number in international form (\"+48123456789\" or \"0048123456789\") — resolved to the user UUID via D1 (phone-only users)",
+          "type": "string"
         },
         "userId": {
           "description": "Resident user UUID — used directly (unambiguous)",
@@ -159,8 +150,7 @@
       },
       "required": [
         "name"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RemoveResident": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -168,22 +158,18 @@
       "properties": {
         "email": {
           "description": "Resident email to remove",
-          "type": "string",
-          "format": "email",
-          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          "type": "string"
         },
         "phoneNumber": {
-          "description": "Resident phone number to remove (phone-only users)",
-          "type": "string",
-          "minLength": 1
+          "description": "Resident phone number to remove, in international form (\"+48123456789\" or \"0048123456789\") — phone-only users",
+          "type": "string"
         },
         "userId": {
           "description": "Resident user UUID to remove",
           "type": "string",
           "minLength": 1
         }
-      },
-      "additionalProperties": false
+      }
     },
     "SetOwner": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -196,8 +182,7 @@
       },
       "required": [
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SetOrganization": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -210,8 +195,7 @@
       },
       "required": [
         "orgId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ChangeLockUuid": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -226,8 +210,7 @@
       },
       "required": [
         "newUuid"
-      ],
-      "additionalProperties": false
+      ]
     },
     "OpenLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -241,8 +224,7 @@
           "description": "Reason for opening",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "BulkAddKeys": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -271,16 +253,14 @@
             },
             "required": [
               "keyUuid"
-            ],
-            "additionalProperties": false
+            ]
           },
           "description": "List of keys to add to the lock"
         }
       },
       "required": [
         "keys"
-      ],
-      "additionalProperties": false
+      ]
     },
     "create-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -337,11 +317,9 @@
       "required": [
         "tempKeyUuid",
         "accessMode",
-        "allowedUserIds",
         "validFrom",
         "validUntil"
-      ],
-      "additionalProperties": false
+      ]
     },
     "delete-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -355,8 +333,7 @@
       },
       "required": [
         "tempKeyUuid"
-      ],
-      "additionalProperties": false
+      ]
     },
     "update-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -407,8 +384,7 @@
       },
       "required": [
         "tempKeyUuid"
-      ],
-      "additionalProperties": false
+      ]
     },
     "use-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -427,8 +403,7 @@
       },
       "required": [
         "tempKeyUuid"
-      ],
-      "additionalProperties": false
+      ]
     },
     "CreateUser": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -442,9 +417,7 @@
         },
         "email": {
           "description": "User email",
-          "type": "string",
-          "format": "email",
-          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          "type": "string"
         },
         "firstName": {
           "description": "First name",
@@ -455,14 +428,13 @@
           "type": "string"
         },
         "phoneNumber": {
-          "description": "Phone number",
+          "description": "Phone number in international form (\"+48123456789\" or \"0048123456789\"). Validated but not stored — use UpdatePhoneNumber to set it.",
           "type": "string"
         }
       },
       "required": [
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "UpdatePhoneNumber": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -471,20 +443,18 @@
         "phoneNumber": {
           "anyOf": [
             {
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             },
             {
               "type": "null"
             }
           ],
-          "description": "Phone number to set; null to remove the existing phone number"
+          "description": "Phone number to set, in international form (\"+48123456789\" or \"0048123456789\"); null to remove the existing phone number"
         }
       },
       "required": [
         "phoneNumber"
-      ],
-      "additionalProperties": false
+      ]
     },
     "UpdateEmail": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -492,15 +462,12 @@
       "properties": {
         "email": {
           "description": "Email to set on a user that currently has none",
-          "type": "string",
-          "format": "email",
-          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          "type": "string"
         }
       },
       "required": [
         "email"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AddAccessibleLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -542,8 +509,7 @@
         "lockName",
         "accessLevel",
         "grantedBy"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RemoveAccessibleLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -566,8 +532,7 @@
         "lockId",
         "removedBy",
         "reason"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AddDevice": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -603,8 +568,7 @@
         "deviceId",
         "deviceType",
         "orgId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RemoveDevice": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -627,8 +591,7 @@
         "deviceId",
         "removedBy",
         "reason"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AddLicensePlate": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -646,10 +609,8 @@
         }
       },
       "required": [
-        "plate",
-        "label"
-      ],
-      "additionalProperties": false
+        "plate"
+      ]
     },
     "RemoveLicensePlate": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -663,8 +624,7 @@
       },
       "required": [
         "plate"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AddPhysicalKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -687,8 +647,7 @@
       },
       "required": [
         "orgId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RemovePhysicalKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -707,8 +666,7 @@
       },
       "required": [
         "number"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AddWalletKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -730,8 +688,7 @@
       "required": [
         "walletType",
         "keyIndex"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ProvisionHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -766,8 +723,7 @@
         "hubId",
         "serial",
         "model"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ClaimHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -794,8 +750,7 @@
         "hubId",
         "siteId",
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ReClaimHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -829,8 +784,7 @@
         "newSiteId",
         "reason",
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SetHubRole": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -857,8 +811,7 @@
         "hubId",
         "isPrimary",
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SuspendHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -882,8 +835,7 @@
         "hubId",
         "reason",
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "CommissionDevice": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -904,8 +856,7 @@
       "required": [
         "hubId",
         "commissioningCode"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SendHubCommand": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -934,8 +885,7 @@
       "required": [
         "hubId",
         "command"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RegisterCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1009,8 +959,7 @@
         "ownerId",
         "login",
         "password"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RegisterPnpCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1062,8 +1011,7 @@
         "ownerId",
         "login",
         "password"
-      ],
-      "additionalProperties": false
+      ]
     },
     "UpdateCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1084,8 +1032,7 @@
           "type": "string",
           "format": "uri"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "DisableCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1106,8 +1053,7 @@
       "required": [
         "reason",
         "disabledBy"
-      ],
-      "additionalProperties": false
+      ]
     },
     "DeleteCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1122,8 +1068,7 @@
       },
       "required": [
         "deletedBy"
-      ],
-      "additionalProperties": false
+      ]
     },
     "LinkCameraToLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1136,14 +1081,12 @@
       },
       "required": [
         "lockId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "UnlinkCameraFromLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "properties": {},
-      "additionalProperties": false
+      "properties": {}
     },
     "CreateCameraRole": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1176,8 +1119,7 @@
         "name",
         "description",
         "orgId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "DeleteCameraRole": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1192,8 +1134,7 @@
       },
       "required": [
         "deletedBy"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AssignUser": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1208,8 +1149,7 @@
       },
       "required": [
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RemoveUser": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1224,8 +1164,7 @@
       },
       "required": [
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AssignCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1249,8 +1188,7 @@
       "required": [
         "cameraId",
         "permissions"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RemoveCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1264,8 +1202,7 @@
       },
       "required": [
         "cameraId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "CreateMatterDevice": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1292,10 +1229,8 @@
       "required": [
         "deviceId",
         "thingName",
-        "hubId",
-        "deviceType"
-      ],
-      "additionalProperties": false
+        "hubId"
+      ]
     },
     "UpdateReportedShadow": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1312,8 +1247,7 @@
       },
       "required": [
         "reported"
-      ],
-      "additionalProperties": false
+      ]
     },
     "UpdateDesiredShadow": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1330,8 +1264,7 @@
       },
       "required": [
         "desired"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SetMatterPin": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1354,8 +1287,7 @@
       },
       "required": [
         "pinCode"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ClearMatterPin": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1374,8 +1306,7 @@
       },
       "required": [
         "credentialIndex"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RegisterRtspCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1420,8 +1351,7 @@
         "cameraId",
         "name",
         "rtspUrl"
-      ],
-      "additionalProperties": false
+      ]
     },
     "UpdateRtspCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1444,8 +1374,7 @@
         "httpSnapshotUrl": {
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "DeleteRtspCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1455,8 +1384,7 @@
           "description": "Actor who requested the deletion",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "StartStream": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1495,8 +1423,7 @@
       "required": [
         "userId",
         "role"
-      ],
-      "additionalProperties": false
+      ]
     },
     "RevokeAccess": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1514,8 +1441,7 @@
       },
       "required": [
         "userId"
-      ],
-      "additionalProperties": false
+      ]
     }
   }
 }
