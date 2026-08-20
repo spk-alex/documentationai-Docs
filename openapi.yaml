@@ -16150,6 +16150,167 @@
         }
       }
     },
+    "/locks/{id}/open-with-pin": {
+      "post": {
+        "tags": [
+          "TempKey",
+          "Lock"
+        ],
+        "summary": "Open a lock with a temp-key PIN",
+        "description": "Unauthenticated endpoint for a connected entrance panel. Verifies the submitted PIN against the live temp keys covering this lock and, on success, opens the door exactly as the guest page slide-to-open does. Every refusal — wrong PIN, unknown PIN, a lock the key does not cover, revoked, expired, not yet valid — returns the identical 401 so the endpoint is not an enumeration oracle. Repeated failures are throttled and then locked out per lock (429 with Retry-After).",
+        "operationId": "post_OpenLockWithPinRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Lock ID (numeric)"
+            },
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pin": {
+                    "type": "string",
+                    "pattern": "^\\d&#123;4,8&#125;$",
+                    "description": "The PIN issued with the temp key (always 6 digits today)"
+                  }
+                },
+                "required": [
+                  "pin"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Open command accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "offline": {
+                      "type": "boolean",
+                      "description": "The device was offline; the unlock is queued on its shadow. The command was still accepted."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "offline"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed PIN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The PIN does not open this lock",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "Invalid PIN"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many attempts for this lock",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "PIN access is disabled or unconfigured in this environment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/temp-keys/{uuid}/open": {
       "post": {
         "tags": [
@@ -22134,7 +22295,7 @@
           "Collective"
         ],
         "summary": "Create a collective / shared temporary access key",
-        "description": "Generates one shared guest credential that grants slide-to-open access to multiple doors. The caller must be authorized for every lock included. Keypad PINs are managed per lock (SetMatterPin), not per temp key. Returns the guest-facing URL and the doors.",
+        "description": "Generates one shared guest credential spanning multiple doors. Each door is opened by slide-to-open ('key'), by the key's PIN at a connected entrance panel ('code'), or either ('both'). If any door is code/both, ONE PIN is minted for the whole key and returned here — this response is the only place it is ever returned in the clear. The caller must be authorized for every lock included.",
         "operationId": "post_CreateCollectiveTempKeyRoute",
         "requestBody": {
           "content": {
@@ -22175,10 +22336,12 @@
                         "accessMethod": {
                           "type": "string",
                           "enum": [
-                            "key"
+                            "key",
+                            "code",
+                            "both"
                           ],
                           "default": "key",
-                          "description": "Doors are opened via the guest page (slide-to-open). Keypad PINs are managed per lock (SetMatterPin), not per temp key — requesting one here is rejected."
+                          "description": "How a guest gets through this door: 'key' = slide-to-open on the guest page, 'code' = the key's PIN typed at a connected entrance panel, 'both' = either. Requesting 'code' or 'both' on ANY door mints ONE PIN for the whole key, returned once in the create response."
                         }
                       }
                     },
@@ -22256,6 +22419,13 @@
                           "accessMethod"
                         ]
                       }
+                    },
+                    "pin": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The entrance-panel PIN for this key — SHOWN ONCE, here, and never retrievable from any JSON endpoint afterwards (the guest page is the only place it reappears). Null when no door is code/both."
                     }
                   },
                   "required": [
@@ -22264,7 +22434,8 @@
                     "url",
                     "validFrom",
                     "validUntil",
-                    "doors"
+                    "doors",
+                    "pin"
                   ]
                 }
               }
@@ -22341,6 +22512,24 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "A PIN was required but the PIN feature is unconfigured, or no free PIN could be allocated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -22352,7 +22541,7 @@
           "Collective"
         ],
         "summary": "Create a collective / shared temporary access key",
-        "description": "Generates one shared guest credential that grants slide-to-open access to multiple doors. The caller must be authorized for every lock included. Keypad PINs are managed per lock (SetMatterPin), not per temp key. Returns the guest-facing URL and the doors.",
+        "description": "Generates one shared guest credential spanning multiple doors. Each door is opened by slide-to-open ('key'), by the key's PIN at a connected entrance panel ('code'), or either ('both'). If any door is code/both, ONE PIN is minted for the whole key and returned here — this response is the only place it is ever returned in the clear. The caller must be authorized for every lock included.",
         "operationId": "post_CreateUnifiedTempKeyRoute",
         "requestBody": {
           "content": {
@@ -22393,10 +22582,12 @@
                         "accessMethod": {
                           "type": "string",
                           "enum": [
-                            "key"
+                            "key",
+                            "code",
+                            "both"
                           ],
                           "default": "key",
-                          "description": "Doors are opened via the guest page (slide-to-open). Keypad PINs are managed per lock (SetMatterPin), not per temp key — requesting one here is rejected."
+                          "description": "How a guest gets through this door: 'key' = slide-to-open on the guest page, 'code' = the key's PIN typed at a connected entrance panel, 'both' = either. Requesting 'code' or 'both' on ANY door mints ONE PIN for the whole key, returned once in the create response."
                         }
                       }
                     },
@@ -22474,6 +22665,13 @@
                           "accessMethod"
                         ]
                       }
+                    },
+                    "pin": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The entrance-panel PIN for this key — SHOWN ONCE, here, and never retrievable from any JSON endpoint afterwards (the guest page is the only place it reappears). Null when no door is code/both."
                     }
                   },
                   "required": [
@@ -22482,7 +22680,8 @@
                     "url",
                     "validFrom",
                     "validUntil",
-                    "doors"
+                    "doors",
+                    "pin"
                   ]
                 }
               }
@@ -22544,6 +22743,24 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A PIN was required but the PIN feature is unconfigured, or no free PIN could be allocated",
             "content": {
               "application/json": {
                 "schema": {
