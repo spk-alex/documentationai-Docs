@@ -1795,6 +1795,17 @@
             "description": "Whether to also delete associated key_assignments rows (default: true)",
             "name": "cascadeDeleteKeys",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "true",
+              "description": "Whether to also delete the lock's AWS IoT Thing in DELETE_DO_AND_EVENTS mode (default: true). Set to \"false\" to remove all internal state — DO, R2 events, registry row, D1 rows — while PRESERVING the physical device. Intended for acceptance suites bound to a test-stand lock, whose aggregate is disposable but whose Thing is not."
+            },
+            "required": false,
+            "description": "Whether to also delete the lock's AWS IoT Thing in DELETE_DO_AND_EVENTS mode (default: true). Set to \"false\" to remove all internal state — DO, R2 events, registry row, D1 rows — while PRESERVING the physical device. Intended for acceptance suites bound to a test-stand lock, whose aggregate is disposable but whose Thing is not.",
+            "name": "deleteIotThing",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1815,6 +1826,9 @@
                       "type": "string"
                     },
                     "cascadeDeleteKeys": {
+                      "type": "boolean"
+                    },
+                    "deleteIotThing": {
                       "type": "boolean"
                     },
                     "operations": {
@@ -1842,6 +1856,7 @@
                     "lockId",
                     "mode",
                     "cascadeDeleteKeys",
+                    "deleteIotThing",
                     "operations",
                     "auditLogPath",
                     "duration",
