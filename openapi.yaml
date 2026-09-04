@@ -21129,7 +21129,8 @@
                 "sent",
                 "failed",
                 "skipped_unconfigured",
-                "suppressed"
+                "suppressed",
+                "undeliverable"
               ],
               "description": "Filter to one delivery outcome — `failed` and `suppressed` are the interesting ones."
             },
@@ -21265,7 +21266,8 @@
                               "sent",
                               "failed",
                               "skipped_unconfigured",
-                              "suppressed"
+                              "suppressed",
+                              "undeliverable"
                             ]
                           },
                           "error": {
