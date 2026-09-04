@@ -1,5 +1,5 @@
 {
-  "version": "7858a58f",
+  "version": "2770ea32",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -14,7 +14,10 @@
           "enum": [
             "boolean_state",
             "smoke",
-            "smoke_interconnect"
+            "smoke_interconnect",
+            "co",
+            "occupancy",
+            "device_fault"
           ]
         },
         "alarmType": {
@@ -22,7 +25,12 @@
           "enum": [
             "contact",
             "water_leak",
-            "smoke"
+            "smoke",
+            "co",
+            "motion",
+            "water_freeze",
+            "rain",
+            "device_fault"
           ]
         },
         "severity": {
@@ -39,6 +47,21 @@
           "type": "integer",
           "minimum": -9007199254740991,
           "maximum": 9007199254740991
+        },
+        "endpoint": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "deviceTypeSource": {
+          "type": "string",
+          "enum": [
+            "shadow",
+            "sticky",
+            "command",
+            "shadow_borrowed",
+            "shadow_disputed"
+          ]
         },
         "rawValue": {
           "type": "number"
@@ -69,7 +92,10 @@
           "enum": [
             "boolean_state",
             "smoke",
-            "smoke_interconnect"
+            "smoke_interconnect",
+            "co",
+            "occupancy",
+            "device_fault"
           ]
         },
         "alarmType": {
@@ -77,7 +103,12 @@
           "enum": [
             "contact",
             "water_leak",
-            "smoke"
+            "smoke",
+            "co",
+            "motion",
+            "water_freeze",
+            "rain",
+            "device_fault"
           ]
         },
         "matterPath": {
@@ -87,6 +118,21 @@
           "type": "integer",
           "minimum": -9007199254740991,
           "maximum": 9007199254740991
+        },
+        "endpoint": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "deviceTypeSource": {
+          "type": "string",
+          "enum": [
+            "shadow",
+            "sticky",
+            "command",
+            "shadow_borrowed",
+            "shadow_disputed"
+          ]
         },
         "rawValue": {
           "type": "number"

@@ -3430,6 +3430,313 @@
         }
       }
     },
+    "/admin/sensor-device-type/{thingName}": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Clear a sensor's learned Matter device type",
+        "description": "Deletes the sticky Descriptor (29/0) device type learned for this device — one endpoint with ?endpoint=N, otherwise every endpoint it has. The device re-learns from its next shadow that carries 29/0. Use this when a sensor reports the opposite of reality (a contact sensor stuck reading \"open\", a leak detector that never alarms), which is what a stale or wrong row causes. Deleting nothing returns 200 with alreadyDeleted=true — the row being absent is the requested end state. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "delete_DeleteSensorDeviceTypeRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id."
+            },
+            "required": true,
+            "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id.",
+            "name": "thingName",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "description": "Clear only this endpoint. Omit to clear every endpoint of the device — on a bridge that un-learns every other sensor on it too."
+            },
+            "required": false,
+            "description": "Clear only this endpoint. Omit to clear every endpoint of the device — on a bridge that un-learns every other sensor on it too.",
+            "name": "endpoint",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Learned device type cleared (or already absent)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "thingName": {
+                      "type": "string"
+                    },
+                    "endpoint": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "deleted": {
+                      "type": "number",
+                      "description": "Rows removed."
+                    },
+                    "alreadyDeleted": {
+                      "type": "boolean",
+                      "description": "True when nothing was there to remove — a successful end state, not a 404 (CLAUDE.md D1 rule 3)."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "thingName",
+                    "endpoint",
+                    "deleted",
+                    "alreadyDeleted"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Read a sensor's learned Matter device types, per endpoint",
+        "description": "The sticky Descriptor (29/0) device type this device taught us, one row per Matter endpoint, with when it was learned. This value interprets Boolean State (69/0) readings — contact (21) reports false when OPEN, while water leak (67), water freeze (65) and rain (68) report true when the condition is present — so a wrong row does not merely mislabel an alarm, it inverts it. An empty list means nothing has been learned yet, which is why such readings produce no alarm at all. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_GetSensorDeviceTypeRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id."
+            },
+            "required": true,
+            "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id.",
+            "name": "thingName",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Learned device types, by endpoint",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "thingName": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "endpoint": {
+                            "type": "number"
+                          },
+                          "deviceTypeId": {
+                            "type": "number"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "endpoint",
+                          "deviceTypeId",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "thingName",
+                    "total",
+                    "entries"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/dlq/purge": {
       "post": {
         "tags": [
@@ -4903,22 +5210,40 @@
                     "enum": [
                       "boolean_state",
                       "smoke",
-                      "smoke_interconnect"
+                      "smoke_interconnect",
+                      "co",
+                      "occupancy",
+                      "device_fault"
                     ],
                     "description": "Which sensor channel this reading is for"
                   },
                   "matterPath": {
                     "type": "string",
-                    "minLength": 1,
-                    "description": "Matter cluster/attribute path, e.g. \"1/69/0\""
+                    "pattern": "^\\d+\\/\\d+\\/\\d+$",
+                    "description": "Full Matter endpoint/cluster/attribute path, e.g. \"1/69/0\" or \"2/92/0\""
                   },
                   "value": {
                     "type": "number",
-                    "description": "Reported value (0/1 for boolean state, 0/1/2 for smoke)"
+                    "description": "Reported value (0/1 boolean state, 0-8 ExpressedState, 0/1/2 AlarmStateEnum, occupancy bitmap)"
                   },
                   "deviceTypeId": {
                     "type": "integer",
-                    "description": "Matter device type id (1/29/0) — required to interpret boolean_state"
+                    "description": "Matter device type id (29/0) — required to interpret boolean_state"
+                  },
+                  "endpoint": {
+                    "type": "integer",
+                    "description": "Matter endpoint the attribute was found on (sensors are not always on 1)"
+                  },
+                  "deviceTypeSource": {
+                    "type": "string",
+                    "enum": [
+                      "shadow",
+                      "sticky",
+                      "command",
+                      "shadow_borrowed",
+                      "shadow_disputed"
+                    ],
+                    "description": "Provenance of deviceTypeId — shadow / sticky D1 projection / caller"
                   },
                   "timestamp": {
                     "type": "string",
@@ -4973,7 +5298,10 @@
                                   "enum": [
                                     "boolean_state",
                                     "smoke",
-                                    "smoke_interconnect"
+                                    "smoke_interconnect",
+                                    "co",
+                                    "occupancy",
+                                    "device_fault"
                                   ]
                                 },
                                 "alarmType": {
@@ -4981,7 +5309,12 @@
                                   "enum": [
                                     "contact",
                                     "water_leak",
-                                    "smoke"
+                                    "smoke",
+                                    "co",
+                                    "motion",
+                                    "water_freeze",
+                                    "rain",
+                                    "device_fault"
                                   ]
                                 },
                                 "severity": {
@@ -4996,6 +5329,19 @@
                                 },
                                 "deviceTypeId": {
                                   "type": "integer"
+                                },
+                                "endpoint": {
+                                  "type": "integer"
+                                },
+                                "deviceTypeSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "shadow",
+                                    "sticky",
+                                    "command",
+                                    "shadow_borrowed",
+                                    "shadow_disputed"
+                                  ]
                                 },
                                 "rawValue": {
                                   "type": "number"
@@ -5039,7 +5385,10 @@
                                   "enum": [
                                     "boolean_state",
                                     "smoke",
-                                    "smoke_interconnect"
+                                    "smoke_interconnect",
+                                    "co",
+                                    "occupancy",
+                                    "device_fault"
                                   ]
                                 },
                                 "alarmType": {
@@ -5047,7 +5396,12 @@
                                   "enum": [
                                     "contact",
                                     "water_leak",
-                                    "smoke"
+                                    "smoke",
+                                    "co",
+                                    "motion",
+                                    "water_freeze",
+                                    "rain",
+                                    "device_fault"
                                   ]
                                 },
                                 "matterPath": {
@@ -5055,6 +5409,19 @@
                                 },
                                 "deviceTypeId": {
                                   "type": "integer"
+                                },
+                                "endpoint": {
+                                  "type": "integer"
+                                },
+                                "deviceTypeSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "shadow",
+                                    "sticky",
+                                    "command",
+                                    "shadow_borrowed",
+                                    "shadow_disputed"
+                                  ]
                                 },
                                 "rawValue": {
                                   "type": "number"
@@ -20608,6 +20975,335 @@
                     "total",
                     "scanned",
                     "truncated",
+                    "records"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/notification-log": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Read the alarm push-notification delivery log",
+        "description": "One row per recipient per alarm transition, newest first, recording what happened to that notification: sent, failed (with the error), skipped_unconfigured (no PUSH_NOTIFICATION_URL/_API_KEY in this environment), or suppressed (the transition has no copy — motion clearing — or nobody has access to the device; the reason is in `error`). Each row also carries the matter path, endpoint, device type and where that device type came from, so a mislabelled sensor is distinguishable from a genuine delivery miss. Filter by device, user, time range, alarm type and outcome. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_GetNotificationLogRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "MatterDevice UUID whose sensor tripped."
+            },
+            "required": false,
+            "description": "MatterDevice UUID whose sensor tripped.",
+            "name": "deviceId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Recipient UUID. Device-level records (nothing sent to anybody) carry \"\"."
+            },
+            "required": false,
+            "description": "Recipient UUID. Device-level records (nothing sent to anybody) carry \"\".",
+            "name": "userId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Inclusive ISO-8601 lower bound on the delivery timestamp."
+            },
+            "required": false,
+            "description": "Inclusive ISO-8601 lower bound on the delivery timestamp.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Inclusive ISO-8601 upper bound on the delivery timestamp."
+            },
+            "required": false,
+            "description": "Inclusive ISO-8601 upper bound on the delivery timestamp.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "contact | motion | water_leak | water_freeze | rain | smoke | co | device_fault"
+            },
+            "required": false,
+            "description": "contact | motion | water_leak | water_freeze | rain | smoke | co | device_fault",
+            "name": "alarmType",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sent",
+                "failed",
+                "skipped_unconfigured",
+                "suppressed"
+              ],
+              "description": "Filter to one delivery outcome — `failed` and `suppressed` are the interesting ones."
+            },
+            "required": false,
+            "description": "Filter to one delivery outcome — `failed` and `suppressed` are the interesting ones.",
+            "name": "outcome",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Page size, newest first (default 50, max 200)."
+            },
+            "required": false,
+            "description": "Page size, newest first (default 50, max 200).",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "description": "Rows to skip (default 0)."
+            },
+            "required": false,
+            "description": "Rows to skip (default 0).",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification records, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "offset": {
+                      "type": "number"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "eventId": {
+                            "type": "string"
+                          },
+                          "userId": {
+                            "type": "string"
+                          },
+                          "deviceId": {
+                            "type": "string"
+                          },
+                          "alarmType": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "severity": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "channel": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "matterPath": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "endpoint": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "deviceTypeId": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "deviceTypeSource": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "rawValue": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "body": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "outcome": {
+                            "type": "string",
+                            "enum": [
+                              "sent",
+                              "failed",
+                              "skipped_unconfigured",
+                              "suppressed"
+                            ]
+                          },
+                          "error": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "eventId",
+                          "userId",
+                          "deviceId",
+                          "alarmType",
+                          "severity",
+                          "channel",
+                          "matterPath",
+                          "endpoint",
+                          "deviceTypeId",
+                          "deviceTypeSource",
+                          "rawValue",
+                          "title",
+                          "body",
+                          "outcome",
+                          "error",
+                          "createdAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "limit",
+                    "offset",
+                    "hasMore",
                     "records"
                   ]
                 }
