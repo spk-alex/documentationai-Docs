@@ -2572,6 +2572,324 @@
         }
       }
     },
+    "/admin/devices/{deviceId}/notification-mute": {
+      "put": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Mute alarm push notifications for one device",
+        "description": "Stops alarm push notifications for a single device without affecting any other device. Use when a faulty or flapping sensor is flooding users — a sensor toggling every second generates a notification every second, and nothing else on the path limits that. Muted alarms are still recorded in the notification log with outcome \"muted\", so the device stays explainable. A reason is required. Re-muting updates the existing mute in place. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "put_MuteDeviceNotificationsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "MatterDevice UUID (= AWS IoT thingName) to mute or unmute."
+            },
+            "required": true,
+            "description": "MatterDevice UUID (= AWS IoT thingName) to mute or unmute.",
+            "name": "deviceId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 500,
+                    "description": "Why this device is muted. REQUIRED — an unexplained mute becomes permanent, because nobody later knows whether lifting it is safe."
+                  },
+                  "expiresAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "ISO-8601 instant after which the mute stops applying. Omit for an indefinite mute. Expiry is evaluated on read, so it cannot fail open."
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device muted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "mute": {
+                      "type": "object",
+                      "properties": {
+                        "deviceId": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "mutedBy": {
+                          "type": "string",
+                          "description": "Admin email from the JWT that created it."
+                        },
+                        "expiresAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "expired": {
+                          "type": "boolean",
+                          "description": "Derived on read: the expiry has passed, so the mute no longer applies."
+                        }
+                      },
+                      "required": [
+                        "deviceId",
+                        "reason",
+                        "mutedBy",
+                        "expiresAt",
+                        "createdAt",
+                        "expired"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "mute"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Lift a device's alarm push mute",
+        "description": "Re-enables alarm push notifications for one device. Unmuting a device that was not muted returns 200 with alreadyUnmuted=true — the row being absent is the requested end state. Check the notification log afterwards: if the device is still faulty the flood resumes immediately. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "delete_UnmuteDeviceNotificationsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "MatterDevice UUID (= AWS IoT thingName) to mute or unmute."
+            },
+            "required": true,
+            "description": "MatterDevice UUID (= AWS IoT thingName) to mute or unmute.",
+            "name": "deviceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mute lifted (or already absent)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "deviceId": {
+                      "type": "string"
+                    },
+                    "alreadyUnmuted": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "deviceId",
+                    "alreadyUnmuted"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/workflows/{instanceId}/terminate": {
       "post": {
         "tags": [
@@ -4676,8 +4994,8 @@
           "Admin",
           "Ops"
         ],
-        "summary": "Operational overview (DLQ + Sentry) for this environment",
-        "description": "Read-only dashboard data: count of failed projection events in the DLQ (by projector) and the number of unresolved Sentry issues for this environment. Each section degrades to `configured: false` when its binding/secret is absent. Requires dual auth: X-Admin-API-Key + JWT.",
+        "summary": "Operational overview (DLQ + Sentry + muted devices) for this environment",
+        "description": "Read-only dashboard data: count of failed projection events in the DLQ (by projector), the number of unresolved Sentry issues for this environment, and how many devices have their alarm pushes muted by an operator. Each section degrades to `configured: false` when its binding/secret is absent. Requires dual auth: X-Admin-API-Key + JWT.",
         "operationId": "get_OpsOverviewRoute",
         "responses": {
           "200": {
@@ -4802,13 +5120,43 @@
                         "url",
                         "topIssues"
                       ]
+                    },
+                    "mutes": {
+                      "type": "object",
+                      "properties": {
+                        "configured": {
+                          "type": "boolean"
+                        },
+                        "active": {
+                          "type": "number"
+                        },
+                        "total": {
+                          "type": "number"
+                        },
+                        "latestMutedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "configured",
+                        "active",
+                        "total",
+                        "latestMutedAt"
+                      ]
                     }
                   },
                   "required": [
                     "environment",
                     "generatedAt",
                     "dlq",
-                    "sentry"
+                    "sentry",
+                    "mutes"
                   ]
                 }
               }
@@ -21130,7 +21478,8 @@
                 "failed",
                 "skipped_unconfigured",
                 "suppressed",
-                "undeliverable"
+                "undeliverable",
+                "muted"
               ],
               "description": "Filter to one delivery outcome — `failed` and `suppressed` are the interesting ones."
             },
@@ -21267,7 +21616,8 @@
                               "failed",
                               "skipped_unconfigured",
                               "suppressed",
-                              "undeliverable"
+                              "undeliverable",
+                              "muted"
                             ]
                           },
                           "error": {
@@ -21571,6 +21921,155 @@
           },
           "403": {
             "description": "Invalid email domain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/device-notification-mutes": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "List every device with muted alarm notifications",
+        "description": "Every device whose alarm pushes an operator has muted, newest first, with the reason, who muted it and when it expires. Expired mutes are included and flagged — they no longer suppress anything, but the record of the mute is kept. Check this after any incident: a device muted and never un-muted is silently not alarming. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_ListDeviceNotificationMutesRoute",
+        "responses": {
+          "200": {
+            "description": "Muted devices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "mutes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deviceId": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "mutedBy": {
+                            "type": "string",
+                            "description": "Admin email from the JWT that created it."
+                          },
+                          "expiresAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "expired": {
+                            "type": "boolean",
+                            "description": "Derived on read: the expiry has passed, so the mute no longer applies."
+                          }
+                        },
+                        "required": [
+                          "deviceId",
+                          "reason",
+                          "mutedBy",
+                          "expiresAt",
+                          "createdAt",
+                          "expired"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "mutes"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {
