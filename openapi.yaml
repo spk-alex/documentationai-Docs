@@ -4503,6 +4503,264 @@
         }
       }
     },
+    "/admin/pin-status/{thingName}": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Read one Door Lock's PIN capability and provisioning campaign",
+        "description": "Returns what the lock reported about its PIN support (including the require_pin_remote gate, Door Lock attr 0x33) alongside the app-service PIN campaign: state, attempt count, last ack outcome, timestamps and the slot it occupies. Both halves are null when the device is unknown to both tables — that is a valid answer, not a 404. The stored PIN is never returned. Requires dual auth.",
+        "operationId": "get_GetPinStatusRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id."
+            },
+            "required": true,
+            "description": "AWS IoT thing name — identical to the Matter device UUID / aggregate id.",
+            "name": "thingName",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PIN capability + provisioning campaign for the device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "thingName": {
+                      "type": "string"
+                    },
+                    "capability": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "pinCapable": {
+                          "type": "boolean"
+                        },
+                        "requirePinRemote": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "featureMap": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "pinMinLength": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "pinMaxLength": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "matterClusters": {
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "number"
+                          }
+                        },
+                        "source": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "updatedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "pinCapable",
+                        "requirePinRemote",
+                        "featureMap",
+                        "pinMinLength",
+                        "pinMaxLength",
+                        "matterClusters",
+                        "source",
+                        "updatedAt"
+                      ]
+                    },
+                    "campaign": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "provisionState": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "sent",
+                            "verified",
+                            "unverified",
+                            "failed"
+                          ]
+                        },
+                        "attemptCount": {
+                          "type": "number"
+                        },
+                        "userIndex": {
+                          "type": "number"
+                        },
+                        "credentialIndex": {
+                          "type": "number"
+                        },
+                        "lastOutcome": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "firstClaimedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "lastAttemptAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "verifiedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "sentMessageIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "provisionState",
+                        "attemptCount",
+                        "userIndex",
+                        "credentialIndex",
+                        "lastOutcome",
+                        "firstClaimedAt",
+                        "lastAttemptAt",
+                        "verifiedAt",
+                        "sentMessageIds"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "thingName",
+                    "capability",
+                    "campaign"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/debug/registry": {
       "get": {
         "tags": [
@@ -21767,6 +22025,316 @@
                     "offset",
                     "hasMore",
                     "records"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/pin-status": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "List Door Lock PIN provisioning status across the fleet",
+        "description": "Joins device_pin_capability with matter_device_app_pin for every known Matter Door Lock, newest activity first. Filter by `provisionState` to answer \"which locks are unconfirmed or failed?\", or by `requirePinRemote` to find locks the app-PIN gate does or does not apply to. Locks that have never provisioned are included (campaign null) unless a state filter excludes them. The stored PIN is never returned. Requires dual auth.",
+        "operationId": "get_ListPinStatusRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "sent",
+                "verified",
+                "unverified",
+                "failed"
+              ],
+              "description": "Filter to campaigns in this state. Omit for all."
+            },
+            "required": false,
+            "description": "Filter to campaigns in this state. Omit for all.",
+            "name": "provisionState",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "unknown"
+              ],
+              "description": "Filter on the tri-state gate: positively required, positively not, or never reported."
+            },
+            "required": false,
+            "description": "Filter on the tri-state gate: positively required, positively not, or never reported.",
+            "name": "requirePinRemote",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Max rows to return (default 100)."
+            },
+            "required": false,
+            "description": "Max rows to return (default 100).",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PIN provisioning status rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number"
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "thingName": {
+                            "type": "string"
+                          },
+                          "capability": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "pinCapable": {
+                                "type": "boolean"
+                              },
+                              "requirePinRemote": {
+                                "type": [
+                                  "boolean",
+                                  "null"
+                                ]
+                              },
+                              "featureMap": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "pinMinLength": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "pinMaxLength": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "matterClusters": {
+                                "type": [
+                                  "array",
+                                  "null"
+                                ],
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "source": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "updatedAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "pinCapable",
+                              "requirePinRemote",
+                              "featureMap",
+                              "pinMinLength",
+                              "pinMaxLength",
+                              "matterClusters",
+                              "source",
+                              "updatedAt"
+                            ]
+                          },
+                          "campaign": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "provisionState": {
+                                "type": "string",
+                                "enum": [
+                                  "pending",
+                                  "sent",
+                                  "verified",
+                                  "unverified",
+                                  "failed"
+                                ]
+                              },
+                              "attemptCount": {
+                                "type": "number"
+                              },
+                              "userIndex": {
+                                "type": "number"
+                              },
+                              "credentialIndex": {
+                                "type": "number"
+                              },
+                              "lastOutcome": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "firstClaimedAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "lastAttemptAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "verifiedAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "sentMessageIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "provisionState",
+                              "attemptCount",
+                              "userIndex",
+                              "credentialIndex",
+                              "lastOutcome",
+                              "firstClaimedAt",
+                              "lastAttemptAt",
+                              "verifiedAt",
+                              "sentMessageIds"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "thingName",
+                          "capability",
+                          "campaign"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "truncated",
+                    "rows"
                   ]
                 }
               }
