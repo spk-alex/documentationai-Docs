@@ -1,5 +1,5 @@
 {
-  "version": "bf19ef27",
+  "version": "38a360ca",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1976,6 +1976,336 @@
         "thingName",
         "credentialIndex",
         "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinSendRequested": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "attempt": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "userIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "credentialIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pinMinLength": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pinMaxLength": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "messageId",
+        "attempt",
+        "userIndex",
+        "credentialIndex",
+        "pinMinLength",
+        "pinMaxLength"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinShadowWriteFailed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "command": {
+          "type": "string",
+          "enum": [
+            "SetCredential",
+            "ClearCredential"
+          ]
+        },
+        "messageId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "command",
+        "messageId",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinAcked": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure",
+            "duplicate",
+            "occupied",
+            "invalid-field"
+          ]
+        },
+        "matchedMessageId": {
+          "type": "string"
+        },
+        "errorCode": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "userIndex": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "provisionState": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "sent",
+            "verified",
+            "unverified",
+            "failed"
+          ]
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "outcome",
+        "matchedMessageId",
+        "provisionState"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinClearRequested": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "credentialIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "credentialIndex"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinGaveUp": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "attemptCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "lastOutcome": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "reason",
+        "attemptCount",
+        "lastOutcome"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinRedriven": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "priorState": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "pending",
+                "sent",
+                "verified",
+                "unverified",
+                "failed"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "priorAttempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "priorInfraFailures": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "reason",
+        "priorState",
+        "priorAttempts",
+        "priorInfraFailures"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinRetired": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "credentialIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "reason",
+        "credentialIndex"
       ],
       "additionalProperties": false
     },

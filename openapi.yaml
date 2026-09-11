@@ -4948,7 +4948,7 @@
           "Ops"
         ],
         "summary": "Read a Matter device's recent shadow changes",
-        "description": "Returns the last ~200 shadow records for one device — the reported and desired halves of each inbound AWS IoT shadow event, plus outbound desired writes we sent. Every arrival is kept, including repeats. Kept in Durable Object storage as a bounded ring buffer, deliberately NOT in the event log. Payloads are stored VERBATIM and WHOLE so the exact wire document is readable — nothing is masked (including PIN codes on Door Lock commands) and nothing is size-trimmed short of the DO storage limit itself (~100 KB), so document tails like reported.lastCommand survive. Requires dual auth: X-Admin-API-Key + JWT.",
+        "description": "Returns the last ~200 shadow records for one device — the reported and desired halves of each inbound AWS IoT shadow event, plus outbound desired writes we sent. Every arrival is kept, including repeats. Kept in Durable Object storage as a bounded ring buffer, deliberately NOT in the event log. Payloads are stored VERBATIM and WHOLE so the exact wire document is readable — nothing is masked (including PIN codes on Door Lock commands) and nothing is size-trimmed short of the DO storage limit itself (~100 KB), so document tails like reported.last_command survive. Requires dual auth: X-Admin-API-Key + JWT.",
         "operationId": "get_GetShadowLogRoute",
         "parameters": [
           {
@@ -15146,6 +15146,938 @@
           },
           "400": {
             "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matter-devices/{id}/ProcessAppPinTick": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Advance the app-service PIN campaign from one reported shadow",
+        "description": "Reads the reported shadow for device liveness and for the ack of an in-flight SetCredential, and emits the one step the campaign takes (send, clear, verdict, give up, re-drive, retire) or NO_EVENT.",
+        "operationId": "post_ProcessAppPinTickRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reported": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "requirePinRemote": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "hasStoredPin": {
+                    "type": "boolean"
+                  },
+                  "projected": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "provisionState": {
+                        "type": "string",
+                        "enum": [
+                          "pending",
+                          "sent",
+                          "verified",
+                          "unverified",
+                          "failed"
+                        ]
+                      },
+                      "attemptCount": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "infraFailureCount": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "firstClaimedAt": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "lastAttemptAt": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "lastMessageId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "sentMessageIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "lastOutcome": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "verifiedAt": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "userIndex": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0
+                      },
+                      "credentialIndex": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "provisionState",
+                      "attemptCount",
+                      "infraFailureCount",
+                      "firstClaimedAt",
+                      "lastAttemptAt",
+                      "lastMessageId",
+                      "sentMessageIds",
+                      "lastOutcome",
+                      "verifiedAt",
+                      "userIndex",
+                      "credentialIndex"
+                    ]
+                  },
+                  "pinMinLength": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "pinMaxLength": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "reported",
+                  "requirePinRemote",
+                  "hasStoredPin"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shadow processed. `event` is the single step the campaign took, or null when this shadow changed nothing; `appPinCampaign` is the post-event campaign when an event was emitted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AppPinSendRequested"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "thingName": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "number"
+                                },
+                                "messageId": {
+                                  "type": "string"
+                                },
+                                "attempt": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                },
+                                "userIndex": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                },
+                                "credentialIndex": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                },
+                                "pinMinLength": {
+                                  "type": [
+                                    "integer",
+                                    "null"
+                                  ]
+                                },
+                                "pinMaxLength": {
+                                  "type": [
+                                    "integer",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "thingName",
+                                "timestamp",
+                                "messageId",
+                                "attempt",
+                                "userIndex",
+                                "credentialIndex",
+                                "pinMinLength",
+                                "pinMaxLength"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AppPinAcked"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "thingName": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "number"
+                                },
+                                "outcome": {
+                                  "type": "string",
+                                  "enum": [
+                                    "success",
+                                    "failure",
+                                    "duplicate",
+                                    "occupied",
+                                    "invalid-field"
+                                  ]
+                                },
+                                "matchedMessageId": {
+                                  "type": "string"
+                                },
+                                "errorCode": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                "userIndex": {
+                                  "type": "integer"
+                                },
+                                "provisionState": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pending",
+                                    "sent",
+                                    "verified",
+                                    "unverified",
+                                    "failed"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "thingName",
+                                "timestamp",
+                                "outcome",
+                                "matchedMessageId",
+                                "provisionState"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AppPinClearRequested"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "thingName": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "number"
+                                },
+                                "credentialIndex": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "thingName",
+                                "timestamp",
+                                "credentialIndex"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AppPinGaveUp"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "thingName": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "number"
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "attemptCount": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "lastOutcome": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "thingName",
+                                "timestamp",
+                                "reason",
+                                "attemptCount",
+                                "lastOutcome"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AppPinRedriven"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "thingName": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "number"
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "priorState": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "enum": [
+                                    "pending",
+                                    "sent",
+                                    "verified",
+                                    "unverified",
+                                    "failed",
+                                    null
+                                  ]
+                                },
+                                "priorAttempts": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "priorInfraFailures": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "thingName",
+                                "timestamp",
+                                "reason",
+                                "priorState",
+                                "priorAttempts",
+                                "priorInfraFailures"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "AppPinRetired"
+                              ]
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "deviceId": {
+                                  "type": "string"
+                                },
+                                "thingName": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "number"
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "credentialIndex": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                }
+                              },
+                              "required": [
+                                "deviceId",
+                                "thingName",
+                                "timestamp",
+                                "reason",
+                                "credentialIndex"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "data"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The single step the campaign took, or null when this shadow changed nothing"
+                    },
+                    "appPinCampaign": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "provisionState": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "sent",
+                            "verified",
+                            "unverified",
+                            "failed"
+                          ]
+                        },
+                        "attemptCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "infraFailureCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "firstClaimedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "lastAttemptAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "lastMessageId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "sentMessageIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "lastOutcome": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "verifiedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "userIndex": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "credentialIndex": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        }
+                      },
+                      "required": [
+                        "provisionState",
+                        "attemptCount",
+                        "infraFailureCount",
+                        "firstClaimedAt",
+                        "lastAttemptAt",
+                        "lastMessageId",
+                        "sentMessageIds",
+                        "lastOutcome",
+                        "verifiedAt",
+                        "userIndex",
+                        "credentialIndex"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing API key authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — the matter device does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matter-devices/{id}/ReportAppPinWriteFailure": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Record a failed app-PIN desired-shadow write",
+        "description": "Gives a refused SetCredential attempt back to the campaign (counting an infrastructure failure), or puts the slot back to occupied after a refused ClearCredential.",
+        "operationId": "post_ReportAppPinWriteFailureRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "eventVersion": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "error": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "eventVersion",
+                  "error"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Failure recorded (`event` set) or ignored because the campaign has since moved on (`event` null).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "AppPinShadowWriteFailed"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "number"
+                            },
+                            "command": {
+                              "type": "string",
+                              "enum": [
+                                "SetCredential",
+                                "ClearCredential"
+                              ]
+                            },
+                            "messageId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "error": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "deviceId",
+                            "thingName",
+                            "timestamp",
+                            "command",
+                            "messageId",
+                            "error"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    },
+                    "appPinCampaign": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "provisionState": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "sent",
+                            "verified",
+                            "unverified",
+                            "failed"
+                          ]
+                        },
+                        "attemptCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "infraFailureCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "firstClaimedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "lastAttemptAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "lastMessageId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "sentMessageIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "lastOutcome": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "verifiedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "userIndex": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "credentialIndex": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        }
+                      },
+                      "required": [
+                        "provisionState",
+                        "attemptCount",
+                        "infraFailureCount",
+                        "firstClaimedAt",
+                        "lastAttemptAt",
+                        "lastMessageId",
+                        "sentMessageIds",
+                        "lastOutcome",
+                        "verifiedAt",
+                        "userIndex",
+                        "credentialIndex"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing API key authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — the matter device does not exist.",
             "content": {
               "application/json": {
                 "schema": {

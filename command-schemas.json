@@ -1,5 +1,5 @@
 {
-  "version": "bf19ef27",
+  "version": "38a360ca",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -1306,6 +1306,191 @@
       },
       "required": [
         "credentialIndex"
+      ]
+    },
+    "ProcessAppPinTick": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "reported": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "requirePinRemote": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hasStoredPin": {
+          "type": "boolean"
+        },
+        "projected": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "provisionState": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "sent",
+                    "verified",
+                    "unverified",
+                    "failed"
+                  ]
+                },
+                "attemptCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "infraFailureCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "firstClaimedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "lastAttemptAt": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "lastMessageId": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "sentMessageIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "lastOutcome": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "verifiedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "userIndex": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "credentialIndex": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "provisionState",
+                "attemptCount",
+                "infraFailureCount",
+                "firstClaimedAt",
+                "lastAttemptAt",
+                "lastMessageId",
+                "sentMessageIds",
+                "lastOutcome",
+                "verifiedAt",
+                "userIndex",
+                "credentialIndex"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pinMinLength": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pinMaxLength": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "reported",
+        "requirePinRemote",
+        "hasStoredPin"
+      ]
+    },
+    "ReportAppPinWriteFailure": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "eventVersion": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "error": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "eventVersion",
+        "error"
       ]
     },
     "RegisterRtspCamera": {
