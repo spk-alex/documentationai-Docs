@@ -1,5 +1,5 @@
 {
-  "version": "38a360ca",
+  "version": "7b9394fb",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
