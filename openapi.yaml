@@ -22259,6 +22259,12 @@
                           "httpSnapshotUrl": {
                             "type": "string"
                           },
+                          "signedPreviewUrl": {
+                            "type": "string"
+                          },
+                          "previewExpiresAt": {
+                            "type": "number"
+                          },
                           "ownerId": {
                             "type": "string"
                           },
@@ -25816,7 +25822,7 @@
           "Query"
         ],
         "summary": "List RTSP cameras accessible to the authenticated user",
-        "description": "Returns cameras the JWT user owns or has an active access grant for. Each item includes the user's effective role (`manager` for owners). Preview URLs are intentionally omitted from the list and can be lazy-loaded from the camera details endpoint.",
+        "description": "Returns cameras the JWT user owns or has an active access grant for. Each item includes the user's effective role (`manager` for owners). Each item carries `signedPreviewUrl` (a short-lived thumbnail link) and `previewExpiresAt` when a thumbnail exists; both are absent otherwise.",
         "operationId": "get_GetMyRtspCamerasRoute",
         "responses": {
           "200": {
