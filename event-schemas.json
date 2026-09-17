@@ -1,5 +1,5 @@
 {
-  "version": "15d74e08",
+  "version": "265eacca",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -2112,7 +2112,8 @@
             "failure",
             "duplicate",
             "occupied",
-            "invalid-field"
+            "invalid-field",
+            "not-found"
           ]
         },
         "matchedMessageId": {
@@ -2171,6 +2172,16 @@
           "type": "integer",
           "exclusiveMinimum": 0,
           "maximum": 9007199254740991
+        },
+        "messageId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -2306,6 +2317,59 @@
         "timestamp",
         "reason",
         "credentialIndex"
+      ],
+      "additionalProperties": false
+    },
+    "AppPinDeliveryFailed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "command": {
+          "type": "string",
+          "enum": [
+            "SetCredential",
+            "ClearCredential"
+          ]
+        },
+        "messageId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "unreachable",
+            "no-ack",
+            "refused"
+          ]
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "timestamp",
+        "command",
+        "messageId",
+        "reason",
+        "error"
       ],
       "additionalProperties": false
     },
