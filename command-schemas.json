@@ -1,5 +1,5 @@
 {
-  "version": "7c5fc19a",
+  "version": "45965ddd",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -1498,8 +1498,8 @@
       "type": "object",
       "properties": {
         "cameraId": {
-          "type": "string",
-          "description": "Camera UUID (caller-supplied or server-generated)"
+          "description": "Camera UUID. OPTIONAL and redundant: the id in the URL is the camera, and this is filled in from it when omitted — a DIFFERENT value here is a 400 rather than a guess, because the two used to address different things (aggregate here, storage folder there). It must be a UUID: it becomes the camera's object-storage prefix for life. New clients should let the server assign it — POST /rtsp-cameras returns the id it minted — while an integration that keeps its own uuid4 as a correlation key may go on naming it.",
+          "type": "string"
         },
         "name": {
           "type": "string",
@@ -1524,16 +1524,15 @@
           "type": "string"
         },
         "ownerId": {
-          "description": "B2C user ID who owns this camera",
+          "description": "B2C user ID who owns this camera. Must be the authenticated caller unless the caller is an admin or holds a super API key; omit it and the caller owns the camera.",
           "type": "string"
         },
         "orgId": {
-          "description": "B2B organisation that owns this camera",
+          "description": "B2B organisation that owns this camera. Same rule as ownerId: your own org, unless you are an admin or a super API key.",
           "type": "string"
         }
       },
       "required": [
-        "cameraId",
         "name",
         "rtspUrl"
       ]

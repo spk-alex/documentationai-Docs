@@ -50,6 +50,182 @@
     "parameters": {}
   },
   "paths": {
+    "/admin/rtsp-cameras/{id}/recordings/playback": {
+      "post": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Issue a signed archive playlist URL for a window (admin)",
+        "operationId": "post_AdminCreateRtspRecordingPlaybackRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "Start of the window to play, ISO-8601 UTC"
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "End of the window, ISO-8601 UTC; at most 60 minutes after `from`"
+                  }
+                },
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed playlist URL for the window, issued to the camera owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "playlistUrl": {
+                      "type": "string",
+                      "description": "Signed URL of the HLS playlist; give it to the player as is"
+                    },
+                    "expiresAt": {
+                      "type": "integer",
+                      "description": "Unix seconds after which the playlist URL stops answering"
+                    }
+                  },
+                  "required": [
+                    "playlistUrl",
+                    "expiresAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Window malformed or longer than 60 minutes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera has no SpacetimeDB projection, or the aggregate does not know it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SpacetimeDB or the video control plane is not configured or not answering",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/rtsp-cameras/{id}/users/{userId}": {
       "delete": {
         "tags": [
@@ -96,6 +272,25 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
@@ -171,6 +366,25 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
@@ -298,6 +512,25 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
@@ -1601,6 +1834,162 @@
         }
       }
     },
+    "/admin/rtsp-cameras/{id}/recordings": {
+      "get": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "List the recorded stretches of one day (admin)",
+        "operationId": "get_AdminGetRtspCameraRecordingsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d&#123;4&#125;-\\d&#123;2&#125;-\\d&#123;2&#125;$",
+              "description": "UTC calendar day to list, YYYY-MM-DD"
+            },
+            "required": true,
+            "description": "UTC calendar day to list, YYYY-MM-DD",
+            "name": "day",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stretches of the day that hold recording, UTC",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "day": {
+                      "type": "string"
+                    },
+                    "intervals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "from": {
+                            "type": "string",
+                            "description": "Start of a stretch with recording, ISO-8601 UTC"
+                          },
+                          "to": {
+                            "type": "string",
+                            "description": "End of that stretch, ISO-8601 UTC"
+                          }
+                        },
+                        "required": [
+                          "from",
+                          "to"
+                        ]
+                      }
+                    },
+                    "retentionDays": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "day",
+                    "intervals",
+                    "retentionDays"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera has no SpacetimeDB projection, or the aggregate does not know it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SpacetimeDB or the video control plane is not configured or not answering",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/rtsp-cameras/{id}/users": {
       "post": {
         "tags": [
@@ -1654,6 +2043,25 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
@@ -1666,6 +2074,173 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rtsp-cameras/{id}/set-recording-retention": {
+      "post": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Set recording retention for an RTSP camera (admin; 0 = recording off)",
+        "operationId": "post_AdminSetRtspRecordingRetentionRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "retentionDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30,
+                    "description": "How many whole days a recorded segment is kept, 0..30; 0 switches recording off"
+                  }
+                },
+                "required": [
+                  "retentionDays"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recording retention updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera has no SpacetimeDB projection, or no control-plane source row",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SpacetimeDB is not configured, so the camera owner cannot be resolved",
             "content": {
               "application/json": {
                 "schema": {
@@ -3249,6 +3824,376 @@
         }
       }
     },
+    "/rtsp-cameras/{id}/recordings/playback": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Query"
+        ],
+        "summary": "Issue a signed archive playlist URL for a window",
+        "operationId": "post_CreateRecordingPlaybackRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "Start of the window to play, ISO-8601 UTC"
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "End of the window, ISO-8601 UTC; at most 60 minutes after `from`"
+                  }
+                },
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed playlist URL for the window",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "playlistUrl": {
+                      "type": "string",
+                      "description": "Signed URL of the HLS playlist; give it to the player as is"
+                    },
+                    "expiresAt": {
+                      "type": "integer",
+                      "description": "Unix seconds after which the playlist URL stops answering"
+                    }
+                  },
+                  "required": [
+                    "playlistUrl",
+                    "expiresAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Window malformed or longer than 60 minutes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Archive playback is not configured in this environment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/recordings/playlist.m3u8": {
+      "get": {
+        "tags": [
+          "RtspCamera",
+          "Query"
+        ],
+        "summary": "Fetch an archive playlist by its signed URL",
+        "operationId": "get_GetRecordingPlaylistRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "uid",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "required": true,
+            "name": "exp",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]&#123;64&#125;$"
+            },
+            "required": true,
+            "name": "sig",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VOD HLS playlist whose entries are presigned segment links",
+            "content": {
+              "application/vnd.apple.mpegurl": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The URL was not issued by this API for this window and subject",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The subject the URL was issued to may no longer read this camera",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "The URL has expired; ask for a new one",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The video control plane is not configured or not answering; retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/PhysicalKeys/{number}": {
       "get": {
         "tags": [
@@ -3528,6 +4473,25 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
@@ -17241,8 +18205,8 @@
           "RtspCamera",
           "Command"
         ],
-        "summary": "Register a new RTSP camera",
-        "description": "Creates a new RtspCameraAggregate. With video control enabled, encrypted source staging happens first and the response reports placementStatus=pending; the rollout flag can temporarily restore the legacy direct-VMS path.",
+        "summary": "Register a new RTSP camera at a caller-chosen id",
+        "description": "Creates a new RtspCameraAggregate at the id in the URL. The id MUST be a UUID: it becomes the camera's object-storage prefix for life, so a name-shaped id is refused. Ownership is checked against the credentials — only an admin or a super API key may register on behalf of another owner/org; for anyone else ownerId/orgId must be their own or absent (403 otherwise). New clients should prefer POST /rtsp-cameras, which assigns the id and returns it. With video control enabled, encrypted source staging happens first and the response reports placementStatus=pending.",
         "operationId": "post_RegisterRtspCameraRoute",
         "parameters": [
           {
@@ -17264,7 +18228,7 @@
                 "properties": {
                   "cameraId": {
                     "type": "string",
-                    "description": "Camera UUID (caller-supplied or server-generated)"
+                    "description": "Camera UUID. OPTIONAL and redundant: the id in the URL is the camera, and this is filled in from it when omitted — a DIFFERENT value here is a 400 rather than a guess, because the two used to address different things (aggregate here, storage folder there). It must be a UUID: it becomes the camera's object-storage prefix for life. New clients should let the server assign it — POST /rtsp-cameras returns the id it minted — while an integration that keeps its own uuid4 as a correlation key may go on naming it."
                   },
                   "name": {
                     "type": "string",
@@ -17290,15 +18254,14 @@
                   },
                   "ownerId": {
                     "type": "string",
-                    "description": "B2C user ID who owns this camera"
+                    "description": "B2C user ID who owns this camera. Must be the authenticated caller unless the caller is an admin or holds a super API key; omit it and the caller owns the camera."
                   },
                   "orgId": {
                     "type": "string",
-                    "description": "B2B organisation that owns this camera"
+                    "description": "B2B organisation that owns this camera. Same rule as ownerId: your own org, unless you are an admin or a super API key."
                   }
                 },
                 "required": [
-                  "cameraId",
                   "name",
                   "rtspUrl"
                 ]
@@ -17308,7 +18271,111 @@
         },
         "responses": {
           "200": {
-            "description": "RTSP camera registered successfully",
+            "description": "The same registration arriving twice: an idempotent no-op with `event: null` (AA-92). Nothing was created, and nothing needed to be.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "placementStatus": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "running"
+                      ]
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraRegistered"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "rtspUrl": {
+                              "type": "string"
+                            },
+                            "rtspHash": {
+                              "type": "string"
+                            },
+                            "streamId": {
+                              "type": "string"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "password": {
+                              "type": "string"
+                            },
+                            "httpSnapshotUrl": {
+                              "type": "string"
+                            },
+                            "ownerId": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "placementMode": {
+                              "type": "string",
+                              "enum": [
+                                "async"
+                              ]
+                            },
+                            "createdAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "name",
+                            "rtspHash",
+                            "streamId",
+                            "createdAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "placementStatus",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "RTSP camera registered — the genuine create (AA-92).",
             "content": {
               "application/json": {
                 "schema": {
@@ -17412,7 +18479,65 @@
             }
           },
           "400": {
-            "description": "Invalid request — validation failed.",
+            "description": "Invalid request — validation failed, the camera id is not a UUID, or the body's cameraId is not the id in the path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — the camera at this id belongs to somebody else, or the body names an owner the caller may not register for.",
             "content": {
               "application/json": {
                 "schema": {
@@ -17441,7 +18566,7 @@
             }
           },
           "409": {
-            "description": "Conflict — camera already registered.",
+            "description": "Conflict — the id already belongs to a different camera (`CameraIdTaken`), or the control plane holds a previous camera's state under it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -17644,6 +18769,209 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/SetRecordingRetention": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Set how many days the camera keeps its recordings (0 = recording off)",
+        "operationId": "post_SetRecordingRetentionRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "retentionDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30,
+                    "description": "How many whole days a recorded segment is kept, 0..30; 0 switches recording off"
+                  }
+                },
+                "required": [
+                  "retentionDays"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Retention updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraRecordingConfigured"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "retentionDays": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 30
+                            },
+                            "storageProfile": {
+                              "type": "string",
+                              "enum": [
+                                "platform"
+                              ]
+                            },
+                            "changedBy": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "owner",
+                                    "admin"
+                                  ]
+                                },
+                                "userId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "userId"
+                              ]
+                            },
+                            "updatedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "retentionDays",
+                            "changedBy",
+                            "updatedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Camera is deleted, `retentionDays` is outside 0..30, or it is above 0 for a camera with no worker placement (start the stream first).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
                   ]
                 }
               }
@@ -18241,6 +19569,121 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/recordings": {
+      "get": {
+        "tags": [
+          "RtspCamera",
+          "Query"
+        ],
+        "summary": "List the recorded stretches of one day",
+        "operationId": "get_GetRtspCameraRecordingsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d&#123;4&#125;-\\d&#123;2&#125;-\\d&#123;2&#125;$",
+              "description": "UTC calendar day to list, YYYY-MM-DD"
+            },
+            "required": true,
+            "description": "UTC calendar day to list, YYYY-MM-DD",
+            "name": "day",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stretches of the day that hold recording, UTC",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "day": {
+                      "type": "string"
+                    },
+                    "intervals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "from": {
+                            "type": "string",
+                            "description": "Start of a stretch with recording, ISO-8601 UTC"
+                          },
+                          "to": {
+                            "type": "string",
+                            "description": "End of that stretch, ISO-8601 UTC"
+                          }
+                        },
+                        "required": [
+                          "from",
+                          "to"
+                        ]
+                      }
+                    },
+                    "retentionDays": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "day",
+                    "intervals",
+                    "retentionDays"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
                   ]
                 }
               }
@@ -22112,7 +23555,7 @@
                 "properties": {
                   "cameraId": {
                     "type": "string",
-                    "description": "Camera UUID"
+                    "description": "NOT ACCEPTED — the server assigns the camera id and returns it. The id is the camera's object-storage prefix, so it must stay opaque: a caller-chosen id put camera names into storage paths and let one caller address another owner's camera."
                   },
                   "name": {
                     "type": "string",
@@ -22147,7 +23590,6 @@
                   }
                 },
                 "required": [
-                  "cameraId",
                   "name",
                   "rtspUrl"
                 ]
@@ -22171,6 +23613,25 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
@@ -22340,6 +23801,12 @@
                           "orgId": {
                             "type": "string"
                           },
+                          "recordingEnabled": {
+                            "type": "boolean"
+                          },
+                          "retentionDays": {
+                            "type": "number"
+                          },
                           "createdAt": {
                             "type": "string"
                           },
@@ -22354,6 +23821,8 @@
                           "placementStatus",
                           "streamId",
                           "hlsPath",
+                          "recordingEnabled",
+                          "retentionDays",
                           "createdAt",
                           "updatedAt"
                         ]
@@ -24778,6 +26247,12 @@
                     "runtimeObservedAt": {
                       "type": "string"
                     },
+                    "recordingEnabled": {
+                      "type": "boolean"
+                    },
+                    "retentionDays": {
+                      "type": "number"
+                    },
                     "createdAt": {
                       "type": "string"
                     },
@@ -24793,6 +26268,8 @@
                     "streamId",
                     "hlsPath",
                     "accessGrants",
+                    "recordingEnabled",
+                    "retentionDays",
                     "createdAt",
                     "updatedAt"
                   ]
@@ -25885,6 +27362,150 @@
       }
     },
     "/rtsp-cameras": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Register an RTSP camera owned by the caller",
+        "description": "Creates a camera and returns the id the server assigned to it — the id is the camera's storage prefix, so it is never taken from the request. Ownership follows the credentials: a JWT creates a B2C camera for that user, an org API key an org-owned one. Use the returned `cameraId` on every later call.",
+        "operationId": "post_CreateRtspCameraRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable camera name, shown in the app"
+                  },
+                  "rtspUrl": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "RTSP source URL (e.g. rtsp://1.2.3.4:554/stream)"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "RTSP authentication username"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "RTSP authentication password"
+                  },
+                  "httpSnapshotUrl": {
+                    "type": "string",
+                    "description": "Optional HTTP JPEG/PNG snapshot endpoint"
+                  }
+                },
+                "required": [
+                  "name",
+                  "rtspUrl"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera created; `cameraId` is the server-assigned id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "cameraId": {
+                      "type": "string",
+                      "description": "Server-assigned camera UUID — use it on every later call"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "placementStatus": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "running"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId",
+                    "version",
+                    "placementStatus"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another camera already uses the same RTSP URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "RtspCamera",
@@ -25978,6 +27599,12 @@
                           "runtimeObservedAt": {
                             "type": "string"
                           },
+                          "recordingEnabled": {
+                            "type": "boolean"
+                          },
+                          "retentionDays": {
+                            "type": "number"
+                          },
                           "createdAt": {
                             "type": "string"
                           },
@@ -25992,6 +27619,8 @@
                           "placementStatus",
                           "streamId",
                           "hlsPath",
+                          "recordingEnabled",
+                          "retentionDays",
                           "createdAt",
                           "updatedAt"
                         ]

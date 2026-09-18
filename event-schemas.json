@@ -1,5 +1,5 @@
 {
-  "version": "7c5fc19a",
+  "version": "45965ddd",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -2654,6 +2654,56 @@
         "sourceEventVersion",
         "error",
         "failedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraRecordingConfigured": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "retentionDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
+        },
+        "storageProfile": {
+          "type": "string",
+          "enum": [
+            "platform"
+          ]
+        },
+        "changedBy": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "owner",
+                "admin"
+              ]
+            },
+            "userId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "userId"
+          ],
+          "additionalProperties": false
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "retentionDays",
+        "changedBy",
+        "updatedAt"
       ],
       "additionalProperties": false
     }
