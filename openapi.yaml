@@ -226,6 +226,332 @@
         }
       }
     },
+    "/admin/rtsp-cameras/{id}/recordings/coverage": {
+      "get": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "How many days of recordings this camera actually has in storage (admin)",
+        "operationId": "get_AdminGetRtspRecordingCoverageRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What the store holds for this camera, and the retention to compare it with",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "storageConfigured": {
+                      "type": "boolean"
+                    },
+                    "hasRecordings": {
+                      "type": "boolean"
+                    },
+                    "oldestStartedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "coverageDays": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "retentionDays": {
+                      "type": "integer"
+                    },
+                    "recordingEnabled": {
+                      "type": "boolean"
+                    },
+                    "lifecycleDays": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "checkedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cameraId",
+                    "storageConfigured",
+                    "hasRecordings",
+                    "oldestStartedAt",
+                    "coverageDays",
+                    "retentionDays",
+                    "recordingEnabled",
+                    "lifecycleDays",
+                    "checkedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera has no SpacetimeDB projection, or the aggregate does not know it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SpacetimeDB or the video control plane is not configured or not answering",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rtsp-cameras/{id}/recordings/purge": {
+      "post": {
+        "tags": [
+          "Admin",
+          "RtspCamera"
+        ],
+        "summary": "Delete an RTSP camera's recordings older than N days (admin; 0 = all of them)",
+        "operationId": "post_AdminPurgeRtspRecordingsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID"
+            },
+            "required": true,
+            "description": "RTSP camera UUID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "olderThanDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30,
+                    "description": "Delete every segment that started more than this many whole days ago; 0 deletes the whole archive"
+                  }
+                },
+                "required": [
+                  "olderThanDays"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recordings purged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "cameraId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Camera has no SpacetimeDB projection, or no control-plane source row",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SpacetimeDB is not configured, so the camera owner cannot be resolved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/rtsp-cameras/{id}/users/{userId}": {
       "delete": {
         "tags": [
@@ -1982,6 +2308,161 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rtsp-cameras/{id}/recordings/coverage": {
+      "get": {
+        "tags": [
+          "RtspCamera",
+          "Query"
+        ],
+        "summary": "How many days of recordings this camera actually has in storage",
+        "operationId": "get_GetRtspCameraRecordingCoverageRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What the store holds for this camera, and the retention to compare it with",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "storageConfigured": {
+                      "type": "boolean"
+                    },
+                    "hasRecordings": {
+                      "type": "boolean"
+                    },
+                    "oldestStartedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "coverageDays": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "retentionDays": {
+                      "type": "integer"
+                    },
+                    "recordingEnabled": {
+                      "type": "boolean"
+                    },
+                    "lifecycleDays": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "checkedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cameraId",
+                    "storageConfigured",
+                    "hasRecordings",
+                    "oldestStartedAt",
+                    "coverageDays",
+                    "retentionDays",
+                    "recordingEnabled",
+                    "lifecycleDays",
+                    "checkedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The video control plane is not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
                   ]
                 }
               }
@@ -18199,6 +18680,244 @@
         }
       }
     },
+    "/rtsp-cameras/{id}/PurgeRecordings": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ],
+        "summary": "Delete the recordings older than a number of days (0 = the whole archive)",
+        "operationId": "post_PurgeRecordingsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "olderThanDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30,
+                    "description": "Delete every segment that started more than this many whole days ago; 0 deletes the whole archive"
+                  }
+                },
+                "required": [
+                  "olderThanDays"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Segments older than the cut-off were deleted; the event says how many.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraRecordingsPurged"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "cutoff": {
+                              "type": "string"
+                            },
+                            "olderThanDays": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "deleted": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "complete": {
+                              "type": "boolean"
+                            },
+                            "purgedBy": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "owner",
+                                    "admin"
+                                  ]
+                                },
+                                "userId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "userId"
+                              ]
+                            },
+                            "purgedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "cutoff",
+                            "olderThanDays",
+                            "deleted",
+                            "complete",
+                            "purgedBy",
+                            "purgedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Camera is deleted, or `olderThanDays` is outside 0..30.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The video control plane or its media storage is not available.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rtsp-cameras/{id}/RegisterRtspCamera": {
       "post": {
         "tags": [
@@ -18972,6 +19691,35 @@
                   "required": [
                     "success",
                     "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The stored archive reaches back further than `retentionDays`, so the store would delete the older part (CR118). Keep at least that many days, or purge the older recordings first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
                   ]
                 }
               }

@@ -1,5 +1,5 @@
 {
-  "version": "45965ddd",
+  "version": "98c5fbee",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -1626,6 +1626,38 @@
       "required": [
         "userId"
       ]
+    },
+    "SetRecordingRetention": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "retentionDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30,
+          "description": "How many whole days a recorded segment is kept, 0..30; 0 switches recording off"
+        }
+      },
+      "required": [
+        "retentionDays"
+      ],
+      "additionalProperties": false
+    },
+    "PurgeRecordings": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "olderThanDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30,
+          "description": "Delete every segment that started more than this many whole days ago; 0 deletes the whole archive"
+        }
+      },
+      "required": [
+        "olderThanDays"
+      ],
+      "additionalProperties": false
     }
   }
 }
