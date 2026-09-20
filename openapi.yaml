@@ -24481,6 +24481,14 @@
             "required": false,
             "name": "orgId",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "cameraId",
+            "in": "query"
           }
         ],
         "responses": {
