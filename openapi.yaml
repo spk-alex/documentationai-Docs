@@ -2452,6 +2452,43 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
           "404": {
             "description": "RTSP camera not found",
             "content": {
@@ -4434,6 +4471,43 @@
           },
           "400": {
             "description": "Window malformed or longer than 60 minutes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
             "content": {
               "application/json": {
                 "schema": {
@@ -20683,6 +20757,43 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
           "404": {
             "description": "RTSP camera not found",
             "content": {
@@ -27174,6 +27285,7 @@
           "Query"
         ],
         "summary": "Get RTSP camera state",
+        "description": "Returns the camera's public state, including a signed playback link when the camera is supposed to be streaming. Pass `refreshPlayback=1` to re-sign that link instead of serving the cached one — send it only after the playback host answered 403 for the link you were given, and play the link in that response.",
         "operationId": "get_GetRtspCameraRoute",
         "parameters": [
           {
@@ -27185,6 +27297,22 @@
             "description": "RTSP camera UUID (aggregate id)",
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "true",
+                "false"
+              ],
+              "description": "Re-sign the playback link instead of serving the cached one. Send it only after the playback host answered 403 for the link you were given."
+            },
+            "required": false,
+            "description": "Re-sign the playback link instead of serving the cached one. Send it only after the playback host answered 403 for the link you were given.",
+            "name": "refreshPlayback",
+            "in": "query"
           }
         ],
         "responses": {
@@ -27311,6 +27439,43 @@
                     "retentionDays",
                     "createdAt",
                     "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
                   ]
                 }
               }
