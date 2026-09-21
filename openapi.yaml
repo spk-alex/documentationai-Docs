@@ -285,6 +285,34 @@
                         "null"
                       ]
                     },
+                    "purge": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "olderThanDays": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "requestedAt": {
+                          "type": "string"
+                        },
+                        "partialDeleted": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "requestId",
+                        "olderThanDays",
+                        "requestedAt",
+                        "partialDeleted"
+                      ]
+                    },
                     "checkedAt": {
                       "type": "string"
                     }
@@ -298,6 +326,7 @@
                     "retentionDays",
                     "recordingEnabled",
                     "lifecycleDays",
+                    "purge",
                     "checkedAt"
                   ]
                 }
@@ -2375,6 +2404,34 @@
                         "null"
                       ]
                     },
+                    "purge": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "olderThanDays": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "requestedAt": {
+                          "type": "string"
+                        },
+                        "partialDeleted": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "requestId",
+                        "olderThanDays",
+                        "requestedAt",
+                        "partialDeleted"
+                      ]
+                    },
                     "checkedAt": {
                       "type": "string"
                     }
@@ -2388,6 +2445,7 @@
                     "retentionDays",
                     "recordingEnabled",
                     "lifecycleDays",
+                    "purge",
                     "checkedAt"
                   ]
                 }
@@ -18315,6 +18373,236 @@
         }
       }
     },
+    "/rtsp-cameras/{id}/ApplyRecordingsPurgeResult": {
+      "post": {
+        "tags": [
+          "RtspCamera",
+          "Internal"
+        ],
+        "summary": "Record the outcome of an asynchronous archive purge",
+        "operationId": "post_ApplyRecordingsPurgeResultRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requestId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cutoff": {
+                    "type": "string"
+                  },
+                  "olderThanDays": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "deleted": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "complete": {
+                    "type": "boolean"
+                  },
+                  "internalSecret": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "requestId",
+                  "cutoff",
+                  "olderThanDays",
+                  "deleted",
+                  "complete",
+                  "internalSecret"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Purge outcome recorded, or ignored as an idempotent duplicate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "RtspCameraRecordingsPurged"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "requestId": {
+                              "type": "string"
+                            },
+                            "cutoff": {
+                              "type": "string"
+                            },
+                            "olderThanDays": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "deleted": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "complete": {
+                              "type": "boolean"
+                            },
+                            "purgedBy": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "owner",
+                                    "admin"
+                                  ]
+                                },
+                                "userId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "userId"
+                              ]
+                            },
+                            "purgedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "cutoff",
+                            "olderThanDays",
+                            "deleted",
+                            "complete",
+                            "purgedBy",
+                            "purgedAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid internal control-plane secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Purge result does not belong to this camera.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rtsp-cameras/{id}/DeleteRtspCamera": {
       "post": {
         "tags": [
@@ -18686,7 +18974,7 @@
           "RtspCamera",
           "Command"
         ],
-        "summary": "Delete the recordings older than a number of days (0 = the whole archive)",
+        "summary": "Ask for the recordings older than a number of days to be deleted (0 = all)",
         "operationId": "post_PurgeRecordingsRoute",
         "parameters": [
           {
@@ -18723,7 +19011,7 @@
         },
         "responses": {
           "200": {
-            "description": "Segments older than the cut-off were deleted; the event says how many.",
+            "description": "The purge was accepted; the event records the decision. What the store deleted follows as RtspCameraRecordingsPurged — watch `purge` on the coverage endpoint.",
             "content": {
               "application/json": {
                 "schema": {
@@ -18747,13 +19035,16 @@
                         "type": {
                           "type": "string",
                           "enum": [
-                            "RtspCameraRecordingsPurged"
+                            "RtspCameraRecordingsPurgeRequested"
                           ]
                         },
                         "data": {
                           "type": "object",
                           "properties": {
                             "cameraId": {
+                              "type": "string"
+                            },
+                            "requestId": {
                               "type": "string"
                             },
                             "cutoff": {
@@ -18763,14 +19054,7 @@
                               "type": "integer",
                               "minimum": 0
                             },
-                            "deleted": {
-                              "type": "integer",
-                              "minimum": 0
-                            },
-                            "complete": {
-                              "type": "boolean"
-                            },
-                            "purgedBy": {
+                            "requestedBy": {
                               "type": "object",
                               "properties": {
                                 "kind": {
@@ -18789,18 +19073,17 @@
                                 "userId"
                               ]
                             },
-                            "purgedAt": {
+                            "requestedAt": {
                               "type": "string"
                             }
                           },
                           "required": [
                             "cameraId",
+                            "requestId",
                             "cutoff",
                             "olderThanDays",
-                            "deleted",
-                            "complete",
-                            "purgedBy",
-                            "purgedAt"
+                            "requestedBy",
+                            "requestedAt"
                           ]
                         }
                       },
