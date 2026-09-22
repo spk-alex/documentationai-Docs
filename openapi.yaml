@@ -25201,6 +25201,670 @@
         }
       }
     },
+    "/admin/activity": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Read the admin-panel activity log",
+        "description": "Every admin-portal request an operator made, newest first: sign-ins, page reads and mutations, each with the operator email, the access tier they held at the time, the route, the HTTP status and whether it was allowed, denied or errored. Filter by rolling time window (24h / 7d / 30d / all — rolling rather than calendar, so it means the same thing in every time zone), operator, kind and outcome. Requires dual auth: X-Admin-API-Key + JWT; read-only accounts may read it.",
+        "operationId": "get_GetAdminActivityRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "24h",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "description": "Rolling window back from now. Default 7d."
+            },
+            "required": false,
+            "description": "Rolling window back from now. Default 7d.",
+            "name": "range",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Exact operator email."
+            },
+            "required": false,
+            "description": "Exact operator email.",
+            "name": "actor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sign-in",
+                "sign-in-denied",
+                "read",
+                "mutate"
+              ]
+            },
+            "required": false,
+            "name": "kind",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "allowed",
+                "denied",
+                "error"
+              ]
+            },
+            "required": false,
+            "name": "outcome",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity records, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "offset": {
+                      "type": "number"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "range": {
+                      "type": "string",
+                      "enum": [
+                        "24h",
+                        "7d",
+                        "30d",
+                        "all"
+                      ]
+                    },
+                    "from": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "`&#123;occurredAt&#125;-&#123;random&#125;` — unique and time-ordered."
+                          },
+                          "occurredAt": {
+                            "type": "string",
+                            "description": "ISO-8601 UTC instant the action happened."
+                          },
+                          "actor": {
+                            "type": "string",
+                            "maxLength": 320,
+                            "description": "Operator email, or \"\" when the request carried no identity."
+                          },
+                          "access": {
+                            "type": "string",
+                            "enum": [
+                              "full",
+                              "readonly",
+                              "none"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "sign-in",
+                              "sign-in-denied",
+                              "read",
+                              "mutate"
+                            ]
+                          },
+                          "action": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "description": "Route pattern (\"/admin/a/:id\") or \"SIGN_IN\" — groups rows by what was done."
+                          },
+                          "method": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 10
+                          },
+                          "path": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 2000
+                          },
+                          "query": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 2000,
+                            "description": "Query string without \"?\". Bodies are never recorded."
+                          },
+                          "status": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "outcome": {
+                            "type": "string",
+                            "enum": [
+                              "allowed",
+                              "denied",
+                              "error"
+                            ]
+                          },
+                          "durationMs": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "detail": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 4000,
+                            "description": "Small JSON blob for action-specific context."
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "occurredAt",
+                          "actor",
+                          "access",
+                          "kind",
+                          "action",
+                          "outcome"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "limit",
+                    "offset",
+                    "hasMore",
+                    "range",
+                    "from",
+                    "records"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Prune the admin-activity projection",
+        "description": "Deletes admin-activity rows older than `olderThanDays` from the D1 projection, keeping it a bounded working set. The append-only R2 archive under &#123;env&#125;/admin-activity/ is NOT touched, so nothing is lost — only the indexed copy the page queries. `olderThanDays` is required and has no default, because a purge that picks its own cutoff is one keystroke from erasing the log. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "delete_PruneAdminActivityRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Delete projection rows older than this many days. The R2 archive is untouched."
+            },
+            "required": true,
+            "description": "Delete projection rows older than this many days. The R2 archive is untouched.",
+            "name": "olderThanDays",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prune completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "deleted": {
+                      "type": "number",
+                      "description": "D1 rows removed."
+                    },
+                    "cutoff": {
+                      "type": "string",
+                      "description": "ISO-8601 instant rows had to predate to be removed."
+                    },
+                    "olderThanDays": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "deleted",
+                    "cutoff",
+                    "olderThanDays"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — email domain not allowed, or read-only access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin",
+          "Ops"
+        ],
+        "summary": "Record admin-panel activity (internal — called by admin-portal)",
+        "description": "Appends a batch of admin-panel activity records: one R2 audit object and one D1 row each, idempotent on the record id. Authenticated by X-Admin-API-Key alone — the caller is the admin-portal, not an operator, and the denied-sign-in records it reports are by definition ones whose JWT this worker refuses.",
+        "operationId": "post_RecordAdminActivityRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "records": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "`&#123;occurredAt&#125;-&#123;random&#125;` — unique and time-ordered."
+                        },
+                        "occurredAt": {
+                          "type": "string",
+                          "description": "ISO-8601 UTC instant the action happened."
+                        },
+                        "actor": {
+                          "type": "string",
+                          "maxLength": 320,
+                          "description": "Operator email, or \"\" when the request carried no identity."
+                        },
+                        "access": {
+                          "type": "string",
+                          "enum": [
+                            "full",
+                            "readonly",
+                            "none"
+                          ]
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "sign-in",
+                            "sign-in-denied",
+                            "read",
+                            "mutate"
+                          ]
+                        },
+                        "action": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "description": "Route pattern (\"/admin/a/:id\") or \"SIGN_IN\" — groups rows by what was done."
+                        },
+                        "method": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "maxLength": 10
+                        },
+                        "path": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "maxLength": 2000
+                        },
+                        "query": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "maxLength": 2000,
+                          "description": "Query string without \"?\". Bodies are never recorded."
+                        },
+                        "status": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "allowed",
+                            "denied",
+                            "error"
+                          ]
+                        },
+                        "durationMs": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "detail": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "maxLength": 4000,
+                          "description": "Small JSON blob for action-specific context."
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "occurredAt",
+                        "actor",
+                        "access",
+                        "kind",
+                        "action",
+                        "outcome"
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 50
+                  }
+                },
+                "required": [
+                  "records"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Records accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "recorded": {
+                      "type": "number",
+                      "description": "Rows written to the D1 projection."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "recorded"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/dlq": {
       "get": {
         "tags": [
