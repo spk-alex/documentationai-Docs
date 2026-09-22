@@ -6626,6 +6626,15 @@
                           },
                           "note": {
                             "type": "string"
+                          },
+                          "deltaState": {
+                            "type": "string"
+                          },
+                          "metadata": {
+                            "type": "string"
+                          },
+                          "evidenceDropped": {
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -13421,6 +13430,202 @@
         }
       }
     },
+    "/locks/{id}/ConfirmLockOpen": {
+      "post": {
+        "tags": [
+          "Lock",
+          "Command"
+        ],
+        "summary": "Record a confirmed lock open (internal)",
+        "description": "Appends a LockOpenConfirmed audit event once the device's shadow shows the bolt moved for a tracked open. Internal — requires super access.",
+        "operationId": "post_ConfirmLockOpenRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Lock ID (numeric)"
+            },
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "messageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requestId": {
+                    "type": "string"
+                  },
+                  "attempts": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "latencyMs": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "messageId",
+                  "attempts",
+                  "latencyMs"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outcome recorded (`event` set), or already recorded for this messageId (`event` null).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LockOpenConfirmed"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "messageId": {
+                              "type": "string"
+                            },
+                            "requestId": {
+                              "type": "string"
+                            },
+                            "attempts": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "latencyMs": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "messageId",
+                            "attempts",
+                            "latencyMs"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — this route is internal and requires super access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lock not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locks/{id}/CreateLock": {
       "post": {
         "tags": [
@@ -13817,6 +14022,13 @@
                             },
                             "requestId": {
                               "type": "string"
+                            },
+                            "messageId": {
+                              "type": "string"
+                            },
+                            "requestedAt": {
+                              "type": "integer",
+                              "minimum": 0
                             }
                           },
                           "required": [
@@ -13853,6 +14065,244 @@
           },
           "502": {
             "description": "Failed to update device shadow",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locks/{id}/RecordLockOpenUnconfirmed": {
+      "post": {
+        "tags": [
+          "Lock",
+          "Command"
+        ],
+        "summary": "Record an unconfirmed lock open (internal)",
+        "description": "Appends a LockOpenUnconfirmed audit event when a tracked open was refused, never acknowledged, or acknowledged without the bolt moving. Internal — requires super access.",
+        "operationId": "post_RecordLockOpenUnconfirmedRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Lock ID (numeric)"
+            },
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "messageIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1
+                  },
+                  "requestId": {
+                    "type": "string"
+                  },
+                  "attempts": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "refused",
+                      "no-state-change",
+                      "no-ack"
+                    ]
+                  },
+                  "errorCode": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "messageIds",
+                  "attempts",
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outcome recorded (`event` set), or already recorded for these messageIds (`event` null).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LockOpenUnconfirmed"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "messageIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "requestId": {
+                              "type": "string"
+                            },
+                            "attempts": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "reason": {
+                              "type": "string",
+                              "enum": [
+                                "refused",
+                                "no-state-change",
+                                "no-ack"
+                              ]
+                            },
+                            "errorCode": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "detail": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "messageIds",
+                            "attempts",
+                            "reason"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — this route is internal and requires super access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lock not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -16860,6 +17310,12 @@
                       "credentialIndex": {
                         "type": "integer",
                         "exclusiveMinimum": 0
+                      },
+                      "wipeEvidenceId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
                     },
                     "required": [
@@ -16887,6 +17343,9 @@
                       "integer",
                       "null"
                     ]
+                  },
+                  "wipeDetection": {
+                    "type": "boolean"
                   }
                 },
                 "required": [
@@ -17260,6 +17719,9 @@
                                 "priorInfraFailures": {
                                   "type": "integer",
                                   "minimum": 0
+                                },
+                                "evidenceMessageId": {
+                                  "type": "string"
                                 }
                               },
                               "required": [
@@ -17394,6 +17856,12 @@
                         "credentialIndex": {
                           "type": "integer",
                           "exclusiveMinimum": 0
+                        },
+                        "wipeEvidenceId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -17666,6 +18134,12 @@
                         "credentialIndex": {
                           "type": "integer",
                           "exclusiveMinimum": 0
+                        },
+                        "wipeEvidenceId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
