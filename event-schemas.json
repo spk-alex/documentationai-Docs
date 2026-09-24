@@ -1,5 +1,5 @@
 {
-  "version": "cdfa42d6",
+  "version": "7ec0399e",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1162,6 +1162,31 @@
         "removedBy",
         "reason",
         "removedAt"
+      ],
+      "additionalProperties": false
+    },
+    "DevicePushMutedUpdated": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "deviceId": {
+          "type": "string"
+        },
+        "muted": {
+          "type": "boolean"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "deviceId",
+        "muted",
+        "timestamp"
       ],
       "additionalProperties": false
     },

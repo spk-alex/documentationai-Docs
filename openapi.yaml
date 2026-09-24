@@ -1327,6 +1327,9 @@
                           "permissionRows": {
                             "type": "number"
                           },
+                          "pushMuted": {
+                            "type": "boolean"
+                          },
                           "visibilityRows": {
                             "type": "number"
                           },
@@ -1371,6 +1374,7 @@
                           "deviceUuid",
                           "role",
                           "permissionRows",
+                          "pushMuted",
                           "visibilityRows",
                           "duplicate",
                           "hasPermission",
@@ -23461,13 +23465,18 @@
                           },
                           "addedAt": {
                             "type": "string"
+                          },
+                          "pushMuted": {
+                            "type": "boolean",
+                            "description": "Whether this user has muted alarm push notifications for this device"
                           }
                         },
                         "required": [
                           "deviceId",
                           "deviceType",
                           "orgId",
-                          "addedAt"
+                          "addedAt",
+                          "pushMuted"
                         ]
                       }
                     },
@@ -24848,6 +24857,167 @@
                   "required": [
                     "success",
                     "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/SetDevicePushMuted": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Devices"
+        ],
+        "summary": "Mute or unmute push notifications for a device, for this user only",
+        "description": "Sets `pushMuted` on the user's linked device. Alarm pushes for that device skip this user; other users who share the device are unaffected. API-key callers can only change devices of their own organisation.",
+        "operationId": "post_SetDevicePushMutedRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceId": {
+                    "type": "string",
+                    "description": "Linked device to mute/unmute push for"
+                  },
+                  "muted": {
+                    "type": "boolean",
+                    "description": "true to mute push for this device, false to unmute"
+                  }
+                },
+                "required": [
+                  "deviceId",
+                  "muted"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device push-mute preference updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DevicePushMutedUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "muted": {
+                              "type": "boolean"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "deviceId",
+                            "muted",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Device not linked to user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
                   ]
                 }
               }
