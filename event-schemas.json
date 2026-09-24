@@ -1,5 +1,5 @@
 {
-  "version": "3523d2ba",
+  "version": "f9cb8954",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -2792,7 +2792,8 @@
               "type": "string",
               "enum": [
                 "owner",
-                "admin"
+                "admin",
+                "manager"
               ]
             },
             "userId": {
@@ -2842,7 +2843,8 @@
               "type": "string",
               "enum": [
                 "owner",
-                "admin"
+                "admin",
+                "manager"
               ]
             },
             "userId": {
@@ -2902,7 +2904,8 @@
               "type": "string",
               "enum": [
                 "owner",
-                "admin"
+                "admin",
+                "manager"
               ]
             },
             "userId": {

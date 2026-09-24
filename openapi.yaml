@@ -2453,7 +2453,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
+            "description": "Forbidden — the caller is neither the owner nor a `manager` on this camera. Recordings are a manager's; a `viewer` grant opens the live stream only.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2594,6 +2594,14 @@
                 "properties": {
                   "userId": {
                     "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "viewer",
+                      "manager"
+                    ],
+                    "default": "viewer"
                   }
                 },
                 "required": [
@@ -4507,7 +4515,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
+            "description": "Forbidden — the caller is neither the owner nor a `manager` on this camera. Recordings are a manager's; a `viewer` grant opens the live stream only.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4717,7 +4725,7 @@
             }
           },
           "403": {
-            "description": "The subject the URL was issued to may no longer read this camera",
+            "description": "The subject the URL was issued to is no longer a manager of this camera",
             "content": {
               "application/json": {
                 "schema": {
@@ -19047,7 +19055,8 @@
                                   "type": "string",
                                   "enum": [
                                     "owner",
-                                    "admin"
+                                    "admin",
+                                    "manager"
                                   ]
                                 },
                                 "userId": {
@@ -19609,7 +19618,8 @@
                                   "type": "string",
                                   "enum": [
                                     "owner",
-                                    "admin"
+                                    "admin",
+                                    "manager"
                                   ]
                                 },
                                 "userId": {
@@ -20421,7 +20431,8 @@
                                   "type": "string",
                                   "enum": [
                                     "owner",
-                                    "admin"
+                                    "admin",
+                                    "manager"
                                   ]
                                 },
                                 "userId": {
@@ -21232,7 +21243,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
+            "description": "Forbidden — the caller is neither the owner nor a `manager` on this camera. Recordings are a manager's; a `viewer` grant opens the live stream only.",
             "content": {
               "application/json": {
                 "schema": {
@@ -28514,6 +28525,13 @@
                     "orgId": {
                       "type": "string"
                     },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "viewer",
+                        "manager"
+                      ]
+                    },
                     "accessGrants": {
                       "type": "array",
                       "items": {
@@ -28583,7 +28601,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. A grant opens reads only; commands stay closed to everyone but the owner.",
+            "description": "Forbidden — the caller neither owns this camera nor holds a grant on it. Any grant opens the camera and its live stream; recordings need the `manager` role.",
             "content": {
               "application/json": {
                 "schema": {
