@@ -1669,7 +1669,7 @@
           "Web"
         ],
         "summary": "Open a door via a collective key",
-        "description": "Validates a collective access key (validity window) and opens the given door via the LockAggregate (same path as the single temp-key open flow).",
+        "description": "Validates a collective access key (revocation, validity window, usage limit, authorization) and opens the given door via its LockAggregate — the same path as the temp-key open routes.",
         "operationId": "post_OpenCollectiveDoorRoute",
         "parameters": [
           {
@@ -1699,7 +1699,25 @@
             "description": "Door opened, redirecting to confirmation"
           },
           "400": {
-            "description": "Credential is outside its validity window",
+            "description": "Credential revoked, outside its validity window or used up, or the door has no slide-to-open",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User not authorized to use this access key",
             "content": {
               "application/json": {
                 "schema": {
@@ -1736,6 +1754,24 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The open command could not be written to the device; no use was charged",
             "content": {
               "application/json": {
                 "schema": {
