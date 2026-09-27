@@ -25535,7 +25535,7 @@
           "RtspCamera"
         ],
         "summary": "List RTSP cameras (admin)",
-        "description": "Returns cameras from the SpacetimeDB read model with optional filters.",
+        "description": "Returns cameras from the SpacetimeDB read model with optional filters. `signedHlsUrl`/`hlsExpiresAt` are present only when the list is narrowed by `cameraId`; the unfiltered list carries thumbnails but no live link.",
         "operationId": "get_AdminListRtspCamerasRoute",
         "parameters": [
           {
@@ -26031,7 +26031,15 @@
                           "actor": {
                             "type": "string",
                             "maxLength": 320,
-                            "description": "Operator email, or \"\" when the request carried no identity."
+                            "description": "Operator email — D1 projection only (mutable, erasable). \"\" when the request carried no identity, and for a refused sign-in."
+                          },
+                          "actorSub": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 256,
+                            "description": "Auth0 `sub` of the actor — the only identity the append-only R2 audit copy keeps."
                           },
                           "access": {
                             "type": "string",
@@ -26379,7 +26387,15 @@
                         "actor": {
                           "type": "string",
                           "maxLength": 320,
-                          "description": "Operator email, or \"\" when the request carried no identity."
+                          "description": "Operator email — D1 projection only (mutable, erasable). \"\" when the request carried no identity, and for a refused sign-in."
+                        },
+                        "actorSub": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "maxLength": 256,
+                          "description": "Auth0 `sub` of the actor — the only identity the append-only R2 audit copy keeps."
                         },
                         "access": {
                           "type": "string",
@@ -30078,7 +30094,7 @@
           "Query"
         ],
         "summary": "List RTSP cameras accessible to the authenticated user",
-        "description": "Returns cameras the JWT user owns or has an active access grant for. Each item includes the user's effective role (`manager` for owners). Each item carries `signedPreviewUrl` (a short-lived thumbnail link) and `previewExpiresAt` when a thumbnail exists; both are absent otherwise.",
+        "description": "Returns cameras the JWT user owns or has an active access grant for. Each item includes the user's effective role (`manager` for owners). Each item carries `signedPreviewUrl` (a short-lived thumbnail link) and `previewExpiresAt` when a thumbnail exists; both are absent otherwise. The list carries no live link (`signedHlsUrl`): get it from `GET /rtsp-cameras/&#123;id&#125;` for the camera being opened.",
         "operationId": "get_GetMyRtspCamerasRoute",
         "responses": {
           "200": {
