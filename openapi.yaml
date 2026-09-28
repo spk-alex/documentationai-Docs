@@ -12978,6 +12978,13 @@
                             },
                             "userId": {
                               "type": "string"
+                            },
+                            "messageId": {
+                              "type": "string"
+                            },
+                            "requestedAt": {
+                              "type": "integer",
+                              "minimum": 0
                             }
                           },
                           "required": [
@@ -14469,6 +14476,13 @@
                             },
                             "keyIndexNumber": {
                               "type": "number"
+                            },
+                            "messageId": {
+                              "type": "string"
+                            },
+                            "requestedAt": {
+                              "type": "integer",
+                              "minimum": 0
                             }
                           },
                           "required": [
