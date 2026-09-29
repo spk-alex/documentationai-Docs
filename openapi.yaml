@@ -20593,7 +20593,7 @@
             }
           },
           "409": {
-            "description": "The stored archive reaches back further than `retentionDays`, so the store would delete the older part (CR118). Keep at least that many days, or purge the older recordings first.",
+            "description": "The stored archive reaches back further than `retentionDays`, so the store would delete the older part. Keep at least that many days, or purge the older recordings first.",
             "content": {
               "application/json": {
                 "schema": {
