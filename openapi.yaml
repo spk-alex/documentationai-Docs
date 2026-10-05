@@ -14150,6 +14150,377 @@
         }
       }
     },
+    "/locks/{id}/RecordIvrCall": {
+      "post": {
+        "tags": [
+          "Lock",
+          "Command"
+        ],
+        "summary": "Record a finished IVR call",
+        "description": "Appends a LockIvrCallCompleted event (telephony-api, after a call to a resident ends). The lock keeps only a derived list of its last 50 calls. A callId already among those 50 is not recorded again (a retried delivery appends no second event).",
+        "operationId": "post_RecordIvrCallRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Lock ID (numeric)"
+            },
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "opened",
+                      "denied",
+                      "timeout",
+                      "no_answer",
+                      "busy",
+                      "failed",
+                      "ended"
+                    ]
+                  },
+                  "result": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "open_failed",
+                      "dial_failed",
+                      "guest_not_connected",
+                      "talk_limit",
+                      "hangup_client",
+                      "hangup_resident",
+                      "provider_error",
+                      null
+                    ]
+                  },
+                  "choice": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "0",
+                      "1",
+                      "9",
+                      null
+                    ]
+                  },
+                  "provider": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "country": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "language": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "answeredAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "durationSecs": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "callId",
+                  "userId",
+                  "status",
+                  "result",
+                  "choice",
+                  "provider",
+                  "country",
+                  "language",
+                  "createdAt",
+                  "endedAt",
+                  "durationSecs"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Call recorded as a LockIvrCallCompleted event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LockIvrCallCompleted"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "uuid": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "callId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "userId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "opened",
+                                "denied",
+                                "timeout",
+                                "no_answer",
+                                "busy",
+                                "failed",
+                                "ended"
+                              ]
+                            },
+                            "result": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "enum": [
+                                "open_failed",
+                                "dial_failed",
+                                "guest_not_connected",
+                                "talk_limit",
+                                "hangup_client",
+                                "hangup_resident",
+                                "provider_error",
+                                null
+                              ]
+                            },
+                            "choice": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "enum": [
+                                "0",
+                                "1",
+                                "9",
+                                null
+                              ]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "country": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "language": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "answeredAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "endedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "durationSecs": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "lockId",
+                            "uuid",
+                            "timestamp",
+                            "callId",
+                            "userId",
+                            "status",
+                            "result",
+                            "choice",
+                            "provider",
+                            "country",
+                            "language",
+                            "createdAt",
+                            "endedAt",
+                            "durationSecs"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body (unknown fields are refused), or the IVR service token sent together with X-API-Key or Authorization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — no valid IVR service token. Organization API keys (the lock's own included), super keys and bearer users are refused.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — the lock belongs to no organization. An unknown lock is refused here too: authorization runs before the lock is looked up.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locks/{id}/RecordLockOpenUnconfirmed": {
       "post": {
         "tags": [

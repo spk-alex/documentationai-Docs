@@ -1,5 +1,5 @@
 {
-  "version": "3654b37d",
+  "version": "fe85371d",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -577,6 +577,131 @@
         "uuid",
         "timestamp",
         "keyUuid"
+      ],
+      "additionalProperties": false
+    },
+    "LockIvrCallCompleted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "number"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "callId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "opened",
+            "denied",
+            "timeout",
+            "no_answer",
+            "busy",
+            "failed",
+            "ended"
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "open_failed",
+                "dial_failed",
+                "guest_not_connected",
+                "talk_limit",
+                "hangup_client",
+                "hangup_resident",
+                "provider_error"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "choice": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "9"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "answeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "endedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "durationSecs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "lockId",
+        "uuid",
+        "timestamp",
+        "callId",
+        "userId",
+        "status",
+        "result",
+        "choice",
+        "provider",
+        "country",
+        "language",
+        "createdAt",
+        "endedAt",
+        "durationSecs"
       ],
       "additionalProperties": false
     },

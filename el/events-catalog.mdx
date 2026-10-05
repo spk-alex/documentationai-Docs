@@ -290,6 +290,36 @@ A key write to physical NFC hardware was requested.
 | `keyUuid` | `string` | ναι |  |
 | `keyIndexNumber` | `number` | όχι |  |
 
+### LockIvrCallCompleted
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `LockIvrCallCompleted` |
+| **aggregateType** | `LockAggregate` |
+
+An IVR call to a resident about this lock ended (telephony-api). Delivered at least once — deduplicate on `callId`.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `lockId` | `number` | ναι | Numeric lock ID |
+| `uuid` | `string` | ναι | Lock UUID |
+| `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
+| `callId` | `string` | ναι | The calling client's call id; the same call may be delivered twice |
+| `userId` | `string` | ναι | Resident called (user ID); the phone number is never carried, not even masked |
+| `status` | `"opened" \| "denied" \| "timeout" \| "no_answer" \| "busy" \| "failed" \| "ended"` | ναι | Final call status: `opened`, `denied`, `timeout`, `no_answer`, `busy`, `failed` or `ended` |
+| `result` | `"open_failed" \| "dial_failed" \| "guest_not_connected" \| "talk_limit" \| "hangup_client" \| "hangup_resident" \| "provider_error" \| null` | ναι | For `failed` / `ended`: `open_failed`, `dial_failed`, `guest_not_connected`, `talk_limit`, `hangup_client`, `hangup_resident` or `provider_error`; otherwise null |
+| `choice` | `"0" \| "1" \| "9" \| null` | ναι | Key the resident pressed: `9` open, `0` refuse, `1` talk; null when none |
+| `provider` | `string` | ναι | Telephony provider that carried the call |
+| `country` | `string \| null` | ναι | ISO-3166 alpha-2 of the resident's number; null when unknown |
+| `language` | `string` | ναι | Language the menu was played in |
+| `createdAt` | `string` | ναι | ISO-8601 time the call was ordered |
+| `answeredAt` | `string` | όχι | ISO-8601 time the resident answered; absent when nobody answered |
+| `endedAt` | `string` | ναι | ISO-8601 time the call reached its final status |
+| `durationSecs` | `number` | ναι | Seconds from answer to end; 0 when nobody answered |
+
 ---
 
 ## Temporary key events

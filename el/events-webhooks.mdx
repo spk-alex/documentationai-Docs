@@ -44,6 +44,7 @@ description: Πώς να λαμβάνετε events της SmartphoneKey μέσω
 | `LockOpenConfirmed` | The lock reported that an unlock was carried out |
 | `LockOpenUnconfirmed` | An unlock was sent but the lock did not confirm the bolt moved, or did not answer in time |
 | `KeyWriteRequested` | A key write to physical NFC hardware was requested |
+| `LockIvrCallCompleted` | An IVR call to a resident about this lock ended (telephony-api). Delivered at least once — deduplicate on `callId` |
 
 ### Temporary key events (`spk.api`)
 
