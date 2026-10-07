@@ -6984,6 +6984,229 @@
         }
       }
     },
+    "/admin/users/lookup": {
+      "get": {
+        "tags": [
+          "Admin",
+          "User"
+        ],
+        "summary": "Find users by email, phone number or user id",
+        "description": "Returns every users row matching exactly one key: `email` (case- and whitespace-insensitive), `phone` (E.164, any accepted international spelling) or `userId` (lower- or upper-case). Oldest first; more than one row only for legacy duplicates, and the first is the one the app resolves to. Never creates a user. Requires dual auth: X-Admin-API-Key + JWT.",
+        "operationId": "get_LookupUsersRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Email address; matched case- and whitespace-insensitively"
+            },
+            "required": false,
+            "description": "Email address; matched case- and whitespace-insensitively",
+            "name": "email",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Phone number in international form (\"+48123456789\" or \"0048123456789\"); matched on its E.164 form"
+            },
+            "required": false,
+            "description": "Phone number in international form (\"+48123456789\" or \"0048123456789\"); matched on its E.164 form",
+            "name": "phone",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "b2c user UUID; lower- or upper-case"
+            },
+            "required": false,
+            "description": "b2c user UUID; lower- or upper-case",
+            "name": "userId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching rows (empty when nothing matches)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "by": {
+                      "type": "string",
+                      "enum": [
+                        "email",
+                        "phone",
+                        "userId"
+                      ],
+                      "description": "Which key was searched"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "The key as searched: lowercased email, E.164 phone number, or the UUID"
+                    },
+                    "total": {
+                      "type": "number",
+                      "description": "Number of rows returned (capped at 50)"
+                    },
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "uuid": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "phoneNumber": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "description": "UTC, as D1 stores it: \"YYYY-MM-DD HH:MM:SS\""
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "description": "UTC, as D1 stores it: \"YYYY-MM-DD HH:MM:SS\""
+                          }
+                        },
+                        "required": [
+                          "uuid",
+                          "email",
+                          "phoneNumber",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "by",
+                    "value",
+                    "total",
+                    "users"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not exactly one of email / phone / userId, or a phone number that is not a valid international number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/ops/overview": {
       "get": {
         "tags": [
