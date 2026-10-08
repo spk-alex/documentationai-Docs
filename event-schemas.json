@@ -1,5 +1,5 @@
 {
-  "version": "6842df28",
+  "version": "83fb5996",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -923,6 +923,16 @@
         },
         "deviceId": {
           "type": "string"
+        },
+        "orgId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -1021,6 +1031,41 @@
         "keyId",
         "reason",
         "removedAt"
+      ],
+      "additionalProperties": false
+    },
+    "WalletKeyOrgAssigned": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "keyId": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "previousOrgId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "auditId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "keyId",
+        "orgId",
+        "auditId"
       ],
       "additionalProperties": false
     },

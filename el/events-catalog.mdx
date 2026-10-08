@@ -559,6 +559,7 @@ A wallet key (Apple/Google) is being provisioned.
 | `walletType` | `"APPLE" \| "GOOGLE"` | ναι |  |
 | `keyIndex` | `number` | όχι |  |
 | `deviceId` | `string` | όχι | Device UUID |
+| `orgId` | `string \| null` | όχι | Organization ID |
 
 ### WalletKeyCommitted
 
@@ -620,6 +621,26 @@ A wallet key has been removed from a user.
 | `keyId` | `string` | ναι |  |
 | `reason` | `string` | ναι |  |
 | `removedAt` | `string` | ναι | Unix epoch ms |
+
+### WalletKeyOrgAssigned
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `WalletKeyOrgAssigned` |
+| **aggregateType** | `UserAggregate` |
+
+An admin assigned a wallet key to its issuing organization.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `userId` | `string` | ναι | User ID |
+| `keyId` | `string` | ναι |  |
+| `orgId` | `string` | ναι | Organization the key now belongs to |
+| `previousOrgId` | `string \| null` | όχι | Organization it belonged to before, if any |
+| `auditId` | `string` | ναι |  |
 
 ### AccessibleLockAdded
 

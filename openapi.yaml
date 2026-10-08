@@ -50,6 +50,288 @@
     "parameters": {}
   },
   "paths": {
+    "/admin/users/{userId}/wallet-keys/{keyId}/assign-org": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Assign a wallet key that has no issuing org to an org",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_AdminAssignWalletKeyOrgRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "keyId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orgId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "orgId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assigned"
+          },
+          "400": {
+            "description": "UNKNOWN_ORG, REASON_REQUIRED, INVALID_REASON, INVALID_TICKET",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "404": {
+            "description": "WALLET_KEY_NOT_FOUND or WALLET_PASS_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "WALLET_KEY_ALREADY_ASSIGNED, WALLET_KEY_NOT_ASSIGNED, WALLET_KEY_ORG_CHANGED, WALLET_KEY_ORG_OCCUPIED, WALLET_ADOPT_PENDING or WALLET_PASS_HAS_KEY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/{userId}/wallet-keys/{keyId}/reassign-org": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Move a wallet key to another org (corrections), with a reason",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_AdminReassignWalletKeyOrgRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "keyId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orgId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "WRONG_SUGGESTION, PARTNER_LIST or OTHER"
+                  },
+                  "ticket": {
+                    "type": "string",
+                    "description": "Optional ticket id, e.g. AA-123"
+                  }
+                },
+                "required": [
+                  "orgId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reassigned"
+          },
+          "400": {
+            "description": "UNKNOWN_ORG, REASON_REQUIRED, INVALID_REASON, INVALID_TICKET",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "404": {
+            "description": "WALLET_KEY_NOT_FOUND or WALLET_PASS_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "WALLET_KEY_ALREADY_ASSIGNED, WALLET_KEY_NOT_ASSIGNED, WALLET_KEY_ORG_CHANGED, WALLET_KEY_ORG_OCCUPIED, WALLET_ADOPT_PENDING or WALLET_PASS_HAS_KEY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/rtsp-cameras/{id}/recordings/playback": {
       "post": {
         "tags": [
@@ -4326,6 +4608,143 @@
         }
       }
     },
+    "/admin/wallet-passes/{keyUuid}/assign-org": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Assign an orphan legacy wallet pass to an org",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_AdminAssignWalletPassOrgRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "keyUuid",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orgId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "walletType": {
+                    "type": "string",
+                    "enum": [
+                      "APPLE",
+                      "GOOGLE"
+                    ]
+                  }
+                },
+                "required": [
+                  "orgId",
+                  "walletType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assigned"
+          },
+          "400": {
+            "description": "UNKNOWN_ORG, REASON_REQUIRED, INVALID_REASON, INVALID_TICKET",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "404": {
+            "description": "WALLET_KEY_NOT_FOUND or WALLET_PASS_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "WALLET_KEY_ALREADY_ASSIGNED, WALLET_KEY_NOT_ASSIGNED, WALLET_KEY_ORG_CHANGED, WALLET_KEY_ORG_OCCUPIED, WALLET_ADOPT_PENDING or WALLET_PASS_HAS_KEY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locks/{id}/debug/messages": {
       "get": {
         "tags": [
@@ -4976,10 +5395,11 @@
       "get": {
         "tags": [
           "User",
-          "Query"
+          "Query",
+          "Wallet"
         ],
         "summary": "Get wallet install URL",
-        "description": "Returns a URL the user can open to install their existing wallet key into Apple Wallet or Google Wallet. Returns 404 if no wallet key is set.",
+        "description": "Returns a URL the user can open to install their wallet key into Apple Wallet or Google Wallet. Returns 404 if the user has no wallet key the caller may see (partners see only their own org's key).",
         "operationId": "get_GetUserWalletLinkRoute",
         "parameters": [
           {
@@ -4991,6 +5411,16 @@
             "description": "User ID",
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Super-admin keys and the user themself: pick the wallet key of this org"
+            },
+            "required": false,
+            "description": "Super-admin keys and the user themself: pick the wallet key of this org",
+            "name": "orgId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -5022,7 +5452,7 @@
             }
           },
           "400": {
-            "description": "User has wallet key but is missing required data (e.g. email for Apple)",
+            "description": "Legacy link mode only: the user has a wallet key but no email (needed for Apple)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5059,7 +5489,7 @@
             }
           },
           "404": {
-            "description": "User has no wallet key set",
+            "description": "The user has no wallet key this caller may see",
             "content": {
               "application/json": {
                 "schema": {
@@ -5090,6 +5520,42 @@
                   "required": [
                     "success",
                     "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: the pass provider (AccessGrid / Google) rejected the request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "WALLET_UNAVAILABLE: the wallet service is unreachable; WALLET_PROVISIONING_IN_PROGRESS: retry after the Retry-After seconds",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
@@ -7736,6 +8202,246 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-keys/backfill": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Fill the wallet_keys projection from users' current state (one page per call)",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_BackfillWalletKeysRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page processed"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          }
+        }
+      }
+    },
+    "/admin/wallet-purge-requests/mark-sent": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Mark AccessGrid purge requests as sent to AccessGrid",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_MarkWalletPurgeRequestsSentRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "cardIds"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Marked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "updated"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "TOO_MANY_IDS (at most 500)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-purge-requests/confirm": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Confirm AccessGrid purged these cards (removes them from the queue)",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_ConfirmWalletPurgeRequestsRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "cardIds"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "removed"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "TOO_MANY_IDS (at most 500)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
@@ -23247,6 +23953,10 @@
                   "keyIndex": {
                     "type": "number",
                     "description": "Key index"
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "description": "Super-admin API keys only: the org the key is issued for (defaults to the caller's org). Ignored for every other caller: a partner key always issues for its own org, a user for themself."
                   }
                 },
                 "required": [
@@ -23307,6 +24017,12 @@
                             },
                             "deviceId": {
                               "type": "string"
+                            },
+                            "orgId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
                             }
                           },
                           "required": [
@@ -23331,6 +24047,13 @@
                         "APPLE",
                         "GOOGLE"
                       ]
+                    },
+                    "orgId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The org the key was issued for; null for a key a user created"
                     }
                   },
                   "required": [
@@ -23339,7 +24062,8 @@
                     "version",
                     "event",
                     "keyId",
-                    "walletType"
+                    "walletType",
+                    "orgId"
                   ]
                 },
                 "example": {
@@ -23376,6 +24100,207 @@
           },
           "404": {
             "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/AssignWalletKeyOrg": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Wallet",
+          "Admin"
+        ],
+        "summary": "Assign a wallet key to its issuing org (admin only)",
+        "description": "Admin-only (reached through the admin wallet-key routes). Assigns an org-less wallet key to an org, or with expectedOrgId moves it from that org to another.",
+        "operationId": "post_AssignWalletKeyOrgRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expectedOrgId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "auditId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "keyId",
+                  "orgId",
+                  "auditId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet key assigned to the org",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "WalletKeyOrgAssigned"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "keyId": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string"
+                            },
+                            "previousOrgId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "auditId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "keyId",
+                            "orgId",
+                            "auditId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not an admin forward",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No wallet key with that id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "WALLET_KEY_ALREADY_ASSIGNED, WALLET_KEY_ORG_CHANGED or WALLET_KEY_ORG_OCCUPIED",
             "content": {
               "application/json": {
                 "schema": {
@@ -24221,6 +25146,13 @@
                           },
                           "addedAt": {
                             "type": "string"
+                          },
+                          "orgId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Issuing org; null for a key a user created or one issued before orgs were recorded"
                           }
                         },
                         "required": [
@@ -24259,6 +25191,13 @@
                         },
                         "addedAt": {
                           "type": "string"
+                        },
+                        "orgId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Issuing org; null for a key a user created or one issued before orgs were recorded"
                         }
                       },
                       "required": [
@@ -24548,7 +25487,7 @@
           "Query"
         ],
         "summary": "Get user wallet status",
-        "description": "Get user's wallet status and wallet key details",
+        "description": "Get the user's wallet status and the wallet keys this caller may see",
         "operationId": "get_GetUserWalletRoute",
         "parameters": [
           {
@@ -24560,6 +25499,16 @@
             "description": "User ID",
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Super-admin keys and the user themself: pick the wallet key of this org"
+            },
+            "required": false,
+            "description": "Super-admin keys and the user themself: pick the wallet key of this org",
+            "name": "orgId",
+            "in": "query"
           }
         ],
         "responses": {
@@ -24600,6 +25549,13 @@
                         },
                         "addedAt": {
                           "type": "string"
+                        },
+                        "orgId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Issuing org; null for a key a user created or one issued before orgs were recorded"
                         }
                       },
                       "required": [
@@ -24609,10 +25565,58 @@
                         "deviceId",
                         "addedAt"
                       ]
+                    },
+                    "walletKeys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "keyId": {
+                            "type": "string"
+                          },
+                          "keyIndex": {
+                            "type": "number"
+                          },
+                          "walletType": {
+                            "type": "string",
+                            "enum": [
+                              "APPLE",
+                              "GOOGLE"
+                            ]
+                          },
+                          "deviceId": {
+                            "type": "string"
+                          },
+                          "passUrl": {
+                            "type": "string"
+                          },
+                          "serialNumber": {
+                            "type": "string"
+                          },
+                          "addedAt": {
+                            "type": "string"
+                          },
+                          "orgId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Issuing org; null for a key a user created or one issued before orgs were recorded"
+                          }
+                        },
+                        "required": [
+                          "keyId",
+                          "keyIndex",
+                          "walletType",
+                          "deviceId",
+                          "addedAt"
+                        ]
+                      }
                     }
                   },
                   "required": [
-                    "hasWalletKey"
+                    "hasWalletKey",
+                    "walletKeys"
                   ]
                 }
               }
@@ -26398,6 +27402,160 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-erasures": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Erase wallet passes by credential uuid or email (GDPR erasure)",
+        "description": "Deletes the wallet passes (AccessGrid cards, Google pass rows) for the given uuids and emails in both wallet workers and blocks re-issuance. Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_EraseWalletPassesRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyUuids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    },
+                    "maxItems": 100,
+                    "default": []
+                  },
+                  "emails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 320,
+                      "format": "email"
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erased",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "erasureId": {
+                      "type": "string"
+                    },
+                    "google": {
+                      "type": "object",
+                      "properties": {
+                        "erasedPasses": {
+                          "type": "number"
+                        },
+                        "deletedCards": {
+                          "type": "number"
+                        },
+                        "processorPurgePending": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "erasedPasses",
+                        "deletedCards",
+                        "processorPurgePending"
+                      ]
+                    },
+                    "apple": {
+                      "type": "object",
+                      "properties": {
+                        "erasedPasses": {
+                          "type": "number"
+                        },
+                        "deletedCards": {
+                          "type": "number"
+                        },
+                        "processorPurgePending": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "erasedPasses",
+                        "deletedCards",
+                        "processorPurgePending"
+                      ]
+                    },
+                    "processorPurgePending": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "erasureId",
+                    "google",
+                    "apple",
+                    "processorPurgePending"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin"
+          },
+          "502": {
+            "description": "WALLET_ERASE_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
@@ -28806,6 +29964,239 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-keys": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "List wallet keys that have no issuing org yet (with lock-org suggestions)",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_ListUnassignedWalletKeysRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "required": false,
+            "name": "unassigned",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of unassigned wallet keys"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          }
+        }
+      }
+    },
+    "/admin/wallet-passes": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "List orphan legacy wallet passes (no b2c-api key, no org)",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_ListUnassignedWalletPassesRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "required": false,
+            "name": "unassigned",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of orphan passes"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "503": {
+            "description": "WALLET_UNAVAILABLE"
+          }
+        }
+      }
+    },
+    "/admin/wallet-purge-requests": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "List AccessGrid purge requests (card ids to send to AccessGrid)",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "get_ListWalletPurgeRequestsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1"
+              ]
+            },
+            "required": false,
+            "name": "unsent",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of purge requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cardId": {
+                            "type": "string"
+                          },
+                          "erasedAt": {
+                            "type": "string"
+                          },
+                          "sentAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "cardId",
+                          "erasedAt",
+                          "sentAt"
+                        ]
+                      }
+                    },
+                    "nextCursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "requests",
+                    "nextCursor"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
