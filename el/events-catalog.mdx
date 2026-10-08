@@ -1541,6 +1541,46 @@ An RTSP camera's runtime status changed, as reported by its video worker (delive
 | `changedAt` | `string` | ναι | When the change was observed (ISO-8601) |
 | `observedAt` | `string` | ναι |  |
 
+### RtspCameraMonitoringConfigured
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraMonitoringConfigured` |
+| **aggregateType** | `RtspCameraAggregate` |
+
+An RTSP camera's availability monitoring was switched on or off.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `cameraId` | `string` | ναι | Camera ID |
+| `enabled` | `boolean` | ναι |  |
+| `changedBy` | `string` | ναι |  |
+| `updatedAt` | `string` | ναι |  |
+
+### RtspCameraUnavailabilityConfirmed
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraUnavailabilityConfirmed` |
+| **aggregateType** | `RtspCamera` |
+
+A monitored RTSP camera is still unavailable; repeated at most every five minutes while it stays so (delivered only for organization-owned cameras).
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `cameraId` | `string` | ναι | Camera ID |
+| `runtimeStatus` | `string` | ναι | The runtime status the camera is in (e.g. `unreachable`, `gray`, `stalled`) |
+| `reason` | `string` | όχι | Why, when known: the probe verdict or the runtime error (never contains the RTSP URL) |
+| `workerId` | `string` | όχι | Video worker ID |
+| `unavailableSince` | `string` | ναι | When the camera entered that status (ISO-8601) |
+| `checkedAt` | `string` | ναι | When the probe or heartbeat that confirmed it ran (ISO-8601) |
+
 ---
 
 ## Video worker events

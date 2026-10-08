@@ -1,5 +1,5 @@
 {
-  "version": "5d8679bf",
+  "version": "b1a1d71f",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -3144,6 +3144,31 @@
       ],
       "additionalProperties": false
     },
+    "RtspCameraMonitoringConfigured": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "changedBy": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "enabled",
+        "changedBy",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
     "RtspCameraRuntimeStatusChanged": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -3183,6 +3208,37 @@
         "to",
         "changedAt",
         "observedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraUnavailabilityConfirmed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "runtimeStatus": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "workerId": {
+          "type": "string"
+        },
+        "unavailableSince": {
+          "type": "string"
+        },
+        "checkedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "runtimeStatus",
+        "unavailableSince",
+        "checkedAt"
       ],
       "additionalProperties": false
     },

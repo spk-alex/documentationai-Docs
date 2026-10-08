@@ -1541,6 +1541,46 @@ An RTSP camera's runtime status changed, as reported by its video worker (delive
 | `changedAt` | `string` | yes | When the change was observed (ISO-8601) |
 | `observedAt` | `string` | yes |  |
 
+### RtspCameraMonitoringConfigured
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraMonitoringConfigured` |
+| **aggregateType** | `RtspCameraAggregate` |
+
+An RTSP camera's availability monitoring was switched on or off.
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `cameraId` | `string` | yes | Camera ID |
+| `enabled` | `boolean` | yes |  |
+| `changedBy` | `string` | yes |  |
+| `updatedAt` | `string` | yes |  |
+
+### RtspCameraUnavailabilityConfirmed
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraUnavailabilityConfirmed` |
+| **aggregateType** | `RtspCamera` |
+
+A monitored RTSP camera is still unavailable; repeated at most every five minutes while it stays so (delivered only for organization-owned cameras).
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `cameraId` | `string` | yes | Camera ID |
+| `runtimeStatus` | `string` | yes | The runtime status the camera is in (e.g. `unreachable`, `gray`, `stalled`) |
+| `reason` | `string` | no | Why, when known: the probe verdict or the runtime error (never contains the RTSP URL) |
+| `workerId` | `string` | no | Video worker ID |
+| `unavailableSince` | `string` | yes | When the camera entered that status (ISO-8601) |
+| `checkedAt` | `string` | yes | When the probe or heartbeat that confirmed it ran (ISO-8601) |
+
 ---
 
 ## Video worker events

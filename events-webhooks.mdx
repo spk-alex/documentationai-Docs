@@ -129,6 +129,8 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 | `RtspCameraRecordingsPurgeRequested` | A purge of an RTSP camera's older recordings was requested |
 | `RtspCameraRecordingsPurged` | A requested recordings purge has finished |
 | `RtspCameraRuntimeStatusChanged` | An RTSP camera's runtime status changed, as reported by its video worker (delivered only for organization-owned cameras) |
+| `RtspCameraMonitoringConfigured` | An RTSP camera's availability monitoring was switched on or off |
+| `RtspCameraUnavailabilityConfirmed` | A monitored RTSP camera is still unavailable; repeated at most every five minutes while it stays so (delivered only for organization-owned cameras) |
 
 ### Video worker events (`spk.api`)
 
