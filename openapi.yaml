@@ -25293,9 +25293,6 @@
                 }
               }
             }
-          },
-          "503": {
-            "description": "SpacetimeDB stayed unreachable after retries; try again after the `Retry-After` seconds."
           }
         }
       }
