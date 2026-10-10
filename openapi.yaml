@@ -25293,6 +25293,9 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "SpacetimeDB stayed unreachable after retries; try again after the `Retry-After` seconds."
           }
         }
       }
@@ -27788,7 +27791,7 @@
           "Wallet"
         ],
         "summary": "Erase wallet passes by credential uuid or email (GDPR erasure)",
-        "description": "Deletes the wallet passes (AccessGrid cards, Google pass rows) for the given uuids and emails in both wallet workers and blocks re-issuance. Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
+        "description": "Deletes the wallet passes (AccessGrid cards, Google pass rows) for the given uuids and emails in both wallet workers. Answers 503 WALLET_UNAVAILABLE until b2c-api is wired to the wallet workers. Once wired, it blocks re-issuance at the workers only: while the Python Lambdas serve the wallet hosts, an old Lambda link mints again and the erasure must be re-run. Include the key uuids (a Google pass is held under the Google account address). A saved Google object is not revoked. Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
         "security": [
           {
             "adminApiKey": [],
@@ -30335,6 +30338,209 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-ledger-sweeps": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Sweep the Lambda wallet tables of the keys the wallet workers erased",
+        "description": "Removes what the Python Lambdas minted again for keys the wallet workers erased: wallet-google deletes the Google pass rows of those keys; wallet-apple deletes their AccessGrid cards (a 404 counts as done), queues purge requests and deletes the rows. Each call sweeps one page of the erased keys of each worker, in key order; it touches no key that was not erased and never matches by email. Omit both cursors on the first call, then call it again with googleCursor = google.nextCursor and appleCursor = apple.nextCursor until done is true. A null cursor means that worker has finished: it is not called again and its page comes back skipped. Answers 503 WALLET_UNAVAILABLE until b2c-api is wired to the wallet workers. Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_SweepWalletLedgerRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "googleCursor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^[0-9a-f]&#123;8&#125;-[0-9a-f]&#123;4&#125;-[0-9a-f]&#123;4&#125;-[0-9a-f]&#123;4&#125;-[0-9a-f]&#123;12&#125;$",
+                    "description": "Omit for google's first page; then pass back google.nextCursor from the previous call (a lower-case dashed uuid, or null once google has finished, so it is not called again)"
+                  },
+                  "appleCursor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^[0-9a-f]&#123;32&#125;$",
+                    "description": "Omit for apple's first page; then pass back apple.nextCursor from the previous call (32 lower-case hex digits, or null once apple has finished, so it is not called again)"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Erased keys per worker page (default 25)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "One page swept in each worker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sweepId": {
+                      "type": "string"
+                    },
+                    "google": {
+                      "type": "object",
+                      "properties": {
+                        "skipped": {
+                          "type": "boolean"
+                        },
+                        "ledgerBound": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "keysChecked": {
+                          "type": "number"
+                        },
+                        "ledgerRowsDeleted": {
+                          "type": "number"
+                        },
+                        "deletedCards": {
+                          "type": "number"
+                        },
+                        "processorPurgePending": {
+                          "type": "number"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "skipped",
+                        "ledgerBound",
+                        "keysChecked",
+                        "ledgerRowsDeleted",
+                        "deletedCards",
+                        "processorPurgePending",
+                        "nextCursor"
+                      ]
+                    },
+                    "apple": {
+                      "type": "object",
+                      "properties": {
+                        "skipped": {
+                          "type": "boolean"
+                        },
+                        "ledgerBound": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "keysChecked": {
+                          "type": "number"
+                        },
+                        "ledgerRowsDeleted": {
+                          "type": "number"
+                        },
+                        "deletedCards": {
+                          "type": "number"
+                        },
+                        "processorPurgePending": {
+                          "type": "number"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "skipped",
+                        "ledgerBound",
+                        "keysChecked",
+                        "ledgerRowsDeleted",
+                        "deletedCards",
+                        "processorPurgePending",
+                        "nextCursor"
+                      ]
+                    },
+                    "done": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "sweepId",
+                    "google",
+                    "apple",
+                    "done"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body (limit outside 1..100, a cursor not in its worker's key form)"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin"
+          },
+          "502": {
+            "description": "WALLET_SWEEP_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
