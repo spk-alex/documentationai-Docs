@@ -5729,6 +5729,280 @@
         }
       }
     },
+    "/users/{id}/wallet/unlink": {
+      "post": {
+        "tags": [
+          "User",
+          "Wallet"
+        ],
+        "summary": "Unlink my Apple Wallet pass from my phone",
+        "description": "Takes the user's Apple Wallet pass for the given wallet key off the phone it is installed on. The pass is not deleted or reissued: the wallet link keeps serving the same install page. Only the user themself may call it, and only for an Apple wallet key.",
+        "operationId": "post_UnlinkWalletPassRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The wallet key whose Apple Wallet pass is unlinked from the phone it is installed on"
+                  }
+                },
+                "required": [
+                  "keyId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The key's Apple Wallet pass, unlinked from the phone it was installed on",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keyId": {
+                      "type": "string"
+                    },
+                    "walletType": {
+                      "type": "string",
+                      "enum": [
+                        "APPLE"
+                      ]
+                    },
+                    "unlinked": {
+                      "type": "integer",
+                      "description": "Cards installed on a phone and now unlinked from it"
+                    },
+                    "alreadyUnlinked": {
+                      "type": "integer",
+                      "description": "Cards already unlinked before this call"
+                    },
+                    "notInstalled": {
+                      "type": "integer",
+                      "description": "Cards issued but never installed, so on no phone"
+                    },
+                    "gone": {
+                      "type": "integer",
+                      "description": "Cards deleted, or unknown to the pass provider"
+                    },
+                    "unlinkedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "When the pass was last unlinked from a phone, or null if never"
+                    }
+                  },
+                  "required": [
+                    "keyId",
+                    "walletType",
+                    "unlinked",
+                    "alreadyUnlinked",
+                    "notInstalled",
+                    "gone",
+                    "unlinkedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No keyId in the body (Ceves error body), or WALLET_UNLINK_UNSUPPORTED: the key is not an Apple Wallet key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "number"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "success",
+                        "errors"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is not the user: only the holder unlinks their own pass",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user, or the user has no such wallet key (Ceves error body), or WALLET_PASS_NOT_FOUND: no pass was ever issued for it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "number"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "success",
+                        "errors"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: the pass provider (AccessGrid) failed or refused; safe to retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "WALLET_UNAVAILABLE: the Apple wallet service is not bound or unreachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/rtsp-cameras/{id}": {
       "delete": {
         "tags": [
