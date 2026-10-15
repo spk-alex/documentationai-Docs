@@ -25574,6 +25574,188 @@
         }
       }
     },
+    "/users/{id}/UpdateEmail": {
+      "post": {
+        "tags": [
+          "User",
+          "Command",
+          "Profile"
+        ],
+        "summary": "Add an email to a user that has none",
+        "description": "Writes the email (PII) to D1 and emits a UserEmailUpdated audit event carrying only a masked (first-initial + domain) form — the raw address never enters the event log. Only sets the email when the user currently has none; returns 409 if an email is already on file or the address belongs to another user.",
+        "operationId": "post_UpdateUserEmailRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "Email to set on a user that currently has none"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email added (raw value in D1, masked audit event emitted)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "UserEmailUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "set",
+                                "removed"
+                              ]
+                            },
+                            "maskedEmail": {
+                              "type": "string",
+                              "description": "Obfuscated email (first initial + domain, e.g. \"a***@example.com\") — present only when action is \"set\""
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "action",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already has an email, or the email belongs to another user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/devices": {
       "get": {
         "tags": [
@@ -27263,188 +27445,6 @@
           },
           "404": {
             "description": "User not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users/{id}/UpdateEmail": {
-      "post": {
-        "tags": [
-          "User",
-          "Command",
-          "Profile"
-        ],
-        "summary": "Add an email to a user that has none",
-        "description": "Writes the email (PII) to D1 and emits a UserEmailUpdated audit event carrying only a masked (first-initial + domain) form — the raw address never enters the event log. Only sets the email when the user currently has none; returns 409 if an email is already on file or the address belongs to another user.",
-        "operationId": "post_UpdateUserEmailRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "User ID"
-            },
-            "required": true,
-            "description": "User ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "description": "Email to set on a user that currently has none"
-                  }
-                },
-                "required": [
-                  "email"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email added (raw value in D1, masked audit event emitted)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "aggregateId": {
-                      "type": "string"
-                    },
-                    "version": {
-                      "type": "number"
-                    },
-                    "event": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "UserEmailUpdated"
-                          ]
-                        },
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "userId": {
-                              "type": "string"
-                            },
-                            "action": {
-                              "type": "string",
-                              "enum": [
-                                "set",
-                                "removed"
-                              ]
-                            },
-                            "maskedEmail": {
-                              "type": "string",
-                              "description": "Obfuscated email (first initial + domain, e.g. \"a***@example.com\") — present only when action is \"set\""
-                            },
-                            "timestamp": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "userId",
-                            "action",
-                            "timestamp"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "data"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "aggregateId",
-                    "version",
-                    "event"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "User already has an email, or the email belongs to another user",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Database not available",
             "content": {
               "application/json": {
                 "schema": {
