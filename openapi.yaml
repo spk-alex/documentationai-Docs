@@ -3763,6 +3763,15 @@
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "spacetimePurge": {
+                      "type": "string",
+                      "enum": [
+                        "purged",
+                        "retrying",
+                        "not-configured"
+                      ],
+                      "description": "DELETE_DO_AND_EVENTS only: outcome of the first SpacetimeDB purge of the user's realtime rows. \"purged\" — done before the response; \"not-configured\" — SpacetimeDB is not configured here; \"retrying\" — the first attempt failed, success is false, and the purge is retried and dead-lettered on failure."
                     }
                   },
                   "required": [
@@ -6696,16 +6705,16 @@
           "Ops"
         ],
         "summary": "Purge projection dead-letter queue records",
-        "description": "Deletes failed-projection records from the DLQ bucket, optionally scoped by projector and/or age. Clears the queue/dashboard count — it does NOT replay. The underlying events remain in the event store, so a purge is recoverable via /admin/resync-projections. Requires dual auth: X-Admin-API-Key + JWT.",
+        "description": "Deletes failed-projection records from the DLQ bucket, optionally scoped by projector and/or age. Clears the queue/dashboard count — it does NOT replay. For every projector except spacetimedb-purge-user the underlying events remain in the event store, so a purge is recoverable via /admin/resync-projections. spacetimedb-purge-user records cannot be rebuilt: a purge without a projector leaves them, and an explicit purge of that projector is meant only for decommissioning an environment. Requires dual auth: X-Admin-API-Key + JWT.",
         "operationId": "post_DlqPurgeRoute",
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "description": "Limit the purge to one projector id (e.g. \"spacetimedb\"). Omit to purge all."
+              "description": "Limit the purge to one projector id (e.g. \"spacetimedb\"). Omit to purge every projector except spacetimedb-purge-user, whose records a resync cannot rebuild."
             },
             "required": false,
-            "description": "Limit the purge to one projector id (e.g. \"spacetimedb\"). Omit to purge all.",
+            "description": "Limit the purge to one projector id (e.g. \"spacetimedb\"). Omit to purge every projector except spacetimedb-purge-user, whose records a resync cannot rebuild.",
             "name": "projector",
             "in": "query"
           },
