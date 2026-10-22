@@ -187,6 +187,181 @@
         }
       }
     },
+    "/admin/users/{userId}/wallet-keys/{keyId}/revoke-pass": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Revoke a user's Google Wallet pass",
+        "description": "Expires every saved Google Wallet object of the key and clears the key it presents at a lock; the Google wallet worker serves the key no pass again (docs/WALLET.md, revoking a Google pass). Audited like every wallet admin action.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_AdminRevokeWalletPassRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "keyId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revoked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keyId": {
+                      "type": "string"
+                    },
+                    "walletType": {
+                      "type": "string",
+                      "enum": [
+                        "GOOGLE"
+                      ]
+                    },
+                    "revokedAt": {
+                      "type": "string",
+                      "description": "When the key's pass was first revoked"
+                    },
+                    "revoked": {
+                      "type": "integer",
+                      "description": "Google Wallet objects a person holds, now expired with the key cleared"
+                    },
+                    "notSaved": {
+                      "type": "integer",
+                      "description": "Objects of the key no one holds, expired too: a never-saved one is created expired so that none can be saved active"
+                    }
+                  },
+                  "required": [
+                    "keyId",
+                    "walletType",
+                    "revokedAt",
+                    "revoked",
+                    "notSaved"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "WALLET_REVOKE_UNSUPPORTED: the key is not a Google Wallet key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on a POST"
+          },
+          "404": {
+            "description": "WALLET_KEY_NOT_FOUND or WALLET_PASS_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "WALLET_KEY_ALREADY_ASSIGNED, WALLET_KEY_NOT_ASSIGNED, WALLET_KEY_ORG_CHANGED, WALLET_KEY_ORG_OCCUPIED, WALLET_ADOPT_PENDING or WALLET_PASS_HAS_KEY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: Google failed or refused; safe to retry (the pass is already refused)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/users/{userId}/wallet-keys/{keyId}/reassign-org": {
       "post": {
         "tags": [
@@ -3860,6 +4035,35 @@
                 }
               }
             }
+          },
+          "502": {
+            "description": "WALLET_ERASE_FAILED or WALLET_ERASE_INCOMPLETE (DELETE_DO_AND_EVENTS): the wallet passes could not be revoked at the wallet workers; nothing was deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "WALLET_ERASE_FAILED",
+                        "WALLET_ERASE_INCOMPLETE"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -5699,6 +5903,24 @@
               }
             }
           },
+          "410": {
+            "description": "WALLET_PASS_REVOKED: the key's Google pass was revoked and is never served again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "502": {
             "description": "WALLET_PROVIDER_ERROR: the pass provider (AccessGrid / Google) rejected the request",
             "content": {
@@ -5719,6 +5941,267 @@
           },
           "503": {
             "description": "WALLET_UNAVAILABLE: the wallet service is unreachable; WALLET_PROVISIONING_IN_PROGRESS: retry after the Retry-After seconds",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/wallet/revoke": {
+      "post": {
+        "tags": [
+          "User",
+          "Wallet"
+        ],
+        "summary": "Revoke a user's Google Wallet pass",
+        "description": "Expires every saved Google Wallet object of the user's Google wallet key and clears the key it presents at a lock; the Google wallet worker serves the key no pass again. Only an API key may call it: a partner for its own org's keys, a super key for any key.",
+        "operationId": "post_RevokeWalletPassRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The Google wallet key whose pass is revoked"
+                  }
+                },
+                "required": [
+                  "keyId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The key's Google Wallet pass, revoked: every saved object expired with the key cleared",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keyId": {
+                      "type": "string"
+                    },
+                    "walletType": {
+                      "type": "string",
+                      "enum": [
+                        "GOOGLE"
+                      ]
+                    },
+                    "revokedAt": {
+                      "type": "string",
+                      "description": "When the key's pass was first revoked"
+                    },
+                    "revoked": {
+                      "type": "integer",
+                      "description": "Google Wallet objects a person holds, now expired with the key cleared"
+                    },
+                    "notSaved": {
+                      "type": "integer",
+                      "description": "Objects of the key no one holds, expired too: a never-saved one is created expired so that none can be saved active"
+                    }
+                  },
+                  "required": [
+                    "keyId",
+                    "walletType",
+                    "revokedAt",
+                    "revoked",
+                    "notSaved"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No keyId in the body (Ceves error body), or WALLET_REVOKE_UNSUPPORTED: the key is not a Google Wallet key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "number"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "success",
+                        "errors"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is not an API key: only the key's organization or an administrator revokes a pass",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user, or no such wallet key of the caller's org (Ceves error body), or WALLET_PASS_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "number"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "success",
+                        "errors"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: Google failed or refused; safe to retry (the pass is already refused)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "WALLET_UNAVAILABLE: the Google wallet service is not bound or unreachable",
             "content": {
               "application/json": {
                 "schema": {
@@ -8658,6 +9141,765 @@
         }
       }
     },
+    "/admin/wallet-cards/search": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Find the AccessGrid cards of an email or a wallet key",
+        "description": "Every card of the Apple brand templates whose email (the Lambda sent one with its cards; the wallet workers send none) matches case-insensitively, or whose file_data is the wallet key. Exactly one of email and keyUuid, in the body so the email never sits in a URL. AccessGrid cannot filter, so wallet-apple pages through every card; a scan that cannot finish answers 502, never a partial list. Answers card ids, brands, states and dates only. Requires dual admin auth (X-Admin-API-Key and an allowed-domain admin-portal id_token). Deliberately NOT gated on JWT_AUTH_MODE=enforce: outside enforce the id_token is decoded, not verified, and the audit records the claimed email. Audited.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_SearchWalletCardsRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 320,
+                    "description": "The email the Lambda sent with its cards, matched case-insensitively (the wallet workers send none)"
+                  },
+                  "keyUuid": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 64,
+                    "description": "The wallet key, matched against the card's file_data: a uuid, with or without dashes, in any case"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The matching cards",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cards": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cardId": {
+                            "type": "string",
+                            "description": "The AccessGrid card id"
+                          },
+                          "brand": {
+                            "type": "string",
+                            "description": "The brand whose AccessGrid template holds the card (spkey or skillos)"
+                          },
+                          "state": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "As AccessGrid reports it (active, suspended, unlink, deleted, created, ...); null when it reports none"
+                          },
+                          "createdAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "When AccessGrid issued the card, as it reports it; null when it reports none"
+                          }
+                        },
+                        "required": [
+                          "cardId",
+                          "brand",
+                          "state",
+                          "createdAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "cards"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "CARD_SEARCH_INVALID: neither or both of email and keyUuid, a blank email, or a key that is not a uuid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on any card route but /get"
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: AccessGrid (or the Lambdas' ledger) could not be reached; safe to retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "WALLET_UNAVAILABLE (WALLET_APPLE unbound or unconfigured)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-cards/get": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Read one AccessGrid card: brand, state and creation date",
+        "description": "The card as AccessGrid reports it (Get Issued Pass). A POST that only reads: the card id travels in the body, never in a URL, and a read-only admin may send it. Requires dual admin auth (X-Admin-API-Key and an allowed-domain admin-portal id_token). Deliberately NOT gated on JWT_AUTH_MODE=enforce: outside enforce the id_token is decoded, not verified, and the audit records the claimed email. Audited.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_GetWalletCardRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]&#123;1,128&#125;$",
+                    "description": "The AccessGrid card id"
+                  }
+                },
+                "required": [
+                  "cardId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The card",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "card": {
+                      "type": "object",
+                      "properties": {
+                        "cardId": {
+                          "type": "string",
+                          "description": "The AccessGrid card id"
+                        },
+                        "brand": {
+                          "type": "string",
+                          "description": "Absent when the card is on no brand template this environment knows"
+                        },
+                        "state": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "As AccessGrid reports it (active, suspended, unlink, deleted, created, ...); null when it reports none"
+                        },
+                        "createdAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "When AccessGrid issued the card, as it reports it; null when it reports none"
+                        }
+                      },
+                      "required": [
+                        "cardId",
+                        "state",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "card"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A body without a card id, or a card id that is not one (letters, digits, _ and - only)"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on any card route but /get"
+          },
+          "404": {
+            "description": "CARD_NOT_FOUND: AccessGrid has no such card",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: AccessGrid (or the Lambdas' ledger) could not be reached; safe to retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "WALLET_UNAVAILABLE (WALLET_APPLE unbound or unconfigured)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-cards/suspend": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Suspend one AccessGrid card (the lock stops accepting it; resume undoes it)",
+        "description": "Reads the card's state, suspends it, and reads the state again: the answer is both states. The card id travels in the body, never in a URL. There is no delete. A resume or unlink of a card an erasure or the ledger sweep revoked is refused before any action (409 CARD_REVOKED_BY_ERASURE): restoring an erased person goes through the restore runbook. A REQUIRED intent audit is written first (503 AUDIT_UNAVAILABLE acts on nothing) and the outcome is audited after. Requires dual admin auth (X-Admin-API-Key and an allowed-domain admin-portal id_token). Deliberately NOT gated on JWT_AUTH_MODE=enforce: outside enforce the id_token is decoded, not verified, and the audit records the claimed email. Audited.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_SuspendWalletCardRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]&#123;1,128&#125;$",
+                    "description": "The AccessGrid card id"
+                  }
+                },
+                "required": [
+                  "cardId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done: the state before and after",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "before": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The state AccessGrid reported before the action"
+                    },
+                    "after": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The state AccessGrid reported after the action"
+                    }
+                  },
+                  "required": [
+                    "before",
+                    "after"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A body without a card id, or a card id that is not one (letters, digits, _ and - only)"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on any card route but /get"
+          },
+          "404": {
+            "description": "CARD_NOT_FOUND: AccessGrid has no such card",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CARD_ACTION_REFUSED (AccessGrid refused the action for the card's state) or CARD_REVOKED_BY_ERASURE (resume or unlink of a card an erasure revoked)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: AccessGrid (or the Lambdas' ledger) could not be reached; safe to retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE (WALLET_APPLE unbound or unconfigured)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-cards/resume": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Resume one suspended AccessGrid card (refused for a card an erasure revoked)",
+        "description": "Reads the card's state, resumes it, and reads the state again: the answer is both states. The card id travels in the body, never in a URL. There is no delete. A resume or unlink of a card an erasure or the ledger sweep revoked is refused before any action (409 CARD_REVOKED_BY_ERASURE): restoring an erased person goes through the restore runbook. A REQUIRED intent audit is written first (503 AUDIT_UNAVAILABLE acts on nothing) and the outcome is audited after. Requires dual admin auth (X-Admin-API-Key and an allowed-domain admin-portal id_token). Deliberately NOT gated on JWT_AUTH_MODE=enforce: outside enforce the id_token is decoded, not verified, and the audit records the claimed email. Audited.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_ResumeWalletCardRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]&#123;1,128&#125;$",
+                    "description": "The AccessGrid card id"
+                  }
+                },
+                "required": [
+                  "cardId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done: the state before and after",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "before": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The state AccessGrid reported before the action"
+                    },
+                    "after": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The state AccessGrid reported after the action"
+                    }
+                  },
+                  "required": [
+                    "before",
+                    "after"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A body without a card id, or a card id that is not one (letters, digits, _ and - only)"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on any card route but /get"
+          },
+          "404": {
+            "description": "CARD_NOT_FOUND: AccessGrid has no such card",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CARD_ACTION_REFUSED (AccessGrid refused the action for the card's state) or CARD_REVOKED_BY_ERASURE (resume or unlink of a card an erasure revoked)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: AccessGrid (or the Lambdas' ledger) could not be reached; safe to retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE (WALLET_APPLE unbound or unconfigured)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/wallet-cards/unlink": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Wallet"
+        ],
+        "summary": "Unlink one AccessGrid card from the phone it is installed on (refused for a card an erasure revoked)",
+        "description": "Reads the card's state, unlinks it, and reads the state again: the answer is both states. The card id travels in the body, never in a URL. There is no delete. A resume or unlink of a card an erasure or the ledger sweep revoked is refused before any action (409 CARD_REVOKED_BY_ERASURE): restoring an erased person goes through the restore runbook. A REQUIRED intent audit is written first (503 AUDIT_UNAVAILABLE acts on nothing) and the outcome is audited after. Requires dual admin auth (X-Admin-API-Key and an allowed-domain admin-portal id_token). Deliberately NOT gated on JWT_AUTH_MODE=enforce: outside enforce the id_token is decoded, not verified, and the audit records the claimed email. Audited.",
+        "security": [
+          {
+            "adminApiKey": [],
+            "bearerAuth": []
+          }
+        ],
+        "operationId": "post_UnlinkWalletCardRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]&#123;1,128&#125;$",
+                    "description": "The AccessGrid card id"
+                  }
+                },
+                "required": [
+                  "cardId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Done: the state before and after",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "before": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The state AccessGrid reported before the action"
+                    },
+                    "after": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The state AccessGrid reported after the action"
+                    }
+                  },
+                  "required": [
+                    "before",
+                    "after"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A body without a card id, or a card id that is not one (letters, digits, _ and - only)"
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials"
+          },
+          "403": {
+            "description": "Not an allowed admin, or a read-only admin on any card route but /get"
+          },
+          "404": {
+            "description": "CARD_NOT_FOUND: AccessGrid has no such card",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CARD_ACTION_REFUSED (AccessGrid refused the action for the card's state) or CARD_REVOKED_BY_ERASURE (resume or unlink of a card an erasure revoked)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "WALLET_PROVIDER_ERROR: AccessGrid (or the Lambdas' ledger) could not be reached; safe to retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE (WALLET_APPLE unbound or unconfigured)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/wallet-keys/backfill": {
       "post": {
         "tags": [
@@ -8692,208 +9934,6 @@
           },
           "403": {
             "description": "Not an allowed admin, or a read-only admin on a POST"
-          }
-        }
-      }
-    },
-    "/admin/wallet-purge-requests/mark-sent": {
-      "post": {
-        "tags": [
-          "Admin",
-          "Wallet"
-        ],
-        "summary": "Mark AccessGrid purge requests as sent to AccessGrid",
-        "security": [
-          {
-            "adminApiKey": [],
-            "bearerAuth": []
-          }
-        ],
-        "operationId": "post_MarkWalletPurgeRequestsSentRoute",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "cardIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 128
-                    },
-                    "minItems": 1
-                  }
-                },
-                "required": [
-                  "cardIds"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Marked",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "updated": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "updated"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "TOO_MANY_IDS (at most 500)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid admin credentials"
-          },
-          "403": {
-            "description": "Not an allowed admin, or a read-only admin on a POST"
-          },
-          "503": {
-            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/wallet-purge-requests/confirm": {
-      "post": {
-        "tags": [
-          "Admin",
-          "Wallet"
-        ],
-        "summary": "Confirm AccessGrid purged these cards (removes them from the queue)",
-        "security": [
-          {
-            "adminApiKey": [],
-            "bearerAuth": []
-          }
-        ],
-        "operationId": "post_ConfirmWalletPurgeRequestsRoute",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "cardIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 128
-                    },
-                    "minItems": 1
-                  }
-                },
-                "required": [
-                  "cardIds"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Confirmed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "removed": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "removed"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "TOO_MANY_IDS (at most 500)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid admin credentials"
-          },
-          "403": {
-            "description": "Not an allowed admin, or a read-only admin on a POST"
-          },
-          "503": {
-            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
           }
         }
       }
@@ -28073,8 +29113,8 @@
           "Admin",
           "Wallet"
         ],
-        "summary": "Erase wallet passes by credential uuid or email (GDPR erasure)",
-        "description": "Deletes the wallet passes (AccessGrid cards, Google pass rows) for the given uuids and emails in both wallet workers. Answers 503 WALLET_UNAVAILABLE until b2c-api is wired to the wallet workers. Once wired, it blocks re-issuance at the workers only: while the Python Lambdas serve the wallet hosts, an old Lambda link mints again and the erasure must be re-run. Include the key uuids (a Google pass is held under the Google account address). A saved Google object is not revoked. Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
+        "summary": "Erase wallet passes by credential uuid or email: revoke them reversibly, delete nothing",
+        "description": "Revokes the wallet passes of the given uuids and emails in both workers, reversibly: AccessGrid cards suspended, Google objects expired with their Smart Tap value cleared, the keys refused from then on. Nothing is deleted: the workers keep their rows, the Lambdas' rows keep their email and get revoked_at, and no AccessGrid purge request is queued. It reaches only passes the workers know; the ledger sweep reaches what the Lambdas minted since. Answers 503 WALLET_UNAVAILABLE when either wallet worker is unbound or a worker call throws. While the Python Lambdas serve the wallet hosts, an old Lambda link serves the revoked pass and a Lambda can mint again where it finds no row: run the ledger sweep. Include the key uuids (a Google pass is held under the Google account address). Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
         "security": [
           {
             "adminApiKey": [],
@@ -28115,7 +29155,7 @@
         },
         "responses": {
           "200": {
-            "description": "Erased",
+            "description": "Revoked; every row kept",
             "content": {
               "application/json": {
                 "schema": {
@@ -28127,50 +29167,82 @@
                     "google": {
                       "type": "object",
                       "properties": {
+                        "credentialsRevoked": {
+                          "type": "number",
+                          "description": "Revoked by this call: AccessGrid cards suspended, Google objects expired"
+                        },
+                        "credentialsAlreadyRevoked": {
+                          "type": "number",
+                          "description": "Apple cards found already suspended (Google: 0)"
+                        },
+                        "credentialsGone": {
+                          "type": "number",
+                          "description": "Apple cards deleted at AccessGrid or unknown to it (Google: 0)"
+                        },
+                        "credentialsUnrevokable": {
+                          "type": "number",
+                          "description": "Cards left in a state AccessGrid cannot suspend and the rule table accepts (none today)"
+                        },
+                        "ledgerRowsMarked": {
+                          "type": "number",
+                          "description": "Rows of the Lambdas' tables marked revoked_at, kept with their email"
+                        },
                         "erasedPasses": {
-                          "type": "number"
-                        },
-                        "deletedCards": {
-                          "type": "number"
-                        },
-                        "processorPurgePending": {
-                          "type": "number"
+                          "type": "number",
+                          "description": "Pass rows of the worker's D1 whose key this call newly marked erased (kept, refused)"
                         }
                       },
                       "required": [
-                        "erasedPasses",
-                        "deletedCards",
-                        "processorPurgePending"
+                        "credentialsRevoked",
+                        "credentialsAlreadyRevoked",
+                        "credentialsGone",
+                        "credentialsUnrevokable",
+                        "ledgerRowsMarked",
+                        "erasedPasses"
                       ]
                     },
                     "apple": {
                       "type": "object",
                       "properties": {
+                        "credentialsRevoked": {
+                          "type": "number",
+                          "description": "Revoked by this call: AccessGrid cards suspended, Google objects expired"
+                        },
+                        "credentialsAlreadyRevoked": {
+                          "type": "number",
+                          "description": "Apple cards found already suspended (Google: 0)"
+                        },
+                        "credentialsGone": {
+                          "type": "number",
+                          "description": "Apple cards deleted at AccessGrid or unknown to it (Google: 0)"
+                        },
+                        "credentialsUnrevokable": {
+                          "type": "number",
+                          "description": "Cards left in a state AccessGrid cannot suspend and the rule table accepts (none today)"
+                        },
+                        "ledgerRowsMarked": {
+                          "type": "number",
+                          "description": "Rows of the Lambdas' tables marked revoked_at, kept with their email"
+                        },
                         "erasedPasses": {
-                          "type": "number"
-                        },
-                        "deletedCards": {
-                          "type": "number"
-                        },
-                        "processorPurgePending": {
-                          "type": "number"
+                          "type": "number",
+                          "description": "Pass rows of the worker's D1 whose key this call newly marked erased (kept, refused)"
                         }
                       },
                       "required": [
-                        "erasedPasses",
-                        "deletedCards",
-                        "processorPurgePending"
+                        "credentialsRevoked",
+                        "credentialsAlreadyRevoked",
+                        "credentialsGone",
+                        "credentialsUnrevokable",
+                        "ledgerRowsMarked",
+                        "erasedPasses"
                       ]
-                    },
-                    "processorPurgePending": {
-                      "type": "number"
                     }
                   },
                   "required": [
                     "erasureId",
                     "google",
-                    "apple",
-                    "processorPurgePending"
+                    "apple"
                   ]
                 }
               }
@@ -28183,7 +29255,7 @@
             "description": "Not an allowed admin, or a read-only admin"
           },
           "502": {
-            "description": "WALLET_ERASE_FAILED",
+            "description": "WALLET_ERASE_FAILED: a provider revoke or a ledger mark failed; the keys stay refused, safe to retry",
             "content": {
               "application/json": {
                 "schema": {
@@ -30635,8 +31707,8 @@
           "Admin",
           "Wallet"
         ],
-        "summary": "Sweep the Lambda wallet tables of the keys the wallet workers erased",
-        "description": "Removes what the Python Lambdas minted again for keys the wallet workers erased: wallet-google deletes the Google pass rows of those keys; wallet-apple deletes their AccessGrid cards (a 404 counts as done), queues purge requests and deletes the rows. Each call sweeps one page of the erased keys of each worker, in key order; it touches no key that was not erased and never matches by email. Omit both cursors on the first call, then call it again with googleCursor = google.nextCursor and appleCursor = apple.nextCursor until done is true. A null cursor means that worker has finished: it is not called again and its page comes back skipped. Answers 503 WALLET_UNAVAILABLE until b2c-api is wired to the wallet workers. Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
+        "summary": "Revoke, reversibly, what the Lambda wallet tables hold for the keys the wallet workers erased",
+        "description": "Revokes what the Python Lambdas hold or minted again for keys the wallet workers erased, reversibly: wallet-google expires and clears the Google objects of those keys (their ledger rows and every object of the brand classes presenting a key); wallet-apple suspends their AccessGrid cards (the ledger rows and every card AccessGrid lists for a key; a deleted or unknown card counts as gone). Both then mark the Lambdas' rows revoked_at, kept with their email; nothing is deleted and nothing is queued. Each call sweeps one page of the erased keys of each worker, in key order; it touches no key that was not erased and never matches by email. A 502 leaves the page unmarked, so a rerun repeats it. Omit both cursors on the first call, then call it again with googleCursor = google.nextCursor and appleCursor = apple.nextCursor until done is true. A null cursor means that worker has finished: it is not called again and its page comes back skipped. Answers 503 WALLET_UNAVAILABLE when either wallet worker is unbound or a worker call throws (a worker without its provider credentials). Requires dual admin auth under JWT_AUTH_MODE=enforce; audited.",
         "security": [
           {
             "adminApiKey": [],
@@ -30691,6 +31763,26 @@
                     "google": {
                       "type": "object",
                       "properties": {
+                        "credentialsRevoked": {
+                          "type": "number",
+                          "description": "Revoked by this call: AccessGrid cards suspended, Google objects expired"
+                        },
+                        "credentialsAlreadyRevoked": {
+                          "type": "number",
+                          "description": "Apple cards found already suspended (Google: 0)"
+                        },
+                        "credentialsGone": {
+                          "type": "number",
+                          "description": "Apple cards deleted at AccessGrid or unknown to it (Google: 0)"
+                        },
+                        "credentialsUnrevokable": {
+                          "type": "number",
+                          "description": "Cards left in a state AccessGrid cannot suspend and the rule table accepts (none today)"
+                        },
+                        "ledgerRowsMarked": {
+                          "type": "number",
+                          "description": "Rows of the Lambdas' tables marked revoked_at, kept with their email"
+                        },
                         "skipped": {
                           "type": "boolean"
                         },
@@ -30703,15 +31795,6 @@
                         "keysChecked": {
                           "type": "number"
                         },
-                        "ledgerRowsDeleted": {
-                          "type": "number"
-                        },
-                        "deletedCards": {
-                          "type": "number"
-                        },
-                        "processorPurgePending": {
-                          "type": "number"
-                        },
                         "nextCursor": {
                           "type": [
                             "string",
@@ -30720,18 +31803,40 @@
                         }
                       },
                       "required": [
+                        "credentialsRevoked",
+                        "credentialsAlreadyRevoked",
+                        "credentialsGone",
+                        "credentialsUnrevokable",
+                        "ledgerRowsMarked",
                         "skipped",
                         "ledgerBound",
                         "keysChecked",
-                        "ledgerRowsDeleted",
-                        "deletedCards",
-                        "processorPurgePending",
                         "nextCursor"
                       ]
                     },
                     "apple": {
                       "type": "object",
                       "properties": {
+                        "credentialsRevoked": {
+                          "type": "number",
+                          "description": "Revoked by this call: AccessGrid cards suspended, Google objects expired"
+                        },
+                        "credentialsAlreadyRevoked": {
+                          "type": "number",
+                          "description": "Apple cards found already suspended (Google: 0)"
+                        },
+                        "credentialsGone": {
+                          "type": "number",
+                          "description": "Apple cards deleted at AccessGrid or unknown to it (Google: 0)"
+                        },
+                        "credentialsUnrevokable": {
+                          "type": "number",
+                          "description": "Cards left in a state AccessGrid cannot suspend and the rule table accepts (none today)"
+                        },
+                        "ledgerRowsMarked": {
+                          "type": "number",
+                          "description": "Rows of the Lambdas' tables marked revoked_at, kept with their email"
+                        },
                         "skipped": {
                           "type": "boolean"
                         },
@@ -30744,15 +31849,6 @@
                         "keysChecked": {
                           "type": "number"
                         },
-                        "ledgerRowsDeleted": {
-                          "type": "number"
-                        },
-                        "deletedCards": {
-                          "type": "number"
-                        },
-                        "processorPurgePending": {
-                          "type": "number"
-                        },
                         "nextCursor": {
                           "type": [
                             "string",
@@ -30761,12 +31857,14 @@
                         }
                       },
                       "required": [
+                        "credentialsRevoked",
+                        "credentialsAlreadyRevoked",
+                        "credentialsGone",
+                        "credentialsUnrevokable",
+                        "ledgerRowsMarked",
                         "skipped",
                         "ledgerBound",
                         "keysChecked",
-                        "ledgerRowsDeleted",
-                        "deletedCards",
-                        "processorPurgePending",
                         "nextCursor"
                       ]
                     },
@@ -30939,128 +32037,6 @@
           },
           "503": {
             "description": "WALLET_UNAVAILABLE"
-          }
-        }
-      }
-    },
-    "/admin/wallet-purge-requests": {
-      "get": {
-        "tags": [
-          "Admin",
-          "Wallet"
-        ],
-        "summary": "List AccessGrid purge requests (card ids to send to AccessGrid)",
-        "security": [
-          {
-            "adminApiKey": [],
-            "bearerAuth": []
-          }
-        ],
-        "operationId": "get_ListWalletPurgeRequestsRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "enum": [
-                "0",
-                "1"
-              ]
-            },
-            "required": false,
-            "name": "unsent",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "maxLength": 256
-            },
-            "required": false,
-            "name": "cursor",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100
-            },
-            "required": false,
-            "name": "limit",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A page of purge requests",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "requests": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "cardId": {
-                            "type": "string"
-                          },
-                          "erasedAt": {
-                            "type": "string"
-                          },
-                          "sentAt": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "cardId",
-                          "erasedAt",
-                          "sentAt"
-                        ]
-                      }
-                    },
-                    "nextCursor": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "requests",
-                    "nextCursor"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid admin credentials"
-          },
-          "403": {
-            "description": "Not an allowed admin, or a read-only admin on a POST"
-          },
-          "503": {
-            "description": "ADMIN_AUTH_NOT_ENFORCED, AUDIT_UNAVAILABLE or WALLET_UNAVAILABLE",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
           }
         }
       }
