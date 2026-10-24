@@ -841,6 +841,52 @@ A user muted or unmuted alarm push notifications for one of their devices.
 | `muted` | `boolean` | yes |  |
 | `timestamp` | `string` | yes | ISO-8601 time of the domain event |
 
+### CallToOpenLockChosen
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `CallToOpenLockChosen` |
+| **aggregateType** | `UserAggregate` |
+
+A lock or Matter device was chosen to open when the user calls the call-to-open number; a preference, not an access grant.
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `userId` | `string` | yes | User ID |
+| `target` | `object` | yes |  |
+| `target.kind` | `"lock" \| "matter"` | yes | Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices) |
+| `target.id` | `string` | yes | A lock aggregate id or a Matter device id, never a phone number |
+| `chosenBy` | `object` | yes |  |
+| `chosenBy.kind` | `"user" \| "organization"` | yes | `user` for the user themselves, `organization` for an API key |
+| `chosenBy.orgId` | `string \| null` | yes | The API key's organization; null when the user acted themselves |
+| `timestamp` | `string` | yes | ISO-8601 time of the domain event |
+
+### CallToOpenLockCleared
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `CallToOpenLockCleared` |
+| **aggregateType** | `UserAggregate` |
+
+The user's call-to-open choice was cleared by a ClearCallToOpenLock command; removing the chosen lock or device from the user's lists also clears it, without this event.
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `userId` | `string` | yes | User ID |
+| `previousTarget` | `object` | yes |  |
+| `previousTarget.kind` | `"lock" \| "matter"` | yes | Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices) |
+| `previousTarget.id` | `string` | yes | A lock aggregate id or a Matter device id, never a phone number |
+| `clearedBy` | `object` | yes |  |
+| `clearedBy.kind` | `"user" \| "organization"` | yes | `user` for the user themselves, `organization` for an API key |
+| `clearedBy.orgId` | `string \| null` | yes | The API key's organization; null when the user acted themselves |
+| `timestamp` | `string` | yes | ISO-8601 time of the domain event |
+
 ---
 
 ## Hub events

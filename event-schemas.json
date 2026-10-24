@@ -1,5 +1,5 @@
 {
-  "version": "c8902d54",
+  "version": "88e039ee",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1372,6 +1372,148 @@
         "userId",
         "deviceId",
         "muted",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "CallToOpenLockChosen": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "target": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "lock",
+                "matter"
+              ],
+              "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+              "description": "A lock aggregate id or a Matter device id, never a phone number"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "chosenBy": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "organization"
+              ],
+              "description": "`user` for the user themselves, `organization` for an API key"
+            },
+            "orgId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The API key's organization; null when the user acted themselves"
+            }
+          },
+          "required": [
+            "kind",
+            "orgId"
+          ],
+          "additionalProperties": false
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "target",
+        "chosenBy",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "CallToOpenLockCleared": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "previousTarget": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "lock",
+                "matter"
+              ],
+              "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+              "description": "A lock aggregate id or a Matter device id, never a phone number"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "clearedBy": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "organization"
+              ],
+              "description": "`user` for the user themselves, `organization` for an API key"
+            },
+            "orgId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The API key's organization; null when the user acted themselves"
+            }
+          },
+          "required": [
+            "kind",
+            "orgId"
+          ],
+          "additionalProperties": false
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "previousTarget",
+        "clearedBy",
         "timestamp"
       ],
       "additionalProperties": false

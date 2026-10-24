@@ -80,6 +80,8 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 | `DeviceAdded` | A device has been linked to a user |
 | `DeviceRemoved` | A device has been unlinked from a user |
 | `DevicePushMutedUpdated` | A user muted or unmuted alarm push notifications for one of their devices |
+| `CallToOpenLockChosen` | A lock or Matter device was chosen to open when the user calls the call-to-open number; a preference, not an access grant |
+| `CallToOpenLockCleared` | The user's call-to-open choice was cleared by a ClearCallToOpenLock command; removing the chosen lock or device from the user's lists also clears it, without this event |
 
 ### Hub events (`spk.api`)
 

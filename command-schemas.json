@@ -1,5 +1,5 @@
 {
-  "version": "c8902d54",
+  "version": "88e039ee",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -693,6 +693,36 @@
         "walletType",
         "keyIndex"
       ]
+    },
+    "ChooseCallToOpenLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "lock",
+            "matter"
+          ],
+          "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+          "description": "A lock aggregate id or a Matter device id, never a phone number"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "ClearCallToOpenLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
     },
     "ProvisionHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
