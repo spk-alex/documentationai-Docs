@@ -1521,11 +1521,25 @@
                 "null"
               ],
               "minimum": 0,
-              "description": "Pagination cursor: return events with version > cursor. Use nextCursor from the previous page."
+              "description": "Pagination cursor: return events with version > cursor (stream view) or position > cursor (timeline view). Use nextCursor from the previous page."
             },
             "required": false,
-            "description": "Pagination cursor: return events with version > cursor. Use nextCursor from the previous page.",
+            "description": "Pagination cursor: return events with version > cursor (stream view) or position > cursor (timeline view). Use nextCursor from the previous page.",
             "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "stream",
+                "timeline"
+              ],
+              "description": "`stream` (default): the versioned R2 stream. `timeline` (AA-290): the full history in time order, the stream events and the audit records of audit-only events merged by recordedAt; paged by position, and fromVersion/toVersion are refused (400)."
+            },
+            "required": false,
+            "description": "`stream` (default): the versioned R2 stream. `timeline` (AA-290): the full history in time order, the stream events and the audit records of audit-only events merged by recordedAt; paged by position, and fromVersion/toVersion are refused (400).",
+            "name": "view",
             "in": "query"
           }
         ],
@@ -1570,7 +1584,11 @@
                         "type": "object",
                         "properties": {
                           "version": {
-                            "type": "number"
+                            "type": [
+                              "number",
+                              "null"
+                            ],
+                            "description": "Stream version; null for an audit-only event, which is recorded in the audit log only (AA-290)."
                           },
                           "type": {
                             "type": "string"
@@ -1581,7 +1599,23 @@
                           "orgId": {
                             "type": "string"
                           },
-                          "event": {}
+                          "event": {},
+                          "recordedAt": {
+                            "type": "number",
+                            "description": "Timeline view: when the event was recorded (epoch ms, strictly increasing per aggregate)."
+                          },
+                          "position": {
+                            "type": "integer",
+                            "description": "Timeline view: index in the timeline; pass the last one back as `cursor`."
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": [
+                              "stream",
+                              "audit"
+                            ],
+                            "description": "Timeline view: read from the versioned stream, or from the audit log (an audit-only event)."
+                          }
                         },
                         "required": [
                           "version",
@@ -1596,6 +1630,9 @@
                         "number",
                         "null"
                       ]
+                    },
+                    "auditIncluded": {
+                      "type": "boolean"
                     },
                     "filter": {
                       "type": "object",
@@ -1640,7 +1677,7 @@
             }
           },
           "400": {
-            "description": "Unknown aggregate type",
+            "description": "Unknown aggregate type, or `view=timeline` with fromVersion/toVersion (TIMELINE_VERSION_FILTER_UNSUPPORTED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4172,7 +4209,11 @@
                         "type": "object",
                         "properties": {
                           "version": {
-                            "type": "number"
+                            "type": [
+                              "number",
+                              "null"
+                            ],
+                            "description": "Stream version; null for an audit-only event, which is recorded in the audit log only (AA-290)."
                           },
                           "type": {
                             "type": "string"
@@ -4183,7 +4224,23 @@
                           "orgId": {
                             "type": "string"
                           },
-                          "event": {}
+                          "event": {},
+                          "recordedAt": {
+                            "type": "number",
+                            "description": "Timeline view: when the event was recorded (epoch ms, strictly increasing per aggregate)."
+                          },
+                          "position": {
+                            "type": "integer",
+                            "description": "Timeline view: index in the timeline; pass the last one back as `cursor`."
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": [
+                              "stream",
+                              "audit"
+                            ],
+                            "description": "Timeline view: read from the versioned stream, or from the audit log (an audit-only event)."
+                          }
                         },
                         "required": [
                           "version",
@@ -31164,6 +31221,12 @@
                             "type": "string"
                           },
                           "version": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "recordedAt": {
                             "type": "number"
                           },
                           "error": {
