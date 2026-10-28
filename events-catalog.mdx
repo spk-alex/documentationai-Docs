@@ -887,6 +887,27 @@ The user's call-to-open choice was cleared by a ClearCallToOpenLock command; rem
 | `clearedBy.orgId` | `string \| null` | yes | The API key's organization; null when the user acted themselves |
 | `timestamp` | `string` | yes | ISO-8601 time of the domain event |
 
+### CallToOpenCallRecorded
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `CallToOpenCallRecorded` |
+| **aggregateType** | `UserAggregate` |
+
+A call from the user's own phone number was admitted to open the user's call-to-open choice (the lock open is requested next and may still fail; LockOpenRequested on the lock is the open itself); written only for an admitted call, never for a refused one, and without the phone number; an admitted call counts towards the user's call-to-open rate limit and repeated-call check even when its open then fails.
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `userId` | `string` | yes | User ID |
+| `callId` | `string` | yes | Opaque id of the call; also the requestId of the LockOpenRequested it caused |
+| `target` | `object` | yes | The chosen lock or Matter device the call was admitted to open (&#123;kind, id&#125;) |
+| `target.kind` | `"lock" \| "matter"` | yes | Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices) |
+| `target.id` | `string` | yes | A lock aggregate id or a Matter device id, never a phone number |
+| `timestamp` | `string` | yes | ISO-8601 time of the domain event |
+
 ### UserSubscriptionStatusUpdated
 
 | | |

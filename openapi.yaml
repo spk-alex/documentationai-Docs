@@ -26148,7 +26148,7 @@
           "Command"
         ],
         "summary": "Choose which lock or Matter device opens when the user calls the call-to-open number",
-        "description": "Stores the user's call-to-open choice: `&#123;kind: 'lock', id&#125;` for an active entry of the user's accessible locks (any access level), or `&#123;kind: 'matter', id&#125;` for a linked device with deviceType `matter`. A target not in those lists is refused with 400. A user acts only for themselves; any partner API key may act for any user. Choosing the current target again as the same caller changes nothing (`event: null`); a new choice replaces the previous one, last writer wins. A preference, not an access grant. Caller ID can be spoofed: not for high-security doors.",
+        "description": "Stores the user's call-to-open choice: `&#123;kind: 'lock', id&#125;` for an active entry of the user's accessible locks (any access level), or `&#123;kind: 'matter', id&#125;` for a linked device with deviceType `matter`. A target not in those lists is refused with 400. A user acts only for themselves; any partner API key may act for any user. Choosing the current target again as the same caller changes nothing (`event: null`); a new choice replaces the previous one, last writer wins. A preference, not an access grant: when a call from the user's own phone number reaches a dial-in number (listed by telephony-api's public `GET /dial-in-numbers`; show the one of the user's phone country, else any), the choice is checked again against the user's lists and then opened. A `matter` choice opens the lock whose uuid is the device id, and nothing when there is none. Caller ID can be spoofed, especially outside the US and Canada: not for high-security doors.",
         "operationId": "post_ChooseCallToOpenLockRoute",
         "parameters": [
           {
@@ -28873,6 +28873,323 @@
         }
       }
     },
+    "/users/{id}/RecordCallToOpenCall": {
+      "post": {
+        "tags": [
+          "User",
+          "Command"
+        ],
+        "summary": "Internal: record one call-to-open call",
+        "description": "Internal to b2c-api: the call-to-open flow asks the user aggregate whether a call opens the chosen lock. Not callable from outside (401).",
+        "operationId": "post_RecordCallToOpenCallRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;8,128&#125;$",
+                    "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+                  }
+                },
+                "required": [
+                  "callId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The call is admitted to open: `event` is the CallToOpenCallRecorded, its `target` the lock or Matter device to open",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "CallToOpenCallRecorded"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "callId": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._:-]&#123;8,128&#125;$",
+                              "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "lock",
+                                    "matter"
+                                  ],
+                                  "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+                                },
+                                "id": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z0-9:_.-]&#123;1,128&#125;$",
+                                  "description": "A lock aggregate id or a Matter device id, never a phone number"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "id"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "callId",
+                            "target",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The user id is not a UUID or the body is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not the internal call-to-open flow. Every external caller gets this, whatever its credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A client sent the internal header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`CallToOpenRefusedError`: the call does not open; the message is `duplicate`, `rate_limited`, `no_choice` or `not_accessible`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/RemoveAccessibleLock": {
       "post": {
         "tags": [
@@ -30330,6 +30647,214 @@
                   "required": [
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/call-to-open": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Telephony"
+        ],
+        "summary": "Test call-to-open: open the chosen lock of the user with this phone number",
+        "description": "Runs the call-to-open flow of `POST /ivr/call-to-open` without a real call and answers its outcome. Opens a real lock. Bypasses telephony-api (no dial-to-open switch, attestation or dial-in rate limit); every b2c-api rule applies, including the per-user limit of 3 opens per 60 s and the de-dup of `callId`. The `callId` must start with `test-` (else 400 `CALL_ID_NOT_TEST`, before any lookup). Requires dual auth: X-Admin-API-Key + JWT of a full admin. Two admin audit records per call, without the phone number: the intent (required — 503 `AUDIT_UNAVAILABLE` and no call when it cannot be written) and the outcome.",
+        "operationId": "post_AdminCallToOpenRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;8,128&#125;$",
+                    "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+                  },
+                  "callerNumber": {
+                    "type": "string",
+                    "description": "The number the call came from, in international form (+48123456789)"
+                  }
+                },
+                "required": [
+                  "callId",
+                  "callerNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Processed: `opened` and the `outcome` (`opened` or why nothing opened)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "callId": {
+                      "type": "string"
+                    },
+                    "opened": {
+                      "type": "boolean",
+                      "description": "Whether the open was sent to the lock"
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "opened",
+                        "unknown_number",
+                        "ambiguous_caller",
+                        "no_choice",
+                        "not_accessible",
+                        "duplicate",
+                        "rate_limited",
+                        "device_lock_not_found",
+                        "lock_not_found",
+                        "device_mismatch",
+                        "open_failed",
+                        "open_unknown",
+                        "lookup_failed",
+                        "record_failed"
+                      ],
+                      "description": "How the call ended"
+                    }
+                  },
+                  "required": [
+                    "callId",
+                    "opened",
+                    "outcome"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, `CALL_ID_NOT_TEST` (the call id does not start with `test-`) or `CALL_ID_CARRIES_NUMBER` (the call id contains the caller number)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Email domain not allowed, or a read-only admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`OPEN_OUTCOME_UNKNOWN` (the open was sent, the lock may have opened) or `CALL_TO_OPEN_FAILED` (a D1 or user aggregate failure)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "`OPEN_FAILED`: the open could not be sent to the device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`AUDIT_UNAVAILABLE`: the audit record of the intent could not be written; the call was not run",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
@@ -34745,6 +35270,172 @@
                   "type": "object",
                   "properties": {
                     "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ivr/call-to-open": {
+      "post": {
+        "tags": [
+          "User",
+          "Telephony"
+        ],
+        "summary": "Open the user's chosen lock for a call from the user's own phone number",
+        "description": "Service route for telephony-api only (`X-Call-To-Open-Service-Token`; no other credential is accepted). Finds the one user whose phone number is `callerNumber` and opens the lock the user chose with `ChooseCallToOpenLock` (a Matter choice opens the lock whose uuid is the device id). Nothing opens when the number is unknown or has more than one owner, the user has no choice, the chosen target is no longer in the user's lists or not active, the call id already opened, or the user opened 3 times in the last 60 s. Every such refusal answers the same `200 &#123;opened: false&#125;`. The open is sent once and never retried. Caller ID can be spoofed: not for high-security doors.",
+        "operationId": "post_IvrCallToOpenRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;8,128&#125;$",
+                    "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+                  },
+                  "callerNumber": {
+                    "type": "string",
+                    "description": "The number the call came from, in international form (+48123456789)"
+                  }
+                },
+                "required": [
+                  "callId",
+                  "callerNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`opened: true` when the open was sent to the lock; `false` for every refusal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "callId": {
+                      "type": "string"
+                    },
+                    "opened": {
+                      "type": "boolean",
+                      "description": "Whether the open was sent to the lock"
+                    }
+                  },
+                  "required": [
+                    "callId",
+                    "opened"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, `CALL_ID_CARRIES_NUMBER` (the call id contains the caller number), or the service token sent with another credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong service token, or another credential instead of it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A client sent an internal header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`OPEN_OUTCOME_UNKNOWN` (the open was sent, the lock may have opened) or `CALL_TO_OPEN_FAILED` (a D1 or user aggregate failure)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "`OPEN_FAILED`: the open could not be sent to the device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
                       "type": "string"
                     }
                   },

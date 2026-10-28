@@ -1,5 +1,5 @@
 {
-  "version": "0a0614f5",
+  "version": "eb514623",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1490,6 +1490,53 @@
         "userId",
         "previousTarget",
         "clearedBy",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "CallToOpenCallRecorded": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "callId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+        },
+        "target": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "lock",
+                "matter"
+              ],
+              "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+              "description": "A lock aggregate id or a Matter device id, never a phone number"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "callId",
+        "target",
         "timestamp"
       ],
       "additionalProperties": false
