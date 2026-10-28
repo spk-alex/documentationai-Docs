@@ -887,6 +887,28 @@ The user's call-to-open choice was cleared by a ClearCallToOpenLock command; rem
 | `clearedBy.orgId` | `string \| null` | yes | The API key's organization; null when the user acted themselves |
 | `timestamp` | `string` | yes | ISO-8601 time of the domain event |
 
+### UserSubscriptionStatusUpdated
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `UserSubscriptionStatusUpdated` |
+| **aggregateType** | `UserAggregate` |
+
+An organization's subscription status entry for a user changed (mobile app access); carries only the changed fields (delivered only to the organization whose entry changed).
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `userId` | `string` | yes | User ID |
+| `orgId` | `string` | yes | The organization whose entry changed; the delivery's detail.partnerId is the same id |
+| `changes` | `object` | yes | Only the entitlements that changed, e.g. mobileAppAccess |
+| `changes.mobileAppAccess` | `boolean` | no | Whether the user may use the mobile app for this organization; an app entitlement, not door access |
+| `changedBy` | `object` | yes | Who made the change: kind organization (that organization's own API key) or super (an administrator acting for it) |
+| `changedBy.kind` | `"organization" \| "super"` | yes | `organization` for that organization's own API key, `super` for an administrator acting for it |
+| `timestamp` | `string` | yes | ISO-8601 time of the domain event |
+
 ---
 
 ## Hub events

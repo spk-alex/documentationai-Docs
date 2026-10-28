@@ -1,5 +1,5 @@
 {
-  "version": "bfee36e1",
+  "version": "b1fe2b9a",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1490,6 +1490,59 @@
         "userId",
         "previousTarget",
         "clearedBy",
+        "timestamp"
+      ],
+      "additionalProperties": false
+    },
+    "UserSubscriptionStatusUpdated": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The organization whose entry changed; also the event's envelope orgId, so the delivery's detail.partnerId"
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "mobileAppAccess": {
+              "description": "Whether the user may use the mobile app for this organization; an app entitlement, not door access",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Subscription entitlements, each an app entitlement, not door access"
+        },
+        "changedBy": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "organization",
+                "super"
+              ],
+              "description": "`organization` for that organization's own API key, `super` for an administrator acting for it"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "orgId",
+        "changes",
+        "changedBy",
         "timestamp"
       ],
       "additionalProperties": false

@@ -27700,6 +27700,261 @@
         }
       }
     },
+    "/users/{id}/subscription-statuses": {
+      "get": {
+        "tags": [
+          "User",
+          "Query"
+        ],
+        "summary": "Get the user's subscription status entries (mobile app access)",
+        "description": "Returns the user's per-organization subscription status entries (`orgId`, `mobileAppAccess`, `updatedAt`). An organization's API key sees only its own entry; a super API key and the user themselves see every entry. An organization without an entry is not listed and has mobile app access (`mobileAppAccess: true`). `mobileAppAccess` is an app entitlement, not door access, and nothing is enforced from it yet.",
+        "operationId": "get_GetSubscriptionStatusesRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entries the caller may see; an organization without an entry has mobile app access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "orgId": {
+                            "type": "string",
+                            "description": "The organization the entry belongs to"
+                          },
+                          "mobileAppAccess": {
+                            "type": "boolean",
+                            "description": "Whether the user may use the mobile app for this organization; an app entitlement, not door access"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "description": "ISO-8601 time of the last change to this entry"
+                          }
+                        },
+                        "required": [
+                          "orgId",
+                          "mobileAppAccess",
+                          "updatedAt"
+                        ]
+                      },
+                      "description": "The entries the caller may see; an organization without an entry has mobile app access"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "entries"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The user id is not a UUID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A JWT caller on another user (whether or not that user exists), or a service token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Durable Object is unavailable; retry after `Retry-After`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/UpdateEmail": {
       "post": {
         "tags": [
@@ -29586,6 +29841,332 @@
                   "required": [
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/UpdateSubscriptionStatus": {
+      "post": {
+        "tags": [
+          "User",
+          "Command"
+        ],
+        "summary": "Update an organization's subscription status entry for a user (mobile app access)",
+        "description": "Patches the calling organization's subscription status entry for the user: only the fields present change, an omitted field is never reset, and a change equal to the current value is a no-op (`event: null`). An organization with no entry has mobile app access (`mobileAppAccess: true`). `mobileAppAccess` is an app entitlement, not door access, and nothing is enforced from it yet. An organization changes only its own entry (omit `orgId`, or name your own); a super API key may name any existing organization, and each super-key change is recorded in a permanent admin audit log first (503 with `Retry-After` when that record cannot be written). A user cannot change entries. Each change is delivered as a `UserSubscriptionStatusUpdated` webhook to the changed organization only, its own changes included; `changedBy.kind` says whether that organization or an administrator made it.",
+        "operationId": "post_UpdateSubscriptionStatusRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mobileAppAccess": {
+                    "type": "boolean",
+                    "description": "Whether the user may use the mobile app for this organization; an app entitlement, not door access"
+                  },
+                  "orgId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;1,128&#125;$",
+                    "description": "The organization whose entry to change; only a super API key may name another organization than its own"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "A patch of the organization's subscription status entry; omitted fields are left unchanged"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry changed (`event` is the UserSubscriptionStatusUpdated, carrying only the changed fields), or nothing to change (`event: null`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "UserSubscriptionStatusUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "orgId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "The organization whose entry changed; also the event's envelope orgId, so the delivery's detail.partnerId"
+                            },
+                            "changes": {
+                              "type": "object",
+                              "properties": {
+                                "mobileAppAccess": {
+                                  "type": "boolean",
+                                  "description": "Whether the user may use the mobile app for this organization; an app entitlement, not door access"
+                                }
+                              },
+                              "description": "Subscription entitlements, each an app entitlement, not door access"
+                            },
+                            "changedBy": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "organization",
+                                    "super"
+                                  ],
+                                  "description": "`organization` for that organization's own API key, `super` for an administrator acting for it"
+                                }
+                              },
+                              "required": [
+                                "kind"
+                              ]
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "orgId",
+                            "changes",
+                            "changedBy",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The user id is not a UUID, the body is invalid (an unknown field, a malformed `orgId`), or a super key named an organization with no live API key (\"Unknown organization\")",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing authentication credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "An organization naming another organization, a user (JWT) caller, a JWT caller on another user, or a service token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A super key's audit record could not be written (nothing was changed), or the Durable Object was reset; retry after `Retry-After`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
                   ]
                 }
               }

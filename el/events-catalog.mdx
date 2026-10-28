@@ -887,6 +887,28 @@ The user's call-to-open choice was cleared by a ClearCallToOpenLock command; rem
 | `clearedBy.orgId` | `string \| null` | ναι | The API key's organization; null when the user acted themselves |
 | `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
 
+### UserSubscriptionStatusUpdated
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `UserSubscriptionStatusUpdated` |
+| **aggregateType** | `UserAggregate` |
+
+An organization's subscription status entry for a user changed (mobile app access); carries only the changed fields (delivered only to the organization whose entry changed).
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `userId` | `string` | ναι | User ID |
+| `orgId` | `string` | ναι | The organization whose entry changed; the delivery's detail.partnerId is the same id |
+| `changes` | `object` | ναι | Only the entitlements that changed, e.g. mobileAppAccess |
+| `changes.mobileAppAccess` | `boolean` | όχι | Whether the user may use the mobile app for this organization; an app entitlement, not door access |
+| `changedBy` | `object` | ναι | Who made the change: kind organization (that organization's own API key) or super (an administrator acting for it) |
+| `changedBy.kind` | `"organization" \| "super"` | ναι | `organization` for that organization's own API key, `super` for an administrator acting for it |
+| `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
+
 ---
 
 ## Hub events

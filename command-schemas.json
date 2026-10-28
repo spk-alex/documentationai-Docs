@@ -1,5 +1,5 @@
 {
-  "version": "bfee36e1",
+  "version": "b1fe2b9a",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -719,6 +719,23 @@
       "type": "object",
       "properties": {},
       "additionalProperties": false
+    },
+    "UpdateSubscriptionStatus": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "mobileAppAccess": {
+          "description": "Whether the user may use the mobile app for this organization; an app entitlement, not door access",
+          "type": "boolean"
+        },
+        "orgId": {
+          "description": "The organization whose entry to change; only a super API key may name another organization than its own",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+        }
+      },
+      "additionalProperties": false,
+      "description": "A patch of the organization's subscription status entry; omitted fields are left unchanged"
     },
     "ProvisionHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
