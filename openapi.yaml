@@ -26147,8 +26147,8 @@
           "User",
           "Command"
         ],
-        "summary": "Choose which lock or Matter device opens when the user calls the call-to-open number",
-        "description": "Stores the user's call-to-open choice: `&#123;kind: 'lock', id&#125;` for an active entry of the user's accessible locks (any access level), or `&#123;kind: 'matter', id&#125;` for a linked device with deviceType `matter`. A target not in those lists is refused with 400. A user acts only for themselves; any partner API key may act for any user. Choosing the current target again as the same caller changes nothing (`event: null`); a new choice replaces the previous one, last writer wins. A preference, not an access grant: when a call from the user's own phone number reaches a dial-in number (listed by telephony-api's public `GET /dial-in-numbers`; show the one of the user's phone country, else any), the choice is checked again against the user's lists and then opened. A `matter` choice opens the lock whose uuid is the device id, and nothing when there is none. Caller ID can be spoofed, especially outside the US and Canada: not for high-security doors.",
+        "summary": "Choose which locks or Matter devices open when the user calls the call-to-open number, each on its own digit",
+        "description": "Stores the user's call-to-open choice: `targets`, 1 to 10 of `&#123;kind, id, digit&#125;`, each on its own digit 0-9, so a call can let the caller pick one by its digit. A target is `&#123;kind: 'lock', id&#125;` for an active entry of the user's accessible locks (any access level), or `&#123;kind: 'matter', id&#125;` for a linked device with deviceType `matter`. A target not in those lists is refused with 400. The body `&#123;kind, id&#125;` (deprecated) chooses that one target on digit 1. A user acts only for themselves; any partner API key may act for any user. Choosing the same targets on the same digits again as the same caller changes nothing (`event: null`); a new choice replaces the previous one whole, last writer wins. A choice of several targets opens nothing yet: a call is refused until it asks the caller for a digit. A preference, not an access grant: when a call from the user's own phone number reaches a dial-in number (listed by telephony-api's public `GET /dial-in-numbers`; show the one of the user's phone country, else any), the choice is checked again against the user's lists and then opened. A `matter` choice opens the lock whose uuid is the device id, and nothing when there is none. Caller ID can be spoofed, especially outside the US and Canada: not for high-security doors.",
         "operationId": "post_ChooseCallToOpenLockRoute",
         "parameters": [
           {
@@ -26168,24 +26168,55 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "targets": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "lock",
+                            "matter"
+                          ],
+                          "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9:_.-]&#123;1,128&#125;$",
+                          "description": "A lock aggregate id or a Matter device id, never a phone number"
+                        },
+                        "digit": {
+                          "type": "string",
+                          "pattern": "^\\d$",
+                          "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "id",
+                        "digit"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "description": "Every lock or Matter device to choose, each with the digit that picks it; replaces the whole choice"
+                  },
                   "kind": {
                     "type": "string",
                     "enum": [
                       "lock",
                       "matter"
                     ],
-                    "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+                    "description": "Deprecated, use `targets`: the one target's list, `lock` or `matter` (with `id`; on digit 1)"
                   },
                   "id": {
                     "type": "string",
                     "pattern": "^[A-Za-z0-9:_.-]&#123;1,128&#125;$",
-                    "description": "A lock aggregate id or a Matter device id, never a phone number"
+                    "description": "Deprecated, use `targets`: the one target's id (with `kind`)"
                   }
                 },
-                "required": [
-                  "kind",
-                  "id"
-                ],
                 "additionalProperties": false
               }
             }
@@ -26247,7 +26278,43 @@
                                 "kind",
                                 "id"
                               ],
-                              "additionalProperties": false
+                              "additionalProperties": false,
+                              "description": "The target on the lowest digit"
+                            },
+                            "targets": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "lock",
+                                      "matter"
+                                    ],
+                                    "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z0-9:_.-]&#123;1,128&#125;$",
+                                    "description": "A lock aggregate id or a Matter device id, never a phone number"
+                                  },
+                                  "digit": {
+                                    "type": "string",
+                                    "pattern": "^\\d$",
+                                    "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "id",
+                                  "digit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "minItems": 1,
+                              "maxItems": 10,
+                              "description": "Every target of the choice, each on its own digit, ordered by digit; absent on an event written before a choice held several (its one target is on 1)"
                             },
                             "chosenBy": {
                               "type": "object",
@@ -26302,7 +26369,7 @@
             }
           },
           "400": {
-            "description": "The user id is not a UUID, the body is invalid, or the target is not in the user's lists (\"Call-to-open target is not accessible to the user\")",
+            "description": "The user id is not a UUID, the body is invalid (both or neither of `targets` and `kind`/`id`, a digit that is not 0-9, a digit used twice, a target listed twice, more than 10 targets), or a target is not in the user's lists (\"Call-to-open target is not accessible to the user\")",
             "content": {
               "application/json": {
                 "schema": {
@@ -26496,7 +26563,7 @@
           "Command"
         ],
         "summary": "Clear the user's call-to-open choice",
-        "description": "Clears the lock or Matter device chosen to open when the user calls the call-to-open number. Clearing when nothing is chosen changes nothing (`event: null`). A user acts only for themselves; any partner API key may act for any user. Removing the chosen lock or device from the user's lists also clears the choice, without a CallToOpenLockCleared event.",
+        "description": "Clears every lock or Matter device chosen to open when the user calls the call-to-open number. Clearing when nothing is chosen changes nothing (`event: null`). A user acts only for themselves; any partner API key may act for any user. Removing a chosen lock or device from the user's lists drops it from the choice, and clears the choice when it was the last one, without a CallToOpenLockCleared event.",
         "operationId": "post_ClearCallToOpenLockRoute",
         "parameters": [
           {
@@ -26577,7 +26644,43 @@
                                 "kind",
                                 "id"
                               ],
-                              "additionalProperties": false
+                              "additionalProperties": false,
+                              "description": "The cleared target on the lowest digit"
+                            },
+                            "previousTargets": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "lock",
+                                      "matter"
+                                    ],
+                                    "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z0-9:_.-]&#123;1,128&#125;$",
+                                    "description": "A lock aggregate id or a Matter device id, never a phone number"
+                                  },
+                                  "digit": {
+                                    "type": "string",
+                                    "pattern": "^\\d$",
+                                    "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "id",
+                                  "digit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "minItems": 1,
+                              "maxItems": 10,
+                              "description": "Every cleared target, each with its digit, ordered by digit; absent on an event written before a choice held several"
                             },
                             "clearedBy": {
                               "type": "object",
@@ -27173,7 +27276,7 @@
           "Query"
         ],
         "summary": "Get the user's call-to-open choice",
-        "description": "Returns the lock or Matter device chosen to open when the user calls the call-to-open number (`kind`, `id`, `chosenAt`, and `chosenBy.kind`), or `choice: null`. A user reads only their own choice; any partner API key may read any user's. A preference, not an access grant.",
+        "description": "Returns the locks or Matter devices chosen to open when the user calls the call-to-open number: `targets`, each with the digit that picks it, ordered by digit; `kind` and `id` name the one on the lowest digit; with `chosenAt` and `chosenBy.kind`. `choice: null` when none is chosen. A user reads only their own choice; any partner API key may read any user's. A preference, not an access grant.",
         "operationId": "get_GetCallToOpenLockRoute",
         "parameters": [
           {
@@ -27210,11 +27313,41 @@
                             "lock",
                             "matter"
                           ],
-                          "description": "Which list the chosen id is in"
+                          "description": "Which list the chosen id is in (the target on the lowest digit)"
                         },
                         "id": {
                           "type": "string",
-                          "description": "The chosen lock aggregate id or Matter device id"
+                          "description": "The chosen lock aggregate id or Matter device id (the target on the lowest digit)"
+                        },
+                        "targets": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "lock",
+                                  "matter"
+                                ],
+                                "description": "Which list the id is in"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "A lock aggregate id or a Matter device id"
+                              },
+                              "digit": {
+                                "type": "string",
+                                "description": "The key that picks this target in a call, 0-9"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "id",
+                              "digit"
+                            ]
+                          },
+                          "description": "Every chosen target with its digit, ordered by digit"
                         },
                         "chosenAt": {
                           "type": "string",
@@ -27240,6 +27373,7 @@
                       "required": [
                         "kind",
                         "id",
+                        "targets",
                         "chosenAt",
                         "chosenBy"
                       ],
@@ -29151,7 +29285,7 @@
             }
           },
           "409": {
-            "description": "`CallToOpenRefusedError`: the call does not open; the message is `duplicate`, `rate_limited`, `no_choice` or `not_accessible`",
+            "description": "`CallToOpenRefusedError`: the call does not open; the message is `duplicate`, `rate_limited`, `no_choice`, `digit_required` or `not_accessible`",
             "content": {
               "application/json": {
                 "schema": {
@@ -30711,6 +30845,7 @@
                         "unknown_number",
                         "ambiguous_caller",
                         "no_choice",
+                        "digit_required",
                         "not_accessible",
                         "duplicate",
                         "rate_limited",

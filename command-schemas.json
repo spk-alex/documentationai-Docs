@@ -1,5 +1,5 @@
 {
-  "version": "8b840846",
+  "version": "3e6bf307",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -694,24 +694,55 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
+        "targets": {
+          "description": "Every lock or Matter device to choose, each with the digit that picks it; replaces the whole choice",
+          "minItems": 1,
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "lock",
+                  "matter"
+                ],
+                "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+                "description": "A lock aggregate id or a Matter device id, never a phone number"
+              },
+              "digit": {
+                "type": "string",
+                "pattern": "^\\d$",
+                "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "digit"
+            ],
+            "additionalProperties": false
+          }
+        },
         "kind": {
+          "description": "Deprecated, use `targets`: the one target's list, `lock` or `matter` (with `id`; on digit 1)",
           "type": "string",
           "enum": [
             "lock",
             "matter"
-          ],
-          "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+          ]
         },
         "id": {
+          "description": "Deprecated, use `targets`: the one target's id (with `kind`)",
           "type": "string",
-          "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
-          "description": "A lock aggregate id or a Matter device id, never a phone number"
+          "pattern": "^[A-Za-z0-9:_.-]{1,128}$"
         }
       },
-      "required": [
-        "kind",
-        "id"
-      ],
       "additionalProperties": false
     },
     "ClearCallToOpenLock": {

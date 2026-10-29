@@ -1,5 +1,5 @@
 {
-  "version": "8b840846",
+  "version": "3e6bf307",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1388,7 +1388,43 @@
             "kind",
             "id"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "The target on the lowest digit"
+        },
+        "targets": {
+          "description": "Every target of the choice, each on its own digit, ordered by digit; absent on an event written before a choice held several (its one target is on 1)",
+          "minItems": 1,
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "lock",
+                  "matter"
+                ],
+                "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+                "description": "A lock aggregate id or a Matter device id, never a phone number"
+              },
+              "digit": {
+                "type": "string",
+                "pattern": "^\\d$",
+                "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "digit"
+            ],
+            "additionalProperties": false
+          }
         },
         "chosenBy": {
           "type": "object",
@@ -1455,7 +1491,43 @@
             "kind",
             "id"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "The cleared target on the lowest digit"
+        },
+        "previousTargets": {
+          "description": "Every cleared target, each with its digit, ordered by digit; absent on an event written before a choice held several",
+          "minItems": 1,
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "lock",
+                  "matter"
+                ],
+                "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+                "description": "A lock aggregate id or a Matter device id, never a phone number"
+              },
+              "digit": {
+                "type": "string",
+                "pattern": "^\\d$",
+                "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "digit"
+            ],
+            "additionalProperties": false
+          }
         },
         "clearedBy": {
           "type": "object",
