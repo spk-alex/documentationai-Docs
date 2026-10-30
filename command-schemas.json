@@ -1,5 +1,5 @@
 {
-  "version": "aa989ffc",
+  "version": "3aa520ff",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -1338,6 +1338,12 @@
           },
           "additionalProperties": {},
           "description": "Desired shadow state to push to device"
+        },
+        "requestedByUserId": {
+          "description": "App user the write is made for. Recorded on the event only, never written to the shadow. For a Scenario Engine command, the creator of the scenario: SpacetimeDB shows it to that user. With a user's token it may be left out (the token's user is used) and must otherwise be that user; with an organization API key it names the user, or is left out.",
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
         }
       },
       "required": [

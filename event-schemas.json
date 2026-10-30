@@ -1,5 +1,5 @@
 {
-  "version": "aa989ffc",
+  "version": "3aa520ff",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -2504,6 +2504,9 @@
         },
         "updatedAt": {
           "type": "number"
+        },
+        "requestedByUserId": {
+          "type": "string"
         }
       },
       "required": [
