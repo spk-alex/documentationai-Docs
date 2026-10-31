@@ -6430,6 +6430,156 @@
         }
       }
     },
+    "/admin/call-to-open/digits": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Telephony"
+        ],
+        "summary": "Test call-to-open: the digits a call from this phone number is offered",
+        "description": "Answers what `POST /ivr/call-to-open/digits` answers telephony-api for this number: the digits of the user's call-to-open choice a call can open now, ascending (`[]` when nothing would open). Reads only. The `callId` must start with `test-` (else 400 `CALL_ID_NOT_TEST`). Requires dual auth: X-Admin-API-Key + JWT of a full admin. One admin audit record, without the phone number.",
+        "operationId": "post_AdminCallToOpenDigitsRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;8,128&#125;$",
+                    "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+                  },
+                  "callerNumber": {
+                    "type": "string",
+                    "description": "The number the call came from, in international form (+48123456789)"
+                  }
+                },
+                "required": [
+                  "callId",
+                  "callerNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The digits a call would be offered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "callId": {
+                      "type": "string"
+                    },
+                    "digits": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^\\d$",
+                        "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+                      },
+                      "description": "The digits to offer, ascending; empty when nothing would open"
+                    }
+                  },
+                  "required": [
+                    "callId",
+                    "digits"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, `CALL_ID_NOT_TEST` (the call id does not start with `test-`) or `CALL_ID_CARRIES_NUMBER` (the call id contains the caller number)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Email domain not allowed, or a read-only admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The admin token cannot be verified now (`JWT_AUTH_MODE=enforce`: Auth0 keys or config unavailable)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/rtsp-cameras/{id}": {
       "delete": {
         "tags": [
@@ -29043,6 +29193,135 @@
         }
       }
     },
+    "/ivr/call-to-open/digits": {
+      "post": {
+        "tags": [
+          "User",
+          "Telephony"
+        ],
+        "summary": "The digits a call from the user's own phone number is offered",
+        "description": "Service route for telephony-api only (`X-Call-To-Open-Service-Token`; no other credential is accepted). Finds the one user whose phone number is `callerNumber` and answers the digits of the user's call-to-open choice that a call can open now, ascending: targets no longer in the user's lists or not active are left out, and a user who opened 3 times in the last 60 s gets none. `[]` also when the number is unknown or has more than one owner, or the user has no choice. Writes nothing.",
+        "operationId": "post_IvrCallToOpenDigitsRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;8,128&#125;$",
+                    "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+                  },
+                  "callerNumber": {
+                    "type": "string",
+                    "description": "The number the call came from, in international form (+48123456789)"
+                  }
+                },
+                "required": [
+                  "callId",
+                  "callerNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The digits to offer, ascending; empty when nothing would open",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "callId": {
+                      "type": "string"
+                    },
+                    "digits": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^\\d$",
+                        "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+                      },
+                      "description": "The digits to offer, ascending; empty when nothing would open"
+                    }
+                  },
+                  "required": [
+                    "callId",
+                    "digits"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, `CALL_ID_CARRIES_NUMBER` (the call id contains the caller number), or the service token sent with another credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong service token, or another credential instead of it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A client sent an internal header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{id}/RecordCallToOpenCall": {
       "post": {
         "tags": [
@@ -29074,6 +29353,11 @@
                     "type": "string",
                     "pattern": "^[A-Za-z0-9._:-]&#123;8,128&#125;$",
                     "description": "Opaque id of the call, 8-128 characters of A-Z a-z 0-9 . _ : -; never the phone number"
+                  },
+                  "digit": {
+                    "type": "string",
+                    "pattern": "^\\d$",
+                    "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
                   }
                 },
                 "required": [
@@ -29143,6 +29427,11 @@
                                 "id"
                               ],
                               "additionalProperties": false
+                            },
+                            "digit": {
+                              "type": "string",
+                              "pattern": "^\\d$",
+                              "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
                             },
                             "timestamp": {
                               "type": "string"
@@ -29321,7 +29610,7 @@
             }
           },
           "409": {
-            "description": "`CallToOpenRefusedError`: the call does not open; the message is `duplicate`, `rate_limited`, `no_choice`, `digit_required` or `not_accessible`",
+            "description": "`CallToOpenRefusedError`: the call does not open; the message is `duplicate`, `rate_limited`, `no_choice`, `digit_required`, `unknown_digit` or `not_accessible`",
             "content": {
               "application/json": {
                 "schema": {
@@ -30832,7 +31121,7 @@
           "Telephony"
         ],
         "summary": "Test call-to-open: open the chosen lock of the user with this phone number",
-        "description": "Runs the call-to-open flow of `POST /ivr/call-to-open` without a real call and answers its outcome. Opens a real lock. Bypasses telephony-api (no dial-to-open switch, attestation or dial-in rate limit); every b2c-api rule applies, including the per-user limit of 3 opens per 60 s and the de-dup of `callId`. The `callId` must start with `test-` (else 400 `CALL_ID_NOT_TEST`, before any lookup). Requires dual auth: X-Admin-API-Key + JWT of a full admin. Two admin audit records per call, without the phone number: the intent (required — 503 `AUDIT_UNAVAILABLE` and no call when it cannot be written) and the outcome.",
+        "description": "Runs the call-to-open flow of `POST /ivr/call-to-open` without a real call and answers its outcome. Opens a real lock. Bypasses telephony-api (no dial-to-open switch, attestation or dial-in rate limit); every b2c-api rule applies, including the per-user limit of 3 opens per 60 s and the de-dup of `callId`. `digit` is the digit pressed in the call's menu: it opens the target on that digit (without it, a choice of several answers `digit_required`). The `callId` must start with `test-` (else 400 `CALL_ID_NOT_TEST`, before any lookup). Requires dual auth: X-Admin-API-Key + JWT of a full admin. Two admin audit records per call, without the phone number: the intent (required — 503 `AUDIT_UNAVAILABLE` and no call when it cannot be written) and the outcome.",
         "operationId": "post_AdminCallToOpenRoute",
         "requestBody": {
           "content": {
@@ -30848,6 +31137,11 @@
                   "callerNumber": {
                     "type": "string",
                     "description": "The number the call came from, in international form (+48123456789)"
+                  },
+                  "digit": {
+                    "type": "string",
+                    "pattern": "^\\d$",
+                    "description": "The digit the caller pressed in the menu; it opens the target on that digit. Without it only a choice of one target opens"
                   }
                 },
                 "required": [
@@ -30882,6 +31176,7 @@
                         "ambiguous_caller",
                         "no_choice",
                         "digit_required",
+                        "unknown_digit",
                         "not_accessible",
                         "duplicate",
                         "rate_limited",
@@ -31011,7 +31306,7 @@
             }
           },
           "503": {
-            "description": "`AUDIT_UNAVAILABLE`: the audit record of the intent could not be written; the call was not run",
+            "description": "`AUDIT_UNAVAILABLE`: the audit record of the intent could not be written; the call was not run. Or the admin token cannot be verified now (`JWT_AUTH_MODE=enforce`: Auth0 keys or config unavailable)",
             "content": {
               "application/json": {
                 "schema": {
@@ -35461,7 +35756,7 @@
           "Telephony"
         ],
         "summary": "Open the user's chosen lock for a call from the user's own phone number",
-        "description": "Service route for telephony-api only (`X-Call-To-Open-Service-Token`; no other credential is accepted). Finds the one user whose phone number is `callerNumber` and opens the lock the user chose with `ChooseCallToOpenLock` (a Matter choice opens the lock whose uuid is the device id). Nothing opens when the number is unknown or has more than one owner, the user has no choice, the chosen target is no longer in the user's lists or not active, the call id already opened, or the user opened 3 times in the last 60 s. Every such refusal answers the same `200 &#123;opened: false&#125;`. The open is sent once and never retried. Caller ID can be spoofed: not for high-security doors.",
+        "description": "Service route for telephony-api only (`X-Call-To-Open-Service-Token`; no other credential is accepted). Finds the one user whose phone number is `callerNumber` and opens the lock the user chose with `ChooseCallToOpenLock` (a Matter choice opens the lock whose uuid is the device id): the target on `digit` when the call sends the digit the caller pressed, else the only target of the choice. Nothing opens when the number is unknown or has more than one owner, the user has no choice, the choice holds several targets and no digit was sent, no target is on `digit`, the target is no longer in the user's lists or not active, the call id already opened, or the user opened 3 times in the last 60 s. Every such refusal answers the same `200 &#123;opened: false&#125;`. The open is sent once and never retried. Caller ID can be spoofed: not for high-security doors.",
         "operationId": "post_IvrCallToOpenRoute",
         "requestBody": {
           "content": {
@@ -35477,6 +35772,11 @@
                   "callerNumber": {
                     "type": "string",
                     "description": "The number the call came from, in international form (+48123456789)"
+                  },
+                  "digit": {
+                    "type": "string",
+                    "pattern": "^\\d$",
+                    "description": "The digit the caller pressed in the menu; it opens the target on that digit. Without it only a choice of one target opens"
                   }
                 },
                 "required": [

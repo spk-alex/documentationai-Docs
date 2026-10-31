@@ -914,6 +914,7 @@ A call from the user's own phone number was admitted to open the user's call-to-
 | `target` | `object` | yes | The chosen lock or Matter device the call was admitted to open (&#123;kind, id&#125;) |
 | `target.kind` | `"lock" \| "matter"` | yes | Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices) |
 | `target.id` | `string` | yes | A lock aggregate id or a Matter device id, never a phone number |
+| `digit` | `string` | no | The digit the caller pressed in the call's menu to pick the target; absent when the call named none (a choice of one target) |
 | `timestamp` | `string` | yes | ISO-8601 time of the domain event |
 
 ### UserSubscriptionStatusUpdated

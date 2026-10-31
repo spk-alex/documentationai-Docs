@@ -1,5 +1,5 @@
 {
-  "version": "9c7f2d53",
+  "version": "f2a363e2",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1600,6 +1600,11 @@
             "id"
           ],
           "additionalProperties": false
+        },
+        "digit": {
+          "type": "string",
+          "pattern": "^\\d$",
+          "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
         },
         "timestamp": {
           "type": "string"
