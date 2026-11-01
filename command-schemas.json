@@ -1,5 +1,5 @@
 {
-  "version": "03afa60e",
+  "version": "da999c3e",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "CreateLock": {
@@ -403,6 +403,382 @@
       },
       "required": [
         "tempKeyUuid"
+      ]
+    },
+    "IssueTempKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tempKeyUuid": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "temp-keys",
+            "per-lock",
+            "import"
+          ]
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "doors": {
+          "minItems": 1,
+          "maxItems": 50,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "doorId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "lockId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lockUuid": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "accessMethod": {
+                "type": "string",
+                "enum": [
+                  "key",
+                  "code",
+                  "both"
+                ]
+              }
+            },
+            "required": [
+              "lockId",
+              "lockUuid",
+              "accessMethod"
+            ]
+          }
+        },
+        "accessMode": {
+          "type": "string",
+          "enum": [
+            "public",
+            "user-whitelist"
+          ]
+        },
+        "allowedUserIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "maxUses": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "issuedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "usedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "pinLookup": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pinCiphertext": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "tempKeyUuid",
+        "origin",
+        "validFrom",
+        "validUntil",
+        "doors",
+        "accessMode",
+        "allowedUserIds",
+        "maxUses",
+        "issuedBy",
+        "pinLookup",
+        "pinCiphertext"
+      ]
+    },
+    "ChangeTempKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        },
+        "maxUses": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accessMode": {
+          "type": "string",
+          "enum": [
+            "public",
+            "user-whitelist"
+          ]
+        },
+        "allowedUserIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "changedBy": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "changedBy"
+      ]
+    },
+    "RevokeTempKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "revokedBy": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "revokedBy"
+      ]
+    },
+    "OpenTempKeyDoor": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "doorId": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "slide",
+            "pin"
+          ]
+        },
+        "openerUserId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "doorId",
+        "method",
+        "openerUserId"
+      ]
+    },
+    "RecordTempKeyCreated": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tempKeyUuid": {
+          "type": "string"
+        },
+        "accessMode": {
+          "type": "string",
+          "enum": [
+            "public",
+            "user-whitelist"
+          ]
+        },
+        "allowedUserIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validFrom": {
+          "type": "string"
+        },
+        "validUntil": {
+          "type": "string"
+        },
+        "maxUses": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "createdBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tempKeyUuid",
+        "accessMode",
+        "validFrom",
+        "validUntil",
+        "createdBy"
+      ]
+    },
+    "RecordTempKeyUpdated": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tempKeyUuid": {
+          "type": "string"
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "validFrom": {
+              "type": "string"
+            },
+            "validUntil": {
+              "type": "string"
+            },
+            "maxUses": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "allowedUserIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "accessMode": {
+              "type": "string",
+              "enum": [
+                "public",
+                "user-whitelist"
+              ]
+            }
+          }
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tempKeyUuid",
+        "changes",
+        "updatedBy"
+      ]
+    },
+    "RecordTempKeyDeleted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tempKeyUuid": {
+          "type": "string"
+        },
+        "deletedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tempKeyUuid",
+        "deletedBy"
+      ]
+    },
+    "RecordTempKeyUsed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tempKeyUuid": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "usedCount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "tempKeyUuid",
+        "usedCount"
       ]
     },
     "CreateUser": {

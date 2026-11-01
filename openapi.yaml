@@ -2159,247 +2159,6 @@
         }
       }
     },
-    "/collective-temp-keys/{uuid}/doors/{doorId}/open": {
-      "post": {
-        "tags": [
-          "TempKey",
-          "Collective",
-          "Web"
-        ],
-        "summary": "Open a door via a collective key",
-        "description": "Validates a collective access key (revocation, validity window, usage limit, authorization) and opens the given door via its LockAggregate — the same path as the temp-key open routes.",
-        "operationId": "post_OpenCollectiveDoorRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Collective temporary key UUID"
-            },
-            "required": true,
-            "description": "Collective temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Door id within the collective key"
-            },
-            "required": true,
-            "description": "Door id within the collective key",
-            "name": "doorId",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "303": {
-            "description": "Door opened, redirecting to confirmation"
-          },
-          "400": {
-            "description": "Credential revoked, outside its validity window or used up, or the door has no slide-to-open",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "User not authorized to use this access key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Credential or door not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "502": {
-            "description": "The open command could not be written to the device; no use was charged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/temp-keys/{uuid}/doors/{doorId}/open": {
-      "post": {
-        "tags": [
-          "TempKey",
-          "Web"
-        ],
-        "summary": "Open a specific door via a temp key",
-        "description": "Validates a temporary key (revocation, expiration, usage limits, authorization) and opens the given door via its LockAggregate plus the Door Lock cluster UnlockDoor command to the device shadow.",
-        "operationId": "post_OpenTempKeyDoorRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Collective temporary key UUID"
-            },
-            "required": true,
-            "description": "Collective temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Door id within the collective key"
-            },
-            "required": true,
-            "description": "Door id within the collective key",
-            "name": "doorId",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "303": {
-            "description": "Door opened, redirecting to confirmation"
-          },
-          "400": {
-            "description": "Key invalid or the door has no slide-to-open",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "User not authorized to use this temporary key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Key or door not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/admin/cleanup/rtsp-cameras/{cameraId}": {
       "delete": {
         "tags": [
@@ -13885,76 +13644,6 @@
         }
       }
     },
-    "/collective-temp-keys/{uuid}/confirmation": {
-      "get": {
-        "tags": [
-          "TempKey",
-          "Collective",
-          "Web"
-        ],
-        "summary": "Render the collective open-confirmation page",
-        "description": "HTML page confirming a collective door open command was sent, with a link back to the access page.",
-        "operationId": "get_CollectiveConfirmationRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Collective temporary key UUID"
-            },
-            "required": true,
-            "description": "Collective temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Door that was opened"
-            },
-            "required": false,
-            "description": "Door that was opened",
-            "name": "door",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "Device was offline when command was sent"
-            },
-            "required": false,
-            "description": "Device was offline when command was sent",
-            "name": "offline",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Confirmation page",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/hubs/{id}/ClaimHub": {
       "post": {
         "tags": [
@@ -18525,392 +18214,6 @@
         }
       }
     },
-    "/locks/{id}/create-temp-key": {
-      "post": {
-        "tags": [
-          "Lock",
-          "TempKey"
-        ],
-        "summary": "Create temporary web access key",
-        "description": "Creates a temporary web key for time-limited, shareable lock access. B2C requires lock owner, B2B requires org match.",
-        "operationId": "post_CreateTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Lock ID (numeric)"
-            },
-            "required": true,
-            "description": "Lock ID (numeric)",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "tempKeyUuid": {
-                    "type": "string"
-                  },
-                  "accessMode": {
-                    "type": "string",
-                    "enum": [
-                      "public",
-                      "user-whitelist"
-                    ]
-                  },
-                  "allowedUserIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "default": []
-                  },
-                  "validFrom": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "validUntil": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "maxUses": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ],
-                    "exclusiveMinimum": 0
-                  },
-                  "description": {
-                    "type": "string",
-                    "maxLength": 2000
-                  }
-                },
-                "required": [
-                  "tempKeyUuid",
-                  "accessMode",
-                  "validFrom",
-                  "validUntil"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Temporary key created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "aggregateId": {
-                      "type": "string"
-                    },
-                    "version": {
-                      "type": "number"
-                    },
-                    "event": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "TempKeyCreated"
-                          ]
-                        },
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "tempKeyUuid": {
-                              "type": "string"
-                            },
-                            "lockId": {
-                              "type": "number"
-                            },
-                            "lockUuid": {
-                              "type": "string"
-                            },
-                            "accessMode": {
-                              "type": "string",
-                              "enum": [
-                                "public",
-                                "user-whitelist"
-                              ]
-                            },
-                            "allowedUserIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            },
-                            "validFrom": {
-                              "type": "string"
-                            },
-                            "validUntil": {
-                              "type": "string"
-                            },
-                            "maxUses": {
-                              "type": [
-                                "number",
-                                "null"
-                              ]
-                            },
-                            "createdBy": {
-                              "type": "string"
-                            },
-                            "timestamp": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "tempKeyUuid",
-                            "lockId",
-                            "lockUuid",
-                            "accessMode",
-                            "validFrom",
-                            "validUntil",
-                            "createdBy",
-                            "timestamp"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "data"
-                      ]
-                    },
-                    "tempKeyUuid": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "aggregateId",
-                    "version",
-                    "event",
-                    "tempKeyUuid"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/locks/{id}/delete-temp-key": {
-      "post": {
-        "tags": [
-          "Lock",
-          "TempKey"
-        ],
-        "summary": "Delete temporary web access key",
-        "description": "Deletes a temporary web key. B2C requires lock owner, B2B requires org match.",
-        "operationId": "post_DeleteTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Lock ID (numeric)"
-            },
-            "required": true,
-            "description": "Lock ID (numeric)",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "tempKeyUuid": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "tempKeyUuid"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Temporary key deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "aggregateId": {
-                      "type": "string"
-                    },
-                    "version": {
-                      "type": "number"
-                    },
-                    "event": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "TempKeyDeleted"
-                          ]
-                        },
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "tempKeyUuid": {
-                              "type": "string"
-                            },
-                            "lockId": {
-                              "type": "number"
-                            },
-                            "lockUuid": {
-                              "type": "string"
-                            },
-                            "deletedBy": {
-                              "type": "string"
-                            },
-                            "timestamp": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "tempKeyUuid",
-                            "lockId",
-                            "lockUuid",
-                            "deletedBy",
-                            "timestamp"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "data"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "aggregateId",
-                    "version",
-                    "event"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Temporary key not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/locks/{id}/basic-info": {
       "get": {
         "tags": [
@@ -19418,526 +18721,6 @@
                   "required": [
                     "success",
                     "errors"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/locks/{id}/temp-keys": {
-      "get": {
-        "tags": [
-          "Lock",
-          "TempKey"
-        ],
-        "summary": "List temporary keys for lock",
-        "description": "Returns all temporary keys for the lock with computed status (valid, expired, used-up, not-yet-valid).",
-        "operationId": "get_ListTempKeysRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Lock ID (numeric)"
-            },
-            "required": true,
-            "description": "Lock ID (numeric)",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Temporary keys retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "tempKeys": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "uuid": {
-                            "type": "string"
-                          },
-                          "lockId": {
-                            "type": "number"
-                          },
-                          "lockUuid": {
-                            "type": "string"
-                          },
-                          "accessMode": {
-                            "type": "string",
-                            "enum": [
-                              "public",
-                              "user-whitelist"
-                            ]
-                          },
-                          "allowedUserIds": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "validFrom": {
-                            "type": "string"
-                          },
-                          "validUntil": {
-                            "type": "string"
-                          },
-                          "maxUses": {
-                            "type": [
-                              "number",
-                              "null"
-                            ]
-                          },
-                          "usedCount": {
-                            "type": "number"
-                          },
-                          "createdAt": {
-                            "type": "string"
-                          },
-                          "createdBy": {
-                            "type": "string"
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "valid",
-                              "expired",
-                              "used-up",
-                              "not-yet-valid"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "uuid",
-                          "lockId",
-                          "lockUuid",
-                          "accessMode",
-                          "allowedUserIds",
-                          "validFrom",
-                          "validUntil",
-                          "maxUses",
-                          "usedCount",
-                          "createdAt",
-                          "createdBy",
-                          "status"
-                        ]
-                      }
-                    }
-                  },
-                  "required": [
-                    "tempKeys"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Lock not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/locks/{id}/update-temp-key": {
-      "post": {
-        "tags": [
-          "Lock",
-          "TempKey"
-        ],
-        "summary": "Update temporary web access key",
-        "description": "Updates a temporary web key. Can modify dates, max uses, whitelist, and access mode. B2C requires lock owner, B2B requires org match.",
-        "operationId": "post_UpdateTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Lock ID (numeric)"
-            },
-            "required": true,
-            "description": "Lock ID (numeric)",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "tempKeyUuid": {
-                    "type": "string"
-                  },
-                  "validFrom": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "validUntil": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "maxUses": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ],
-                    "exclusiveMinimum": 0
-                  },
-                  "allowedUserIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "accessMode": {
-                    "type": "string",
-                    "enum": [
-                      "public",
-                      "user-whitelist"
-                    ]
-                  }
-                },
-                "required": [
-                  "tempKeyUuid"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Temporary key updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "aggregateId": {
-                      "type": "string"
-                    },
-                    "version": {
-                      "type": "number"
-                    },
-                    "event": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "TempKeyUpdated"
-                          ]
-                        },
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "tempKeyUuid": {
-                              "type": "string"
-                            },
-                            "lockId": {
-                              "type": "number"
-                            },
-                            "lockUuid": {
-                              "type": "string"
-                            },
-                            "changes": {
-                              "type": "object",
-                              "properties": {
-                                "validFrom": {
-                                  "type": "string"
-                                },
-                                "validUntil": {
-                                  "type": "string"
-                                },
-                                "maxUses": {
-                                  "type": [
-                                    "number",
-                                    "null"
-                                  ]
-                                },
-                                "allowedUserIds": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string"
-                                  }
-                                },
-                                "accessMode": {
-                                  "type": "string",
-                                  "enum": [
-                                    "public",
-                                    "user-whitelist"
-                                  ]
-                                }
-                              }
-                            },
-                            "updatedBy": {
-                              "type": "string"
-                            },
-                            "timestamp": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "tempKeyUuid",
-                            "lockId",
-                            "lockUuid",
-                            "changes",
-                            "updatedBy",
-                            "timestamp"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "data"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "aggregateId",
-                    "version",
-                    "event"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Temporary key not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/locks/{id}/use-temp-key": {
-      "post": {
-        "tags": [
-          "Lock",
-          "TempKey"
-        ],
-        "summary": "Record temporary web access key usage",
-        "description": "Appends a TempKeyUsed audit event to the lock event stream (partner fan-out). Internal command issued by the temp-key open flow.",
-        "operationId": "post_UseTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "description": "Lock ID (numeric)"
-            },
-            "required": true,
-            "description": "Lock ID (numeric)",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "tempKeyUuid": {
-                    "type": "string"
-                  },
-                  "userId": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "tempKeyUuid"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Temporary key usage recorded successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "aggregateId": {
-                      "type": "string"
-                    },
-                    "version": {
-                      "type": "number"
-                    },
-                    "event": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "TempKeyUsed"
-                          ]
-                        },
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "tempKeyUuid": {
-                              "type": "string"
-                            },
-                            "lockId": {
-                              "type": "number"
-                            },
-                            "lockUuid": {
-                              "type": "string"
-                            },
-                            "userId": {
-                              "type": "string"
-                            },
-                            "usedCount": {
-                              "type": "number"
-                            },
-                            "timestamp": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "tempKeyUuid",
-                            "lockId",
-                            "lockUuid",
-                            "usedCount",
-                            "timestamp"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "data"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "aggregateId",
-                    "version",
-                    "event"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Lock not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
                   ]
                 }
               }
@@ -24676,15 +23459,15 @@
         }
       }
     },
-    "/locks/{id}/open-with-pin": {
+    "/locks/{id}/RecordTempKeyCreated": {
       "post": {
         "tags": [
-          "TempKey",
-          "Lock"
+          "Lock",
+          "TempKey"
         ],
-        "summary": "Open a lock with a temp-key PIN",
-        "description": "Unauthenticated endpoint for a connected entrance panel. Verifies the submitted PIN against the live temp keys covering this lock and, on success, opens the door exactly as the guest page slide-to-open does. Every refusal — wrong PIN, unknown PIN, a lock the key does not cover, revoked, expired, not yet valid — returns the identical 401 so the endpoint is not an enumeration oracle. Repeated failures are throttled and then locked out per lock (429 with Retry-After).",
-        "operationId": "post_OpenLockWithPinRoute",
+        "summary": "Record a deprecated TempKeyCreated (internal)",
+        "description": "Internal: records TempKeyCreated on the lock for the temp-keys worker, which owns temporary keys. Admitted only through b2c-api's TempKeyAccess entrypoint.",
+        "operationId": "post_RecordTempKeyCreatedRoute",
         "parameters": [
           {
             "schema": {
@@ -24704,14 +23487,44 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "pin": {
+                  "tempKeyUuid": {
+                    "type": "string"
+                  },
+                  "accessMode": {
                     "type": "string",
-                    "pattern": "^\\d&#123;4,8&#125;$",
-                    "description": "The PIN issued with the temp key (always 6 digits today)"
+                    "enum": [
+                      "public",
+                      "user-whitelist"
+                    ]
+                  },
+                  "allowedUserIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "validFrom": {
+                    "type": "string"
+                  },
+                  "validUntil": {
+                    "type": "string"
+                  },
+                  "maxUses": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "createdBy": {
+                    "type": "string"
                   }
                 },
                 "required": [
-                  "pin"
+                  "tempKeyUuid",
+                  "accessMode",
+                  "validFrom",
+                  "validUntil",
+                  "createdBy"
                 ]
               }
             }
@@ -24719,7 +23532,7 @@
         },
         "responses": {
           "200": {
-            "description": "Open command accepted",
+            "description": "TempKeyCreated recorded",
             "content": {
               "application/json": {
                 "schema": {
@@ -24728,60 +23541,98 @@
                     "success": {
                       "type": "boolean"
                     },
-                    "offline": {
-                      "type": "boolean",
-                      "description": "The device was offline; the unlock is queued on its shadow. The command was still accepted."
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "TempKeyCreated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "tempKeyUuid": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "lockUuid": {
+                              "type": "string"
+                            },
+                            "accessMode": {
+                              "type": "string",
+                              "enum": [
+                                "public",
+                                "user-whitelist"
+                              ]
+                            },
+                            "allowedUserIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "validFrom": {
+                              "type": "string"
+                            },
+                            "validUntil": {
+                              "type": "string"
+                            },
+                            "maxUses": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "createdBy": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tempKeyUuid",
+                            "lockId",
+                            "lockUuid",
+                            "accessMode",
+                            "validFrom",
+                            "validUntil",
+                            "createdBy",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
                     }
                   },
                   "required": [
                     "success",
-                    "offline"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Malformed PIN",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
+                    "aggregateId",
+                    "version",
+                    "event"
                   ]
                 }
               }
             }
           },
           "401": {
-            "description": "The PIN does not open this lock",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "enum": [
-                        "Invalid PIN"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too many attempts for this lock",
+            "description": "Not the temp-keys worker",
             "content": {
               "application/json": {
                 "schema": {
@@ -24789,117 +23640,21 @@
                   "properties": {
                     "error": {
                       "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
+                    },
+                    "message": {
                       "type": "string"
                     }
                   },
                   "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "PIN access is disabled or unconfigured in this environment",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/temp-keys/{uuid}/open": {
-      "post": {
-        "tags": [
-          "TempKey",
-          "Web"
-        ],
-        "summary": "Open lock via temp key (first door)",
-        "description": "Validates a temporary key (revocation, expiration, usage limits, authorization) and opens its first slide-capable door: OpenLock to the LockAggregate plus the Door Lock cluster UnlockDoor command to the device shadow. Public keys need no auth; user-whitelist keys require a JWT with a whitelisted userId.",
-        "operationId": "post_OpenTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Temporary key UUID"
-            },
-            "required": true,
-            "description": "Temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "303": {
-            "description": "Lock opened successfully, redirecting to confirmation"
-          },
-          "400": {
-            "description": "Temporary key is invalid (revoked, not yet valid, expired, or used up)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "User not authorized to use this temporary key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
+                    "error",
+                    "message"
                   ]
                 }
               }
             }
           },
           "404": {
-            "description": "Temporary key not found",
+            "description": "Lock not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -24907,28 +23662,14 @@
                   "properties": {
                     "error": {
                       "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
+                    },
+                    "message": {
                       "type": "string"
                     }
                   },
                   "required": [
-                    "error"
+                    "error",
+                    "message"
                   ]
                 }
               }
@@ -24937,68 +23678,556 @@
         }
       }
     },
-    "/temp-keys/{uuid}/confirmation": {
-      "get": {
+    "/locks/{id}/RecordTempKeyDeleted": {
+      "post": {
         "tags": [
-          "TempKey",
-          "Web"
+          "Lock",
+          "TempKey"
         ],
-        "summary": "Render temp key confirmation page",
-        "description": "Returns an HTML page confirming the door open command was sent, with a link back to the temp key page.",
-        "operationId": "get_TempKeyConfirmationRoute",
+        "summary": "Record a deprecated TempKeyDeleted (internal)",
+        "description": "Internal: records TempKeyDeleted on the lock for the temp-keys worker, which owns temporary keys. Admitted only through b2c-api's TempKeyAccess entrypoint.",
+        "operationId": "post_RecordTempKeyDeletedRoute",
         "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Temporary key UUID"
-            },
-            "required": true,
-            "description": "Temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          },
           {
             "schema": {
               "type": "integer",
               "exclusiveMinimum": 0,
-              "description": "Door that was opened"
+              "description": "Lock ID (numeric)"
             },
-            "required": false,
-            "description": "Door that was opened",
-            "name": "door",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "description": "Device was offline when command was sent"
-            },
-            "required": false,
-            "description": "Device was offline when command was sent",
-            "name": "offline",
-            "in": "query"
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tempKeyUuid": {
+                    "type": "string"
+                  },
+                  "deletedBy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tempKeyUuid",
+                  "deletedBy"
+                ]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Confirmation page rendered successfully",
+            "description": "TempKeyDeleted recorded",
             "content": {
-              "text/html": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "TempKeyDeleted"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "tempKeyUuid": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "lockUuid": {
+                              "type": "string"
+                            },
+                            "deletedBy": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tempKeyUuid",
+                            "lockId",
+                            "lockUuid",
+                            "deletedBy",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not the temp-keys worker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
                 }
               }
             }
           },
           "404": {
-            "description": "Temporary key not found",
+            "description": "Lock not found",
             "content": {
-              "text/html": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locks/{id}/RecordTempKeyUpdated": {
+      "post": {
+        "tags": [
+          "Lock",
+          "TempKey"
+        ],
+        "summary": "Record a deprecated TempKeyUpdated (internal)",
+        "description": "Internal: records TempKeyUpdated on the lock for the temp-keys worker, which owns temporary keys. Admitted only through b2c-api's TempKeyAccess entrypoint.",
+        "operationId": "post_RecordTempKeyUpdatedRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Lock ID (numeric)"
+            },
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tempKeyUuid": {
+                    "type": "string"
+                  },
+                  "changes": {
+                    "type": "object",
+                    "properties": {
+                      "validFrom": {
+                        "type": "string"
+                      },
+                      "validUntil": {
+                        "type": "string"
+                      },
+                      "maxUses": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "allowedUserIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "accessMode": {
+                        "type": "string",
+                        "enum": [
+                          "public",
+                          "user-whitelist"
+                        ]
+                      }
+                    }
+                  },
+                  "updatedBy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tempKeyUuid",
+                  "changes",
+                  "updatedBy"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TempKeyUpdated recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "TempKeyUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "tempKeyUuid": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "lockUuid": {
+                              "type": "string"
+                            },
+                            "changes": {
+                              "type": "object",
+                              "properties": {
+                                "validFrom": {
+                                  "type": "string"
+                                },
+                                "validUntil": {
+                                  "type": "string"
+                                },
+                                "maxUses": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "allowedUserIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "accessMode": {
+                                  "type": "string",
+                                  "enum": [
+                                    "public",
+                                    "user-whitelist"
+                                  ]
+                                }
+                              }
+                            },
+                            "updatedBy": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tempKeyUuid",
+                            "lockId",
+                            "lockUuid",
+                            "changes",
+                            "updatedBy",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not the temp-keys worker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lock not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locks/{id}/RecordTempKeyUsed": {
+      "post": {
+        "tags": [
+          "Lock",
+          "TempKey"
+        ],
+        "summary": "Record a deprecated TempKeyUsed (internal)",
+        "description": "Internal: records TempKeyUsed on the lock for the temp-keys worker, which owns temporary keys. Admitted only through b2c-api's TempKeyAccess entrypoint.",
+        "operationId": "post_RecordTempKeyUsedRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Lock ID (numeric)"
+            },
+            "required": true,
+            "description": "Lock ID (numeric)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tempKeyUuid": {
+                    "type": "string"
+                  },
+                  "userId": {
+                    "type": "string"
+                  },
+                  "usedCount": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "tempKeyUuid",
+                  "usedCount"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TempKeyUsed recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "TempKeyUsed"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "tempKeyUuid": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "number"
+                            },
+                            "lockUuid": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "string"
+                            },
+                            "usedCount": {
+                              "type": "number"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "tempKeyUuid",
+                            "lockId",
+                            "lockUuid",
+                            "usedCount",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not the temp-keys worker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lock not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
                 }
               }
             }
@@ -34832,313 +34061,6 @@
         }
       }
     },
-    "/collective-temp-keys/{uuid}": {
-      "delete": {
-        "tags": [
-          "TempKey",
-          "Collective"
-        ],
-        "summary": "Revoke a collective / shared access key",
-        "description": "Deletes a shared credential and all of its doors. The caller must be authenticated AND authorized for every lock the key touches (same check as create).",
-        "operationId": "delete_DeleteCollectiveTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Collective temporary key UUID"
-            },
-            "required": true,
-            "description": "Collective temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Collective access key deleted. If a concurrent actor deleted the key between this request’s lookup and its delete, the response carries alreadyRevoked: true — the end-state (key gone) holds either way."
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Not authorized for one of the key’s locks",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "TempKey",
-          "Collective",
-          "Web"
-        ],
-        "summary": "Render the collective access page",
-        "description": "Returns the HTML guest page for a shared/collective access key. Shows all included doors, their access methods (key/code), validity and instructions.",
-        "operationId": "get_GetCollectiveTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Collective temporary key UUID"
-            },
-            "required": true,
-            "description": "Collective temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Collective access page",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/temp-keys/{uuid}": {
-      "delete": {
-        "tags": [
-          "TempKey",
-          "Collective"
-        ],
-        "summary": "Revoke a collective / shared access key",
-        "description": "Deletes a shared credential and all of its doors. The caller must be authenticated AND authorized for every lock the key touches (same check as create).",
-        "operationId": "delete_DeleteUnifiedTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Collective temporary key UUID"
-            },
-            "required": true,
-            "description": "Collective temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Collective access key deleted. If a concurrent actor deleted the key between this request’s lookup and its delete, the response carries alreadyRevoked: true — the end-state (key gone) holds either way."
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Not authorized for one of the key’s locks",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "TempKey",
-          "Web"
-        ],
-        "summary": "Render temp key web page",
-        "description": "Returns the HTML guest page for a temporary access key (1..N doors). Validates the key status (revocation, expiration, usage limits, user authorization) and renders the appropriate UI. Public keys are accessible without authentication; user-whitelist keys require a valid JWT.",
-        "operationId": "get_GetTempKeyRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Temporary key UUID"
-            },
-            "required": true,
-            "description": "Temporary key UUID",
-            "name": "uuid",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Temporary key page rendered successfully",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Temporary key not found",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/rtsp-cameras/{id}": {
       "get": {
         "tags": [
@@ -35907,693 +34829,6 @@
                       "type": "string"
                     },
                     "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/collective-temp-keys": {
-      "post": {
-        "tags": [
-          "TempKey",
-          "Collective"
-        ],
-        "summary": "Create a collective / shared temporary access key",
-        "description": "Generates one shared guest credential spanning multiple doors. Each door is opened by slide-to-open ('key'), by the key's PIN at a connected entrance panel ('code'), or either ('both'). If any door is code/both, ONE PIN is minted for the whole key and returned here — this response is the only place it is ever returned in the clear. The caller must be authorized for every lock included.",
-        "operationId": "post_CreateCollectiveTempKeyRoute",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "validFrom": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "validUntil": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "description": {
-                    "type": "string",
-                    "maxLength": 2000
-                  },
-                  "doors": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "lockId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "minLength": 1,
-                          "description": "Lock id the door opens (caller must be authorized for it)"
-                        },
-                        "label": {
-                          "type": "string",
-                          "maxLength": 120,
-                          "description": "Friendly name, e.g. \"Building entrance\""
-                        },
-                        "accessMethod": {
-                          "type": "string",
-                          "enum": [
-                            "key",
-                            "code",
-                            "both"
-                          ],
-                          "default": "key",
-                          "description": "How a guest gets through this door: 'key' = slide-to-open on the guest page, 'code' = the key's PIN typed at a connected entrance panel, 'both' = either. Requesting 'code' or 'both' on ANY door mints ONE PIN for the whole key, returned once in the create response."
-                        }
-                      }
-                    },
-                    "minItems": 1,
-                    "maxItems": 50,
-                    "description": "Doors/rooms/zones included in this shared credential"
-                  }
-                },
-                "required": [
-                  "validFrom",
-                  "validUntil",
-                  "doors"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Collective access key created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "uuid": {
-                      "type": "string"
-                    },
-                    "url": {
-                      "type": "string",
-                      "description": "Guest-facing access page path"
-                    },
-                    "validFrom": {
-                      "type": "string"
-                    },
-                    "validUntil": {
-                      "type": "string"
-                    },
-                    "doors": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "number"
-                          },
-                          "lockId": {
-                            "type": "string"
-                          },
-                          "lockUuid": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
-                          "accessMethod": {
-                            "type": "string",
-                            "enum": [
-                              "key",
-                              "code",
-                              "both"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "lockId",
-                          "lockUuid",
-                          "accessMethod"
-                        ]
-                      }
-                    },
-                    "pin": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "The entrance-panel PIN for this key — SHOWN ONCE, here, and never retrievable from any JSON endpoint afterwards (the guest page is the only place it reappears). Null when no door is code/both."
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "uuid",
-                    "url",
-                    "validFrom",
-                    "validUntil",
-                    "doors",
-                    "pin"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Not authorized for one of the requested locks",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "One of the requested locks does not exist",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "A PIN was required but the PIN feature is unconfigured, or no free PIN could be allocated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/temp-keys": {
-      "post": {
-        "tags": [
-          "TempKey",
-          "Collective"
-        ],
-        "summary": "Create a collective / shared temporary access key",
-        "description": "Generates one shared guest credential spanning multiple doors. Each door is opened by slide-to-open ('key'), by the key's PIN at a connected entrance panel ('code'), or either ('both'). If any door is code/both, ONE PIN is minted for the whole key and returned here — this response is the only place it is ever returned in the clear. The caller must be authorized for every lock included.",
-        "operationId": "post_CreateUnifiedTempKeyRoute",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "validFrom": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "validUntil": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "description": {
-                    "type": "string",
-                    "maxLength": 2000
-                  },
-                  "doors": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "lockId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "minLength": 1,
-                          "description": "Lock id the door opens (caller must be authorized for it)"
-                        },
-                        "label": {
-                          "type": "string",
-                          "maxLength": 120,
-                          "description": "Friendly name, e.g. \"Building entrance\""
-                        },
-                        "accessMethod": {
-                          "type": "string",
-                          "enum": [
-                            "key",
-                            "code",
-                            "both"
-                          ],
-                          "default": "key",
-                          "description": "How a guest gets through this door: 'key' = slide-to-open on the guest page, 'code' = the key's PIN typed at a connected entrance panel, 'both' = either. Requesting 'code' or 'both' on ANY door mints ONE PIN for the whole key, returned once in the create response."
-                        }
-                      }
-                    },
-                    "minItems": 1,
-                    "maxItems": 50,
-                    "description": "Doors/rooms/zones included in this shared credential"
-                  }
-                },
-                "required": [
-                  "validFrom",
-                  "validUntil",
-                  "doors"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Collective access key created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "uuid": {
-                      "type": "string"
-                    },
-                    "url": {
-                      "type": "string",
-                      "description": "Guest-facing access page path"
-                    },
-                    "validFrom": {
-                      "type": "string"
-                    },
-                    "validUntil": {
-                      "type": "string"
-                    },
-                    "doors": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "number"
-                          },
-                          "lockId": {
-                            "type": "string"
-                          },
-                          "lockUuid": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
-                          "accessMethod": {
-                            "type": "string",
-                            "enum": [
-                              "key",
-                              "code",
-                              "both"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "lockId",
-                          "lockUuid",
-                          "accessMethod"
-                        ]
-                      }
-                    },
-                    "pin": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "description": "The entrance-panel PIN for this key — SHOWN ONCE, here, and never retrievable from any JSON endpoint afterwards (the guest page is the only place it reappears). Null when no door is code/both."
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "uuid",
-                    "url",
-                    "validFrom",
-                    "validUntil",
-                    "doors",
-                    "pin"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Not authorized for one of the requested locks",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "One of the requested locks does not exist",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "A PIN was required but the PIN feature is unconfigured, or no free PIN could be allocated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "TempKey"
-        ],
-        "summary": "List temporary access keys",
-        "description": "Lists unified temp keys. With ?lockId= returns every key touching that lock (requires authorization for the lock); without a filter returns the keys created by the caller.",
-        "operationId": "get_ListUnifiedTempKeysRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "Filter to keys touching this lock (caller must be authorized for it)"
-            },
-            "required": false,
-            "description": "Filter to keys touching this lock (caller must be authorized for it)",
-            "name": "lockId",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Temp keys",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "tempKeys": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "uuid": {
-                            "type": "string"
-                          },
-                          "url": {
-                            "type": "string"
-                          },
-                          "validFrom": {
-                            "type": "string"
-                          },
-                          "validUntil": {
-                            "type": "string"
-                          },
-                          "description": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
-                          "createdBy": {
-                            "type": "string"
-                          },
-                          "createdAt": {
-                            "type": "string"
-                          },
-                          "revokedAt": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
-                          "doors": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "number"
-                                },
-                                "lockId": {
-                                  "type": "string"
-                                },
-                                "lockUuid": {
-                                  "type": "string"
-                                },
-                                "label": {
-                                  "type": [
-                                    "string",
-                                    "null"
-                                  ]
-                                },
-                                "accessMethod": {
-                                  "type": "string",
-                                  "enum": [
-                                    "key",
-                                    "code",
-                                    "both"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "id",
-                                "lockId",
-                                "lockUuid",
-                                "accessMethod"
-                              ]
-                            }
-                          }
-                        },
-                        "required": [
-                          "uuid",
-                          "url",
-                          "validFrom",
-                          "validUntil",
-                          "description",
-                          "createdBy",
-                          "createdAt",
-                          "revokedAt",
-                          "doors"
-                        ]
-                      }
-                    }
-                  },
-                  "required": [
-                    "tempKeys"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Not authorized for the requested lock",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Lock not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
                       "type": "string"
                     }
                   },

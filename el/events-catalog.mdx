@@ -332,7 +332,7 @@ An IVR call to a resident about this lock ended (telephony-api). Delivered at le
 | **detail-type** | `TempKeyCreated` |
 | **aggregateType** | `LockAggregate` |
 
-A temporary key has been issued.
+Deprecated: a temporary key has been issued through a per-lock route.
 
 **Πεδία payload (`detail.data`):**
 
@@ -357,7 +357,7 @@ A temporary key has been issued.
 | **detail-type** | `TempKeyUsed` |
 | **aggregateType** | `LockAggregate` |
 
-A temporary key has been used to unlock.
+Deprecated: a temporary key has been used to unlock (see TempKeyDoorOpened).
 
 **Πεδία payload (`detail.data`):**
 
@@ -378,7 +378,7 @@ A temporary key has been used to unlock.
 | **detail-type** | `TempKeyDeleted` |
 | **aggregateType** | `LockAggregate` |
 
-A temporary key has been deleted.
+Deprecated: a temporary key has been deleted through a per-lock route.
 
 **Πεδία payload (`detail.data`):**
 
@@ -398,7 +398,7 @@ A temporary key has been deleted.
 | **detail-type** | `TempKeyUpdated` |
 | **aggregateType** | `LockAggregate` |
 
-A temporary key's validity window or rules changed.
+Deprecated: a temporary key's rules changed through a per-lock route.
 
 **Πεδία payload (`detail.data`):**
 
@@ -414,6 +414,152 @@ A temporary key's validity window or rules changed.
 | `changes.allowedUserIds` | `string[]` | όχι |  |
 | `changes.accessMode` | `"public" \| "user-whitelist"` | όχι |  |
 | `updatedBy` | `string` | ναι |  |
+| `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
+
+### TempKeyIssued
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `TempKeyIssued` |
+| **aggregateType** | `TempKeyAggregate` |
+
+A temporary key has been issued for one or more doors.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `tempKeyUuid` | `string` | ναι | Temporary key UUID (also the aggregateId) |
+| `issuedBy` | `string` | ναι | Organization or user ID that issued the key |
+| `origin` | `"temp-keys" \| "per-lock" \| "import"` | ναι | 'temp-keys' (the key routes), 'per-lock' (a deprecated per-lock route) or 'import' (moved from b2c-api) |
+| `key` | `object` | ναι |  |
+| `key.doors` | `object[]` | ναι |  |
+| `key.doors[].doorId` | `number` | ναι | Stable door id within the key (guest pages address doors by it) |
+| `key.doors[].lockId` | `number` | ναι | Numeric ID of the lock the door opens |
+| `key.doors[].lockUuid` | `string` | ναι | UUID of the lock the door opens |
+| `key.doors[].accessMethod` | `"key" \| "code" \| "both"` | ναι | How a guest opens the door: 'key' (guest page), 'code' (entrance-panel PIN) or 'both' |
+| `key.doors[].sortOrder` | `number` | ναι |  |
+| `key.validFrom` | `string` | ναι |  |
+| `key.validUntil` | `string` | ναι |  |
+| `key.accessMode` | `"public" \| "user-whitelist"` | ναι | 'public' (anyone with the link or PIN) or 'user-whitelist' (only allowedUserIds) |
+| `key.allowedUserIds` | `string[]` | ναι |  |
+| `key.maxUses` | `number \| null` | ναι | Total opens the key allows across all its doors; null = unlimited |
+| `key.usedCount` | `number` | ναι | Opens so far |
+| `key.pinIssued` | `boolean` | ναι | True when the key has an entrance-panel PIN; the PIN itself is never sent |
+| `key.createdBy` | `string` | ναι |  |
+| `key.createdAt` | `string` | ναι |  |
+| `key.revokedAt` | `string \| null` | ναι | When the key was revoked; null while it is not |
+| `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
+
+### TempKeyChanged
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `TempKeyChanged` |
+| **aggregateType** | `TempKeyAggregate` |
+
+A temporary key's validity, limit, access or guest instructions changed.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `tempKeyUuid` | `string` | ναι | Temporary key UUID (also the aggregateId) |
+| `changed` | `"validFrom" \| "validUntil" \| "maxUses" \| "accessMode" \| "allowedUserIds" \| "description"[]` | ναι | The fields that changed; 'description' names the guest instructions, whose text is never sent |
+| `changedBy` | `string` | ναι | Organization or user ID that made the change |
+| `key` | `object` | ναι |  |
+| `key.doors` | `object[]` | ναι |  |
+| `key.doors[].doorId` | `number` | ναι | Stable door id within the key (guest pages address doors by it) |
+| `key.doors[].lockId` | `number` | ναι | Numeric ID of the lock the door opens |
+| `key.doors[].lockUuid` | `string` | ναι | UUID of the lock the door opens |
+| `key.doors[].accessMethod` | `"key" \| "code" \| "both"` | ναι | How a guest opens the door: 'key' (guest page), 'code' (entrance-panel PIN) or 'both' |
+| `key.doors[].sortOrder` | `number` | ναι |  |
+| `key.validFrom` | `string` | ναι |  |
+| `key.validUntil` | `string` | ναι |  |
+| `key.accessMode` | `"public" \| "user-whitelist"` | ναι | 'public' (anyone with the link or PIN) or 'user-whitelist' (only allowedUserIds) |
+| `key.allowedUserIds` | `string[]` | ναι |  |
+| `key.maxUses` | `number \| null` | ναι | Total opens the key allows across all its doors; null = unlimited |
+| `key.usedCount` | `number` | ναι | Opens so far |
+| `key.pinIssued` | `boolean` | ναι | True when the key has an entrance-panel PIN; the PIN itself is never sent |
+| `key.createdBy` | `string` | ναι |  |
+| `key.createdAt` | `string` | ναι |  |
+| `key.revokedAt` | `string \| null` | ναι | When the key was revoked; null while it is not |
+| `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
+
+### TempKeyRevoked
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `TempKeyRevoked` |
+| **aggregateType** | `TempKeyAggregate` |
+
+A temporary key has been revoked; none of its doors open with it any more.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `tempKeyUuid` | `string` | ναι | Temporary key UUID (also the aggregateId) |
+| `revokedBy` | `string` | ναι | Organization or user ID that revoked the key |
+| `key` | `object` | ναι |  |
+| `key.doors` | `object[]` | ναι |  |
+| `key.doors[].doorId` | `number` | ναι | Stable door id within the key (guest pages address doors by it) |
+| `key.doors[].lockId` | `number` | ναι | Numeric ID of the lock the door opens |
+| `key.doors[].lockUuid` | `string` | ναι | UUID of the lock the door opens |
+| `key.doors[].accessMethod` | `"key" \| "code" \| "both"` | ναι | How a guest opens the door: 'key' (guest page), 'code' (entrance-panel PIN) or 'both' |
+| `key.doors[].sortOrder` | `number` | ναι |  |
+| `key.validFrom` | `string` | ναι |  |
+| `key.validUntil` | `string` | ναι |  |
+| `key.accessMode` | `"public" \| "user-whitelist"` | ναι | 'public' (anyone with the link or PIN) or 'user-whitelist' (only allowedUserIds) |
+| `key.allowedUserIds` | `string[]` | ναι |  |
+| `key.maxUses` | `number \| null` | ναι | Total opens the key allows across all its doors; null = unlimited |
+| `key.usedCount` | `number` | ναι | Opens so far |
+| `key.pinIssued` | `boolean` | ναι | True when the key has an entrance-panel PIN; the PIN itself is never sent |
+| `key.createdBy` | `string` | ναι |  |
+| `key.createdAt` | `string` | ναι |  |
+| `key.revokedAt` | `string \| null` | ναι | When the key was revoked; null while it is not |
+| `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
+
+### TempKeyDoorOpened
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `TempKeyDoorOpened` |
+| **aggregateType** | `TempKeyAggregate` |
+
+A door has been opened with a temporary key.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `tempKeyUuid` | `string` | ναι | Temporary key UUID (also the aggregateId) |
+| `doorId` | `number` | ναι | The door of the key that opened |
+| `lockId` | `number` | ναι | Numeric ID of the lock the door opens |
+| `lockUuid` | `string` | ναι | UUID of the lock the door opens |
+| `method` | `"slide" \| "pin"` | ναι | 'slide' (guest page) or 'pin' (entrance panel) |
+| `openedBy` | `string \| null` | ναι | User ID of a signed-in guest; null for an anonymous guest page or a PIN |
+| `key` | `object` | ναι |  |
+| `key.doors` | `object[]` | ναι |  |
+| `key.doors[].doorId` | `number` | ναι | Stable door id within the key (guest pages address doors by it) |
+| `key.doors[].lockId` | `number` | ναι | Numeric ID of the lock the door opens |
+| `key.doors[].lockUuid` | `string` | ναι | UUID of the lock the door opens |
+| `key.doors[].accessMethod` | `"key" \| "code" \| "both"` | ναι | How a guest opens the door: 'key' (guest page), 'code' (entrance-panel PIN) or 'both' |
+| `key.doors[].sortOrder` | `number` | ναι |  |
+| `key.validFrom` | `string` | ναι |  |
+| `key.validUntil` | `string` | ναι |  |
+| `key.accessMode` | `"public" \| "user-whitelist"` | ναι | 'public' (anyone with the link or PIN) or 'user-whitelist' (only allowedUserIds) |
+| `key.allowedUserIds` | `string[]` | ναι |  |
+| `key.maxUses` | `number \| null` | ναι | Total opens the key allows across all its doors; null = unlimited |
+| `key.usedCount` | `number` | ναι | Opens so far |
+| `key.pinIssued` | `boolean` | ναι | True when the key has an entrance-panel PIN; the PIN itself is never sent |
+| `key.createdBy` | `string` | ναι |  |
+| `key.createdAt` | `string` | ναι |  |
+| `key.revokedAt` | `string \| null` | ναι | When the key was revoked; null while it is not |
 | `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
 
 ---

@@ -50,10 +50,14 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 
 | `detail-type` | When it fires |
 |---|---|
-| `TempKeyCreated` | A temporary key has been issued |
-| `TempKeyUsed` | A temporary key has been used to unlock |
-| `TempKeyDeleted` | A temporary key has been deleted |
-| `TempKeyUpdated` | A temporary key's validity window or rules changed |
+| `TempKeyCreated` | Deprecated: a temporary key has been issued through a per-lock route |
+| `TempKeyUsed` | Deprecated: a temporary key has been used to unlock (see TempKeyDoorOpened) |
+| `TempKeyDeleted` | Deprecated: a temporary key has been deleted through a per-lock route |
+| `TempKeyUpdated` | Deprecated: a temporary key's rules changed through a per-lock route |
+| `TempKeyIssued` | A temporary key has been issued for one or more doors |
+| `TempKeyChanged` | A temporary key's validity, limit, access or guest instructions changed |
+| `TempKeyRevoked` | A temporary key has been revoked; none of its doors open with it any more |
+| `TempKeyDoorOpened` | A door has been opened with a temporary key |
 
 ### User events (`spk.api`)
 
