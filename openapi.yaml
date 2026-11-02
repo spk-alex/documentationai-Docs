@@ -3664,6 +3664,168 @@
         }
       }
     },
+    "/admin/cleanup/matter-devices/{matterDeviceId}": {
+      "delete": {
+        "tags": [
+          "Admin",
+          "Cleanup"
+        ],
+        "summary": "Delete Matter device aggregate",
+        "description": "Admin-only endpoint for deleting a Matter device aggregate, keyed by its AWS IoT Thing name. Supports two modes: DELETE_DO_ONLY removes the Durable Object instance while preserving R2 events (state restored on next access), and DELETE_DO_AND_EVENTS also deletes the R2 events, the registry row and the D1 rows keyed by the Thing name (stored app PIN, sensor device type). The AWS IoT Thing is not deleted. Requires dual authentication: X-Admin-API-Key header and a JWT with @smartphonekey.com email domain.",
+        "operationId": "delete_DeleteMatterDeviceRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter device aggregate ID (the AWS IoT Thing name)"
+            },
+            "required": true,
+            "description": "Matter device aggregate ID (the AWS IoT Thing name)",
+            "name": "matterDeviceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DELETE_DO_ONLY",
+                "DELETE_DO_AND_EVENTS"
+              ],
+              "description": "Deletion mode: DELETE_DO_ONLY preserves R2 events, DELETE_DO_AND_EVENTS archives and removes everything"
+            },
+            "required": true,
+            "description": "Deletion mode: DELETE_DO_ONLY preserves R2 events, DELETE_DO_AND_EVENTS archives and removes everything",
+            "name": "mode",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matter device deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "matterDeviceId": {
+                      "type": "string"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "operations": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "deletionSummary": {
+                      "type": "string"
+                    },
+                    "auditLogPath": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "number"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "matterDeviceId",
+                    "mode",
+                    "operations",
+                    "auditLogPath",
+                    "duration",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid mode parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/cleanup/users/{userId}": {
       "delete": {
         "tags": [
@@ -20104,6 +20266,206 @@
           },
           "404": {
             "description": "Not found — the matter device does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matter-devices/{id}/SetMatterDeviceName": {
+      "post": {
+        "tags": [
+          "MatterDevice",
+          "Command"
+        ],
+        "summary": "Set the display name of a Matter device",
+        "description": "Sets the name shown for the device in the mobile app (SpacetimeDB `device_state.name`). Surrounding whitespace is trimmed; the name must be 1–100 characters. Setting the name the device already has changes nothing (`event: null`).",
+        "operationId": "post_SetMatterDeviceNameRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Matter Device ID"
+            },
+            "required": true,
+            "description": "Matter Device ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Display name of the device, e.g. \"Front door\""
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Name set (`event` is the MatterDeviceNameSet), or the device already had this name (`event: null`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MatterDeviceNameSet"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "deviceId": {
+                              "type": "string"
+                            },
+                            "thingName": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "deviceId",
+                            "thingName",
+                            "name",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name (empty or too long), or the device was never created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Matter device not found",
             "content": {
               "application/json": {
                 "schema": {

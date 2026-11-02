@@ -1,5 +1,5 @@
 {
-  "version": "51739725",
+  "version": "3d970bbf",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -3519,6 +3519,31 @@
         "messageId",
         "reason",
         "error"
+      ],
+      "additionalProperties": false
+    },
+    "MatterDeviceNameSet": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "thingName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "deviceId",
+        "thingName",
+        "name",
+        "timestamp"
       ],
       "additionalProperties": false
     },

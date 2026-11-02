@@ -163,6 +163,7 @@ The `detail-type` of each event matches the **PascalCase** event name listed bel
 | `AppPinRedriven` | App-PIN delivery was restarted from the beginning |
 | `AppPinRetired` | App-PIN delivery was dropped because the lock does not require a remote PIN |
 | `AppPinDeliveryFailed` | The bridge answered an app-PIN write without the lock carrying it out; the attempt will be retried |
+| `MatterDeviceNameSet` | The display name of a Matter device has been set |
 
 > ¹ **Not delivered to webhooks.** It can be named in a subscription, but it is never published to EventBridge — subscribe to `Shadow Update` to track device shadow state.
 

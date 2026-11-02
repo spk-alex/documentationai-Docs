@@ -2130,6 +2130,25 @@ The bridge answered an app-PIN write without the lock carrying it out; the attem
 | `reason` | `"unreachable" \| "no-ack" \| "refused"` | ναι |  |
 | `error` | `string` | ναι |  |
 
+### MatterDeviceNameSet
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `MatterDeviceNameSet` |
+| **aggregateType** | `MatterDeviceAggregate` |
+
+The display name of a Matter device has been set.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `deviceId` | `string` | ναι | Device UUID |
+| `thingName` | `string` | ναι | AWS IoT thing name |
+| `name` | `string` | ναι |  |
+| `timestamp` | `number` | ναι | ISO-8601 time of the domain event |
+
 ---
 
 ## Alarm events
