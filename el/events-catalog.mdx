@@ -2176,6 +2176,7 @@ A Matter sensor (smoke, CO, occupancy, …) reported an alarm condition.
 | `endpoint` | `number` | όχι |  |
 | `deviceTypeSource` | `"shadow" \| "sticky" \| "command" \| "shadow_borrowed" \| "shadow_disputed"` | όχι |  |
 | `rawValue` | `number` | όχι | Raw reported value that produced the alarm |
+| `alarmsEnabled` | `boolean` | όχι | Device alarm mode at the moment of this transition; false = no push was due. Absent on events recorded before AA-311, which means on. |
 | `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
 
 ### AlarmCleared
@@ -2200,7 +2201,27 @@ A previously triggered alarm condition has cleared.
 | `endpoint` | `number` | όχι |  |
 | `deviceTypeSource` | `"shadow" \| "sticky" \| "command" \| "shadow_borrowed" \| "shadow_disputed"` | όχι |  |
 | `rawValue` | `number` | όχι |  |
+| `alarmsEnabled` | `boolean` | όχι | Device alarm mode at the moment of this transition; false = no push was due. Absent on events recorded before AA-311, which means on. |
 | `timestamp` | `string` | ναι | ISO-8601 time of the domain event |
+
+### AlarmModeSet
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `AlarmModeSet` |
+| **aggregateType** | `MatterDeviceAggregate` |
+
+Alarm pushes of a Matter device were switched on or off.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `deviceId` | `string` | ναι | Device UUID — same value as the MatterDevice thingName / aggregate id |
+| `enabled` | `boolean` | ναι | The new alarm mode; false = the device sends no alarm push |
+| `changedByUserId` | `string` | όχι | The user (token caller) who changed the mode; absent when an organization API key changed it |
+| `changedByOrgId` | `string` | όχι | The API key's organization that changed the mode; absent when a user's token changed it |
 
 ---
 
