@@ -96,7 +96,7 @@ These rows describe the overall device identity and diagnostic/network-managemen
 **BootReason** — Reason for most recent boot. Example: `6`. Enum value. Common Matter meanings include `0 = Unspecified`, `1 = PowerOnReboot`, `2 = BrownOutReset`, `3 = SoftwareWatchdogReset`, `4 = HardwareWatchdogReset`, `5 = SoftwareUpdateCompleted`, `6 = SoftwareReset`. Here `6` means software-triggered reset/reboot.
 
 <Callout type="warning">
-Thread Network Diagnostics (cluster <code>53</code>) is excluded from the device state shadow by the current bridge, so the <code>0/53/*</code> rows above describe what the bridge reads from the node, not keys you will find in the shadow. See <a href="matter_cluster_53_thread_network_diagnostics">Cluster 53 — Thread Network Diagnostics</a>. Wi-Fi diagnostics (<code>0/54/*</code>) are shadowed; see <a href="matter_cluster_54_wifi_network_diagnostics">Cluster 54 — Wi-Fi Network Diagnostics</a>.
+Thread Network Diagnostics (cluster <code>53</code>) is excluded from the device state shadow by the current bridge, so the <code>0/53/&#42;</code> rows above describe what the bridge reads from the node, not keys you will find in the shadow. See <a href="matter_cluster_53_thread_network_diagnostics">Cluster 53 — Thread Network Diagnostics</a>. Wi-Fi diagnostics (<code>0/54/&#42;</code>) are shadowed; see <a href="matter_cluster_54_wifi_network_diagnostics">Cluster 54 — Wi-Fi Network Diagnostics</a>.
 </Callout>
 
 **NeighborTable** — Neighbor table entries. Example: `[{"averageRssi": -25, ...}]` or simplified as `[-25]`. Table/list value. Each entry describes a Thread neighbor. RSSI values are normally negative dBm: closer to 0 is stronger; around `-25` is very strong, `-50` is good, `-70` is weak.

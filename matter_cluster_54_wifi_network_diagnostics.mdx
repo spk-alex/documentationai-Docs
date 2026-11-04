@@ -58,7 +58,7 @@ Example from a SmartphoneKey device shadow:
 | `-58` | Signal strength in dBm |
 
 <Callout type="info">
-<strong>SmartphoneKey bridge behaviour.</strong> Unlike Thread diagnostics (cluster 53), cluster <code>54</code> <strong>is</strong> written to the device state shadow. Expect <code>0/54/*</code> keys on Wi-Fi devices only. On Thread-only devices the keys are absent; older shadow exports showed <code>nan</code> or <code>null</code> for <code>0/54/4</code> on such devices, which means "not a Wi-Fi device", not "no signal".
+<strong>SmartphoneKey bridge behaviour.</strong> Unlike Thread diagnostics (cluster 53), cluster <code>54</code> <strong>is</strong> written to the device state shadow. Expect <code>0/54/&#42;</code> keys on Wi-Fi devices only. On Thread-only devices the keys are absent; older shadow exports showed <code>nan</code> or <code>null</code> for <code>0/54/4</code> on such devices, which means "not a Wi-Fi device", not "no signal".
 </Callout>
 
 ---

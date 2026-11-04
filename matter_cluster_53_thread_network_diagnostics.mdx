@@ -58,7 +58,7 @@ Example:
 | `1` | `RoutingRole` attribute |
 
 <Callout type="warning">
-<strong>SmartphoneKey bridge behaviour.</strong> The Matter bridge deliberately excludes cluster <code>53</code> from the device <em>state</em> shadow (together with cluster <code>62</code> Operational Credentials), because the neighbor and route tables plus 60+ counters add roughly 3&nbsp;KB per device and change constantly. As a result <code>0/53/*</code> paths are <strong>not present in device shadows</strong> even though the bridge reads them from the node. Thread topology for a hub is available through the hub-side OTBR tooling (<code>ot-ctl</code>, the thread-topology viewer) and through the bridge logs, not through the shadow.
+<strong>SmartphoneKey bridge behaviour.</strong> The Matter bridge deliberately excludes cluster <code>53</code> from the device <em>state</em> shadow (together with cluster <code>62</code> Operational Credentials), because the neighbor and route tables plus 60+ counters add roughly 3&nbsp;KB per device and change constantly. As a result <code>0/53/&#42;</code> paths are <strong>not present in device shadows</strong> even though the bridge reads them from the node. Thread topology for a hub is available through the hub-side OTBR tooling (<code>ot-ctl</code>, the thread-topology viewer) and through the bridge logs, not through the shadow.
 </Callout>
 
 ---
