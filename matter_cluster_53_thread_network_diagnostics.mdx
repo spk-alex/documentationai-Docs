@@ -1,0 +1,367 @@
+---
+title: "Matter Cluster 53 — Thread Network Diagnostics"
+description: "Documentation for Matter Cluster 53 (0x0035) Thread Network Diagnostics: features, all 65 attributes, structs, enums, commands, events, and how SmartphoneKey hubs expose Thread data."
+clusterId: 53
+clusterHex: "0x0035"
+clusterName: "Thread Network Diagnostics"
+---
+
+# Matter Cluster 53 — Thread Network Diagnostics
+
+<Callout type="info">
+Matter Cluster <code>53</code>, also written as <code>0x0035</code>, is the <strong>Thread Network Diagnostics Cluster</strong>.
+It is served by every Matter node that has a Thread radio and reports how that node is attached to the Thread mesh: its role, channel, PAN, neighbors, routes, and radio counters. It is a diagnostics cluster: it does not control the device and it does not configure the Thread network.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `53` |
+| Cluster ID hex | `0x0035` |
+| Cluster name | `Thread Network Diagnostics` |
+| Cluster revision (Matter 1.6.1) | `3` |
+| Typical endpoint | `0` (root endpoint, one instance per node) |
+| Spec section | Core Specification, "Thread Network Diagnostics Cluster" |
+
+Thread Network Diagnostics is a **node-level** cluster. It lives on endpoint `0` next to Basic Information (40), General Diagnostics (51), and Network Commissioning (49). A node has exactly one Thread radio, so there is never more than one instance.
+
+Related clusters:
+
+| Cluster | Role |
+|---|---|
+| 49 Network Commissioning | Adds the Thread operational dataset to the node during commissioning (`AddOrUpdateThreadNetwork`). |
+| 51 General Diagnostics | Lists the Thread interface in `NetworkInterfaces` with its IPv6 addresses and `InterfaceType` = Thread. |
+| 1106 Thread Border Router Management | Served by a **border router** (hub), exposes the active/pending dataset it is running. |
+| 1107 Thread Network Directory | Served by a hub, lists the Thread networks it knows about. |
+
+---
+
+## Shadow Path Format
+
+Attribute paths follow the usual format:
+
+```text
+endpoint / 53 / attribute
+```
+
+Example:
+
+```text
+0/53/1
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Root endpoint |
+| `53` | Thread Network Diagnostics cluster |
+| `1` | `RoutingRole` attribute |
+
+<Callout type="warning">
+<strong>SmartphoneKey bridge behaviour.</strong> The Matter bridge deliberately excludes cluster <code>53</code> from the device <em>state</em> shadow (together with cluster <code>62</code> Operational Credentials), because the neighbor and route tables plus 60+ counters add roughly 3&nbsp;KB per device and change constantly. As a result <code>0/53/*</code> paths are <strong>not present in device shadows</strong> even though the bridge reads them from the node. Thread topology for a hub is available through the hub-side OTBR tooling (<code>ot-ctl</code>, the thread-topology viewer) and through the bridge logs, not through the shadow.
+</Callout>
+
+---
+
+## Features (`FeatureMap`, attribute `65532`)
+
+The feature map tells you which optional counter groups the node implements.
+
+| Bit | Code | Feature | Attributes it unlocks |
+|---:|---|---|---|
+| 0 | `PKTCNT` | PacketCounts | Rx/Tx packet counts (`22`–`55`, packet-oriented subset) |
+| 1 | `ERRCNT` | ErrorCounts | `OverrunCount` (`6`) and the error counters |
+| 2 | `MLECNT` | MLECounts | Mesh Link Establishment role/attach counters `14`–`21` |
+| 3 | `MACCNT` | MACCounts | MAC layer Tx/Rx counters `22`–`55` |
+
+A `FeatureMap` of `0` is valid: the node then serves only the mandatory topology attributes (`0`–`13`, `59`–`64`). Battery-powered sleepy end devices commonly report `0` or only `MLECNT`.
+
+---
+
+## Attributes
+
+All attributes are read-only. "Nullable" means the node returns `null` when it is not attached to a Thread network (role `Unassigned`/`Unspecified`). Conformance is from the 1.6.1 data model: **M** mandatory, **O** optional, or the feature that makes it mandatory.
+
+### Network identity and topology (`0`–`13`)
+
+| ID | Attribute | Type | Conf. | Nullable | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Channel` | uint16 | M | yes | IEEE 802.15.4 channel in use (`11`–`26` for 2.4 GHz). |
+| 1 | `RoutingRole` | `RoutingRoleEnum` | M | yes | Current MLE role of the node. See the enum below. |
+| 2 | `NetworkName` | string (≤16) | M | yes | Human-readable Thread network name, for example `OpenThread-952e`. |
+| 3 | `PanId` | uint16 | M | yes | 16-bit PAN ID of the Thread network. |
+| 4 | `ExtendedPanId` | uint64 | M | yes | 64-bit Extended PAN ID (XPAN). Unique per Thread network; use it to confirm a device joined the expected mesh. |
+| 5 | `MeshLocalPrefix` | ipv6pre | M | yes | Mesh-local IPv6 prefix (`fdxx::/64`) of the network. |
+| 6 | `OverrunCount` | uint64 | ERRCNT | no | Packets dropped because of buffer overrun since boot or last `ResetCounts`. |
+| 7 | `NeighborTable` | list of `NeighborTableStruct` | M | no | Every neighbor the node has a direct MLE link with. Empty list when detached. |
+| 8 | `RouteTable` | list of `RouteTableStruct` | M | no | Router table: for a router/leader, one entry per allocated router ID. End devices usually report their parent only or an empty list. |
+| 9 | `PartitionId` | uint32 | M | yes | ID of the Thread partition the node belongs to. All nodes of a healthy mesh share one partition ID; different values mean the mesh is split. |
+| 10 | `Weighting` | uint16 | M | yes | Leader weighting (0–255) used in partition election. |
+| 11 | `DataVersion` | uint16 | M | yes | Version of the full Thread Network Data. |
+| 12 | `StableDataVersion` | uint16 | M | yes | Version of the stable subset of Network Data. |
+| 13 | `LeaderRouterId` | uint8 | M | yes | Router ID (0–62) of the current leader. |
+
+### MLE role and attach counters (`14`–`21`, feature `MLECNT`)
+
+| ID | Attribute | Type | Meaning |
+|---:|---|---|---|
+| 14 | `DetachedRoleCount` | uint16 | Times the node transitioned into the detached role. |
+| 15 | `ChildRoleCount` | uint16 | Times the node transitioned into the child role. |
+| 16 | `RouterRoleCount` | uint16 | Times the node transitioned into the router role. |
+| 17 | `LeaderRoleCount` | uint16 | Times the node transitioned into the leader role. |
+| 18 | `AttachAttemptCount` | uint16 | Attach attempts started. A rising value with no role change means the device keeps trying and failing to join. |
+| 19 | `PartitionIdChangeCount` | uint16 | Times the partition ID changed (mesh merged or split). |
+| 20 | `BetterPartitionAttachAttemptCount` | uint16 | Attempts to attach to a better partition. |
+| 21 | `ParentChangeCount` | uint16 | Times an end device switched parent. High values indicate poor link to the parent or an unstable mesh. |
+
+### MAC transmit counters (`22`–`38`, feature `MACCNT`)
+
+| ID | Attribute | Meaning |
+|---:|---|---|
+| 22 | `TxTotalCount` | Total MAC frames transmitted. |
+| 23 | `TxUnicastCount` | Unicast frames transmitted. |
+| 24 | `TxBroadcastCount` | Broadcast frames transmitted. |
+| 25 | `TxAckRequestedCount` | Frames sent with ACK requested. |
+| 26 | `TxAckedCount` | Frames that were acknowledged. |
+| 27 | `TxNoAckRequestedCount` | Frames sent without ACK request. |
+| 28 | `TxDataCount` | Data frames transmitted. |
+| 29 | `TxDataPollCount` | Data-poll frames transmitted (sleepy end devices polling their parent). |
+| 30 | `TxBeaconCount` | Beacons transmitted. |
+| 31 | `TxBeaconRequestCount` | Beacon requests transmitted. |
+| 32 | `TxOtherCount` | Other frames transmitted. |
+| 33 | `TxRetryCount` | MAC retries. |
+| 34 | `TxDirectMaxRetryExpiryCount` | Direct frames dropped after max retries. |
+| 35 | `TxIndirectMaxRetryExpiryCount` | Indirect (to sleepy child) frames dropped after max retries. |
+| 36 | `TxErrCcaCount` | Transmissions aborted because the channel was busy (CCA failure). |
+| 37 | `TxErrAbortCount` | Transmissions aborted for other reasons. |
+| 38 | `TxErrBusyChannelCount` | Transmissions failed due to a busy channel. |
+
+All transmit counters are `uint32`.
+
+### MAC receive counters (`39`–`55`, feature `MACCNT`)
+
+| ID | Attribute | Meaning |
+|---:|---|---|
+| 39 | `RxTotalCount` | Total MAC frames received. |
+| 40 | `RxUnicastCount` | Unicast frames received. |
+| 41 | `RxBroadcastCount` | Broadcast frames received. |
+| 42 | `RxDataCount` | Data frames received. |
+| 43 | `RxDataPollCount` | Data-poll frames received (a parent counting polls from its sleepy children). |
+| 44 | `RxBeaconCount` | Beacons received. |
+| 45 | `RxBeaconRequestCount` | Beacon requests received. |
+| 46 | `RxOtherCount` | Other frames received. |
+| 47 | `RxAddressFilteredCount` | Frames dropped by address filtering. |
+| 48 | `RxDestAddrFilteredCount` | Frames dropped because the destination address did not match. |
+| 49 | `RxDuplicatedCount` | Duplicate frames received. |
+| 50 | `RxErrNoFrameCount` | Receive errors: no frame. |
+| 51 | `RxErrUnknownNeighborCount` | Frames from unknown neighbors. |
+| 52 | `RxErrInvalidSrcAddrCount` | Frames with invalid source address. |
+| 53 | `RxErrSecCount` | Frames failing security (MIC/key) checks. A rising value usually means a device with stale network keys. |
+| 54 | `RxErrFcsCount` | Frames with bad FCS (checksum): RF noise or weak link. |
+| 55 | `RxErrOtherCount` | Other receive errors. |
+
+All receive counters are `uint32`.
+
+### Operational dataset information (`56`–`61`)
+
+| ID | Attribute | Type | Conf. | Nullable | Meaning |
+|---:|---|---|---|---|---|
+| 56 | `ActiveTimestamp` | uint64 | O | yes | Timestamp of the active operational dataset. |
+| 57 | `PendingTimestamp` | uint64 | O | yes | Timestamp of the pending dataset, if one is scheduled. |
+| 58 | `Delay` | uint32 | O | yes | Delay timer (ms) before the pending dataset becomes active. |
+| 59 | `SecurityPolicy` | `SecurityPolicy` | M | yes | Key rotation time and security flags. |
+| 60 | `ChannelPage0Mask` | octstr (4 bytes) | M | yes | Bitmask of channels allowed on channel page 0. |
+| 61 | `OperationalDatasetComponents` | `OperationalDatasetComponents` | M | yes | Which dataset components are present on the node (booleans). The dataset values themselves are never exposed here. |
+
+### Faults and addressing (`62`–`64`)
+
+| ID | Attribute | Type | Conf. | Nullable | Meaning |
+|---:|---|---|---|---|---|
+| 62 | `ActiveNetworkFaultsList` | list of `NetworkFaultEnum` | M | no | Currently active Thread network faults. Empty list = healthy. |
+| 63 | `ExtAddress` | uint64 | M | yes | IEEE 802.15.4 extended (MAC) address of this node. Matches `ExtAddress` in other nodes' neighbor tables. |
+| 64 | `Rloc16` | uint16 | M | yes | Routing Locator. Upper 6 bits = router ID, lower 10 bits = child ID (`0` for routers). |
+
+### Global attributes
+
+| ID | Attribute |
+|---:|---|
+| 65528 | `GeneratedCommandList` (always empty) |
+| 65529 | `AcceptedCommandList` (`[0]` when `ResetCounts` is supported) |
+| 65531 | `AttributeList` |
+| 65532 | `FeatureMap` |
+| 65533 | `ClusterRevision` (`3` for Matter 1.5/1.6.1 devices, `1`–`2` for older firmware) |
+
+---
+
+## Data Types
+
+### `RoutingRoleEnum` (attribute `1`)
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | Role unknown / not reported. |
+| 1 | `Unassigned` | Not attached to any Thread network (detached or disabled). |
+| 2 | `SleepyEndDevice` | Sleepy end device (SED/SSED): radio off between polls. Battery sensors and locks. |
+| 3 | `EndDevice` | Minimal end device with radio always on; does not route. |
+| 4 | `REED` | Router-Eligible End Device: an end device that can be promoted to router. |
+| 5 | `Router` | Router: forwards traffic and accepts children. Mains-powered devices. |
+| 6 | `Leader` | Router that also manages router-ID assignment and Network Data. One per partition. |
+
+For an end device the business-relevant distinction is `2`/`3` (attached) versus `1` (detached). Role changes between `4`, `5` and `6` are normal mesh self-organisation and need no action.
+
+### `NetworkFaultEnum` (attribute `62`, event `1`)
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | Unspecified fault. |
+| 1 | `LinkDown` | Thread link is down. |
+| 2 | `HardwareFailure` | Radio hardware failure. |
+| 3 | `NetworkJammed` | Channel is jammed. |
+
+### `ConnectionStatusEnum` (event `0`)
+
+| Value | Name |
+|---:|---|
+| 0 | `Connected` |
+| 1 | `NotConnected` |
+
+### `NeighborTableStruct` (attribute `7`)
+
+| Field | Name | Type | Meaning |
+|---:|---|---|---|
+| 0 | `ExtAddress` | uint64 | Extended address of the neighbor. |
+| 1 | `Age` | uint32 | Seconds since the last frame from this neighbor. |
+| 2 | `Rloc16` | uint16 | Neighbor's routing locator. |
+| 3 | `LinkFrameCounter` | uint32 | Last received MAC frame counter. |
+| 4 | `MleFrameCounter` | uint32 | Last received MLE frame counter. |
+| 5 | `LQI` | uint8 | Link Quality Indicator 0–255 (higher is better). |
+| 6 | `AverageRssi` | int8 | Average RSSI in dBm (nullable). |
+| 7 | `LastRssi` | int8 | RSSI of the last frame in dBm (nullable). |
+| 8 | `FrameErrorRate` | uint8 | Frame error rate 0–100 %. |
+| 9 | `MessageErrorRate` | uint8 | Message (IPv6) error rate 0–100 %. |
+| 10 | `RxOnWhenIdle` | bool | `false` = sleepy device. |
+| 11 | `FullThreadDevice` | bool | `true` = router-capable (FTD), `false` = minimal (MTD). |
+| 12 | `FullNetworkData` | bool | Neighbor requests full Network Data. |
+| 13 | `IsChild` | bool | `true` = this neighbor is a child of the reporting node. |
+
+### `RouteTableStruct` (attribute `8`)
+
+| Field | Name | Type | Meaning |
+|---:|---|---|---|
+| 0 | `ExtAddress` | uint64 | Extended address of the router. |
+| 1 | `Rloc16` | uint16 | Router's RLOC16. |
+| 2 | `RouterId` | uint8 | Router ID 0–62. |
+| 3 | `NextHop` | uint8 | Router ID of the next hop toward this router. |
+| 4 | `PathCost` | uint8 | Path cost to this router (lower is better). |
+| 5 | `LQIIn` | uint8 | Incoming link quality 0–3. |
+| 6 | `LQIOut` | uint8 | Outgoing link quality 0–3. |
+| 7 | `Age` | uint8 | Seconds since last update. |
+| 8 | `Allocated` | bool | Router ID is allocated. |
+| 9 | `LinkEstablished` | bool | A direct link to this router exists. |
+
+### `SecurityPolicy` (attribute `59`)
+
+| Field | Name | Type | Meaning |
+|---:|---|---|---|
+| 0 | `RotationTime` | uint16 | Network key rotation interval in hours. |
+| 1 | `Flags` | uint16 | Security policy flag bits (native commissioning, external commissioning, ...). |
+
+### `OperationalDatasetComponents` (attribute `61`)
+
+Twelve booleans, in field order: `ActiveTimestampPresent`, `PendingTimestampPresent`, `MasterKeyPresent`, `NetworkNamePresent`, `ExtendedPanIdPresent`, `MeshLocalPrefixPresent`, `DelayPresent`, `PanIdPresent`, `ChannelPresent`, `PskcPresent`, `SecurityPolicyPresent`, `ChannelMaskPresent`.
+
+---
+
+## Commands
+
+| ID | Command | Direction | Conformance | Effect |
+|---:|---|---|---|---|
+| 0 | `ResetCounts` | client → server | mandatory if `ERRCNT` | Resets `OverrunCount` and all Tx/Rx/MLE counters to `0`. No response payload (status only). |
+
+Use `ResetCounts` before a measurement window so counter deltas are meaningful. It does not affect topology attributes or the neighbor table.
+
+---
+
+## Events
+
+| ID | Event | Priority | Fields | When |
+|---:|---|---|---|---|
+| 0 | `ConnectionStatus` | info | `ConnectionStatus` (`ConnectionStatusEnum`) | The node attached to or detached from the Thread network. |
+| 1 | `NetworkFaultChange` | info | `Current` (list), `Previous` (list) of `NetworkFaultEnum` | The set of active network faults changed. |
+
+Both events are optional for the device. Most consumer devices implement neither; rely on the hub's own presence tracking for availability.
+
+---
+
+## Interpreting the Values
+
+### Signal quality
+
+| Metric | Where | Good | Marginal | Bad |
+|---|---|---|---|---|
+| `AverageRssi` / `LastRssi` (dBm) | NeighborTable | `-25` … `-60` | `-60` … `-75` | below `-80` |
+| `LQI` (0–255) | NeighborTable | above `200` | `100`–`200` | below `100` |
+| `LQIIn` / `LQIOut` (0–3) | RouteTable | `3` | `2` | `0`–`1` |
+| `FrameErrorRate` (%) | NeighborTable | under `5` | `5`–`20` | over `20` |
+
+RSSI is negative dBm: closer to `0` is stronger. A sleepy end device seen at `-85 dBm` with a frame error rate above 20 % will show delayed commands, missed reports, and eventually `ParentChangeCount` climbing.
+
+### Typical health checks
+
+| Symptom | Attribute(s) to look at |
+|---|---|
+| Device "offline" but powered | `RoutingRole` = `1` Unassigned, `AttachAttemptCount` rising → cannot join; check dataset / network key (`RxErrSecCount` on neighbours). |
+| Intermittent control | Parent entry in `NeighborTable` with low RSSI/LQI or high `FrameErrorRate`; `ParentChangeCount` rising. |
+| Two meshes with the same name | Different `PartitionId` / `ExtendedPanId` across devices. |
+| Channel interference | `TxErrCcaCount`, `TxErrBusyChannelCount`, `RxErrFcsCount` rising on the hub. |
+| Leader flapping | `LeaderRouterId` changing, `LeaderRoleCount` / `PartitionIdChangeCount` rising. |
+
+---
+
+## Example (raw bridge read, not shadow)
+
+What the bridge reads from a mains-powered Thread device (Leader role) on a SmartphoneKey hub. Only a few attributes are shown.
+
+```json
+{
+  "0/53/0": 15,
+  "0/53/1": 6,
+  "0/53/2": "OpenThread-952e",
+  "0/53/3": 38190,
+  "0/53/4": 2524946908688426300,
+  "0/53/7": [
+    {
+      "extAddress": 5262349371253485000,
+      "age": 2,
+      "rloc16": 5120,
+      "lqi": 255,
+      "averageRssi": -25,
+      "lastRssi": -24,
+      "frameErrorRate": 0,
+      "messageErrorRate": 0,
+      "rxOnWhenIdle": true,
+      "fullThreadDevice": true,
+      "fullNetworkData": true,
+      "isChild": false
+    }
+  ],
+  "0/53/9": 1193046127,
+  "0/53/13": 48,
+  "0/53/62": [],
+  "0/53/64": 49152,
+  "0/53/65532": 15,
+  "0/53/65533": 3
+}
+```
+
+Reading: channel 15, role Leader, one router neighbor at `-25 dBm` with perfect LQI, no faults, all four counter features present (`FeatureMap` = `15` = `0b1111`), cluster revision 3.
+
+---
+
+## SmartphoneKey Notes
+
+- **Not in shadows.** `0/53/*` is filtered out of the device state shadow by the bridge (`STATE_EXCLUDED_CLUSTERS`). Do not build backend logic on these paths; they will be absent.
+- **Device availability** comes from the hub's presence pipeline, not from `RoutingRole` or `ConnectionStatus`.
+- **Hub-side Thread view.** On the hub the same information (and more: full topology, child tables, network data) is available through `ot-ctl` on the OTBR and the thread-topology viewer, which read the border router directly instead of polling each device over Matter.
+- **Sleepy devices (locks, sensors).** Reading cluster 53 on a sleepy end device wakes it only on its next poll; expect latency of seconds to minutes and keep diagnostic reads rare. The counters on such devices are usually absent (`FeatureMap` = `0`).
+- **Revision.** Devices certified against Matter 1.2–1.4 report `ClusterRevision` `1` or `2` and may lack attributes `63`/`64` (`ExtAddress`, `Rloc16`); treat missing attributes as unsupported, not as an error.

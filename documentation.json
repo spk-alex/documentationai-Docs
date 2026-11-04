@@ -56,8 +56,8 @@
                 "icon": "cpu",
                 "pages": [
                   {
-                    "title": "Matter 1.5 Cluster Descriptions",
-                    "path": "matter_1_5_clusters_decimal_descriptions",
+                    "title": "Matter 1.6.1 Cluster Descriptions",
+                    "path": "matter_1_6_1_clusters_decimal_descriptions",
                     "icon": "list"
                   },
                   {
@@ -79,6 +79,16 @@
                     "title": "Cluster 8 — Level Control",
                     "path": "matter_cluster_8_level_control",
                     "icon": "sliders"
+                  },
+                  {
+                    "title": "Cluster 53 — Thread Network Diagnostics",
+                    "path": "matter_cluster_53_thread_network_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "Cluster 54 — Wi-Fi Network Diagnostics",
+                    "path": "matter_cluster_54_wifi_network_diagnostics",
+                    "icon": "wifi"
                   }
                 ]
               }
@@ -169,8 +179,8 @@
                 "icon": "cpu",
                 "pages": [
                   {
-                    "title": "Matter 1.5 Cluster Descriptions",
-                    "path": "matter_1_5_clusters_decimal_descriptions",
+                    "title": "Matter 1.6.1 Cluster Descriptions",
+                    "path": "matter_1_6_1_clusters_decimal_descriptions",
                     "icon": "list"
                   },
                   {
@@ -192,6 +202,16 @@
                     "title": "Cluster 8 — Level Control",
                     "path": "matter_cluster_8_level_control",
                     "icon": "sliders"
+                  },
+                  {
+                    "title": "Cluster 53 — Thread Network Diagnostics",
+                    "path": "matter_cluster_53_thread_network_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "Cluster 54 — Wi-Fi Network Diagnostics",
+                    "path": "matter_cluster_54_wifi_network_diagnostics",
+                    "icon": "wifi"
                   }
                 ]
               }

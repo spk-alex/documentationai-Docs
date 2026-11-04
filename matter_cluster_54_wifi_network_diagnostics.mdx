@@ -1,0 +1,233 @@
+---
+title: "Matter Cluster 54 — Wi-Fi Network Diagnostics"
+description: "Documentation for Matter Cluster 54 (0x0036) Wi-Fi Network Diagnostics: features, all 13 attributes, enums, commands, events, RSSI interpretation, and how SmartphoneKey shadows expose Wi-Fi data."
+clusterId: 54
+clusterHex: "0x0036"
+clusterName: "Wi-Fi Network Diagnostics"
+---
+
+# Matter Cluster 54 — Wi-Fi Network Diagnostics
+
+<Callout type="info">
+Matter Cluster <code>54</code>, also written as <code>0x0036</code>, is the <strong>Wi-Fi Network Diagnostics Cluster</strong>.
+It is served by every Matter node that connects over Wi-Fi and reports the state of that link: access point BSSID, security type, Wi-Fi generation, channel, RSSI and traffic counters. It is diagnostics only: it does not configure Wi-Fi (that is cluster 49 Network Commissioning) and it does not represent device availability.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `54` |
+| Cluster ID hex | `0x0036` |
+| Cluster name | `Wi-Fi Network Diagnostics` |
+| Cluster revision (Matter 1.6.1) | `1` (unchanged since Matter 1.0) |
+| Typical endpoint | `0` (root endpoint, one instance per node) |
+| Spec section | Core Specification, "Wi-Fi Network Diagnostics Cluster" |
+
+Wi-Fi Network Diagnostics is a **node-level** cluster on endpoint `0`. Thread devices do not serve it; Wi-Fi devices (for example Wi-Fi locks, plugs, cameras, Wi-Fi bridges such as a Zigbee gateway) do. A node that has both radios may serve both cluster 53 and cluster 54.
+
+Related clusters:
+
+| Cluster | Role |
+|---|---|
+| 49 Network Commissioning | Stores the SSID/credentials and connects the node to Wi-Fi (`AddOrUpdateWiFiNetwork`, `ConnectNetwork`); `SupportedWiFiBands` (attr `8`) says which bands the radio supports. |
+| 51 General Diagnostics | Lists the Wi-Fi interface in `NetworkInterfaces` with its MAC and IP addresses and `InterfaceType` = Wi-Fi. |
+| 1105 Wi-Fi Network Management | Served by a Wi-Fi **router/hub** device, not by clients. |
+
+---
+
+## Shadow Path Format
+
+```text
+endpoint / 54 / attribute
+```
+
+Example from a SmartphoneKey device shadow:
+
+```json
+{
+  "0/54/4": -58
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Root endpoint |
+| `54` | Wi-Fi Network Diagnostics cluster |
+| `4` | `RSSI` attribute |
+| `-58` | Signal strength in dBm |
+
+<Callout type="info">
+<strong>SmartphoneKey bridge behaviour.</strong> Unlike Thread diagnostics (cluster 53), cluster <code>54</code> <strong>is</strong> written to the device state shadow. Expect <code>0/54/*</code> keys on Wi-Fi devices only. On Thread-only devices the keys are absent; older shadow exports showed <code>nan</code> or <code>null</code> for <code>0/54/4</code> on such devices, which means "not a Wi-Fi device", not "no signal".
+</Callout>
+
+---
+
+## Features (`FeatureMap`, attribute `65532`)
+
+| Bit | Code | Feature | Attributes it unlocks |
+|---:|---|---|---|
+| 0 | `PKTCNT` | PacketCounts | `6`–`10` beacon and packet counters |
+| 1 | `ERRCNT` | ErrorCounts | `5` `BeaconLostCount`, `12` `OverrunCount`, command `ResetCounts` |
+
+A `FeatureMap` of `0` means only attributes `0`–`4` (and optionally `11`) are available. This is common on consumer devices.
+
+---
+
+## Attributes
+
+All attributes are read-only and all are **nullable**: a node returns `null` when it is not associated with an access point. Conformance from the 1.6.1 data model: **M** mandatory, **O** optional, or the feature that makes it mandatory.
+
+| ID | Attribute | Type | Conf. | Meaning |
+|---:|---|---|---|---|
+| 0 | `BSSID` | octstr (6 bytes) | M | MAC address of the access point the node is associated with. Changes when the device roams between APs or mesh nodes. |
+| 1 | `SecurityType` | `SecurityTypeEnum` | M | Security of the current association (WPA2, WPA3, ...). |
+| 2 | `WiFiVersion` | `WiFiVersionEnum` | M | Highest 802.11 PHY generation negotiated with the AP. |
+| 3 | `ChannelNumber` | uint16 | M | Wi-Fi channel in use. `1`–`14` = 2.4 GHz, `36`–`177` = 5 GHz, higher = 6 GHz. |
+| 4 | `RSSI` | int8 | M | Received signal strength of the AP in dBm, typically `-30` … `-90`. |
+| 5 | `BeaconLostCount` | uint32 | ERRCNT | Beacons expected but not received. A rising value means the AP is intermittently unreachable. |
+| 6 | `BeaconRxCount` | uint32 | PKTCNT | Beacons received. |
+| 7 | `PacketMulticastRxCount` | uint32 | PKTCNT | Multicast packets received. |
+| 8 | `PacketMulticastTxCount` | uint32 | PKTCNT | Multicast packets transmitted. |
+| 9 | `PacketUnicastRxCount` | uint32 | PKTCNT | Unicast packets received. |
+| 10 | `PacketUnicastTxCount` | uint32 | PKTCNT | Unicast packets transmitted. |
+| 11 | `CurrentMaxRate` | uint64 | O | Current maximum PHY rate in bits per second (for example `72200000` = 72.2 Mbit/s). |
+| 12 | `OverrunCount` | uint64 | ERRCNT | Packets dropped because of buffer overrun since boot or last `ResetCounts`. |
+
+Counters (`5`–`10`, `12`) reset on reboot and on `ResetCounts`; compare deltas, not absolute values.
+
+### Global attributes
+
+| ID | Attribute |
+|---:|---|
+| 65528 | `GeneratedCommandList` (always empty) |
+| 65529 | `AcceptedCommandList` (`[0]` when `ERRCNT` is supported) |
+| 65531 | `AttributeList` |
+| 65532 | `FeatureMap` |
+| 65533 | `ClusterRevision` (`1`) |
+
+---
+
+## Data Types
+
+### `SecurityTypeEnum` (attribute `1`)
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | Unknown. |
+| 1 | `None` | Open network, no encryption. |
+| 2 | `WEP` | Legacy WEP (insecure). |
+| 3 | `WPA` | WPA (TKIP). |
+| 4 | `WPA2` | WPA2-PSK, the common case. |
+| 5 | `WPA3` | WPA3-SAE. |
+
+### `WiFiVersionEnum` (attribute `2`)
+
+| Value | Name | Standard |
+|---:|---|---|
+| 0 | `a` | 802.11a (5 GHz, legacy) |
+| 1 | `b` | 802.11b |
+| 2 | `g` | 802.11g |
+| 3 | `n` | 802.11n, Wi-Fi 4 |
+| 4 | `ac` | 802.11ac, Wi-Fi 5 |
+| 5 | `ax` | 802.11ax, Wi-Fi 6 / 6E |
+| 6 | `ah` | 802.11ah, Wi-Fi HaLow (sub-GHz) |
+
+Most Matter IoT devices use 2.4 GHz-only radios and report `3` (`n`).
+
+### `AssociationFailureCauseEnum` (event `1`)
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unknown` | Unspecified. |
+| 1 | `AssociationFailed` | AP rejected the association. |
+| 2 | `AuthenticationFailed` | Wrong passphrase or incompatible security. |
+| 3 | `SsidNotFound` | SSID not seen in scan (wrong band, AP down, out of range). |
+
+### `ConnectionStatusEnum` (event `2`)
+
+| Value | Name |
+|---:|---|
+| 0 | `Connected` |
+| 1 | `NotConnected` |
+
+---
+
+## Commands
+
+| ID | Command | Direction | Conformance | Effect |
+|---:|---|---|---|---|
+| 0 | `ResetCounts` | client → server | mandatory if `ERRCNT` | Resets `BeaconLostCount`, `OverrunCount` and (if present) the packet counters to `0`. Status-only response. |
+
+---
+
+## Events
+
+| ID | Event | Priority | Fields | When |
+|---:|---|---|---|---|
+| 0 | `Disconnection` | info | `ReasonCode` (uint16) | The node lost its association. `ReasonCode` is the IEEE 802.11 reason code (for example `1` unspecified, `3` station leaving, `4` inactivity, `15` 4-way handshake timeout). |
+| 1 | `AssociationFailure` | info | `AssociationFailureCause` (enum), `Status` (uint16, 802.11 status code) | An attempt to associate failed. |
+| 2 | `ConnectionStatus` | info | `ConnectionStatus` (enum) | Association state changed. |
+
+All three events are optional. Because a disconnected Wi-Fi node cannot deliver events, `Disconnection` is usually only seen after the device reconnects and flushes its event log.
+
+---
+
+## Interpreting RSSI
+
+| RSSI (dBm) | Quality | Expectation |
+|---|---|---|
+| `-30` … `-50` | Excellent | Device next to the AP. |
+| `-50` … `-65` | Good | Normal operation. |
+| `-65` … `-75` | Fair | Works, occasional retries; mesh/extender roaming likely. |
+| `-75` … `-85` | Weak | Delayed commands, missed reports, reconnects. |
+| below `-85` | Unusable | Expect the device to drop off. |
+
+RSSI is a single sample at read time and fluctuates by ±5 dBm. Average several reads before deciding a device has a placement problem. A good RSSI with a rising `BeaconLostCount` points at the AP (overloaded, band-steering, DFS channel change) rather than at distance.
+
+### Typical health checks
+
+| Symptom | Attribute(s) to look at |
+|---|---|
+| Device drops offline periodically | `RSSI` below `-75`, `BeaconLostCount` rising, `Disconnection` events with reason `4` (inactivity). |
+| Device fails to join after Wi-Fi change | `AssociationFailure` with `AuthenticationFailed` (wrong passphrase) or `SsidNotFound` (5 GHz-only SSID, hidden SSID). Fix via cluster 49, not here. |
+| Slow responses but good RSSI | `CurrentMaxRate` very low, `ChannelNumber` on a crowded channel, `OverrunCount` rising. |
+| Device switched AP | `BSSID` changed; confirm the new AP's RSSI. |
+
+---
+
+## Example
+
+Raw read of a Wi-Fi device (Zigbee gateway bridge) as seen by the bridge, and the resulting shadow keys:
+
+```json
+{
+  "0/54/0": "a4:91:b1:3c:7e:10",
+  "0/54/1": 4,
+  "0/54/2": 3,
+  "0/54/3": 6,
+  "0/54/4": -58,
+  "0/54/5": 12,
+  "0/54/6": 48213,
+  "0/54/9": 15331,
+  "0/54/10": 9870,
+  "0/54/11": 72200000,
+  "0/54/12": 0,
+  "0/54/65532": 3,
+  "0/54/65533": 1
+}
+```
+
+Reading: associated with AP `a4:91:b1:3c:7e:10` using WPA2 on 802.11n, channel 6 (2.4 GHz), `-58 dBm` (good), 12 beacons lost out of ~48k (healthy), PHY rate 72.2 Mbit/s, both counter features present.
+
+The bridge may render `BSSID` as a hex/base64 string depending on firmware; treat it as an opaque identifier and compare for equality only.
+
+---
+
+## SmartphoneKey Notes
+
+- **Present in shadows** for Wi-Fi devices as `0/54/*`. The most useful key for support is `0/54/4` (`RSSI`); the others are rarely needed outside troubleshooting.
+- **Not an availability signal.** A device that goes offline simply stops updating; `RSSI` in the shadow then goes stale. Use the presence pipeline for online/offline.
+- **Wi-Fi-connected Matter devices on SmartphoneKey hubs** (for example Yale Linus L2 Wi-Fi, Tuya/Zigbee gateways) are reached over the LAN, so their Wi-Fi quality affects every Matter interaction. `RSSI` below `-75` on such a device explains flapping better than anything in the hub's Thread diagnostics.
+- **Hub Wi-Fi vs device Wi-Fi.** This cluster describes the *device's* link to its AP. The hub's own uplink is not a Matter node and is monitored separately (hub telemetry, `nmcli` on the hub).
+- **Thread-only devices** never expose cluster 54. A missing `0/54/4` is expected; do not interpret it as a fault.

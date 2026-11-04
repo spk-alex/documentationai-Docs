@@ -1,0 +1,249 @@
+---
+title: "Matter 1.6.1 Cluster Descriptions"
+description: "Every standard Matter 1.6.1 application cluster with its decimal and hex ID, cluster revision, and a plain-English description, for reading device-shadow paths."
+---
+
+# Matter 1.6.1 Clusters — Decimal IDs and Descriptions
+
+This page lists every standard cluster in the **Matter 1.6.1** Application Cluster Specification using the decimal cluster ID format used in SmartphoneKey backend paths and device shadows.
+
+Source: the CSA 1.6.1 data model as published in `project-chip/connectedhomeip` (`data_model/1.6.1/clusters`). Matter 1.6.1 is a maintenance release of 1.6; it adds no new device types.
+
+## Reading a shadow path
+
+For a Matter shadow path like:
+
+```text
+1/257/0
+```
+
+read it as:
+
+```text
+endpoint_id / cluster_id_decimal / attribute_id_decimal
+```
+
+So `1/257/0` means **Endpoint 1 / Door Lock cluster (257) / attribute 0 (`LockState`)**.
+
+<Callout type="info">
+Cluster IDs below <code>0x8000</code> (decimal 32768) are standard CSA clusters. IDs of the form <code>0xVVVVFCxx</code> (decimal above 4&nbsp;billion, for example <code>308084743</code>) are vendor-specific clusters and are not covered here.
+</Callout>
+
+## Changes since Matter 1.5
+
+| Change | Clusters |
+|---|---|
+| New clusters | 100 Temperature Alarm, 101 Groupcast, 1073 Ambient Context Sensing |
+| Revision bumps | 8 Level Control (6→7), 31 Access Control (2→3), 40 Basic Information (5→6), 51 General Diagnostics (2→3), 57 Bridged Device Basic Information (5→6), 63 Group Key Management (2→4), 69 Boolean State (1→3), 92 Smoke CO Alarm (1→2), 128 Boolean State Configuration (1→2), 257 Door Lock (9→10), 258 Window Covering (7→8), 512 Pump (4→5), 513 Thermostat (9→11), 514 Fan Control (5→6), 768 Color Control (8→9), 1024/1026/1027/1028 measurement clusters (+2 each), 1030 Occupancy Sensing (5→7), 1361 Camera AV Stream Management (1→2), 1363/1364 WebRTC (1→2), 1365 Push AV Stream Transport (1→2), 1366 Chime (1→2) |
+| Removed clusters | none |
+| Thread / Wi-Fi diagnostics | unchanged: 53 Thread Network Diagnostics stays revision 3, 54 Wi-Fi Network Diagnostics stays revision 1 |
+
+<Callout type="warning">
+The previous version of this page (Matter 1.5) contained incorrect decimal IDs for several clusters (energy, media, camera, metering, closure and concentration clusters, among others). All IDs below are taken directly from the specification data model. If you built logic on the old table, re-check the IDs you use.
+</Callout>
+
+## How the table is organised
+
+- **Decimal / Hex**: the cluster ID as it appears in shadow paths and as it appears in the specification.
+- **Rev**: the cluster revision in Matter 1.6.1 (the value a 1.6.1-compliant device reports in attribute `65533` `ClusterRevision`). Older devices report lower revisions; that is normal.
+- **New** marks clusters that did not exist in Matter 1.5.
+
+## General and node management
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 3 | `0x0003` | Identify | 6 | Lets a device or endpoint identify itself visually or audibly (blink, beep) for pairing, setup, or troubleshooting. |
+| 4 | `0x0004` | Groups | 4 | Manages group membership so one multicast command can control multiple endpoints together. |
+| 29 | `0x001D` | Descriptor | 3 | Describes an endpoint: device types, server/client clusters, parts list, and endpoint composition (tag list). |
+| 30 | `0x001E` | Binding | 1 | Local bindings between endpoints so one device can send commands directly to another without a controller. |
+| 31 | `0x001F` | Access Control | 3 | Access Control List: which fabrics, nodes, CATs, or groups hold which privileges. Revision 3 adds auxiliary ACL support. |
+| 37 | `0x0025` | Actions | 1 | Predefined actions and action lists (scenes-like automations) that can be triggered on a device. |
+| 40 | `0x0028` | Basic Information | 6 | Core node information: vendor, product, serial number, software version, node label, location, capability minima. |
+| 41 | `0x0029` | OTA Software Update Provider | 1 | Serves OTA software update images to other Matter nodes. |
+| 42 | `0x002A` | OTA Software Update Requestor | 1 | Lets a node query for, download, and apply OTA software updates. |
+| 43 | `0x002B` | Localization Configuration | 1 | Active locale and supported locales for user-facing text. |
+| 44 | `0x002C` | Time Format Localization | 1 | Localized time display preferences such as 12-hour or 24-hour format and calendar type. |
+| 45 | `0x002D` | Unit Localization | 2 | Preferred temperature unit (Celsius / Fahrenheit / Kelvin). |
+| 46 | `0x002E` | Power Source Configuration | 1 | Lists the Power Source endpoints that feed this endpoint, in priority order. |
+| 47 | `0x002F` | Power Source | 3 | Status of one power source: battery level, charge state, voltage, wired supply, faults, replacement info. |
+| 48 | `0x0030` | General Commissioning | 2 | General commissioning steps: arm fail-safe, regulatory configuration, commissioning complete, terms and conditions. |
+| 60 | `0x003C` | Administrator Commissioning | 1 | Opens or revokes commissioning windows so additional administrators/fabrics can be added. |
+| 62 | `0x003E` | Operational Credentials | 2 | Operational credentials: fabrics, NOCs, trusted root certificates, fabric add/update/remove. |
+| 63 | `0x003F` | Group Key Management | 4 | Group keys and key sets used for secured multicast (group) communication. |
+| 64 | `0x0040` | Fixed Label | 1 | Manufacturer-defined static labels for an endpoint. |
+| 65 | `0x0041` | User Label | 1 | User-editable labels for an endpoint. |
+| 98 | `0x0062` | Scenes Management | 1 | Stores, recalls, copies, and manages scenes across clusters (replaces the legacy Scenes cluster). |
+| 101 | `0x0065` | Groupcast **(New)** | 1 | Groupcast: group messaging configuration that consolidates Groups + Group Key Management use cases. New in 1.6. |
+
+## Networking and diagnostics
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 49 | `0x0031` | Network Commissioning | 2 | Adds, removes, scans, orders, and connects Wi-Fi, Thread, or Ethernet networks on the node. |
+| 50 | `0x0032` | Diagnostic Logs | 1 | Retrieves device diagnostic logs (end-user, network, crash) for support and troubleshooting. |
+| 51 | `0x0033` | General Diagnostics | 3 | General diagnostics: network interfaces, reboot count, uptime, boot reason, hardware/radio/network faults, test event triggers. |
+| 52 | `0x0034` | Software Diagnostics | 1 | Software diagnostics such as thread/task metrics, heap usage, and software faults. |
+| 53 | `0x0035` | Thread Network Diagnostics | 3 | Thread radio diagnostics: role, channel, PAN, neighbor and route tables, MLE/MAC counters, dataset components. See the Cluster 53 page. |
+| 54 | `0x0036` | Wi-Fi Network Diagnostics | 1 | Wi-Fi radio diagnostics: BSSID, security type, PHY version, channel, RSSI, beacon and packet counters. See the Cluster 54 page. |
+| 55 | `0x0037` | Ethernet Network Diagnostics | 1 | Ethernet diagnostics: PHY rate, duplex, packet/collision/error counters, carrier detect, time since reset. |
+| 56 | `0x0038` | Time Synchronization | 2 | Time synchronization: UTC time, granularity, trusted time source, time zone, DST offsets, NTP settings. |
+| 70 | `0x0046` | ICD Management | 3 | Intermittently Connected Device management: idle/active mode durations, registered clients, check-in protocol, LIT/SIT. |
+| 1105 | `0x0451` | Wi-Fi Network Management | 1 | Wi-Fi network management on a Wi-Fi router/hub: SSID and passphrase provisioning for home-router devices. |
+| 1106 | `0x0452` | Thread Border Router Management | 1 | Thread Border Router management: active/pending dataset, border router name, Thread interface state. |
+| 1107 | `0x0453` | Thread Network Directory | 1 | Thread network directory: list of Thread networks known to a hub, with their PAN IDs and names. |
+
+## Bridges and fabric administration
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 57 | `0x0039` | Bridged Device Basic Information | 6 | Basic information for a non-Matter device represented behind a Matter bridge (vendor, product, reachable, serial, unique ID). |
+| 1872 | `0x0750` | Ecosystem Information | 1 | Ecosystem information: device directory and location descriptors shared across ecosystems for bridged devices. |
+| 1873 | `0x0751` | Commissioner Control | 1 | Commissioner control: lets a device ask a commissioner to commission another device (reverse commissioning). |
+| 1874 | `0x0752` | Joint Fabric Datastore | 1 | Joint Fabric datastore: shared data (groups, nodes, ACLs) for a fabric jointly administered by several ecosystems. |
+| 1875 | `0x0753` | Joint Fabric Administrator | 1 | Joint Fabric administrator: manages joint-fabric relationships and ICAC/NOC issuance. |
+| 2049 | `0x0801` | TLS Certificate Management | 1 | TLS certificate management: provisioning of root and client certificates for TLS-based features (cameras, push A/V). |
+| 2050 | `0x0802` | TLS Client Management | 1 | TLS client management: TLS endpoints a node may connect to. |
+
+## Locks, closures, HVAC and lighting
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 6 | `0x0006` | On/Off | 6 | Basic binary control for turning a device or feature on or off. See the Cluster 6 page. |
+| 8 | `0x0008` | Level Control | 7 | Controls a numeric level such as brightness, fan level, or any stepped/continuous output. See the Cluster 8 page. |
+| 59 | `0x003B` | Switch | 2 | Switch input events: initial press, release, long press, multi-press, latching switch position. |
+| 257 | `0x0101` | Door Lock | 10 | Door lock: lock state, lock type, users, PIN/RFID credentials, schedules, auto-relock, lock events. |
+| 258 | `0x0102` | Window Covering | 8 | Window covering: blinds, shades, curtains; lift and tilt position, operational status, limits. |
+| 260 | `0x0104` | Closure Control | 1 | Closure control: generic open/close/stop motion for doors, gates, and other closures. |
+| 261 | `0x0105` | Closure Dimension | 1 | One controlled dimension of a closure (position, latch, speed) used by Closure Control. |
+| 512 | `0x0200` | Pump Configuration and Control | 5 | Pump control: operation mode, control mode, setpoints, pressure/flow/speed, pump status and alarms. |
+| 513 | `0x0201` | Thermostat | 11 | Thermostat: heating/cooling setpoints, system mode, schedules, occupancy, presets, running state. Revision 11 in 1.6.1. |
+| 514 | `0x0202` | Fan Control | 6 | Fan control: fan mode, percent/speed setting, rock, wind, airflow direction, step. |
+| 516 | `0x0204` | Thermostat User Interface Configuration | 2 | Thermostat UI configuration: display units and keypad lockout. |
+| 768 | `0x0300` | Color Control | 9 | Color control for lighting: hue, saturation, XY, color temperature, color loops, enhanced hue. |
+
+## Sensing and measurement
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 69 | `0x0045` | Boolean State | 3 | Single boolean sensor state (open/closed, wet/dry, detected/clear). Meaning depends on the endpoint device type. |
+| 91 | `0x005B` | Air Quality | 1 | Summarized air quality level (good, fair, moderate, poor, ...) derived from concentration measurements. |
+| 92 | `0x005C` | Smoke CO Alarm | 2 | Smoke and carbon monoxide alarm: alarm states, hush, self-test, interconnect, end-of-service, contamination. |
+| 128 | `0x0080` | Boolean State Configuration | 2 | Configuration for boolean-state sensors: sensitivity level, alarm enable/suppress, sensor fault. |
+| 129 | `0x0081` | Valve Configuration and Control | 1 | Valve control: open/close, target level, open duration, auto-close, valve fault. |
+| 1024 | `0x0400` | Illuminance Measurement | 5 | Measured illuminance (light level). |
+| 1026 | `0x0402` | Temperature Measurement | 6 | Measured temperature. |
+| 1027 | `0x0403` | Pressure Measurement | 5 | Measured pressure. |
+| 1028 | `0x0404` | Flow Measurement | 5 | Measured flow rate. |
+| 1029 | `0x0405` | Relative Humidity Measurement | 5 | Measured relative humidity. |
+| 1030 | `0x0406` | Occupancy Sensing | 7 | Occupancy / presence detection, sensor type, hold time and sensitivity. |
+| 1036 | `0x040C` | Carbon Monoxide Concentration Measurement | 5 | Carbon monoxide concentration and measurement level. |
+| 1037 | `0x040D` | Carbon Dioxide Concentration Measurement | 5 | Carbon dioxide concentration and measurement level. |
+| 1043 | `0x0413` | Nitrogen Dioxide Concentration Measurement | 5 | Nitrogen dioxide concentration and measurement level. |
+| 1045 | `0x0415` | Ozone Concentration Measurement | 5 | Ozone concentration and measurement level. |
+| 1066 | `0x042A` | PM2.5 Concentration Measurement | 5 | PM2.5 fine particulate matter concentration. |
+| 1067 | `0x042B` | Formaldehyde Concentration Measurement | 5 | Formaldehyde concentration and measurement level. |
+| 1068 | `0x042C` | PM1 Concentration Measurement | 5 | PM1 particulate matter concentration. |
+| 1069 | `0x042D` | PM10 Concentration Measurement | 5 | PM10 particulate matter concentration. |
+| 1070 | `0x042E` | Total Volatile Organic Compounds Concentration Measurement | 5 | Total volatile organic compounds (TVOC) concentration. |
+| 1071 | `0x042F` | Radon Concentration Measurement | 5 | Radon concentration and measurement level. |
+| 1072 | `0x0430` | Soil Measurement | 1 | Soil moisture measurement for irrigation and garden devices. |
+| 1073 | `0x0431` | Ambient Context Sensing **(New)** | 1 | Ambient context sensing: higher-level room context (people present, activity, ambient conditions). New in 1.6. |
+
+## Appliances
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 72 | `0x0048` | Oven Cavity Operational State | 2 | Operational state (running, paused, error) for one oven cavity. |
+| 73 | `0x0049` | Oven Mode | 2 | Selects and reports oven operating modes (bake, convection, grill, ...). |
+| 74 | `0x004A` | Laundry Dryer Controls | 1 | Dryer-specific controls such as dryness level. |
+| 80 | `0x0050` | Mode Select | 2 | Generic selectable operating modes for devices without a more specific mode cluster. |
+| 81 | `0x0051` | Laundry Washer Mode | 3 | Washing machine operating modes. |
+| 82 | `0x0052` | Refrigerator And Temperature Controlled Cabinet Mode | 3 | Refrigerator or temperature-controlled cabinet modes (rapid cool, rapid freeze, ...). |
+| 83 | `0x0053` | Laundry Washer Controls | 2 | Washer-specific controls: spin speed, number of rinses. |
+| 84 | `0x0054` | RVC Run Mode | 4 | Robotic vacuum cleaner run modes (idle, cleaning, mapping). |
+| 85 | `0x0055` | RVC Clean Mode | 5 | Robotic vacuum cleaner cleaning modes (vacuum, mop, deep clean). |
+| 86 | `0x0056` | Temperature Control | 1 | Target temperature or temperature level setpoints for appliances. |
+| 87 | `0x0057` | Refrigerator Alarm | 1 | Refrigerator and cabinet alarms such as door open. |
+| 89 | `0x0059` | Dishwasher Mode | 3 | Dishwasher operating modes. |
+| 93 | `0x005D` | Dishwasher Alarm | 1 | Dishwasher-specific alarms and faults (inflow, drain, door, temperature, water level). |
+| 94 | `0x005E` | Microwave Oven Mode | 2 | Microwave oven operating modes. |
+| 95 | `0x005F` | Microwave Oven Control | 1 | Microwave cooking parameters: cook time, power setting, wattage. |
+| 96 | `0x0060` | Operational State | 3 | Generic operational state (stopped, running, paused, error) for devices that run a process. |
+| 97 | `0x0061` | RVC Operational State | 3 | Robotic vacuum cleaner operational state, errors, and phase. |
+| 100 | `0x0064` | Temperature Alarm **(New)** | 1 | Temperature alarm states (too hot / too cold) for appliances and cabinets. New in 1.6. |
+| 113 | `0x0071` | HEPA Filter Monitoring | 1 | HEPA filter condition, change indication, replacement product list, and reset. |
+| 114 | `0x0072` | Activated Carbon Filter Monitoring | 1 | Activated carbon filter condition, change indication, replacement product list, and reset. |
+| 121 | `0x0079` | Water Tank Level Monitoring | 1 | Water tank level condition and change indication. |
+| 336 | `0x0150` | Service Area | 2 | Service areas and maps a device (for example a robot vacuum) can operate in; select areas and report progress. |
+
+## Energy and metering
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 144 | `0x0090` | Electrical Power Measurement | 3 | Electrical power measurement: voltage, current, active/reactive/apparent power, frequency, harmonics, power factor. |
+| 145 | `0x0091` | Electrical Energy Measurement | 2 | Electrical energy measurement: cumulative and periodic imported/exported energy. |
+| 148 | `0x0094` | Water Heater Management | 2 | Water heater management: heater types, heat demand, tank volume, estimated hot water, boost. |
+| 149 | `0x0095` | Commodity Price | 4 | Commodity (energy) price information and forecast from the supplier. |
+| 151 | `0x0097` | Messages | 3 | Device-to-user messages with optional responses and acknowledgement. |
+| 152 | `0x0098` | Device Energy Management | 4 | Device energy management: ESA type/state, power adjustment, forecast, start-time adjustment, pause/resume. |
+| 153 | `0x0099` | Energy EVSE | 4 | Electric vehicle supply equipment: charging state, enable charging/discharging, limits, session info. |
+| 155 | `0x009B` | Energy Preference | 1 | Energy preferences: balance between comfort and efficiency, low-power mode sensitivity. |
+| 156 | `0x009C` | Power Topology | 1 | Power topology: which endpoints a power measurement covers (tree/node/set topology). |
+| 157 | `0x009D` | Energy EVSE Mode | 2 | EVSE charging modes (manual, time of use, solar). |
+| 158 | `0x009E` | Water Heater Mode | 1 | Water heater modes (off, manual, timed). |
+| 159 | `0x009F` | Device Energy Management Mode | 2 | Device energy management modes (no optimization, device/local/grid optimization). |
+| 160 | `0x00A0` | Electrical Grid Conditions | 1 | Electrical grid conditions (carbon intensity, grid stress) for energy management decisions. |
+| 1792 | `0x0700` | Commodity Tariff | 1 | Commodity tariff information: tariff periods, prices, components, calendar. |
+| 2822 | `0x0B06` | Meter Identification | 1 | Meter identification: meter type, point of delivery, utility name and power threshold. |
+| 2823 | `0x0B07` | Commodity Metering | 1 | Commodity metering: metered quantity, tariff unit, and max measured value for the commodity. |
+
+## Media
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 1283 | `0x0503` | Wake On LAN | 1 | Wake on LAN: MAC address for waking a media device over the network. |
+| 1284 | `0x0504` | Channel | 2 | Media channel list, current channel, channel change and program guide. |
+| 1285 | `0x0505` | Target Navigator | 2 | Navigates media targets such as inputs, apps, or menu destinations. |
+| 1286 | `0x0506` | Media Playback | 2 | Playback control: play, pause, stop, seek, next/previous, playback speed and state. |
+| 1287 | `0x0507` | Media Input | 1 | Media input selection (HDMI, AV, ...). |
+| 1288 | `0x0508` | Low Power | 1 | Requests a media device to enter low-power/standby mode. |
+| 1289 | `0x0509` | Keypad Input | 1 | Remote-control keypad input: arrows, select, back, numbers. |
+| 1290 | `0x050A` | Content Launcher | 2 | Launches or searches content on a media device or app. |
+| 1291 | `0x050B` | Audio Output | 1 | Audio output selection (speakers, HDMI, Bluetooth). |
+| 1292 | `0x050C` | Application Launcher | 2 | Launches applications on a media device. |
+| 1293 | `0x050D` | Application Basic | 1 | Basic information about an application running on a media device. |
+| 1294 | `0x050E` | Account Login | 2 | Account login/logout flows for content applications. |
+| 1295 | `0x050F` | Content Control | 1 | Content control: parental ratings, screen time, block lists. |
+| 1296 | `0x0510` | Content App Observer | 1 | Content app observer: status and messages from a content application. |
+
+## Cameras
+
+| Decimal | Hex | Cluster | Rev | Description |
+|---:|---|---|---:|---|
+| 1360 | `0x0550` | Zone Management | 1 | Zone management for cameras and sensors: detection zones, triggers, sensitivity. |
+| 1361 | `0x0551` | Camera AV Stream Management | 2 | Camera audio/video stream management: stream allocation, codecs, resolution, snapshots. |
+| 1362 | `0x0552` | Camera AV Settings User Level Management | 1 | User-level camera settings: pan/tilt/zoom position and presets. |
+| 1363 | `0x0553` | WebRTC Transport Provider | 2 | WebRTC transport provider: offer/answer/ICE handling to stream camera video to a peer. |
+| 1364 | `0x0554` | WebRTC Transport Requestor | 2 | WebRTC transport requestor: peer side of the WebRTC session setup. |
+| 1365 | `0x0555` | Push AV Stream Transport | 2 | Push A/V stream transport: pushes recorded clips/streams to a destination (for example cloud storage). |
+| 1366 | `0x0556` | Chime | 2 | Chime: selectable chime sounds and play-chime command for doorbells. |
+
+## Global attributes (every cluster)
+
+These attribute IDs exist in every cluster and are the last segment of many shadow paths.
+
+| Decimal | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | GeneratedCommandList | Command IDs the server can generate (responses). |
+| 65529 | `0xFFF9` | AcceptedCommandList | Command IDs the server accepts. |
+| 65531 | `0xFFFB` | AttributeList | Attribute IDs the server implements. |
+| 65532 | `0xFFFC` | FeatureMap | Bitmap of optional features implemented. |
+| 65533 | `0xFFFD` | ClusterRevision | Cluster revision the device implements. |
+
+## Related pages
+
+- [Matter Bridge Clusters — Detailed Reference](matter_bridge_clusters_detailed_updated)
+- [Cluster 6 — On/Off](matter_cluster_6_onoff)
+- [Cluster 8 — Level Control](matter_cluster_8_level_control)
+- [Cluster 53 — Thread Network Diagnostics](matter_cluster_53_thread_network_diagnostics)
+- [Cluster 54 — Wi-Fi Network Diagnostics](matter_cluster_54_wifi_network_diagnostics)
