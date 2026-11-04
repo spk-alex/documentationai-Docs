@@ -1,0 +1,437 @@
+---
+title: "Matter Cluster 1292 — Application Launcher"
+description: "Matter Cluster 1292 (0x050C) Application Launcher: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1292
+clusterHex: "0x050C"
+clusterName: "Application Launcher"
+---
+
+# Matter Cluster 1292 — Application Launcher Cluster
+
+<Callout type="info">
+Matter Cluster <code>1292</code>, also written as <code>0x050C</code>, is the <strong>Application Launcher Cluster</strong>.
+This cluster provides an interface for launching applications on a Video Player device such as a TV. This cluster is supported on endpoints that can launch Applications, such as a Casting Video Player device with a Content App Platform. It supports identifying an Application by global identifier from a given catalog, and launching it.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1292` |
+| Cluster ID hex | `0x050C` |
+| Cluster name | `Application Launcher` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `APPLAUNCHER` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Addition of new states to StatusEnum |
+
+---
+
+## Shadow Path Format
+
+Cluster 1292 values in the device shadow use this format:
+
+```text
+endpoint_id / 1292 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1292/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1292` | Application Launcher cluster |
+| `0` | `CatalogList` attribute |
+
+---
+
+## Cluster 1292 Features
+
+The `FeatureMap` attribute (`1/1292/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AP` | ApplicationPlatform | `O` | Support for attributes and commands required for endpoint to support launching any application within the supported application catalogs |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Command succeeded |
+| 1 | `AppNotAvailable` | `M` | Requested app is not available |
+| 2 | `SystemBusy` | `M` | Video platform unable to honor command |
+| 3 | `PendingUserApproval` | `M` | User approval for app download is pending |
+| 4 | `Downloading` | `M` | Downloading the requested app |
+| 5 | `Installing` | `M` | Installing the requested app |
+
+### `ApplicationEPStruct` (struct)
+
+This specifies an app along with its corresponding endpoint.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Application` | ApplicationStruct | `M` | — | — |
+| 1 | `Endpoint` | endpoint-no | `O` | — | — |
+
+### `ApplicationStruct` (struct)
+
+This indicates a global identifier for an Application given a catalog.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CatalogVendorID` | uint16 | `M` | — | — |
+| 1 | `ApplicationID` | string | `M` | — | — |
+
+---
+
+## Cluster 1292 Attributes
+
+Cluster 1292 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `CatalogList` | list of uint16 | `AP` | R (read: view) | persisted | — |
+| 1 | `0x0001` | `CurrentApp` | ApplicationEPStruct | `O` | R (read: view) | nullable | `null` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `CatalogList`
+
+Path example:
+
+```text
+1/1292/0
+```
+
+This attribute specifies the list of supported application catalogs, where each entry in the list is the Connectivity Standards Alliance-issued vendor ID for the catalog. The DIAL registry must use value 0x0000. It is expected that Content App Platform providers will have their own catalog vendor ID (set to their own Vendor ID) and will assign an ApplicationID to each Content App.
+
+| Property | Value |
+|---|---|
+| Type | list of uint16 |
+| Conformance | `AP` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "1/1292/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentApp`
+
+Path example:
+
+```text
+1/1292/1
+```
+
+This attribute specifies the current in-focus application, identified using an Application ID, catalog vendor ID and the corresponding endpoint number when the application is represented by a Content App endpoint. A null is used to indicate there is no current in-focus application.
+
+| Property | Value |
+|---|---|
+| Type | ApplicationEPStruct |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `ApplicationEPStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1292/1": {
+    "application": {
+      "catalogVendorID": 1,
+      "applicationID": "example"
+    },
+    "endpoint": 1
+  }
+}
+```
+
+---
+
+# Cluster 1292 Commands
+
+Cluster 1292 has **3 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `LaunchApp` | client → server | `M` | LauncherResponse | On receipt, the server must launch the application with optional data. |
+| 1 | `0x01` | `StopApp` | client → server | `M` | LauncherResponse | On receipt, the server must stop the application if it is running. |
+| 2 | `0x02` | `HideApp` | client → server | `M` | LauncherResponse | On receipt, the server must hide the application. |
+| 3 | `0x03` | `LauncherResponse` | server → client | `M` | — | This command is generated in response to LaunchApp/StopApp/HideApp commands. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1292 / 65529
+```
+
+```json
+{
+  "1/1292/65529": [
+    0,
+    1,
+    2
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1292 command, check that the command ID exists in <code>endpoint/1292/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1292,
+    "command_name": "LaunchApp",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1292, always use `"cluster_id": 1292`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `LaunchApp`
+
+## Purpose
+
+On receipt, the server must launch the application with optional data. The application is either - the specified application, if the Application Platform feature is supported; - otherwise the application corresponding to the endpoint. The endpoint must launch and bring to foreground the requisite application if the application is not already launched and in foreground. The Status attribute is updated to ActiveVisibleFocus on the Application Basic cluster of the Endpoint corresponding to the launched application.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `LaunchApp` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | LauncherResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Application` | `application` | ApplicationStruct | `AP` | desc | This field specifies the Application to launch. |
+| 1 | `Data` | `data` | octstr | `O` | — | This field specifies optional app-specific data to be sent to the app. This format and meaning of this value is proprietary and outside the specification. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1292,
+    "command_name": "LaunchApp",
+    "payload": {
+      "application": {
+        "catalogVendorID": 1,
+        "applicationID": "example"
+      },
+      "data": "AQID"
+    }
+  }
+}
+```
+
+The device answers with `LauncherResponse` (see below).
+
+---
+
+# Command: `StopApp`
+
+## Purpose
+
+On receipt, the server must stop the application if it is running. The application is either - the specified application, if the Application Platform feature is supported; - otherwise the application corresponding to the endpoint. The Status attribute is updated to Stopped on the Application Basic cluster of the Endpoint corresponding to the stopped application. The Status attribute is updated on any other application whose Status may have changed as a result of this command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `StopApp` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | LauncherResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Application` | `application` | ApplicationStruct | `AP` | desc | This field specifies the Application to stop. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1292,
+    "command_name": "StopApp",
+    "payload": {
+      "application": {
+        "catalogVendorID": 1,
+        "applicationID": "example"
+      }
+    }
+  }
+}
+```
+
+The device answers with `LauncherResponse` (see below).
+
+---
+
+# Command: `HideApp`
+
+## Purpose
+
+On receipt, the server must hide the application. The application is either - the specified application, if the Application Platform feature is supported; - otherwise the application corresponding to the endpoint. The endpoint may decide to stop the application based on manufacturer specific behavior or resource constraints if any. The Status attribute is updated to ActiveHidden or Stopped, depending on the action taken, on the Application Basic cluster of the Endpoint corresponding to the application on which the action was taken.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `HideApp` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | LauncherResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Application` | `application` | ApplicationStruct | `AP` | desc | This field specifies the Application to hide. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1292,
+    "command_name": "HideApp",
+    "payload": {
+      "application": {
+        "catalogVendorID": 1,
+        "applicationID": "example"
+      }
+    }
+  }
+}
+```
+
+The device answers with `LauncherResponse` (see below).
+
+---
+
+# Command: `LauncherResponse`
+
+## Purpose
+
+This command is generated in response to LaunchApp/StopApp/HideApp commands.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `LauncherResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | — | Indicates the status of the command which resulted in this response. |
+| 1 | `Data` | `data` | octstr | `O` | — | This field specifies Optional app-specific data. |
+
+`Status` values (`StatusEnum`): `0` = Success, `1` = AppNotAvailable, `2` = SystemBusy, `3` = PendingUserApproval, `4` = Downloading, `5` = Installing
+
+---
+
+# Cluster 1292 Events
+
+Cluster 1292 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1292 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1292/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

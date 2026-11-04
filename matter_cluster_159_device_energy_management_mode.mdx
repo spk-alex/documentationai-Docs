@@ -1,0 +1,385 @@
+---
+title: "Matter Cluster 159 — Device Energy Management Mode"
+description: "Matter Cluster 159 (0x009F) Device Energy Management Mode: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 159
+clusterHex: "0x009F"
+clusterName: "Device Energy Management Mode"
+---
+
+# Matter Cluster 159 — Device Energy Management Mode Cluster
+
+<Callout type="info">
+Matter Cluster <code>159</code>, also written as <code>0x009F</code>, is the <strong>Device Energy Management Mode Cluster</strong>.
+This cluster is derived from the Mode Base cluster and defines additional mode tags and namespaced enumerated values for Device Energy Management devices.
+</Callout>
+
+<Callout type="info">
+This cluster is <strong>derived from the Mode Base cluster</strong>: it inherits the base attributes, commands and data types listed below and adds the cluster-specific values. Where the base definition applies, the base text is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `159` |
+| Cluster ID hex | `0x009F` |
+| Cluster name | `Device Energy Management Mode` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `DEMM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Disallowed DEPONOFF feature and OnMode and StartUpMode attributes |
+
+---
+
+## Shadow Path Format
+
+Cluster 159 values in the device shadow use this format:
+
+```text
+endpoint_id / 159 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/159/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `159` | Device Energy Management Mode cluster |
+| `0` | `SupportedModes` attribute |
+
+---
+
+## Cluster 159 Features
+
+The `FeatureMap` attribute (`1/159/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `DEPONOFF` | OnOff | `X` | Dependency with the OnOff cluster |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ModeTag`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Auto` | — | The device decides the best mode automatically. |
+| 1 | `Quick` | — | Faster than normal, usually at the cost of quality or energy. |
+| 2 | `Quiet` | — | Minimises noise. |
+| 3 | `LowNoise` | — | Reduced noise compared with normal operation. |
+| 4 | `LowEnergy` | — | Reduced energy consumption. |
+| 5 | `Vacation` | — | Long-absence mode (reduced activity or safe state). |
+| 6 | `Min` | — | Lowest setting of the controlled quantity. |
+| 7 | `Max` | — | Highest setting of the controlled quantity. |
+| 8 | `Night` | — | Night-time operation. |
+| 9 | `Day` | — | Day-time operation. |
+| 16384 | `NoOptimization` | — | The device prohibits optimization of energy usage management: its energy usage is determined only by the user configuration and internal device needs. |
+| 16385 | `DeviceOptimization` | — | The device is permitted to manage its own energy usage. |
+| 16386 | `LocalOptimization` | — | The device permits management of energy usage by an energy manager to optimize the local energy usage. |
+| 16387 | `GridOptimization` | — | The device permits management of energy usage by an energy manager to optimize the grid energy usage. |
+
+### `ModeOptionStruct` (struct)
+
+This is a struct representing a possible mode of the server.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Label` | string | `M` | max length 64 | Indicates readable text that describes the mode option, so that a client can provide it to the user to indicate what this option means. |
+| 1 | `Mode` | uint8 | `M` | — | This field is used to identify the mode option. |
+| 2 | `ModeTags` | list of ModeTagStruct | `M` | 1 to 8 | This field contains a list of tags that are associated with the mode option. |
+
+### `ModeTagStruct` (struct)
+
+A Mode Tag is meant to be interpreted by the client for the purpose the cluster serves.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MfgCode` | vendor-id | `O` | desc | If the MfgCode field exists, the Value field is in the manufacturer-specific value range. |
+| 1 | `Value` | enum16 | `M` | — | Indicates the mode tag within a mode tag namespace which is either manufacturer specific or standard. |
+
+---
+
+## Cluster 159 Attributes
+
+Cluster 159 defines **4 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SupportedModes` |  | — | — | — | — |
+| 1 | `0x0001` | `CurrentMode` |  | — | — | — | — |
+| 2 | `0x0002` | `StartUpMode` |  | `X` | — | — | — |
+| 3 | `0x0003` | `OnMode` |  | `X` | — | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SupportedModes`
+
+Path example:
+
+```text
+1/159/0
+```
+
+At least one entry in the SupportedModes attribute includes the NoOptimization mode tag in the ModeTags field. At least one entry in the SupportedModes attribute includes the LocalOptimization mode tag in the ModeTags field list. At least one entry in the SupportedModes attribute includes the GridOptimization mode tag in the ModeTags field list. An entry in the SupportedModes attribute that includes one of an DeviceOptimization, LocalOptimization, or GridOptimization tags must NOT also include NoOptimization tag.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | — |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/159/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentMode`
+
+Path example:
+
+```text
+1/159/1
+```
+
+No condensed specification text is available for `CurrentMode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | — |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/159/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `StartUpMode`
+
+Path example:
+
+```text
+1/159/2
+```
+
+No condensed specification text is available for `StartUpMode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `X` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/159/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `OnMode`
+
+Path example:
+
+```text
+1/159/3
+```
+
+No condensed specification text is available for `OnMode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `X` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/159/3": 0
+}
+```
+
+---
+
+# Cluster 159 Commands
+
+Cluster 159 has **1 client-to-server command** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ChangeToMode` | client → server | `M` | ChangeToModeResponse | This command is used to change device modes. |
+| 1 | `0x01` | `ChangeToModeResponse` | server → client | `M` | — | This command is sent by the device on receipt of the ChangeToMode command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 159 / 65529
+```
+
+```json
+{
+  "1/159/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 159 command, check that the command ID exists in <code>endpoint/159/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 159,
+    "command_name": "ChangeToMode",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 159, always use `"cluster_id": 159`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ChangeToMode`
+
+## Purpose
+
+This command is used to change device modes. On receipt of this command the device must respond with a ChangeToModeResponse command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ChangeToMode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ChangeToModeResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NewMode` | `newMode` | uint8 | `M` | desc | If the NewMode field doesn't match the Mode field of any entry of the SupportedModes list, the ChangeToModeResponse command's Status field indicates UnsupportedMode and the StatusText field is included and may be used to indicate the issue, with a human … |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 159,
+    "command_name": "ChangeToMode",
+    "payload": {
+      "newMode": 1
+    }
+  }
+}
+```
+
+The device answers with `ChangeToModeResponse` (see below).
+
+---
+
+# Command: `ChangeToModeResponse`
+
+## Purpose
+
+This command is sent by the device on receipt of the ChangeToMode command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ChangeToModeResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | enum8 | `M` | desc | — |
+| 1 | `StatusText` | `statusText` | string | `[Status = status], M` | max length 64 | — |
+
+---
+
+# Cluster 159 Events
+
+Cluster 159 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 159 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/159/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

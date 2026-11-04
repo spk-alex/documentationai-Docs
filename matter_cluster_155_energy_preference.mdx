@@ -1,0 +1,276 @@
+---
+title: "Matter Cluster 155 — Energy Preference"
+description: "Matter Cluster 155 (0x009B) Energy Preference: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 155
+clusterHex: "0x009B"
+clusterName: "Energy Preference"
+---
+
+# Matter Cluster 155 — Energy Preference Cluster
+
+<Callout type="info">
+Matter Cluster <code>155</code>, also written as <code>0x009B</code>, is the <strong>Energy Preference Cluster</strong>.
+This cluster provides an interface to specify preferences for how devices should consume energy.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `155` |
+| Cluster ID hex | `0x009B` |
+| Cluster name | `Energy Preference` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `EPREF` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 155 values in the device shadow use this format:
+
+```text
+endpoint_id / 155 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/155/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `155` | Energy Preference cluster |
+| `0` | `EnergyBalances` attribute |
+
+---
+
+## Cluster 155 Features
+
+The `FeatureMap` attribute (`1/155/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `BALA` | EnergyBalance | `O` | Device can balance energy consumption vs. another priority |
+| 1 | `LPMS` | LowPowerModeSensitivity | `O` | Device can adjust the conditions for entering a low power mode |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `EnergyPriorityEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Comfort` | `M` | User comfort |
+| 1 | `Speed` | `M` | Speed of operation |
+| 2 | `Efficiency` | `M` | Amount of Energy consumed by the device |
+| 3 | `WaterConsumption` | `M` | Amount of water consumed by the device |
+
+### `BalanceStruct` (struct)
+
+This represents a step along a scale of preferences.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Step` | percent | `M` | — | Indicates the relative value of this step. |
+| 1 | `Label` | string | `O` | max length 64 | Indicates an optional string explaining which actions a device might take at the given step value. |
+
+---
+
+## Cluster 155 Attributes
+
+Cluster 155 defines **5 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `EnergyBalances` | list of BalanceStruct | `BALA` | R (read: view) | — | — |
+| 1 | `0x0001` | `CurrentEnergyBalance` | uint8 | `BALA` | R/W (read: view, write: operate) | persisted | — |
+| 2 | `0x0002` | `EnergyPriorities` | list of EnergyPriorityEnum | `BALA` | R (read: view) | — | — |
+| 3 | `0x0003` | `LowPowerModeSensitivities` | list of BalanceStruct | `LPMS` | R (read: view) | — | — |
+| 4 | `0x0004` | `CurrentLowPowerModeSensitivity` | uint8 | `LPMS` | R/W (read: view, write: operate) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `EnergyBalances`
+
+Path example:
+
+```text
+1/155/0
+```
+
+Indicates a list of BalanceStructs, each representing a step along a linear scale of relative priorities. A Step field with a value of zero indicates that the device should entirely favor the priority specified by the first element in EnergyPriorities; whereas a Step field with a value of 100 indicates that the device should entirely favor the priority specified by the second element in EnergyPriorities. The midpoint value of 50 indicates an even split between the two priorities. This contains at least two BalanceStructs.
+
+| Property | Value |
+|---|---|
+| Type | list of BalanceStruct |
+| Conformance | `BALA` |
+| Access | R (read: view) |
+| Constraint | 2 to 10 entries |
+
+Each entry is a `BalanceStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/155/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentEnergyBalance`
+
+Path example:
+
+```text
+1/155/1
+```
+
+Indicates the current preference of the user for balancing different priorities during device use. The value of this attribute is the index, 0-based, into the EnergyBalances attribute for the currently selected balance. If an attempt is made to set this attribute to an index outside the maximum index for EnergyBalances, a response with the status code CONSTRAINT_ERROR is returned. If the value of EnergyBalances changes after an update, the device must migrate the value of the CurrentEnergyBalance attribute to the index which the manufacturer specifies most closely matches the previous value, while preserving extreme preferences as follows: 1.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `BALA` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "1/155/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `EnergyPriorities`
+
+Path example:
+
+```text
+1/155/2
+```
+
+Indicates two extremes for interpreting the values in the EnergyBalances attribute. These two priorities is in opposition to each other; e.g. Comfort vs. Efficiency or Speed vs.
+
+| Property | Value |
+|---|---|
+| Type | list of EnergyPriorityEnum |
+| Conformance | `BALA` |
+| Access | R (read: view) |
+| Constraint | allowed: 2 |
+
+Example:
+
+```json
+{
+  "1/155/2": []
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `LowPowerModeSensitivities`
+
+Path example:
+
+```text
+1/155/3
+```
+
+Indicates a list of BalanceStructs, each representing a condition or set of conditions for the device to enter a low power mode. This contains at least two BalanceStructs. Each BalanceStruct has a Step field larger than the Step field on the previous BalanceStruct in the list.
+
+| Property | Value |
+|---|---|
+| Type | list of BalanceStruct |
+| Conformance | `LPMS` |
+| Access | R (read: view) |
+| Constraint | 2 to 10 entries |
+
+Each entry is a `BalanceStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/155/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `CurrentLowPowerModeSensitivity`
+
+Path example:
+
+```text
+1/155/4
+```
+
+Indicates the current preference of the user for determining when the device should enter a low power mode. The value of this attribute is the index, 0-based, into the LowPowerModeSensitivities attribute for the currently selected preference. If an attempt is made to set this attribute to an index outside the maximum index for LowPowerModeSensitivities, a response with the status code CONSTRAINT_ERROR is returned. If the value of LowPowerModeSensitivities changes after an update, the device must migrate the value of the LowPowerModeSensitivity attribute to the index which the manufacturer specifies most closely matches the previous value.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `LPMS` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "1/155/4": 1
+}
+```
+
+---
+
+# Cluster 155 Commands
+
+Cluster 155 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 155 Events
+
+Cluster 155 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 155 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/155/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

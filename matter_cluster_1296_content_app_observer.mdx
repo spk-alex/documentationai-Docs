@@ -1,0 +1,214 @@
+---
+title: "Matter Cluster 1296 — Content App Observer"
+description: "Matter Cluster 1296 (0x0510) Content App Observer: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1296
+clusterHex: "0x0510"
+clusterName: "Content App Observer"
+---
+
+# Matter Cluster 1296 — Content App Observer Cluster
+
+<Callout type="info">
+Matter Cluster <code>1296</code>, also written as <code>0x0510</code>, is the <strong>Content App Observer Cluster</strong>.
+This cluster provides an interface for sending targeted commands to an Observer of a Content App on a Video Player device such as a Streaming Media Player, Smart TV or Smart Screen. The cluster server for Content App Observer is implemented by an endpoint that communicates with a Content App, such as a Casting Video Client. The cluster client for Content App Observer is implemented by a Content App endpoint.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1296` |
+| Cluster ID hex | `0x0510` |
+| Cluster name | `Content App Observer` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `APPOBSERVER` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1296 values in the device shadow use this format:
+
+```text
+endpoint_id / 1296 / attribute_id
+```
+
+---
+
+## Data Types
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Command succeeded |
+| 1 | `UnexpectedData` | `M` | Data field in command was not understood by the Observer |
+
+---
+
+## Cluster 1296 Attributes
+
+Cluster 1296 defines no cluster-specific attributes; only the global attributes are present.
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Cluster 1296 Commands
+
+Cluster 1296 has **1 client-to-server command** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ContentAppMessage` | client → server | `M` | ContentAppMessageResponse | On receipt, the data field may be parsed and interpreted. |
+| 1 | `0x01` | `ContentAppMessageResponse` | server → client | `M` | — | This command is generated in response to ContentAppMessage command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1296 / 65529
+```
+
+```json
+{
+  "1/1296/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1296 command, check that the command ID exists in <code>endpoint/1296/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1296,
+    "command_name": "ContentAppMessage",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1296, always use `"cluster_id": 1296`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ContentAppMessage`
+
+## Purpose
+
+On receipt, the data field may be parsed and interpreted. Message encoding is specific to the Content App. A Content App may when possible read attributes from the Basic Information Cluster on the Observer and use this to determine the Message encoding. This command returns a ContentAppMessage Response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ContentAppMessage` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ContentAppMessageResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Data` | `data` | string | `M` | max length 500 | Indicates content app-specific data. |
+| 1 | `EncodingHint` | `encodingHint` | string | `O` | max length 100 | This optional field indicates a content app-specific hint to the encoding of the data. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1296,
+    "command_name": "ContentAppMessage",
+    "payload": {
+      "data": "example"
+    }
+  }
+}
+```
+
+The device answers with `ContentAppMessageResponse` (see below).
+
+---
+
+# Command: `ContentAppMessageResponse`
+
+## Purpose
+
+This command is generated in response to ContentAppMessage command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ContentAppMessageResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | — | Indicates the status of the command which resulted in this response. |
+| 1 | `Data` | `data` | string | `O` | max length 500 | This optional field indicates content app-specific data. |
+| 2 | `EncodingHint` | `encodingHint` | string | `O` | max length 100 | This optional field indicates a content app-specific hint to the encoding of the data. |
+
+`Status` values (`StatusEnum`): `0` = Success, `1` = UnexpectedData
+
+---
+
+# Cluster 1296 Events
+
+Cluster 1296 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1296 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1296/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

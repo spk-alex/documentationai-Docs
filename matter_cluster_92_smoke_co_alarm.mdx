@@ -1,0 +1,814 @@
+---
+title: "Matter Cluster 92 — Smoke CO Alarm"
+description: "Matter Cluster 92 (0x005C) Smoke CO Alarm: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 92
+clusterHex: "0x005C"
+clusterName: "Smoke CO Alarm"
+---
+
+# Matter Cluster 92 — Smoke CO Alarm Cluster
+
+<Callout type="info">
+Matter Cluster <code>92</code>, also written as <code>0x005C</code>, is the <strong>Smoke CO Alarm Cluster</strong>.
+This cluster provides an interface for observing and managing the state of smoke and CO alarms.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `92` |
+| Cluster ID hex | `0x005C` |
+| Cluster name | `Smoke CO Alarm` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `SMOKECO` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added Inoperative to ExpressedStateEnum and added Unmounted attribute |
+
+---
+
+## Shadow Path Format
+
+Cluster 92 values in the device shadow use this format:
+
+```text
+endpoint_id / 92 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/92/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `92` | Smoke CO Alarm cluster |
+| `0` | `ExpressedState` attribute |
+
+---
+
+## Cluster 92 Features
+
+The `FeatureMap` attribute (`1/92/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SMOKE` | SmokeAlarm | `O` | Supports Smoke alarm |
+| 1 | `CO` | COAlarm | `O` | Supports CO alarm |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AlarmStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Normal` | `M` | Nominal state, the device is not alarming |
+| 1 | `Warning` | `O` | Warning state |
+| 2 | `Critical` | `M` | Critical state |
+
+### `ContaminationStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Normal` | `M` | Nominal state, the sensor is not contaminated |
+| 1 | `Low` | `O` | Low contamination |
+| 2 | `Warning` | `O` | Warning state |
+| 3 | `Critical` | `M` | Critical state, will cause nuisance alarms |
+
+### `EndOfServiceEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Normal` | `M` | Device has not expired |
+| 1 | `Expired` | `M` | Device has reached its end of service |
+
+### `ExpressedStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Normal` | `M` | Nominal state, the device is not alarming |
+| 1 | `SmokeAlarm` | `SMOKE` | Smoke Alarm state |
+| 2 | `COAlarm` | `CO` | CO Alarm state |
+| 3 | `BatteryAlert` | `M` | Battery Alert State |
+| 4 | `Testing` | `M` | Test in Progress |
+| 5 | `HardwareFault` | `M` | Hardware Fault Alert State |
+| 6 | `EndOfService` | `M` | End of Service Alert State |
+| 7 | `InterconnectSmoke` | `O` | Interconnected Smoke Alarm State |
+| 8 | `InterconnectCO` | `O` | Interconnected CO Alarm State |
+| 9 | `Inoperative` | `[ClusterRevision >= 2]` | Hardware is not able to detect Smoke or CO |
+
+### `MuteStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NotMuted` | `M` | Not Muted |
+| 1 | `Muted` | `M` | Muted |
+
+### `SensitivityEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `High` | `O` | High sensitivity |
+| 1 | `Standard` | `M` | Standard Sensitivity |
+| 2 | `Low` | `O` | Low sensitivity |
+
+---
+
+## Cluster 92 Attributes
+
+Cluster 92 defines **14 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `ExpressedState` | ExpressedStateEnum | `M` | R (read: view) | persisted | — |
+| 1 | `0x0001` | `SmokeState` | AlarmStateEnum | `SMOKE` | R (read: view) | persisted | — |
+| 2 | `0x0002` | `COState` | AlarmStateEnum | `CO` | R (read: view) | persisted | — |
+| 3 | `0x0003` | `BatteryAlert` | AlarmStateEnum | `M` | R (read: view) | persisted | — |
+| 4 | `0x0004` | `DeviceMuted` | MuteStateEnum | `O` | R (read: view) | persisted | — |
+| 5 | `0x0005` | `TestInProgress` | bool | `M` | R (read: view) | — | — |
+| 6 | `0x0006` | `HardwareFaultAlert` | bool | `M` | R (read: view) | persisted | — |
+| 7 | `0x0007` | `EndOfServiceAlert` | EndOfServiceEnum | `M` | R (read: view) | persisted | — |
+| 8 | `0x0008` | `InterconnectSmokeAlarm` | AlarmStateEnum | `O` | R (read: view) | — | — |
+| 9 | `0x0009` | `InterconnectCOAlarm` | AlarmStateEnum | `O` | R (read: view) | — | — |
+| 10 | `0x000A` | `ContaminationState` | ContaminationStateEnum | `[SMOKE]` | R (read: view) | — | — |
+| 11 | `0x000B` | `SmokeSensitivityLevel` | SensitivityEnum | `[SMOKE]` | R/W (read: view, write: manage) | — | — |
+| 12 | `0x000C` | `ExpiryDate` | epoch-s | `O` | R (read: view) | — | — |
+| 13 | `0x000D` | `Unmounted` | bool | `[ClusterRevision >= 2]` | R (read: view) | — | `false` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `ExpressedState`
+
+Path example:
+
+```text
+1/92/0
+```
+
+Indicates the visibly- and audibly-expressed state of the alarm. When multiple alarm conditions are being reflected in the server, this attribute indicates the condition with the highest priority. Priority order of conditions is determined by the manufacturer and is supplied as a part of certification procedure. If the value of ExpressedState is not Normal, the attribute corresponding to the value must NOT be Normal.
+
+| Property | Value |
+|---|---|
+| Type | ExpressedStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Values (`ExpressedStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Nominal state, the device is not alarming |
+| 1 | `SmokeAlarm` | Smoke Alarm state |
+| 2 | `COAlarm` | CO Alarm state |
+| 3 | `BatteryAlert` | Battery Alert State |
+| 4 | `Testing` | Test in Progress |
+| 5 | `HardwareFault` | Hardware Fault Alert State |
+| 6 | `EndOfService` | End of Service Alert State |
+| 7 | `InterconnectSmoke` | Interconnected Smoke Alarm State |
+| 8 | `InterconnectCO` | Interconnected CO Alarm State |
+| 9 | `Inoperative` | Hardware is not able to detect Smoke or CO |
+
+Example:
+
+```json
+{
+  "1/92/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SmokeState`
+
+Path example:
+
+```text
+1/92/1
+```
+
+Indicates whether the device's smoke sensor is currently triggering a smoke alarm.
+
+| Property | Value |
+|---|---|
+| Type | AlarmStateEnum |
+| Conformance | `SMOKE` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Values (`AlarmStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Nominal state, the device is not alarming |
+| 1 | `Warning` | Warning state |
+| 2 | `Critical` | Critical state |
+
+Example:
+
+```json
+{
+  "1/92/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `COState`
+
+Path example:
+
+```text
+1/92/2
+```
+
+No condensed specification text is available for `COState`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | AlarmStateEnum |
+| Conformance | `CO` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Values (`AlarmStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Nominal state, the device is not alarming |
+| 1 | `Warning` | Warning state |
+| 2 | `Critical` | Critical state |
+
+Example:
+
+```json
+{
+  "1/92/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `BatteryAlert`
+
+Path example:
+
+```text
+1/92/3
+```
+
+Indicates whether the power resource fault detection mechanism is currently triggered at the device. If the detection mechanism is triggered, this attribute is set to Warning or Critical, otherwise it is set to Normal. The battery state must also be reflected in the Power Source cluster representing the device's battery using the appropriate supported attributes and events. If the sensor cannot operate in the set state, the ExpressedState attribute is set to Inoperative.
+
+| Property | Value |
+|---|---|
+| Type | AlarmStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Values (`AlarmStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Nominal state, the device is not alarming |
+| 1 | `Warning` | Warning state |
+| 2 | `Critical` | Critical state |
+
+Example:
+
+```json
+{
+  "1/92/3": 0
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `DeviceMuted`
+
+Path example:
+
+```text
+1/92/4
+```
+
+Indicates the whether the audible expression of the device is currently muted. Audible expression is typically a horn or speaker pattern.
+
+| Property | Value |
+|---|---|
+| Type | MuteStateEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Values (`MuteStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NotMuted` | Not Muted |
+| 1 | `Muted` | Muted |
+
+Example:
+
+```json
+{
+  "1/92/4": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `TestInProgress`
+
+Path example:
+
+```text
+1/92/5
+```
+
+Indicates whether the device self-test is currently activated. If the device self-test is activated, this attribute is set to True, otherwise it is set to False.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/92/5": true
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `HardwareFaultAlert`
+
+Path example:
+
+```text
+1/92/6
+```
+
+Indicates whether the hardware fault detection mechanism is currently triggered. If the detection mechanism is triggered, this attribute is set to True, otherwise it is set to False. When this attribute is set to True, and the sensor cannot operate in this state, the ExpressedState attribute is set to Inoperative.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "1/92/6": true
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `EndOfServiceAlert`
+
+Path example:
+
+```text
+1/92/7
+```
+
+Indicates whether the end-of-service has been triggered at the device. This attribute is set to Expired when the device reaches the end-of-service.
+
+| Property | Value |
+|---|---|
+| Type | EndOfServiceEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Values (`EndOfServiceEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Device has not expired |
+| 1 | `Expired` | Device has reached its end of service |
+
+Example:
+
+```json
+{
+  "1/92/7": 0
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `InterconnectSmokeAlarm`
+
+Path example:
+
+```text
+1/92/8
+```
+
+Indicates whether the interconnected smoke alarm is currently triggering by branching devices. When the interconnected smoke alarm is being triggered, this attribute is set to Warning or Critical, otherwise it is set to Normal.
+
+| Property | Value |
+|---|---|
+| Type | AlarmStateEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+
+Values (`AlarmStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Nominal state, the device is not alarming |
+| 1 | `Warning` | Warning state |
+| 2 | `Critical` | Critical state |
+
+Example:
+
+```json
+{
+  "1/92/8": 0
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `InterconnectCOAlarm`
+
+Path example:
+
+```text
+1/92/9
+```
+
+No condensed specification text is available for `InterconnectCOAlarm`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | AlarmStateEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+
+Values (`AlarmStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Nominal state, the device is not alarming |
+| 1 | `Warning` | Warning state |
+| 2 | `Critical` | Critical state |
+
+Example:
+
+```json
+{
+  "1/92/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `ContaminationState`
+
+Path example:
+
+```text
+1/92/10
+```
+
+Indicates the contamination level of the smoke sensor.
+
+| Property | Value |
+|---|---|
+| Type | ContaminationStateEnum |
+| Conformance | `[SMOKE]` |
+| Access | R (read: view) |
+
+Values (`ContaminationStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Nominal state, the sensor is not contaminated |
+| 1 | `Low` | Low contamination |
+| 2 | `Warning` | Warning state |
+| 3 | `Critical` | Critical state, will cause nuisance alarms |
+
+Example:
+
+```json
+{
+  "1/92/10": 0
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `SmokeSensitivityLevel`
+
+Path example:
+
+```text
+1/92/11
+```
+
+Indicates the sensitivity level of the smoke sensor configured on the device.
+
+| Property | Value |
+|---|---|
+| Type | SensitivityEnum |
+| Conformance | `[SMOKE]` |
+| Access | R/W (read: view, write: manage) |
+
+Values (`SensitivityEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `High` | High sensitivity |
+| 1 | `Standard` | Standard Sensitivity |
+| 2 | `Low` | Low sensitivity |
+
+Example:
+
+```json
+{
+  "1/92/11": 0
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `ExpiryDate`
+
+Path example:
+
+```text
+1/92/12
+```
+
+Indicates the date when the device reaches its stated expiry date. After the ExpiryDate has been reached, the EndOfServiceAlert must start to be triggered. To account for better customer experience across time zones, the EndOfServiceAlert may be delayed by up to 24 hours after the ExpiryDate. Similarly, clients may delay any actions based on the ExpiryDate by up to 24 hours to best align with the local time zone.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `O` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/92/12": 1
+}
+```
+
+---
+
+## Attribute `13` / `0x000D` — `Unmounted`
+
+Path example:
+
+```text
+1/92/13
+```
+
+No condensed specification text is available for `Unmounted`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `[ClusterRevision >= 2]` |
+| Access | R (read: view) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "1/92/13": true
+}
+```
+
+---
+
+# Cluster 92 Commands
+
+Cluster 92 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SelfTestRequest` | client → server | `O` | status | This command must initiate a device self-test. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 92 / 65529
+```
+
+```json
+{
+  "1/92/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 92 command, check that the command ID exists in <code>endpoint/92/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 92,
+    "command_name": "SelfTestRequest",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 92, always use `"cluster_id": 92`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SelfTestRequest`
+
+## Purpose
+
+This command must initiate a device self-test. The return status indicates whether the test was successfully initiated. Only one SelfTestRequest may be processed at a time. When the value of the ExpressedState attribute is any of SmokeAlarm, COAlarm, Testing, InterconnectSmoke, InterconnectCO, the device must NOT execute the self-test, and returns status code BUSY.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SelfTestRequest` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 92,
+    "command_name": "SelfTestRequest",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Cluster 92 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `SmokeAlarm` | critical | `SMOKE` | This event is generated when SmokeState attribute changes to either Warning or Critical state. |
+| 1 | `0x01` | `COAlarm` | critical | `CO` | — |
+| 2 | `0x02` | `LowBattery` | info | `M` | This event is generated when BatteryAlert attribute changes to either Warning or Critical state. |
+| 3 | `0x03` | `HardwareFault` | info | `M` | This event is generated when the device detects a hardware fault that leads to setting HardwareFaultAlert to True. |
+| 4 | `0x04` | `EndOfService` | info | `M` | This event is generated when the EndOfServiceAlert is set to Expired. |
+| 5 | `0x05` | `SelfTestComplete` | info | `M` | This event is generated when the SelfTest completes, and the attribute TestInProgress changes to False. |
+| 6 | `0x06` | `AlarmMuted` | info | `O` | This event is generated when the DeviceMuted attribute changes to Muted. |
+| 7 | `0x07` | `MuteEnded` | info | `O` | This event is generated when DeviceMuted attribute changes to NotMuted. |
+| 8 | `0x08` | `InterconnectSmokeAlarm` | critical | `[SMOKE]` | This event is generated when the device hosting the server receives a smoke alarm from an interconnected sensor. |
+| 9 | `0x09` | `InterconnectCOAlarm` | critical | `[CO]` | — |
+| 10 | `0x0A` | `AllClear` | info | `M` | This event is generated when ExpressedState attribute returns to Normal state. |
+
+## Event `0` — `SmokeAlarm`
+
+This event is generated when SmokeState attribute changes to either Warning or Critical state.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AlarmSeverityLevel` | AlarmStateEnum | `M` | Indicates the current value of the SmokeState attribute. |
+
+## Event `1` — `COAlarm`
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AlarmSeverityLevel` | AlarmStateEnum | `M` | — |
+
+## Event `2` — `LowBattery`
+
+This event is generated when BatteryAlert attribute changes to either Warning or Critical state.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AlarmSeverityLevel` | AlarmStateEnum | `M` | Indicates the current value of the BatteryAlert attribute. |
+
+## Event `3` — `HardwareFault`
+
+This event is generated when the device detects a hardware fault that leads to setting HardwareFaultAlert to True.
+
+This event has no fields.
+
+## Event `4` — `EndOfService`
+
+This event is generated when the EndOfServiceAlert is set to Expired.
+
+This event has no fields.
+
+## Event `5` — `SelfTestComplete`
+
+This event is generated when the SelfTest completes, and the attribute TestInProgress changes to False.
+
+This event has no fields.
+
+## Event `6` — `AlarmMuted`
+
+This event is generated when the DeviceMuted attribute changes to Muted.
+
+This event has no fields.
+
+## Event `7` — `MuteEnded`
+
+This event is generated when DeviceMuted attribute changes to NotMuted.
+
+This event has no fields.
+
+## Event `8` — `InterconnectSmokeAlarm`
+
+This event is generated when the device hosting the server receives a smoke alarm from an interconnected sensor.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AlarmSeverityLevel` | AlarmStateEnum | `M` | Indicates the current value of the InterconnectSmokeAlarm attribute. |
+
+## Event `9` — `InterconnectCOAlarm`
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AlarmSeverityLevel` | AlarmStateEnum | `M` | — |
+
+## Event `10` — `AllClear`
+
+This event is generated when ExpressedState attribute returns to Normal state.
+
+This event has no fields.
+
+---
+
+# SmartphoneKey Notes
+
+- Smoke/CO alarms report `SmokeState`, `COState` and `ExpressedState`. Treat `ExpressedState` (attribute `2`) as the single summary value.
+- Shadow paths follow `endpoint/92/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

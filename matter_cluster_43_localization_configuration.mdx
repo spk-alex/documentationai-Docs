@@ -1,0 +1,156 @@
+---
+title: "Matter Cluster 43 — Localization Configuration"
+description: "Matter Cluster 43 (0x002B) Localization Configuration: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 43
+clusterHex: "0x002B"
+clusterName: "Localization Configuration"
+---
+
+# Matter Cluster 43 — Localization Configuration Cluster
+
+<Callout type="info">
+Matter Cluster <code>43</code>, also written as <code>0x002B</code>, is the <strong>Localization Configuration Cluster</strong>.
+Nodes should be expected to be deployed to any and all regions of the world. These global regions may have differing common languages, units of measurements, and numerical formatting standards. As such, Nodes that visually or audibly convey information need a mechanism by which they can be configured to use a user’s preferred language, units, etc.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `43` |
+| Cluster ID hex | `0x002B` |
+| Cluster name | `Localization Configuration` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `LCFG` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 43 values in the device shadow use this format:
+
+```text
+endpoint_id / 43 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/43/0": "example"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `43` | Localization Configuration cluster |
+| `0` | `ActiveLocale` attribute |
+
+---
+
+## Cluster 43 Attributes
+
+Cluster 43 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `ActiveLocale` | string | `M` | R/W (read: view, write: manage) | persisted | `MS` |
+| 1 | `0x0001` | `SupportedLocales` | list of string | `M` | R (read: view) | — | `MS` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `ActiveLocale`
+
+Path example:
+
+```text
+0/43/0
+```
+
+The ActiveLocale attribute represents the locale that the Node is currently configured to use when conveying information. The ActiveLocale attribute is a Language Tag as defined by BCP47. The ActiveLocale attribute has a default value assigned by the Vendor and is a value contained within the SupportedLocales attribute. An attempt to write a value to ActiveLocale that is not present in SupportedLocales must result in a CONSTRAINT_ERROR error.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | max length 35 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/43/0": "example"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SupportedLocales`
+
+Path example:
+
+```text
+0/43/1
+```
+
+The SupportedLocales attribute represents a list of locale strings that are valid values for the ActiveLocale attribute. The list must NOT contain any duplicate entries. The ordering of items within the list should NOT express any meaning.
+
+| Property | Value |
+|---|---|
+| Type | list of string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 32 entries |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/43/1": []
+}
+```
+
+---
+
+# Cluster 43 Commands
+
+Cluster 43 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 43 Events
+
+Cluster 43 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 43 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/43/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

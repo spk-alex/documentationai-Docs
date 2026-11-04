@@ -1,0 +1,909 @@
+---
+title: "Matter Cluster 37 — Actions"
+description: "Matter Cluster 37 (0x0025) Actions: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 37
+clusterHex: "0x0025"
+clusterName: "Actions"
+---
+
+# Matter Cluster 37 — Actions Cluster
+
+<Callout type="info">
+Matter Cluster <code>37</code>, also written as <code>0x0025</code>, is the <strong>Actions Cluster</strong>.
+This cluster provides a standardized way for a Node (typically a Bridge, but could be any Node) to expose logical grouping and actions. Specifically this cluster provides: - Information about logical grouping of endpoints on the Node (example: lights in a room) - Information about named actions that can be performed on such a group of endpoints (example: recall a scene for a group of lights by its name) - Commands to trigger such actions - Events to receive feedback on the state of such actions.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `37` |
+| Cluster ID hex | `0x0025` |
+| Cluster name | `Actions` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Node |
+| PICS code | `ACT` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 37 values in the device shadow use this format:
+
+```text
+endpoint_id / 37 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/37/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `37` | Actions cluster |
+| `0` | `ActionList` attribute |
+
+---
+
+## Data Types
+
+### `ActionErrorEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `M` | Other reason not listed in the row(s) below |
+| 1 | `Interrupted` | `M` | The action was interrupted by another command or interaction |
+
+### `ActionStateEnum`
+
+Note that some of these states are applicable only for certain actions, as determined by their SupportedCommands.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Inactive` | `M` | The action is not active |
+| 1 | `Active` | `M` | The action is active |
+| 2 | `Paused` | `M` | The action has been paused |
+| 3 | `Disabled` | `M` | The action has been disabled |
+
+### `ActionTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Other` | `M` | Use this only when none of the other values applies |
+| 1 | `Scene` | `M` | Bring the endpoints into a certain state |
+| 2 | `Sequence` | `M` | A sequence of states with a certain time pattern |
+| 3 | `Automation` | `M` | Control an automation (e.g. motion sensor controlling lights) |
+| 4 | `Exception` | `M` | Sequence that will run when something doesn't happen |
+| 5 | `Notification` | `M` | Use the endpoints to send a message to user |
+| 6 | `Alarm` | `M` | Higher priority notification |
+
+### `EndpointListTypeEnum`
+
+The Room and Zone values are provided for the cases where a user (or the system on behalf of the user) has created logical grouping of the endpoints (e.g. bridged devices) based on location.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Other` | `M` | Another group of endpoints |
+| 1 | `Room` | `M` | User-configured group of endpoints where an endpoint can be in only one room |
+| 2 | `Zone` | `M` | User-configured group of endpoints where an endpoint can be in any number of zones |
+
+### `CommandBits` (bitmap)
+
+Note - The bit allocation of this bitmap must follow the ID's of the Commands of this cluster.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `InstantAction` | `M` | Indicate support for InstantAction command |
+| 1 | `InstantActionWithTransition` | `M` | Indicate support for InstantActionWithTransition command |
+| 2 | `StartAction` | `M` | Indicate support for StartAction command |
+| 3 | `StartActionWithDuration` | `M` | Indicate support for StartActionWithDuration command |
+| 4 | `StopAction` | `M` | Indicate support for StopAction command |
+| 5 | `PauseAction` | `M` | Indicate support for PauseAction command |
+| 6 | `PauseActionWithDuration` | `M` | Indicate support for PauseActionWithDuration command |
+| 7 | `ResumeAction` | `M` | Indicate support for ResumeAction command |
+| 8 | `EnableAction` | `M` | Indicate support for EnableAction command |
+| 9 | `EnableActionWithDuration` | `M` | Indicate support for EnableActionWithDuration command |
+| 10 | `DisableAction` | `M` | Indicate support for DisableAction command |
+| 11 | `DisableActionWithDuration` | `M` | Indicate support for DisableActionWithDuration command |
+
+### `ActionStruct` (struct)
+
+This data type holds the details of a single action, and contains the data fields below.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ActionID` | uint16 | `M` | — | — |
+| 1 | `Name` | string | `M` | max length 128; maxCodePoints | Indicates the name (as assigned by the user or automatically by the server) associated with this action. |
+| 2 | `Type` | ActionTypeEnum | `M` | — | Indicates the type of action. |
+| 3 | `EndpointListID` | uint16 | `M` | — | — |
+| 4 | `SupportedCommands` | CommandBits | `M` | 0 to 0x0FFF | This field is a bitmap which is used to indicate which of the cluster's commands are supported for this particular action, with a bit set to 1 for each supported command according to the table below. |
+| 5 | `State` | ActionStateEnum | `M` | — | Indicates the current state of this action. |
+
+### `EndpointListStruct` (struct)
+
+This data type holds the details of a single endpoint list, which relates to a set of endpoints that have some logical relation, and contains the data fields below.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `EndpointListID` | uint16 | `M` | — | — |
+| 1 | `Name` | string | `M` | max length 128; maxCodePoints | Indicates the name (as assigned by the user or automatically by the server) associated with the set of endpoints in this list. |
+| 2 | `Type` | EndpointListTypeEnum | `M` | — | Indicates the type of endpoint list, see EndpointListTypeEnum. |
+| 3 | `Endpoints` | list of endpoint-no | `M` | max 256 entries | This field provides a list of endpoint numbers. |
+
+---
+
+## Cluster 37 Attributes
+
+Cluster 37 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `ActionList` | list of ActionStruct | `M` | R (read: view) | — | `empty` |
+| 1 | `0x0001` | `EndpointLists` | list of EndpointListStruct | `M` | R (read: view) | — | `empty` |
+| 2 | `0x0002` | `SetupURL` | string | `O` | R (read: view) | — | `empty` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `ActionList`
+
+Path example:
+
+```text
+0/37/0
+```
+
+The ActionList attribute holds the list of actions. Each entry has an unique ActionID, and its EndpointListID must exist in the EndpointLists attribute.
+
+| Property | Value |
+|---|---|
+| Type | list of ActionStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 256 entries |
+| Default | `empty` |
+
+Each entry is a `ActionStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/37/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `EndpointLists`
+
+Path example:
+
+```text
+0/37/1
+```
+
+The EndpointLists attribute holds the list of endpoint lists. Each entry has an unique EndpointListID.
+
+| Property | Value |
+|---|---|
+| Type | list of EndpointListStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 256 entries |
+| Default | `empty` |
+
+Each entry is a `EndpointListStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/37/1": []
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `SetupURL`
+
+Path example:
+
+```text
+0/37/2
+```
+
+No condensed specification text is available for `SetupURL`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 512 |
+| Default | `empty` |
+
+Example:
+
+```json
+{
+  "0/37/2": "example"
+}
+```
+
+---
+
+# Cluster 37 Commands
+
+Cluster 37 has **12 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `InstantAction` | client → server | `desc` | status | This command is used to trigger an instantaneous action. |
+| 1 | `0x01` | `InstantActionWithTransition` | client → server | `desc` | status | This command is used to trigger an instantaneous action with a transition over a given time. |
+| 2 | `0x02` | `StartAction` | client → server | `desc` | status | This command is used to trigger the commencement of an action. |
+| 3 | `0x03` | `StartActionWithDuration` | client → server | `desc` | status | This command is used to trigger the commencement of an action with a duration. |
+| 4 | `0x04` | `StopAction` | client → server | `desc` | status | This command is used to stop an action. |
+| 5 | `0x05` | `PauseAction` | client → server | `desc` | status | This command is used to pause an action. |
+| 6 | `0x06` | `PauseActionWithDuration` | client → server | `desc` | status | This command is used to pause an action with a duration. |
+| 7 | `0x07` | `ResumeAction` | client → server | `desc` | status | This command is used to resume an action. |
+| 8 | `0x08` | `EnableAction` | client → server | `desc` | status | This command is used to enable an action. |
+| 9 | `0x09` | `EnableActionWithDuration` | client → server | `desc` | status | This command is used to enable an action with a duration. |
+| 10 | `0x0A` | `DisableAction` | client → server | `desc` | status | This command is used to disable an action. |
+| 11 | `0x0B` | `DisableActionWithDuration` | client → server | `desc` | status | This command is used to disable an action with a duration. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 37 / 65529
+```
+
+```json
+{
+  "0/37/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 37 command, check that the command ID exists in <code>endpoint/37/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "InstantAction",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 37, always use `"cluster_id": 37`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `InstantAction`
+
+## Purpose
+
+This command is used to trigger an instantaneous action. This command triggers an action (state change) on the involved endpoints, in a "fire and forget" manner. Afterwards, the action's state is Inactive. Example: recall a scene on a number of lights.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `InstantAction` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "InstantAction",
+    "payload": {
+      "actionID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `InstantActionWithTransition`
+
+## Purpose
+
+This command is used to trigger an instantaneous action with a transition over a given time. It is recommended that, where possible (e.g., it is not possible for attributes with Boolean data type), a gradual transition should take place from the old to the new state over this time period. However, the exact transition is manufacturer dependent. This command triggers an action (state change) on the involved endpoints, with a specified time to transition from the current state to the new state.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `InstantActionWithTransition` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | — | Indicates the transition time in 1/10th of seconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "InstantActionWithTransition",
+    "payload": {
+      "actionID": 1,
+      "transitionTime": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `StartAction`
+
+## Purpose
+
+This command is used to trigger the commencement of an action. This command triggers the commencement of an action on the involved endpoints. Afterwards, the action's state is Active. Example: start a dynamic lighting pattern (such as gradually rotating the colors around the setpoints of the scene) on a set of lights.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `StartAction` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "StartAction",
+    "payload": {
+      "actionID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `StartActionWithDuration`
+
+## Purpose
+
+This command is used to trigger the commencement of an action with a duration. This command triggers the commencement of an action on the involved endpoints, and must change the action's state to Active. After the specified Duration, the action will stop, and the action's state must change to Inactive. Example: start a dynamic lighting pattern (such as gradually rotating the colors around the setpoints of the scene) on a set of lights for 1 hour (Duration=3600).
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `StartActionWithDuration` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+| 2 | `Duration` | `duration` | uint32 | `M` | — | Indicates the requested duration in seconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "StartActionWithDuration",
+    "payload": {
+      "actionID": 1,
+      "duration": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `StopAction`
+
+## Purpose
+
+This command is used to stop an action. This command stops the ongoing action on the involved endpoints. Afterwards, the action's state is Inactive. Example: stop a dynamic lighting pattern which was previously started with StartAction.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `StopAction` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "StopAction",
+    "payload": {
+      "actionID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `PauseAction`
+
+## Purpose
+
+This command is used to pause an action. This command pauses an ongoing action, and must change the action's state to Paused. Example: pause a dynamic lighting effect (the lights stay at their current color) which was previously started with StartAction.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `PauseAction` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "PauseAction",
+    "payload": {
+      "actionID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `PauseActionWithDuration`
+
+## Purpose
+
+This command is used to pause an action with a duration. This command pauses an ongoing action, and must change the action's state to Paused. After the specified Duration, the ongoing action will be automatically resumed. which must change the action's state to Active. Example: pause a dynamic lighting effect (the lights stay at their current color) for 10 minutes (Duration=600).
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `PauseActionWithDuration` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+| 2 | `Duration` | `duration` | uint32 | `M` | — | Indicates the requested duration in seconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "PauseActionWithDuration",
+    "payload": {
+      "actionID": 1,
+      "duration": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `ResumeAction`
+
+## Purpose
+
+This command is used to resume an action. This command resumes a previously paused action, and must change the action's state to Active. The difference between ResumeAction and StartAction is that ResumeAction will continue the action from the state where it was paused, while StartAction will start the action from the beginning. Example: resume a dynamic lighting effect (the lights' colors will change gradually, continuing from the point they were paused).
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `ResumeAction` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "ResumeAction",
+    "payload": {
+      "actionID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `EnableAction`
+
+## Purpose
+
+This command is used to enable an action. This command enables a certain action or automation. Afterwards, the action's state is Active. Example: enable a motion sensor to control the lights in an area.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `EnableAction` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "EnableAction",
+    "payload": {
+      "actionID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `EnableActionWithDuration`
+
+## Purpose
+
+This command is used to enable an action with a duration. This command enables a certain action or automation, and must change the action's state to be Active. After the specified Duration, the action or automation will stop, and the action's state must change to Disabled. Example: enable a "presence mimicking" behavior for the lights in your home during a vacation; the Duration field is used to indicated the length of your absence from home.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `9` |
+| Command hex | `0x09` |
+| Command name | `EnableActionWithDuration` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+| 2 | `Duration` | `duration` | uint32 | `M` | — | Indicates the requested duration in seconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "EnableActionWithDuration",
+    "payload": {
+      "actionID": 1,
+      "duration": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `DisableAction`
+
+## Purpose
+
+This command is used to disable an action. This command disables a certain action or automation, and must change the action's state to Inactive. Example: disable a motion sensor to no longer control the lights in an area.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `10` |
+| Command hex | `0x0A` |
+| Command name | `DisableAction` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "DisableAction",
+    "payload": {
+      "actionID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `DisableActionWithDuration`
+
+## Purpose
+
+This command is used to disable an action with a duration. This command disables a certain action or automation, and must change the action's state to Disabled. After the specified Duration, the action or automation will re-start, and the action's state must change to either Inactive or Active, depending on the actions. Example: disable a "wakeup" experience for a period of 1 week when going on holiday (to prevent them from turning on in the morning while you're not at home).
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `11` |
+| Command hex | `0x0B` |
+| Command name | `DisableActionWithDuration` |
+| Direction | client → server |
+| Conformance | `desc` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActionID` | `actionID` | uint16 | `M` | — | — |
+| 1 | `InvokeID` | `invokeID` | uint32 | `O` | — | — |
+| 2 | `Duration` | `duration` | uint32 | `M` | — | Indicates the requested duration in seconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 37,
+    "command_name": "DisableActionWithDuration",
+    "payload": {
+      "actionID": 1,
+      "duration": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 37 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `StateChanged` | info | `M` | This event is generated when there is a change in the State of an ActionID during the execution of an action and the most recent command using that ActionID used an InvokeID data field. |
+| 1 | `0x01` | `ActionFailed` | info | `M` | This event is generated when there is some error which prevents the action from its normal planned execution and the most recent command using that ActionID used an InvokeID data field. |
+
+## Event `0` — `StateChanged`
+
+This event is generated when there is a change in the State of an ActionID during the execution of an action and the most recent command using that ActionID used an InvokeID data field. It provides feedback to the client about the progress of the action. Example: When InstantActionWithTransition is invoked (with an InvokeID data field), two StateChanged events will be generated: - one when the transition starts (NewState=Active) - one when the transition completed (NewState=Inactive)
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ActionID` | uint16 | `M` | — |
+| 1 | `InvokeID` | uint32 | `M` | — |
+| 2 | `NewState` | ActionStateEnum | `M` | This field is set to state that the action has changed to. |
+
+## Event `1` — `ActionFailed`
+
+This event is generated when there is some error which prevents the action from its normal planned execution and the most recent command using that ActionID used an InvokeID data field. It provides feedback to the client about the non-successful progress of the action.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ActionID` | uint16 | `M` | — |
+| 1 | `InvokeID` | uint32 | `M` | — |
+| 2 | `NewState` | ActionStateEnum | `M` | This field is set to state that the action is in at the time of generating the event. |
+| 3 | `Error` | ActionErrorEnum | `M` | This field is set to indicate the reason for non-successful progress of the action. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 37 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/37/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

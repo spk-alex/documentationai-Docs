@@ -1,0 +1,817 @@
+---
+title: "Matter Cluster 261 — Closure Dimension"
+description: "Matter Cluster 261 (0x0105) Closure Dimension: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 261
+clusterHex: "0x0105"
+clusterName: "Closure Dimension"
+---
+
+# Matter Cluster 261 — Closure Dimension Cluster
+
+<Callout type="info">
+Matter Cluster <code>261</code>, also written as <code>0x0105</code>, is the <strong>Closure Dimension Cluster</strong>.
+This cluster provides an interface for controlling a single degree of freedom (also referred to as a "dimension" or an "axis" below) of a composed closure. This could be a degree of freedom in a 6-axis framework for the overall closure or a panel in the closure, or some other degree of freedom.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `261` |
+| Cluster ID hex | `0x0105` |
+| Cluster name | `Closure Dimension` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `CLDIM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 261 values in the device shadow use this format:
+
+```text
+endpoint_id / 261 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/261/0": {
+    "position": 1,
+    "latch": true,
+    "speed": 0
+  }
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `261` | Closure Dimension cluster |
+| `0` | `CurrentState` attribute |
+
+---
+
+## Cluster 261 Features
+
+The `FeatureMap` attribute (`1/261/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PS` | Positioning | `O` | Supports Positioning in the range from 0.00% to 100.00% |
+| 1 | `LT` | MotionLatching | `O` | Supports a latch to secure the closure to a position or state |
+| 2 | `UT` | Unit | `[PS]` | Specifies the relevant unit and range for this dimension (mm, degrees etc.) |
+| 3 | `LM` | Limitation | `[PS]` | Supports limitation of the operating range |
+| 4 | `SP` | Speed | `[PS]` | Supports speed motion throttling. |
+| 5 | `TR` | Translation | `[PS]` | Drives a translation motion |
+| 6 | `RO` | Rotation | `[PS]` | Drives a rotation motion |
+| 7 | `MD` | Modulation | `[PS]` | Modulates a particular flow level (light, air, privacy ...) |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `255` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ClosureUnitEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Millimeter` | `M` | Millimeter used as unit |
+| 1 | `Degree` | `M` | Degree used as unit |
+
+### `ModulationTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `SlatsOrientation` | `M` | Orientation of the slats |
+| 1 | `SlatsOpenwork` | `M` | Aperture of the slats |
+| 2 | `StripesAlignment` | `M` | Alignment of blind stripes (Zebra) |
+| 3 | `Opacity` | `M` | Opacity of a surface |
+| 4 | `Ventilation` | `M` | Ventilation control |
+
+### `OverflowEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoOverflow` | `M` | No overflow |
+| 1 | `Inside` | `M` | Inside overflow |
+| 2 | `Outside` | `M` | Outside overflow |
+| 3 | `TopInside` | `M` | Top inside overflow |
+| 4 | `TopOutside` | `M` | Top outside overflow |
+| 5 | `BottomInside` | `M` | Bottom inside overflow |
+| 6 | `BottomOutside` | `M` | Bottom outside overflow |
+| 7 | `LeftInside` | `M` | Left inside overflow |
+| 8 | `LeftOutside` | `M` | Left outside overflow |
+| 9 | `RightInside` | `M` | Right inside overflow |
+| 10 | `RightOutside` | `M` | Right outside overflow |
+
+### `RotationAxisEnum`
+
+### Legend: Open Closed
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Left` | `M` | The panel rotates around a vertical axis located on the left side of the panel |
+| 1 | `CenteredVertical` | `M` | The panel rotates around a vertical axis located in the center of the panel |
+| 2 | `LeftAndRight` | `M` | The panels rotates around vertical axes located on the left and right sides of the panel |
+| 3 | `Right` | `M` | The panel rotates around a vertical axis located on the right side of the panel |
+| 4 | `Top` | `M` | The panel rotates around a horizontal axis located on the top of the panel |
+| 5 | `CenteredHorizontal` | `M` | The panel rotates around a horizontal axis located in the center of the panel |
+| 6 | `TopAndBottom` | `M` | The panels rotates around horizontal axes located on the top and bottom of the panel |
+| 7 | `Bottom` | `M` | The panel rotates around a horizontal axis located on the bottom of the panel |
+| 8 | `LeftBarrier` | `M` | The barrier tilts around an axis located at the left end of the barrier |
+| 9 | `LeftAndRightBarriers` | `M` | The dual barriers tilt around axes located at each side of the composite barrier |
+| 10 | `RightBarrier` | `M` | The barrier tilts around an axis located at the right end of the barrier |
+
+### `StepDirectionEnum`
+
+This data type is derived from enum8 and used for the Step command to indicate the direction of the steps.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Decrease` | `M` | Decrease towards 0.00% |
+| 1 | `Increase` | `M` | Increase towards 100.00% |
+
+### `TranslationDirectionEnum`
+
+### Legend: Open Closed
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Downward` | `M` | Downward translation |
+| 1 | `Upward` | `M` | Upward translation |
+| 2 | `VerticalMask` | `M` | Vertical mask translation |
+| 3 | `VerticalSymmetry` | `M` | Vertical symmetry translation |
+| 4 | `Leftward` | `M` | Leftward translation |
+| 5 | `Rightward` | `M` | Rightward translation |
+| 6 | `HorizontalMask` | `M` | Horizontal mask translation |
+| 7 | `HorizontalSymmetry` | `M` | Horizontal symmetry translation |
+| 8 | `Forward` | `M` | Forward translation |
+| 9 | `Backward` | `M` | Backward translation |
+| 10 | `DepthMask` | `M` | Depth mask translation |
+| 11 | `DepthSymmetry` | `M` | Depth symmetry translation |
+
+### `LatchControlModesBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `RemoteLatching` | `LT` | Remote latching capability |
+| 1 | `RemoteUnlatching` | `LT` | Remote unlatching capability |
+
+### `DimensionStateStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Position` | percent100ths (nullable) | `PS` | desc | Indicates the position of the closure, expressed as a percentage from 0.00% to 100.00%. |
+| 1 | `Latch` | bool (nullable) | `LT` | desc | Indicates the latching state of the closure, as defined in the OverallCurrentStateStruct Latch Field. |
+| 2 | `Speed` | ThreeLevelAutoEnum | `SP` | desc | Indicates the current speed of the closure, as defined in the ThreeLevelAutoEnum. |
+
+### `RangePercent100thsStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Min` | percent100ths | `M` | — | — |
+| 1 | `Max` | percent100ths | `M` | Min to 100 | — |
+
+### `UnitRangeStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Min` | int16 | `M` | — | — |
+| 1 | `Max` | int16 | `M` | Min to 32767 | — |
+
+---
+
+## Cluster 261 Attributes
+
+Cluster 261 defines **12 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `CurrentState` | DimensionStateStruct | `M` | R (read: view) | nullable, quiet reporting | `null` |
+| 1 | `0x0001` | `TargetState` | DimensionStateStruct | `M` | R (read: view) | nullable | `null` |
+| 2 | `0x0002` | `Resolution` | percent100ths | `PS` | R (read: view) | — | `0.01` |
+| 3 | `0x0003` | `StepValue` | percent100ths | `PS` | R (read: view) | — | `0.01` |
+| 4 | `0x0004` | `Unit` | ClosureUnitEnum | `UT` | R (read: view) | — | — |
+| 5 | `0x0005` | `UnitRange` | UnitRangeStruct | `UT` | R (read: view) | nullable | `null` |
+| 6 | `0x0006` | `LimitRange` | RangePercent100thsStruct | `LM` | R (read: view) | — | — |
+| 7 | `0x0007` | `TranslationDirection` | TranslationDirectionEnum | `TR` | R (read: view) | — | — |
+| 8 | `0x0008` | `RotationAxis` | RotationAxisEnum | `RO` | R (read: view) | — | — |
+| 9 | `0x0009` | `Overflow` | OverflowEnum | `RO` | R (read: view) | — | — |
+| 10 | `0x000A` | `ModulationType` | ModulationTypeEnum | `MD` | R (read: view) | — | — |
+| 11 | `0x000B` | `LatchControlModes` | LatchControlModesBitmap | `LT` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `CurrentState`
+
+Path example:
+
+```text
+1/261/0
+```
+
+Indicates the current Position, Latching and/or Speed, based on the feature flags set. A value of null indicates that: - The position and latching state are both not known yet because the closure is not calibrated, or - The product has lost its position and latching state after manual motion during a shutdown.
+
+| Property | Value |
+|---|---|
+| Type | DimensionStateStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `DimensionStateStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/261/0": {
+    "position": 1,
+    "latch": true,
+    "speed": 0
+  }
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `TargetState`
+
+Path example:
+
+```text
+1/261/1
+```
+
+Indicates the target Position, Latching and/or Speed, based on the feature flags set. A value of null indicates that the TargetState fields are unknown (typically after a reboot, no target has been yet requested). Each field is present only when its corresponding feature is supported. If the feature is not supported the field must NOT be present.
+
+| Property | Value |
+|---|---|
+| Type | DimensionStateStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `DimensionStateStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/261/1": {
+    "position": 1,
+    "latch": true,
+    "speed": 0
+  }
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `Resolution`
+
+Path example:
+
+```text
+1/261/2
+```
+
+Indicates the minimal acceptable change to the Position field of the TargetState and CurrentState attributes. Resolution should not be confused with an accuracy, such as Current = Target +/- Accuracy. This cluster does not provide accuracy. Resolution gives a collection of valid Current position points over a linear ruler.
+
+| Property | Value |
+|---|---|
+| Type | percent100ths |
+| Conformance | `PS` |
+| Access | R (read: view) |
+| Constraint | min 0.01 |
+| Default | `0.01` |
+
+Example:
+
+```json
+{
+  "1/261/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `StepValue`
+
+Path example:
+
+```text
+1/261/3
+```
+
+Indicates the size of a single step, expressed in percent100ths. When the Step command is used, each step changes the position by this amount. The value of this attribute is an integer multiple of the Resolution attribute. The StepValue should be large enough to cause a visible change in the closure's position when a Step command is invoked.
+
+| Property | Value |
+|---|---|
+| Type | percent100ths |
+| Conformance | `PS` |
+| Access | R (read: view) |
+| Constraint | min 0.01 |
+| Default | `0.01` |
+
+Example:
+
+```json
+{
+  "1/261/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `Unit`
+
+Path example:
+
+```text
+1/261/4
+```
+
+Indicates the unit related to the Position.
+
+| Property | Value |
+|---|---|
+| Type | ClosureUnitEnum |
+| Conformance | `UT` |
+| Access | R (read: view) |
+
+Values (`ClosureUnitEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Millimeter` | Millimeter used as unit |
+| 1 | `Degree` | Degree used as unit |
+
+Example:
+
+```json
+{
+  "1/261/4": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `UnitRange`
+
+Path example:
+
+```text
+1/261/5
+```
+
+Indicates the minimum and the maximum values expressed by Position following the unit indicated by "Unit". The value of this attribute may be null if the product has not been set up.
+
+| Property | Value |
+|---|---|
+| Type | UnitRangeStruct |
+| Conformance | `UT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `UnitRangeStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/261/5": {
+    "min": 1,
+    "max": 1
+  }
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `LimitRange`
+
+Path example:
+
+```text
+1/261/6
+```
+
+Indicates the range of possible values for the Position field in the CurrentState attribute. This range may evolve dynamically. LimitRange.Min and LimitRange.Max is equal to an integer multiple of the Resolution attribute.
+
+| Property | Value |
+|---|---|
+| Type | RangePercent100thsStruct |
+| Conformance | `LM` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Value is a `RangePercent100thsStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/261/6": {
+    "min": 1,
+    "max": 1
+  }
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `TranslationDirection`
+
+Path example:
+
+```text
+1/261/7
+```
+
+Indicates the direction of the translation. A properly configured closure dimension should reflect as best as possible the translation as seen by the user. This attribute is not supposed to change once the installation is finalized.
+
+| Property | Value |
+|---|---|
+| Type | TranslationDirectionEnum |
+| Conformance | `TR` |
+| Access | R (read: view) |
+
+Values (`TranslationDirectionEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Downward` | Downward translation |
+| 1 | `Upward` | Upward translation |
+| 2 | `VerticalMask` | Vertical mask translation |
+| 3 | `VerticalSymmetry` | Vertical symmetry translation |
+| 4 | `Leftward` | Leftward translation |
+| 5 | `Rightward` | Rightward translation |
+| 6 | `HorizontalMask` | Horizontal mask translation |
+| 7 | `HorizontalSymmetry` | Horizontal symmetry translation |
+| 8 | `Forward` | Forward translation |
+| 9 | `Backward` | Backward translation |
+| 10 | `DepthMask` | Depth mask translation |
+| 11 | `DepthSymmetry` | Depth symmetry translation |
+
+Example:
+
+```json
+{
+  "1/261/7": 0
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `RotationAxis`
+
+Path example:
+
+```text
+1/261/8
+```
+
+Indicates the axis of the rotation. A properly configured closure dimension should reflect as best as possible the rotation axis as perceived by the user. This attribute is not supposed to change once the installation is finalized.
+
+| Property | Value |
+|---|---|
+| Type | RotationAxisEnum |
+| Conformance | `RO` |
+| Access | R (read: view) |
+
+Values (`RotationAxisEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Left` | The panel rotates around a vertical axis located on the left side of the panel |
+| 1 | `CenteredVertical` | The panel rotates around a vertical axis located in the center of the panel |
+| 2 | `LeftAndRight` | The panels rotates around vertical axes located on the left and right sides of the panel |
+| 3 | `Right` | The panel rotates around a vertical axis located on the right side of the panel |
+| 4 | `Top` | The panel rotates around a horizontal axis located on the top of the panel |
+| 5 | `CenteredHorizontal` | The panel rotates around a horizontal axis located in the center of the panel |
+| 6 | `TopAndBottom` | The panels rotates around horizontal axes located on the top and bottom of the panel |
+| 7 | `Bottom` | The panel rotates around a horizontal axis located on the bottom of the panel |
+| 8 | `LeftBarrier` | The barrier tilts around an axis located at the left end of the barrier |
+| 9 | `LeftAndRightBarriers` | The dual barriers tilt around axes located at each side of the composite barrier |
+| 10 | `RightBarrier` | The barrier tilts around an axis located at the right end of the barrier |
+
+Example:
+
+```json
+{
+  "1/261/8": 0
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `Overflow`
+
+Path example:
+
+```text
+1/261/9
+```
+
+Indicates the overflow related to Rotation(RO). A closure that rotates following an axis (with Rotation(RO) feature declared in FeatureMap), could overflow Inside and/or Outside. If the axis is centered, one part goes Outside and the other part goes Inside. In this case, this attribute must use Top/Bottom/Left/Right Inside or Top/Bottom/Left/Right Outside enumerated value.
+
+| Property | Value |
+|---|---|
+| Type | OverflowEnum |
+| Conformance | `RO` |
+| Access | R (read: view) |
+
+Values (`OverflowEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NoOverflow` | No overflow |
+| 1 | `Inside` | Inside overflow |
+| 2 | `Outside` | Outside overflow |
+| 3 | `TopInside` | Top inside overflow |
+| 4 | `TopOutside` | Top outside overflow |
+| 5 | `BottomInside` | Bottom inside overflow |
+| 6 | `BottomOutside` | Bottom outside overflow |
+| 7 | `LeftInside` | Left inside overflow |
+| 8 | `LeftOutside` | Left outside overflow |
+| 9 | `RightInside` | Right inside overflow |
+| 10 | `RightOutside` | Right outside overflow |
+
+Example:
+
+```json
+{
+  "1/261/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `ModulationType`
+
+Path example:
+
+```text
+1/261/10
+```
+
+Indicates the modulation type related to Modulation(MD). The server should reflect, as best as possible, the modulation type as perceived by the user. This attribute is not supposed to change once the installation is finalized.
+
+| Property | Value |
+|---|---|
+| Type | ModulationTypeEnum |
+| Conformance | `MD` |
+| Access | R (read: view) |
+
+Values (`ModulationTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `SlatsOrientation` | Orientation of the slats |
+| 1 | `SlatsOpenwork` | Aperture of the slats |
+| 2 | `StripesAlignment` | Alignment of blind stripes (Zebra) |
+| 3 | `Opacity` | Opacity of a surface |
+| 4 | `Ventilation` | Ventilation control |
+
+Example:
+
+```json
+{
+  "1/261/10": 0
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `LatchControlModes`
+
+Path example:
+
+```text
+1/261/11
+```
+
+This attribute specifies whether the latch mechanism can be latched or unlatched remotely.
+
+| Property | Value |
+|---|---|
+| Type | LatchControlModesBitmap |
+| Conformance | `LT` |
+| Access | R (read: view) |
+
+Bits (`LatchControlModesBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `RemoteLatching` | Remote latching capability |
+| 1 | `RemoteUnlatching` | Remote unlatching capability |
+
+Example:
+
+```json
+{
+  "1/261/11": 0
+}
+```
+
+---
+
+# Cluster 261 Commands
+
+Cluster 261 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SetTarget` | client → server | `M` | status | This command is used to move a dimension of the closure to a target position. |
+| 1 | `0x01` | `Step` | client → server | `PS` | status | This command is used to move a dimension of the closure to a target position by a number of steps. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 261 / 65529
+```
+
+```json
+{
+  "1/261/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 261 command, check that the command ID exists in <code>endpoint/261/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 261,
+    "command_name": "SetTarget",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 261, always use `"cluster_id": 261`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SetTarget`
+
+## Purpose
+
+This command is used to move a dimension of the closure to a target position. The rationale behind defining the conformance as being purely optional in the table above is to ensure that commands containing one or more fields related to unsupported features are still accepted, rather than being rejected outright. For example, if a simple client, which is not able to determine the capabilities of the server, invokes a command that includes both position and speed, a server that does not support the speed feature would simply ignore the speed field while still adjusting its position as requested.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SetTarget` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Position` | `position` | percent100ths | `O` | — | Indicates the position where the closure is moving to. |
+| 1 | `Latch` | `latch` | bool | `O` | — | Indicates the desired latching state of the closure, as defined in the OverallCurrentStateStruct Latch Field. |
+| 2 | `Speed` | `speed` | ThreeLevelAutoEnum | `O` | — | Indicates a desired overall speed of motion, as defined in the ThreeLevelAutoEnum. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 261,
+    "command_name": "SetTarget",
+    "payload": {
+      "position": 1,
+      "latch": true
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `Step`
+
+## Purpose
+
+This command is used to move a dimension of the closure to a target position by a number of steps.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `Step` |
+| Direction | client → server |
+| Conformance | `PS` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Direction` | `direction` | StepDirectionEnum | `M` | — | Indicates whether the Position field of the TargetState attribute must be: - Increased toward 100.00%. - Decreased toward 0.00%. |
+| 1 | `NumberOfSteps` | `numberOfSteps` | uint16 | `M` | min 1 | Indicates the number of steps by which the position should be changed. The size of one step, expressed in percent100ths, is determined by the "StepValue" attribute. |
+| 2 | `Speed` | `speed` | ThreeLevelAutoEnum | `[SP]` | desc | Indicates the desired speed of motion. |
+
+`Direction` values (`StepDirectionEnum`): `0` = Decrease, `1` = Increase
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 261,
+    "command_name": "Step",
+    "payload": {
+      "direction": 0,
+      "numberOfSteps": 1
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Cluster 261 Events
+
+Cluster 261 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 261 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/261/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

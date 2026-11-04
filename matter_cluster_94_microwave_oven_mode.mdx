@@ -1,0 +1,333 @@
+---
+title: "Matter Cluster 94 — Microwave Oven Mode"
+description: "Matter Cluster 94 (0x005E) Microwave Oven Mode: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 94
+clusterHex: "0x005E"
+clusterName: "Microwave Oven Mode"
+---
+
+# Matter Cluster 94 — Microwave Oven Mode Cluster
+
+<Callout type="info">
+Matter Cluster <code>94</code>, also written as <code>0x005E</code>, is the <strong>Microwave Oven Mode Cluster</strong>.
+This cluster is derived from the Mode Base cluster and defines additional mode tags and namespaced enumerated values for microwave oven devices.
+</Callout>
+
+<Callout type="info">
+This cluster is <strong>derived from the Mode Base cluster</strong>: it inherits the base attributes, commands and data types listed below and adds the cluster-specific values. Where the base definition applies, the base text is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `94` |
+| Cluster ID hex | `0x005E` |
+| Cluster name | `Microwave Oven Mode` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `MWOM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Set OnOff feature as disallowed |
+
+---
+
+## Shadow Path Format
+
+Cluster 94 values in the device shadow use this format:
+
+```text
+endpoint_id / 94 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/94/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `94` | Microwave Oven Mode cluster |
+| `0` | `SupportedModes` attribute |
+
+---
+
+## Cluster 94 Features
+
+The `FeatureMap` attribute (`1/94/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `DEPONOFF` | OnOff | `X` | Dependency with the OnOff cluster |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ModeTag`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Auto` | — | The device decides the best mode automatically. |
+| 1 | `Quick` | — | Faster than normal, usually at the cost of quality or energy. |
+| 2 | `Quiet` | — | Minimises noise. |
+| 3 | `LowNoise` | — | Reduced noise compared with normal operation. |
+| 4 | `LowEnergy` | — | Reduced energy consumption. |
+| 5 | `Vacation` | — | Long-absence mode (reduced activity or safe state). |
+| 6 | `Min` | — | Lowest setting of the controlled quantity. |
+| 7 | `Max` | — | Highest setting of the controlled quantity. |
+| 8 | `Night` | — | Night-time operation. |
+| 9 | `Day` | — | Day-time operation. |
+| 16384 | `Normal` | — | This is the normal mode of operation for general cooking of food. |
+| 16385 | `Defrost` | — | This is a mode optimized for defrosting food. |
+
+### `ModeOptionStruct` (struct)
+
+This is a struct representing a possible mode of the server.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Label` | string | `M` | max length 64 | Indicates readable text that describes the mode option, so that a client can provide it to the user to indicate what this option means. |
+| 1 | `Mode` | uint8 | `M` | — | This field is used to identify the mode option. |
+| 2 | `ModeTags` | list of ModeTagStruct | `M` | max 8 entries | This field contains a list of tags that are associated with the mode option. |
+
+### `ModeTagStruct` (struct)
+
+A Mode Tag is meant to be interpreted by the client for the purpose the cluster serves.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MfgCode` | vendor-id | `O` | desc | If the MfgCode field exists, the Value field is in the manufacturer-specific value range. |
+| 1 | `Value` | enum16 | `M` | — | Indicates the mode tag within a mode tag namespace which is either manufacturer specific or standard. |
+
+---
+
+## Cluster 94 Attributes
+
+Cluster 94 defines **4 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SupportedModes` |  | — | — | — | — |
+| 1 | `0x0001` | `CurrentMode` |  | — | — | — | — |
+| 2 | `0x0002` | `StartUpMode` |  | `X` | — | — | — |
+| 3 | `0x0003` | `OnMode` |  | `X` | — | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SupportedModes`
+
+Path example:
+
+```text
+1/94/0
+```
+
+Exactly one entry in the SupportedModes attribute includes the Normal mode tag in the ModeTags field. The Normal and Defrost mode tags are mutually exclusive and must NOT both be used together in a mode's ModeTags.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | — |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/94/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentMode`
+
+Path example:
+
+```text
+1/94/1
+```
+
+No condensed specification text is available for `CurrentMode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | — |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/94/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `StartUpMode`
+
+Path example:
+
+```text
+1/94/2
+```
+
+No condensed specification text is available for `StartUpMode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `X` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/94/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `OnMode`
+
+Path example:
+
+```text
+1/94/3
+```
+
+No condensed specification text is available for `OnMode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `X` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/94/3": 0
+}
+```
+
+---
+
+# Cluster 94 Commands
+
+Cluster 94 has **0 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ChangeToMode` | server → client | `X` | — | — |
+| 1 | `0x01` | `ChangeToModeResponse` | server → client | `X` | — | — |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 94 / 65529
+```
+
+```json
+{
+  "1/94/65529": []
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 94 command, check that the command ID exists in <code>endpoint/94/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+# Command: `ChangeToMode`
+
+## Purpose
+
+`ChangeToMode` is a server response of the Microwave Oven Mode cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ChangeToMode` |
+| Direction | server → client (response) |
+| Conformance | `X` |
+
+## Payload Fields
+
+This response has no fields.
+
+---
+
+# Command: `ChangeToModeResponse`
+
+## Purpose
+
+`ChangeToModeResponse` is a server response of the Microwave Oven Mode cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ChangeToModeResponse` |
+| Direction | server → client (response) |
+| Conformance | `X` |
+
+## Payload Fields
+
+This response has no fields.
+
+---
+
+# Cluster 94 Events
+
+Cluster 94 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 94 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/94/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

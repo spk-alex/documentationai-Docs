@@ -1,0 +1,190 @@
+---
+title: "Matter Cluster 1872 — Ecosystem Information"
+description: "Matter Cluster 1872 (0x0750) Ecosystem Information: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1872
+clusterHex: "0x0750"
+clusterName: "Ecosystem Information"
+---
+
+# Matter Cluster 1872 — Ecosystem Information Cluster
+
+<Callout type="info">
+Matter Cluster <code>1872</code>, also written as <code>0x0750</code>, is the <strong>Ecosystem Information Cluster</strong>.
+The Ecosystem Information Cluster provides extended device information for all the logical devices represented by a Bridged Node. The Ecosystem Information Cluster presents the view of device name and location metadata for presentation by a client of the cluster to a user. This cluster is intended to support Fabric Synchronization and be present on an endpoint with the BridgedNode device type listed in the DeviceTypeList of the endpoint's Descriptor cluster.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1872` |
+| Cluster ID hex | `0x0750` |
+| Cluster name | `Ecosystem Information` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `ECOINFO` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1872 values in the device shadow use this format:
+
+```text
+endpoint_id / 1872 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/1872/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `1872` | Ecosystem Information cluster |
+| `0` | `DeviceDirectory` attribute |
+
+---
+
+## Data Types
+
+### `DeviceTypeStruct` (struct)
+
+The device type and revision define endpoint conformance to a release of a device type definition. See the Data Model specification for more information.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `DeviceType` | devtype-id | `M` | — | This indicates the device type definition. |
+| 1 | `Revision` | uint16 | `M` | min 1 | This is the implemented revision of the device type definition. |
+
+### `EcosystemDeviceStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `DeviceName` | string | `O` | max length 64 | Indicates the device's name, which is provided externally if the user consents. |
+| 1 | `DeviceNameLastEdit` | epoch-us | `DeviceName` | — | Indicates the timestamp of when the DeviceName was last modified. |
+| 2 | `BridgedEndpoint` | endpoint-no | `desc` | desc | Indicates the endpoint this EcosystemDeviceStruct is associated with on this Bridge. |
+| 3 | `OriginalEndpoint` | endpoint-no | `desc` | desc | Indicates the endpoint this EcosystemDeviceStruct is associated with on the original device represented by this bridge's Bridged Node. |
+| 4 | `DeviceTypes` | list of DeviceTypeStruct | `M` | desc | Indicates all of the DeviceTypes within the DeviceTypeList in the Descriptor Cluster associated with this EcosystemDeviceStruct entry. |
+| 5 | `UniqueLocationIDs` | list of string | `M` | max 64 entries | — |
+| 6 | `UniqueLocationIDsLastEdit` | epoch-us | `M` | — | — |
+
+### `EcosystemLocationStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `UniqueLocationID` | string | `M` | max length 64 | — |
+| 1 | `LocationDescriptor` | LocationDescriptorStruct | `M` | — | Indicates the location (e.g. living room, driveway) and associated metadata that is provided externally if the user consents. |
+| 2 | `LocationDescriptorLastEdit` | epoch-us | `M` | — | Indicates the timestamp of when the LocationDescriptor was last modified. |
+
+---
+
+## Cluster 1872 Attributes
+
+Cluster 1872 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `DeviceDirectory` | list of EcosystemDeviceStruct | `M` | R (read: manage, fabric-scoped) | persisted | — |
+| 1 | `0x0001` | `LocationDirectory` | list of EcosystemLocationStruct | `M` | R (read: manage, fabric-scoped) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `DeviceDirectory`
+
+Path example:
+
+```text
+0/1872/0
+```
+
+This attribute contains the list of logical devices represented by a Bridged Node. Most of the time this will contain a single entry, but may grow with more complex device compositions (e.g. another bridge.) An empty list indicates that the information is not available.
+
+| Property | Value |
+|---|---|
+| Type | list of EcosystemDeviceStruct |
+| Conformance | `M` |
+| Access | R (read: manage, fabric-scoped) |
+| Qualities | persisted |
+
+Each entry is a `EcosystemDeviceStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1872/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `LocationDirectory`
+
+Path example:
+
+```text
+0/1872/1
+```
+
+This attribute contains the list of rooms, areas and groups associated with the DeviceDirectory entries, and must NOT contain locations which are dynamically generated and removed by an ecosystem. (E.g. a location that is generated and removed based on the user being home is not permitted. However, an initially generated location name that does not quickly change is acceptable.) An empty list indicates that the information is not available. LocationDirectory entries is removed if there is no DeviceDirectory that references it.
+
+| Property | Value |
+|---|---|
+| Type | list of EcosystemLocationStruct |
+| Conformance | `M` |
+| Access | R (read: manage, fabric-scoped) |
+| Qualities | persisted |
+
+Each entry is a `EcosystemLocationStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1872/1": []
+}
+```
+
+---
+
+# Cluster 1872 Commands
+
+Cluster 1872 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1872 Events
+
+Cluster 1872 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1872 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1872/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

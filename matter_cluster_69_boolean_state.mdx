@@ -1,0 +1,149 @@
+---
+title: "Matter Cluster 69 — Boolean State"
+description: "Matter Cluster 69 (0x0045) Boolean State: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 69
+clusterHex: "0x0045"
+clusterName: "Boolean State"
+---
+
+# Matter Cluster 69 — Boolean State Cluster
+
+<Callout type="info">
+Matter Cluster <code>69</code>, also written as <code>0x0045</code>, is the <strong>Boolean State Cluster</strong>.
+This cluster provides an interface to a boolean state.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `69` |
+| Cluster ID hex | `0x0045` |
+| Cluster name | `Boolean State` |
+| Cluster revision (Matter 1.6.1) | `3` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `BOOL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Removed P quality |
+| 3 | Introduced ChangeEvent feature |
+
+---
+
+## Shadow Path Format
+
+Cluster 69 values in the device shadow use this format:
+
+```text
+endpoint_id / 69 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/69/0": true
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `69` | Boolean State cluster |
+| `0` | `StateValue` attribute |
+
+---
+
+## Cluster 69 Features
+
+The `FeatureMap` attribute (`1/69/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CHGEVENT` | ChangeEvent | `[ClusterRevision >= 3]` | Supports reporting change events |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Cluster 69 Attributes
+
+Cluster 69 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `StateValue` | bool | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `3` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `StateValue`
+
+Path example:
+
+```text
+1/69/0
+```
+
+This represents a boolean state. The semantics of this boolean state are defined by the device type using this cluster. For example, in a Contact Sensor device type, FALSE=open or no contact, TRUE=closed or contact.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/69/0": true
+}
+```
+
+---
+
+# Cluster 69 Commands
+
+Cluster 69 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 69 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `StateChange` | info | `CHGEVENT, O` | If this event is supported, it is generated when the StateValue attribute changes. |
+
+## Event `0` — `StateChange`
+
+If this event is supported, it is generated when the StateValue attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `StateValue` | bool | `M` | Indicates the new value of the StateValue attribute. |
+
+---
+
+# SmartphoneKey Notes
+
+- Boolean State is used by contact, leak and similar sensors. The meaning of `StateValue` depends on the endpoint device type: contact sensor `true` = closed; water leak detector `true` = leak detected.
+- Shelly Flood leak sensors are Long Idle Time ICDs: live reads of `0/69/0` can time out; rely on reported (subscribed) values in the shadow.
+- Shadow paths follow `endpoint/69/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

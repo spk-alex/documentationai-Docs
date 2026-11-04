@@ -1,0 +1,416 @@
+---
+title: "Matter Cluster 151 — Messages"
+description: "Matter Cluster 151 (0x0097) Messages: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 151
+clusterHex: "0x0097"
+clusterName: "Messages"
+---
+
+# Matter Cluster 151 — Messages Cluster
+
+<Callout type="info">
+Matter Cluster <code>151</code>, also written as <code>0x0097</code>, is the <strong>Messages Cluster</strong>.
+This cluster provides an interface for passing messages to be presented by a device.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `151` |
+| Cluster ID hex | `0x0097` |
+| Cluster name | `Messages` |
+| Cluster revision (Matter 1.6.1) | `3` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `MESS` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | Updated from SE1.4 version; CCB 1819 |
+| 3 | Initial Matter release; renamed from EnergyMessaging to Messages |
+
+---
+
+## Shadow Path Format
+
+Cluster 151 values in the device shadow use this format:
+
+```text
+endpoint_id / 151 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/151/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `151` | Messages cluster |
+| `0` | `Messages` attribute |
+
+---
+
+## Cluster 151 Features
+
+The `FeatureMap` attribute (`1/151/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CONF` | ReceivedConfirmation | `O` | This feature indicates that the device can get confirmation from a user that the message was received. |
+| 1 | `RESP` | ConfirmationResponse | `[CONF]` | This feature indicates that the device is capable of presenting a list of responses to the user and recording the user's choice of response. |
+| 2 | `RPLY` | ConfirmationReply | `[CONF]` | This feature indicates that the device is capable of collecting a free-form text response to a message. |
+| 3 | `PROT` | ProtectedMessages | `O` | This feature indicates that the device is capable of requiring the user to authenticate before viewing a message; e.g. entering a PIN or password before viewing a message with billing information. |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `15` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `FutureMessagePreferenceEnum`
+
+A display device may include this preference in the MessageComplete event as a hint to clients about how to handle future similar messages.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Allowed` | `M` | Similar messages are allowed |
+| 1 | `Increased` | `M` | Similar messages should be sent more often |
+| 2 | `Reduced` | `M` | Similar messages should be sent less often |
+| 3 | `Disallowed` | `M` | Similar messages should not be sent |
+| 4 | `Banned` | `M` | No further messages should be sent |
+
+### `MessagePriorityEnum`
+
+Priority should be used to decide which messages to show when the number of eligible messages is larger than the device's capacity to present them.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Low` | `M` | Message to be transferred with a low level of importance |
+| 1 | `Medium` | `M` | Message to be transferred with a medium level of importance |
+| 2 | `High` | `M` | Message to be transferred with a high level of importance |
+| 3 | `Critical` | `M` | Message to be transferred with a critical level of importance |
+
+### `MessageControlBitmap` (bitmap)
+
+This data type is derived from map16, and indicates control information related to a message.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ConfirmationRequired` | `CONF` | Message requires confirmation from user |
+| 1 | `ResponseRequired` | `RESP` | Message requires response from user |
+| 2 | `ReplyMessage` | `RPLY` | Message supports reply message from user |
+| 3 | `MessageConfirmed` | `CONF` | Message has already been confirmed |
+| 4 | `MessageProtected` | `PROT` | Message required PIN/password protection |
+
+### `MessageResponseOptionStruct` (struct)
+
+This represents a possible response to a message.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MessageResponseID` | uint32 | `M` | min 1 | — |
+| 1 | `Label` | string | `M` | max length 32 | Indicates the text for this option; e.g. |
+
+### `MessageStruct` (struct) — fabric-scoped
+
+This represents a single message.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MessageID` | message-id | `M` | allowed: 16 | — |
+| 1 | `Priority` | MessagePriorityEnum | `M` | — | Indicates the priority level for this message. |
+| 2 | `MessageControl` | MessageControlBitmap | `M` | — | Indicates control information related to the message. |
+| 3 | `StartTime` | epoch-s (nullable) | `M` | — | Indicates the time in UTC at which the message becomes available to be presented. |
+| 4 | `Duration` | uint64 (nullable) | `M` | — | Indicates the amount of time, in milliseconds, after the StartTime during which the message is available to be presented. |
+| 5 | `MessageText` | string | `M` | max length 256 | Indicates a string containing the message to be presented. |
+| 6 | `Responses` | list of MessageResponseOptionStruct | `RESP` | max 4 entries | Indicates a list of potential responses to the message. |
+
+---
+
+## Cluster 151 Attributes
+
+Cluster 151 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Messages` | list of MessageStruct | `M` | R (read: view, fabric-scoped) | — | — |
+| 1 | `0x0001` | `ActiveMessageIDs` | list of message-id | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `3` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Messages`
+
+Path example:
+
+```text
+1/151/0
+```
+
+Indicates a list of queued messages. In addition to filtering based upon fabric, to preserve user privacy, the server may further limit the set of messages returned in a read request. At minimum, the server returns to a client those messages that the client itself created/submitted.
+
+| Property | Value |
+|---|---|
+| Type | list of MessageStruct |
+| Conformance | `M` |
+| Access | R (read: view, fabric-scoped) |
+| Constraint | max 8 entries |
+
+Each entry is a `MessageStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/151/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ActiveMessageIDs`
+
+Path example:
+
+```text
+1/151/1
+```
+
+No condensed specification text is available for `ActiveMessageIDs`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of message-id |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 8 entries |
+
+Example:
+
+```json
+{
+  "1/151/1": []
+}
+```
+
+---
+
+# Cluster 151 Commands
+
+Cluster 151 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `PresentMessagesRequest` | client → server | `M` | status | On receipt, this must cause the message in the passed fields to be appended to the Messages attribute. |
+| 1 | `0x01` | `CancelMessagesRequest` | client → server | `M` | status | This command will cancel the message IDs specified. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 151 / 65529
+```
+
+```json
+{
+  "1/151/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 151 command, check that the command ID exists in <code>endpoint/151/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 151,
+    "command_name": "PresentMessagesRequest",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 151, always use `"cluster_id": 151`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `PresentMessagesRequest`
+
+## Purpose
+
+On receipt, this must cause the message in the passed fields to be appended to the Messages attribute. If appending the message would cause the number of messages to be greater than the capacity of the list, the device must NOT append any message to Messages, and returns a status code of RESOURCE_EXHAUSTED. When displaying a message in response to this command, an indication (ex. visual) of the origin node of the command is provided. This could be in the form of a friendly name label which uniquely identifies the node to the user.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `PresentMessagesRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `MessageID` | `messageID` | message-id | `M` | allowed: 16 | — |
+| 1 | `Priority` | `priority` | MessagePriorityEnum | `M` | — | Indicates the priority level for this message. See Priority. |
+| 2 | `MessageControl` | `messageControl` | MessageControlBitmap | `M` | — | Indicates control information related to the message. See MessageControl. |
+| 3 | `StartTime` | `startTime` | epoch-s (nullable) | `M` | — | Indicates the time in UTC at which the message becomes available to be presented. A null value indicates "now." See StartTime. |
+| 4 | `Duration` | `duration` | uint64 (nullable) | `M` | — | Indicates the amount of time, in milliseconds, after the StartTime during which the message is available to be presented. A null value indicates "until changed". |
+| 5 | `MessageText` | `messageText` | string | `M` | max length 256 | Indicates a string containing the message to be presented. See MessageText. |
+| 6 | `Responses` | `responses` | list of MessageResponseOptionStruct | `RESP` | max 4 entries | Indicates a list of potential responses to the message. The entries in this list has unique values of MessageResponseID. |
+
+`Priority` values (`MessagePriorityEnum`): `0` = Low, `1` = Medium, `2` = High, `3` = Critical
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 151,
+    "command_name": "PresentMessagesRequest",
+    "payload": {
+      "messageID": 0,
+      "priority": 0,
+      "messageControl": 0,
+      "startTime": 0,
+      "duration": 1,
+      "messageText": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `CancelMessagesRequest`
+
+## Purpose
+
+This command will cancel the message IDs specified.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `CancelMessagesRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `MessageIDs` | `messageIDs` | list of message-id | `M` | max 8 entries | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 151,
+    "command_name": "CancelMessagesRequest",
+    "payload": {
+      "messageIDs": []
+    }
+  }
+}
+```
+
+---
+
+# Cluster 151 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `MessageQueued` | info | `M` | This event is generated when a message is added to the messages attribute. |
+| 1 | `0x01` | `MessagePresented` | info | `M` | This event is generated when the message is presented to the user. |
+| 2 | `0x02` | `MessageComplete` | info | `M` | This event is generated when the message is confirmed by the user, or when the Duration field of the message has elapsed without confirmation. |
+
+## Event `0` — `MessageQueued`
+
+This event is generated when a message is added to the messages attribute.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `MessageID` | message-id | `M` | — |
+
+## Event `1` — `MessagePresented`
+
+This event is generated when the message is presented to the user.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `MessageID` | message-id | `M` | — |
+
+## Event `2` — `MessageComplete`
+
+This event is generated when the message is confirmed by the user, or when the Duration field of the message has elapsed without confirmation.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `MessageID` | message-id | `M` | — |
+| 1 | `ResponseID` | uint32 (nullable) | `RESP` | — |
+| 2 | `Reply` | string (nullable) | `RPLY` | Indicates a user-provided reply to the message. If there was no reply, or the message did not have the ReplyRequired bit set, this field is null. |
+| 3 | `FutureMessagesPreference` | FutureMessagePreferenceEnum (nullable) | `M` | — |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 151 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/151/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

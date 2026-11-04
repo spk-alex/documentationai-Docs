@@ -1,0 +1,496 @@
+---
+title: "Matter Cluster 1071 — Radon Concentration Measurement"
+description: "Matter Cluster 1071 (0x042F) Radon Concentration Measurement: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1071
+clusterHex: "0x042F"
+clusterName: "Radon Concentration Measurement"
+---
+
+# Matter Cluster 1071 — Radon Concentration Measurement Cluster
+
+<Callout type="info">
+Matter Cluster <code>1071</code>, also written as <code>0x042F</code>, is the <strong>Radon Concentration Measurement Cluster</strong>.
+</Callout>
+
+<Callout type="info">
+This cluster is one of several <strong>alias clusters</strong> that share the same definition (Concentration Measurement Clusters): Carbon Monoxide Concentration Measurement (&lt;code&gt;1036&lt;/code&gt;), Carbon Dioxide Concentration Measurement (&lt;code&gt;1037&lt;/code&gt;), Nitrogen Dioxide Concentration Measurement (&lt;code&gt;1043&lt;/code&gt;), Ozone Concentration Measurement (&lt;code&gt;1045&lt;/code&gt;), PM2.5 Concentration Measurement (&lt;code&gt;1066&lt;/code&gt;), Formaldehyde Concentration Measurement (&lt;code&gt;1067&lt;/code&gt;), PM1 Concentration Measurement (&lt;code&gt;1068&lt;/code&gt;), PM10 Concentration Measurement (&lt;code&gt;1069&lt;/code&gt;), Total Volatile Organic Compounds Concentration Measurement (&lt;code&gt;1070&lt;/code&gt;). Only the cluster ID and the measured quantity differ.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1071` |
+| Cluster ID hex | `0x042F` |
+| Cluster name | `Radon Concentration Measurement` |
+| Cluster revision (Matter 1.6.1) | `5` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `CONC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | CCB 2882 |
+| 3 | Cluster redesigned to add support for Level Indication, Peak/Average Measurement, Medium/Unit of Measurement and Uncertainty |
+| 4 | Removed P quality |
+| 5 | Added F quality to MinMeasuredValue, MaxMeasuredValue and Uncertainty attributes |
+
+---
+
+## Shadow Path Format
+
+Cluster 1071 values in the device shadow use this format:
+
+```text
+endpoint_id / 1071 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1071/9": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1071` | Radon Concentration Measurement cluster |
+| `9` | `MeasurementMedium` attribute |
+
+---
+
+## Cluster 1071 Features
+
+The `FeatureMap` attribute (`1/1071/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `MEA` | NumericMeasurement | `O` | Cluster supports numeric measurement of substance |
+| 1 | `LEV` | LevelIndication | `O` | Cluster supports basic level indication for substance using the ConcentrationLevel enum |
+| 2 | `MED` | MediumLevel | `[LEV]` | Cluster supports the Medium Concentration Level |
+| 3 | `CRI` | CriticalLevel | `[LEV]` | Cluster supports the Critical Concentration Level |
+| 4 | `PEA` | PeakMeasurement | `[MEA]` | Cluster supports peak numeric measurement of substance |
+| 5 | `AVG` | AverageMeasurement | `[MEA]` | Cluster supports average numeric measurement of substance |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `63` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `LevelValueEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `M` | The level is Unknown |
+| 1 | `Low` | `M` | The level is considered Low |
+| 2 | `Medium` | `MED` | The level is considered Medium |
+| 3 | `High` | `M` | The level is considered High |
+| 4 | `Critical` | `CRI` | The level is considered Critical |
+
+### `MeasurementMediumEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Air` | `M` | The measurement is being made in Air |
+| 1 | `Water` | `M` | The measurement is being made in Water |
+| 2 | `Soil` | `M` | The measurement is being made in Soil |
+
+### `MeasurementUnitEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `PPM` | `MEA` | Parts per Million (10) |
+| 1 | `PPB` | `MEA` | Parts per Billion (10) |
+| 2 | `PPT` | `MEA` | Parts per Trillion (10) |
+| 3 | `MGM3` | `MEA` | Milligram per m |
+| 4 | `UGM3` | `MEA` | Microgram per m |
+| 5 | `NGM3` | `MEA` | Nanogram per m |
+| 6 | `PM3` | `MEA` | Particles per m |
+| 7 | `BQM3` | `MEA` | Becquerel per m |
+
+---
+
+## Cluster 1071 Attributes
+
+Cluster 1071 defines **11 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MeasuredValue` | single | `MEA` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `MinMeasuredValue` | single | `MEA` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `MaxMeasuredValue` | single | `MEA` | R (read: view) | nullable | — |
+| 3 | `0x0003` | `PeakMeasuredValue` | single | `PEA` | R (read: view) | nullable | — |
+| 4 | `0x0004` | `PeakMeasuredValueWindow` | elapsed-s | `PEA` | R (read: view) | — | — |
+| 5 | `0x0005` | `AverageMeasuredValue` | single | `AVG` | R (read: view) | nullable | — |
+| 6 | `0x0006` | `AverageMeasuredValueWindow` | elapsed-s | `AVG` | R (read: view) | — | — |
+| 7 | `0x0007` | `Uncertainty` | single | `[MEA]` | R (read: view) | — | `MS` |
+| 8 | `0x0008` | `MeasurementUnit` | MeasurementUnitEnum | `MEA` | R (read: view) | — | — |
+| 9 | `0x0009` | `MeasurementMedium` | MeasurementMediumEnum | `M` | R (read: view) | — | — |
+| 10 | `0x000A` | `LevelValue` | LevelValueEnum | `LEV` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `5` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MeasuredValue`
+
+Path example:
+
+```text
+1/1071/0
+```
+
+No condensed specification text is available for `MeasuredValue`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | single |
+| Conformance | `MEA` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | MinMeasuredValue to MaxMeasuredValue |
+
+Example:
+
+```json
+{
+  "1/1071/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MinMeasuredValue`
+
+Path example:
+
+```text
+1/1071/1
+```
+
+No condensed specification text is available for `MinMeasuredValue`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | single |
+| Conformance | `MEA` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/1071/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MaxMeasuredValue`
+
+Path example:
+
+```text
+1/1071/2
+```
+
+No condensed specification text is available for `MaxMeasuredValue`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | single |
+| Conformance | `MEA` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min MinMeasuredValue |
+
+Example:
+
+```json
+{
+  "1/1071/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `PeakMeasuredValue`
+
+Path example:
+
+```text
+1/1071/3
+```
+
+No condensed specification text is available for `PeakMeasuredValue`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | single |
+| Conformance | `PEA` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | MinMeasuredValue to MaxMeasuredValue |
+
+Example:
+
+```json
+{
+  "1/1071/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `PeakMeasuredValueWindow`
+
+Path example:
+
+```text
+1/1071/4
+```
+
+No condensed specification text is available for `PeakMeasuredValueWindow`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `PEA` |
+| Access | R (read: view) |
+| Constraint | max 604800 |
+
+Example:
+
+```json
+{
+  "1/1071/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `AverageMeasuredValue`
+
+Path example:
+
+```text
+1/1071/5
+```
+
+No condensed specification text is available for `AverageMeasuredValue`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | single |
+| Conformance | `AVG` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | MinMeasuredValue to MaxMeasuredValue |
+
+Example:
+
+```json
+{
+  "1/1071/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `AverageMeasuredValueWindow`
+
+Path example:
+
+```text
+1/1071/6
+```
+
+No condensed specification text is available for `AverageMeasuredValueWindow`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `AVG` |
+| Access | R (read: view) |
+| Constraint | max 604800 |
+
+Example:
+
+```json
+{
+  "1/1071/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `Uncertainty`
+
+Path example:
+
+```text
+1/1071/7
+```
+
+No condensed specification text is available for `Uncertainty`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | single |
+| Conformance | `[MEA]` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/1071/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `MeasurementUnit`
+
+Path example:
+
+```text
+1/1071/8
+```
+
+No condensed specification text is available for `MeasurementUnit`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | MeasurementUnitEnum |
+| Conformance | `MEA` |
+| Access | R (read: view) |
+
+Values (`MeasurementUnitEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `PPM` | Parts per Million (10) |
+| 1 | `PPB` | Parts per Billion (10) |
+| 2 | `PPT` | Parts per Trillion (10) |
+| 3 | `MGM3` | Milligram per m |
+| 4 | `UGM3` | Microgram per m |
+| 5 | `NGM3` | Nanogram per m |
+| 6 | `PM3` | Particles per m |
+| 7 | `BQM3` | Becquerel per m |
+
+Example:
+
+```json
+{
+  "1/1071/8": 0
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `MeasurementMedium`
+
+Path example:
+
+```text
+1/1071/9
+```
+
+No condensed specification text is available for `MeasurementMedium`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | MeasurementMediumEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`MeasurementMediumEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Air` | The measurement is being made in Air |
+| 1 | `Water` | The measurement is being made in Water |
+| 2 | `Soil` | The measurement is being made in Soil |
+
+Example:
+
+```json
+{
+  "1/1071/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `LevelValue`
+
+Path example:
+
+```text
+1/1071/10
+```
+
+No condensed specification text is available for `LevelValue`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | LevelValueEnum |
+| Conformance | `LEV` |
+| Access | R (read: view) |
+
+Values (`LevelValueEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unknown` | The level is Unknown |
+| 1 | `Low` | The level is considered Low |
+| 2 | `Medium` | The level is considered Medium |
+| 3 | `High` | The level is considered High |
+| 4 | `Critical` | The level is considered Critical |
+
+Example:
+
+```json
+{
+  "1/1071/10": 1
+}
+```
+
+---
+
+# Cluster 1071 Commands
+
+Cluster 1071 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1071 Events
+
+Cluster 1071 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1071 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1071/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

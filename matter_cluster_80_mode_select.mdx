@@ -1,0 +1,406 @@
+---
+title: "Matter Cluster 80 — Mode Select"
+description: "Matter Cluster 80 (0x0050) Mode Select: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 80
+clusterHex: "0x0050"
+clusterName: "Mode Select"
+---
+
+# Matter Cluster 80 — Mode Select Cluster
+
+<Callout type="info">
+Matter Cluster <code>80</code>, also written as <code>0x0050</code>, is the <strong>Mode Select Cluster</strong>.
+This cluster provides an interface for controlling a characteristic of a device that can be set to one of several predefined values. For example, the light pattern of a disco ball, the mode of a massage chair, or the wash cycle of a laundry machine. The server allows the client to set a mode on the server.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `80` |
+| Cluster ID hex | `0x0050` |
+| Cluster name | `Mode Select` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `MOD` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | The MfgCode field was marked non-nullable, updated the related text and reordered sections |
+
+---
+
+## Shadow Path Format
+
+Cluster 80 values in the device shadow use this format:
+
+```text
+endpoint_id / 80 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/80/0": "example"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `80` | Mode Select cluster |
+| `0` | `Description` attribute |
+
+---
+
+## Cluster 80 Features
+
+The `FeatureMap` attribute (`1/80/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `DEPONOFF` | OnOff | `O` | Dependency with the OnOff cluster |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ModeOptionStruct` (struct)
+
+This is a struct representing a possible mode of the server.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Label` | string | `M` | max length 64 | This field is readable text that describes the mode option that can be used by a client to indicate to the user what this option means. |
+| 1 | `Mode` | uint8 | `M` | — | The Mode field is used to identify the mode option. |
+| 2 | `SemanticTags` | list of SemanticTagStruct | `M` | max 64 entries | This field is a list of semantic tags that map to the mode option. |
+
+### `SemanticTagStruct` (struct)
+
+A Semantic Tag is meant to be interpreted by the client for the purpose the cluster serves.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MfgCode` | vendor-id | `M` | desc | Indicates a manufacturer code (Vendor ID), and the Value field indicates a semantic tag defined by the manufacturer. |
+| 1 | `Value` | enum16 | `M` | — | Indicates the semantic tag within a semantic tag namespace which is either manufacturer specific or standard. |
+
+---
+
+## Cluster 80 Attributes
+
+Cluster 80 defines **6 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Description` | string | `M` | R (read: view) | — | `MS` |
+| 1 | `0x0001` | `StandardNamespace` | enum16 | `M` | R (read: view) | nullable | `null` |
+| 2 | `0x0002` | `SupportedModes` | list of ModeOptionStruct | `M` | R (read: view) | — | `MS` |
+| 3 | `0x0003` | `CurrentMode` | uint8 | `M` | R (read: view) | persisted | `MS` |
+| 4 | `0x0004` | `StartUpMode` | uint8 | `O` | R/W (read: view, write: operate) | nullable, persisted | `MS` |
+| 5 | `0x0005` | `OnMode` | uint8 | `DEPONOFF` | R/W (read: view, write: operate) | nullable, persisted | `null` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Description`
+
+Path example:
+
+```text
+1/80/0
+```
+
+This attribute describes the purpose of the server, in readable text. For example, a coffee machine may have a Mode Select cluster for the amount of milk to add, and another Mode Select cluster for the amount of sugar to add. In this case, the first instance can have the description Milk and the second instance can have the description Sugar. This allows the user to tell the purpose of each of the instances.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max length 64 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/80/0": "example"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `StandardNamespace`
+
+Path example:
+
+```text
+1/80/1
+```
+
+This attribute, when not null, indicates a single standard namespace for any standard semantic tag value supported in this or any other cluster instance with the same value of this attribute. A null value indicates no standard namespace, and therefore, no standard semantic tags are provided in this cluster instance. Each standard namespace and corresponding values and value meanings is defined in another document.
+
+| Property | Value |
+|---|---|
+| Type | enum16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/80/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `SupportedModes`
+
+Path example:
+
+```text
+1/80/2
+```
+
+This attribute is the list of supported modes that may be selected for the CurrentMode attribute. Each item in this list represents a unique mode as indicated by the Mode field of the ModeOptionStruct. Each entry in this list has a unique value for the Mode field.
+
+| Property | Value |
+|---|---|
+| Type | list of ModeOptionStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 255 entries |
+| Default | `MS` |
+
+Each entry is a `ModeOptionStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/80/2": []
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `CurrentMode`
+
+Path example:
+
+```text
+1/80/3
+```
+
+This attribute represents the current mode of the server. The value of this field must match the Mode field of one of the entries in the SupportedModes attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/80/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `StartUpMode`
+
+Path example:
+
+```text
+1/80/4
+```
+
+The StartUpMode attribute value indicates the desired startup mode for the server when it is supplied with power. If this attribute is not null, the CurrentMode attribute is set to the StartUpMode value, when the server is powered up, except in the case when the OnMode attribute overrides the StartUpMode attribute. This behavior does not apply to reboots associated with OTA. After an OTA restart, the CurrentMode attribute returns to its value prior to the restart.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `O` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable, persisted |
+| Constraint | desc |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/80/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `OnMode`
+
+Path example:
+
+```text
+1/80/5
+```
+
+Indicates the value of CurrentMode that depends on the state of the On/Off cluster on the same endpoint. If this attribute is not present or is set to null, it must NOT have an effect, otherwise the CurrentMode attribute must depend on the OnOff attribute of the On/Off cluster The value of this field must match the Mode field of one of the entries in the SupportedModes attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `DEPONOFF` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable, persisted |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/80/5": 1
+}
+```
+
+---
+
+# Cluster 80 Commands
+
+Cluster 80 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ChangeToMode` | client → server | `M` | status | On receipt of this command, if the NewMode field indicates a valid mode transition within the supported list, the server must set the CurrentMode attribute to the NewMode value, … |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 80 / 65529
+```
+
+```json
+{
+  "1/80/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 80 command, check that the command ID exists in <code>endpoint/80/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 80,
+    "command_name": "ChangeToMode",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 80, always use `"cluster_id": 80`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ChangeToMode`
+
+## Purpose
+
+On receipt of this command, if the NewMode field indicates a valid mode transition within the supported list, the server must set the CurrentMode attribute to the NewMode value, otherwise, the server must respond with an INVALID_COMMAND status response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ChangeToMode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NewMode` | `newMode` | uint8 | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 80,
+    "command_name": "ChangeToMode",
+    "payload": {
+      "newMode": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 80 Events
+
+Cluster 80 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 80 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/80/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

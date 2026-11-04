@@ -1,0 +1,3226 @@
+---
+title: "Matter Cluster 257 — Door Lock"
+description: "Matter Cluster 257 (0x0101) Door Lock: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 257
+clusterHex: "0x0101"
+clusterName: "Door Lock"
+---
+
+# Matter Cluster 257 — Door Lock Cluster
+
+<Callout type="info">
+Matter Cluster <code>257</code>, also written as <code>0x0101</code>, is the <strong>Door Lock Cluster</strong>.
+The door lock cluster provides an interface to a generic way to secure a door. The physical object that provides the locking functionality is abstracted from the cluster. The cluster has a small list of mandatory attributes and functions and a list of optional features.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `257` |
+| Cluster ID hex | `0x0101` |
+| Cluster name | `Door Lock` |
+| Cluster revision (Matter 1.6.1) | `10` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `DRLK` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added; CCB 1811 1812 1821 |
+| 2 | CCB 2430 |
+| 3 | CCB 2629 2630 |
+| 4 | All Hubs changes and added feature map |
+| 5 | CCB 3472 3474 3338 |
+| 6 | New data model format and notation. Added User features. General cleanup of functionality |
+| 7 | Added support for European door locks (unbolt feature) |
+| 8 | Removed LOG and NOT feature, fixed constraints on NumberOf&#42;Schedules attributes and added support for Aliro credential provisioning |
+| 9 | Removed AlarmMask attribute |
+| 10 | Removed Zigbee related elements and P quality |
+
+---
+
+## Shadow Path Format
+
+Cluster 257 values in the device shadow use this format:
+
+```text
+endpoint_id / 257 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/257/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `257` | Door Lock cluster |
+| `0` | `LockState` attribute |
+
+---
+
+## Cluster 257 Features
+
+The `FeatureMap` attribute (`1/257/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PIN` | PINCredential | `O` | Lock supports PIN credentials (via keypad, or over-the-air) |
+| 1 | `RID` | RFIDCredential | `P, O` | Lock supports RFID credentials |
+| 2 | `FGP` | FingerCredentials | `P, O` | Lock supports finger related credentials (fingerprint, finger vein) |
+| 4 | `WDSCH` | WeekDayAccessSchedules | `O` | Lock supports week day user access schedules |
+| 5 | `DPS` | DoorPositionSensor | `O` | Lock supports a door position sensor that indicates door's state |
+| 6 | `FACE` | FaceCredentials | `P, O` | Lock supports face related credentials (face, iris, retina) |
+| 7 | `COTA` | CredentialOverTheAirAccess | `O` | PIN codes over-the-air supported for lock/unlock operations |
+| 8 | `USR` | User | `PIN \| RID \| FGP \| FACE \| ALIRO` | Lock supports the user commands and database |
+| 10 | `YDSCH` | YearDayAccessSchedules | `O` | Lock supports year day user access schedules |
+| 11 | `HDSCH` | HolidaySchedules | `O` | Lock supports holiday schedules |
+| 12 | `UBOLT` | Unbolting | `O` | Lock supports unbolting |
+| 13 | `ALIRO` | AliroProvisioning | `O` | Lock supports Aliro credential provisioning as defined in Aliro |
+| 14 | `ALBU` | AliroBLEUWB | `[ALIRO]` | Lock supports the Bluetooth LE + UWB Access Control Flow as defined in Aliro |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `32247` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AlarmCodeEnum`
+
+This enumeration indicates the alarm type.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `LockJammed` | `M` | Locking Mechanism Jammed |
+| 1 | `LockFactoryReset` | `O` | Lock Reset to Factory Defaults |
+| 3 | `LockRadioPowerCycled` | `O` | Lock Radio Power Cycled |
+| 4 | `WrongCodeEntryLimit` | `[USR]` | Tamper Alarm - wrong code entry limit |
+| 5 | `FrontEsceutcheonRemoved` | `O` | Tamper Alarm - front escutcheon removed from main |
+| 6 | `DoorForcedOpen` | `[DPS]` | Forced Door Open under Door Locked Condition |
+| 7 | `DoorAjar` | `[DPS]` | Door ajar |
+| 8 | `ForcedUser` | `[USR]` | Force User SOS alarm |
+
+### `CredentialRuleEnum`
+
+This enumeration indicates the credential rule that can be applied to a particular user.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Single` | `USR` | Only one credential is required for lock operation |
+| 1 | `Dual` | `[USR]` | Any two credentials are required for lock operation |
+| 2 | `Tri` | `[USR]` | Any three credentials are required for lock operation |
+
+### `CredentialTypeEnum`
+
+This enumeration indicates the credential type.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ProgrammingPIN` | `O` | Programming PIN code credential type |
+| 1 | `PIN` | `PIN` | PIN code credential type |
+| 2 | `RFID` | `RID` | RFID identifier credential type |
+| 3 | `Fingerprint` | `FGP` | Fingerprint identifier credential type |
+| 4 | `FingerVein` | `FGP` | Finger vein identifier credential type |
+| 5 | `Face` | `FACE` | Face identifier credential type |
+| 6 | `AliroCredentialIssuerKey` | `ALIRO` | A Credential Issuer public key as defined in Aliro |
+| 7 | `AliroEvictableEndpointKey` | `ALIRO` | An Endpoint public key as defined in Aliro which can be evicted if space is needed for another endpoint key |
+| 8 | `AliroNonEvictableEndpointKey` | `ALIRO` | An Endpoint public key as defined in Aliro which cannot be evicted if space is needed for another endpoint key |
+
+### `DataOperationTypeEnum`
+
+This enumeration indicates the data operation performed.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Add` | `M` | Data is being added or was added |
+| 1 | `Clear` | `M` | Data is being cleared or was cleared |
+| 2 | `Modify` | `M` | Data is being modified or was modified |
+
+### `DoorStateEnum`
+
+This enumeration indicates the current door state.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `DoorOpen` | `DPS` | Door state is open |
+| 1 | `DoorClosed` | `DPS` | Door state is closed |
+| 2 | `DoorJammed` | `[DPS]` | Door state is jammed |
+| 3 | `DoorForcedOpen` | `[DPS]` | Door state is currently forced open |
+| 4 | `DoorUnspecifiedError` | `[DPS]` | Door state is invalid for unspecified reason |
+| 5 | `DoorAjar` | `[DPS]` | Door state is ajar |
+
+### `EventTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Operation` | `M` | Event type is operation |
+| 1 | `Programming` | `M` | Event type is programming |
+| 2 | `Alarm` | `M` | Event type is alarm |
+
+### `LEDSettingEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoLEDSignal` | `M` | Never use LED for signalization |
+| 1 | `NoLEDSignalAccessAllowed` | `M` | Use LED signalization except for access allowed events |
+| 2 | `LEDSignalAll` | `M` | Use LED signalization for all events |
+
+### `LockDataTypeEnum`
+
+This enumeration indicates the data type that is being or has changed.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `O` | Unspecified or manufacturer specific lock user data added, cleared, or modified. |
+| 1 | `ProgrammingCode` | `O` | Lock programming PIN code was added, cleared, or modified. |
+| 2 | `UserIndex` | `M` | Lock user index was added, cleared, or modified. |
+| 3 | `WeekDaySchedule` | `WDSCH` | Lock user week day schedule was added, cleared, or modified. |
+| 4 | `YearDaySchedule` | `YDSCH` | Lock user year day schedule was added, cleared, or modified. |
+| 5 | `HolidaySchedule` | `HDSCH` | Lock holiday schedule was added, cleared, or modified. |
+| 6 | `PIN` | `PIN` | Lock user PIN code was added, cleared, or modified. |
+| 7 | `RFID` | `RID` | Lock user RFID code was added, cleared, or modified. |
+| 8 | `Fingerprint` | `FGP` | Lock user fingerprint was added, cleared, or modified. |
+| 9 | `FingerVein` | `FGP` | Lock user finger-vein information was added, cleared, or modified. |
+| 10 | `Face` | `FACE` | Lock user face information was added, cleared, or modified. |
+| 11 | `AliroCredentialIssuerKey` | `ALIRO` | An Aliro credential issuer key credential was added, cleared, or modified. |
+| 12 | `AliroEvictableEndpointKey` | `ALIRO` | An Aliro endpoint key credential which can be evicted credential was added, cleared, or modified. |
+| 13 | `AliroNonEvictableEndpointKey` | `ALIRO` | An Aliro endpoint key credential which cannot be evicted was added, cleared, or modified. |
+
+### `LockOperationTypeEnum`
+
+This enumeration indicates the type of Lock operation performed.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Lock` | `M` | Lock operation |
+| 1 | `Unlock` | `M` | Unlock operation |
+| 2 | `NonAccessUserEvent` | `O` | Triggered by keypad entry for user with User Type set to Non Access User |
+| 3 | `ForcedUserEvent` | `O` | Triggered by using a user with UserType set to Forced User |
+| 4 | `Unlatch` | `M` | Unlatch operation |
+
+### `LockStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NotFullyLocked` | `M` | Lock state is not fully locked |
+| 1 | `Locked` | `M` | Lock state is fully locked |
+| 2 | `Unlocked` | `M` | Lock state is fully unlocked |
+| 3 | `Unlatched` | `O` | Lock state is fully unlocked and the latch is pulled |
+
+### `LockTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `DeadBolt` | `M` | Physical lock type is dead bolt |
+| 1 | `Magnetic` | `M` | Physical lock type is magnetic |
+| 2 | `Other` | `M` | Physical lock type is other |
+| 3 | `Mortise` | `M` | Physical lock type is mortise |
+| 4 | `Rim` | `M` | Physical lock type is rim |
+| 5 | `LatchBolt` | `M` | Physical lock type is latch bolt |
+| 6 | `CylindricalLock` | `M` | Physical lock type is cylindrical lock |
+| 7 | `TubularLock` | `M` | Physical lock type is tubular lock |
+| 8 | `InterconnectedLock` | `M` | Physical lock type is interconnected lock |
+| 9 | `DeadLatch` | `M` | Physical lock type is dead latch |
+| 10 | `DoorFurniture` | `M` | Physical lock type is door furniture |
+| 11 | `Eurocylinder` | `M` | Physical lock type is euro cylinder |
+
+### `OperatingModeEnum`
+
+This enumeration indicates the lock operating mode.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Normal` | `M` | The lock operates normally. |
+| 1 | `Vacation` | `O` | Only remote interaction is enabled. |
+| 2 | `Privacy` | `O` | This mode is only possible if the door is locked. |
+| 3 | `NoRemoteLockUnlock` | `M` | This mode only disables remote interaction with the lock. |
+| 4 | `Passage` | `O` | The lock is open or can be opened or closed at will without the use of a Keypad or other means of user validation (e.g. a lock for a business during work hours). |
+
+### `OperationErrorEnum`
+
+This enumeration indicates the error cause of the Lock/Unlock operation performed.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `O` | Lock/unlock error caused by unknown or unspecified source |
+| 1 | `InvalidCredential` | `USR` | Lock/unlock error caused by invalid PIN, RFID, fingerprint or other credential |
+| 2 | `DisabledUserDenied` | `M` | Lock/unlock error caused by disabled USER or credential |
+| 3 | `Restricted` | `WDSCH \| YDSCH` | Lock/unlock error caused by schedule restriction |
+| 4 | `InsufficientBattery` | `O` | Lock/unlock error caused by insufficient battery power left to safely actuate the lock |
+
+### `OperationSourceEnum`
+
+This enumeration indicates the source of the Lock/Unlock or user change operation performed.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `O` | Lock/unlock operation came from unspecified source |
+| 1 | `Manual` | `O` | Lock/unlock operation came from manual operation (key, thumbturn, handle, etc). |
+| 2 | `ProprietaryRemote` | `O` | Lock/unlock operation came from proprietary remote source (e.g. vendor app/cloud) |
+| 3 | `Keypad` | `O` | Lock/unlock operation came from keypad |
+| 4 | `Auto` | `O` | Lock/unlock operation came from lock automatically (e.g. relock timer) |
+| 5 | `Button` | `O` | Lock/unlock operation came from lock button (e.g. one touch or button) |
+| 6 | `Schedule` | `HDSCH` | Lock/unlock operation came from lock due to a schedule |
+| 7 | `Remote` | `M` | Lock/unlock operation came from remote node |
+| 8 | `RFID` | `RID` | Lock/unlock operation came from RFID card |
+| 9 | `Biometric` | `[USR]` | Lock/unlock operation came from biometric source (e.g. face, fingerprint/fingervein) |
+| 10 | `Aliro` | `ALIRO` | Lock/unlock operation came from an interaction defined in Aliro, or user change operation was a step-up credential provisioning as defined in Aliro |
+
+### `SoundVolumeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Silent` | `M` | Silent Mode |
+| 1 | `Low` | `M` | Low Volume |
+| 2 | `High` | `M` | High Volume |
+| 3 | `Medium` | `M` | Medium Volume |
+
+### `StatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 2 | `Duplicate` | `M` | Entry would cause a duplicate credential/ID. |
+| 3 | `Occupied` | `M` | Entry would replace an occupied slot. |
+
+### `UserStatusEnum`
+
+This enumeration indicates what the status is for a specific user ID.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Available` | `M` | The user ID is available |
+| 1 | `OccupiedEnabled` | `M` | The user ID is occupied and enabled |
+| 3 | `OccupiedDisabled` | `O` | The user ID is occupied and disabled |
+
+### `UserTypeEnum`
+
+This enumeration indicates what the type is for a specific user ID.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `UnrestrictedUser` | `M` | The user ID type is unrestricted |
+| 1 | `YearDayScheduleUser` | `O` | The user ID type is schedule |
+| 2 | `WeekDayScheduleUser` | `O` | The user ID type is schedule |
+| 3 | `ProgrammingUser` | `O` | The user ID type is programming |
+| 4 | `NonAccessUser` | `O` | The user ID type is non access |
+| 5 | `ForcedUser` | `[USR]` | The user ID type is forced |
+| 6 | `DisposableUser` | `[USR]` | The user ID type is disposable |
+| 7 | `ExpiringUser` | `[USR]` | The user ID type is expiring |
+| 8 | `ScheduleRestrictedUser` | `WDSCH \| YDSCH` | The user ID type is schedule restricted |
+| 9 | `RemoteOnlyUser` | `USR & COTA & PIN` | The user ID type is remote only |
+
+### `AlarmMaskBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `LockJammed` | `M` | Locking Mechanism Jammed |
+| 1 | `LockFactoryReset` | `O` | Lock Reset to Factory Defaults |
+| 3 | `LockRadioPowerCycled` | `O` | RF Module Power Cycled |
+| 4 | `WrongCodeEntryLimit` | `PIN \| RID` | Tamper Alarm - wrong code entry limit |
+| 5 | `FrontEscutcheonRemoved` | `O` | Tamper Alarm - front escutcheon removed from main |
+| 6 | `DoorForcedOpen` | `O` | Forced Door Open under Door Locked Condition |
+
+### `ConfigurationRegisterBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `LocalProgramming` | `M` | The state of local programming functionality |
+| 1 | `KeypadInterface` | `M` | The state of the keypad interface |
+| 2 | `RemoteInterface` | `M` | The state of the remote interface |
+| 5 | `SoundVolume` | `M` | Sound volume is set to Silent value |
+| 6 | `AutoRelockTime` | `M` | Auto relock time it set to 0 |
+| 7 | `LEDSettings` | `M` | LEDs is disabled |
+
+### `CredentialRulesBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Single` | `M` | Only one credential is required for lock operation |
+| 1 | `Dual` | `M` | Any two credentials are required for lock operation |
+| 2 | `Tri` | `M` | Any three credentials are required for lock operation |
+
+### `DaysMaskBitmap` (bitmap)
+
+This bitmap indicates the days of the week the Week Day schedule applies for.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Sunday` | `M` | Schedule is applied on Sunday |
+| 1 | `Monday` | `M` | Schedule is applied on Monday |
+| 2 | `Tuesday` | `M` | Schedule is applied on Tuesday |
+| 3 | `Wednesday` | `M` | Schedule is applied on Wednesday |
+| 4 | `Thursday` | `M` | Schedule is applied on Thursday |
+| 5 | `Friday` | `M` | Schedule is applied on Friday |
+| 6 | `Saturday` | `M` | Schedule is applied on Saturday |
+
+### `LocalProgrammingFeaturesBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `AddUsersCredentialsSchedules` | `M` | The state of the ability to add users, credentials or schedules on the device |
+| 1 | `ModifyUsersCredentialsSchedules` | `M` | The state of the ability to modify users, credentials or schedules on the device |
+| 2 | `ClearUsersCredentialsSchedules` | `M` | The state of the ability to clear users, credentials or schedules on the device |
+| 3 | `AdjustSettings` | `M` | The state of the ability to adjust settings on the device |
+
+### `OperatingModesBitmap` (bitmap)
+
+For the OperatingModesBitmap, a bit SET indicates that the operating mode IS NOT supported. A bit CLEAR indicates that the operating mode IS supported.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Normal` | `M` | Normal operation mode |
+| 1 | `Vacation` | `O` | Vacation operation mode |
+| 2 | `Privacy` | `O` | Privacy operation mode |
+| 3 | `NoRemoteLockUnlock` | `M` | No remote lock and unlock operation mode |
+| 4 | `Passage` | `O` | Passage operation mode |
+
+### `CredentialStruct` (struct)
+
+This struct indicates the credential types and their corresponding indices (if any) for the event or user record.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CredentialType` | CredentialTypeEnum | `M` | — | Indicates the credential field used to authorize the lock operation. |
+| 1 | `CredentialIndex` | uint16 | `M` | — | Indicates the index of the specific credential used to authorize the lock operation in the list of credentials identified by CredentialType (e.g. |
+
+---
+
+## Cluster 257 Attributes
+
+Cluster 257 defines **46 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `LockState` | LockStateEnum | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `LockType` | LockTypeEnum | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `ActuatorEnabled` | bool | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `DoorState` | DoorStateEnum | `DPS` | R (read: view) | nullable | — |
+| 4 | `0x0004` | `DoorOpenEvents` | uint32 | `[DPS]` | R/W (read: view, write: manage) | — | — |
+| 5 | `0x0005` | `DoorClosedEvents` | uint32 | `[DPS]` | R/W (read: view, write: manage) | — | — |
+| 6 | `0x0006` | `OpenPeriod` | uint16 | `[DPS]` | R/W (read: view, write: manage) | — | — |
+| 17 | `0x0011` | `NumberOfTotalUsersSupported` | uint16 | `USR` | R (read: view) | — | — |
+| 18 | `0x0012` | `NumberOfPINUsersSupported` | uint16 | `PIN` | R (read: view) | — | — |
+| 19 | `0x0013` | `NumberOfRFIDUsersSupported` | uint16 | `RID` | R (read: view) | — | — |
+| 20 | `0x0014` | `NumberOfWeekDaySchedulesSupportedPerUser` | uint8 | `WDSCH` | R (read: view) | — | — |
+| 21 | `0x0015` | `NumberOfYearDaySchedulesSupportedPerUser` | uint8 | `YDSCH` | R (read: view) | — | — |
+| 22 | `0x0016` | `NumberOfHolidaySchedulesSupported` | uint8 | `HDSCH` | R (read: view) | — | — |
+| 23 | `0x0017` | `MaxPINCodeLength` | uint8 | `PIN` | R (read: view) | — | — |
+| 24 | `0x0018` | `MinPINCodeLength` | uint8 | `PIN` | R (read: view) | — | — |
+| 25 | `0x0019` | `MaxRFIDCodeLength` | uint8 | `RID` | R (read: view) | — | — |
+| 26 | `0x001A` | `MinRFIDCodeLength` | uint8 | `RID` | R (read: view) | — | — |
+| 27 | `0x001B` | `CredentialRulesSupport` | CredentialRulesBitmap | `USR` | R (read: view) | — | — |
+| 28 | `0x001C` | `NumberOfCredentialsSupportedPerUser` | uint8 | `USR` | R (read: view) | — | — |
+| 33 | `0x0021` | `Language` | string | `O` | R/W(opt) (read: view, write: manage) | — | `MS` |
+| 34 | `0x0022` | `LEDSettings` | LEDSettingEnum | `O` | R/W(opt) (read: view, write: manage) | — | `0` |
+| 35 | `0x0023` | `AutoRelockTime` | uint32 | `O` | R/W(opt) (read: view, write: manage) | — | `MS` |
+| 36 | `0x0024` | `SoundVolume` | SoundVolumeEnum | `O` | R/W(opt) (read: view, write: manage) | — | `0` |
+| 37 | `0x0025` | `OperatingMode` | OperatingModeEnum | `M` | R/W(opt) (read: view, write: manage) | — | — |
+| 38 | `0x0026` | `SupportedOperatingModes` | OperatingModesBitmap | `M` | R (read: view) | — | — |
+| 39 | `0x0027` | `DefaultConfigurationRegister` | ConfigurationRegisterBitmap | `O` | R (read: view) | — | `0` |
+| 40 | `0x0028` | `EnableLocalProgramming` | bool | `O` | R/W(opt) (read: view, write: admin) | — | `true` |
+| 41 | `0x0029` | `EnableOneTouchLocking` | bool | `O` | R/W (read: view, write: manage) | — | `false` |
+| 42 | `0x002A` | `EnableInsideStatusLED` | bool | `O` | R/W (read: view, write: manage) | — | `false` |
+| 43 | `0x002B` | `EnablePrivacyModeButton` | bool | `O` | R/W (read: view, write: manage) | — | `false` |
+| 44 | `0x002C` | `LocalProgrammingFeatures` | LocalProgrammingFeaturesBitmap | `O` | R/W(opt) (read: view, write: admin) | — | `0` |
+| 48 | `0x0030` | `WrongCodeEntryLimit` | uint8 | `PIN \| RID` | R/W(opt) (read: view, write: admin) | — | — |
+| 49 | `0x0031` | `UserCodeTemporaryDisableTime` | uint8 | `PIN \| RID` | R/W(opt) (read: view, write: admin) | — | — |
+| 50 | `0x0032` | `SendPINOverTheAir` | bool | `[!USR & PIN]` | R/W(opt) (read: view, write: admin) | — | `false` |
+| 51 | `0x0033` | `RequirePINforRemoteOperation` | bool | `COTA & PIN` | R/W(opt) (read: view, write: admin) | — | — |
+| 52 | `0x0034` | `SecurityLevel` |  | `D` | R (read: view) | — | `0` |
+| 53 | `0x0035` | `ExpiringUserTimeout` | uint16 | `[USR]` | R/W(opt) (read: view, write: admin) | — | `MS` |
+| 128 | `0x0080` | `AliroReaderVerificationKey` | octstr | `ALIRO` | R (read: admin) | nullable | — |
+| 129 | `0x0081` | `AliroReaderGroupIdentifier` | octstr | `ALIRO` | R (read: admin) | nullable | — |
+| 130 | `0x0082` | `AliroReaderGroupSubIdentifier` | octstr | `ALIRO` | R (read: admin) | — | — |
+| 131 | `0x0083` | `AliroExpeditedTransactionSupportedProtocolVersions` | list of octstr | `ALIRO` | R (read: admin) | — | — |
+| 132 | `0x0084` | `AliroGroupResolvingKey` | octstr | `ALBU` | R (read: admin) | nullable | — |
+| 133 | `0x0085` | `AliroSupportedBLEUWBProtocolVersions` | list of octstr | `ALBU` | R (read: admin) | — | — |
+| 134 | `0x0086` | `AliroBLEAdvertisingVersion` | uint8 | `ALBU` | R (read: admin) | — | — |
+| 135 | `0x0087` | `NumberOfAliroCredentialIssuerKeysSupported` | uint16 | `ALIRO` | R (read: view) | — | — |
+| 136 | `0x0088` | `NumberOfAliroEndpointKeysSupported` | uint16 | `ALIRO` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `10` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `LockState`
+
+Path example:
+
+```text
+1/257/0
+```
+
+This attribute may be null if the lock hardware does not currently know the status of the locking mechanism. For example, a lock may not know the LockState status after a power cycle until the first lock actuation is completed. The Not Fully Locked value is used by a lock to indicate that the state of the lock is somewhere between Locked and Unlocked so it is only partially secured. For example, a deadbolt could be partially extended and not in a dead latched state.
+
+| Property | Value |
+|---|---|
+| Type | LockStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+
+Values (`LockStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NotFullyLocked` | Lock state is not fully locked |
+| 1 | `Locked` | Lock state is fully locked |
+| 2 | `Unlocked` | Lock state is fully unlocked |
+| 3 | `Unlatched` | Lock state is fully unlocked and the latch is pulled |
+
+Example:
+
+```json
+{
+  "1/257/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `LockType`
+
+Path example:
+
+```text
+1/257/1
+```
+
+Indicates the type of door lock as defined in LockTypeEnum.
+
+| Property | Value |
+|---|---|
+| Type | LockTypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`LockTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `DeadBolt` | Physical lock type is dead bolt |
+| 1 | `Magnetic` | Physical lock type is magnetic |
+| 2 | `Other` | Physical lock type is other |
+| 3 | `Mortise` | Physical lock type is mortise |
+| 4 | `Rim` | Physical lock type is rim |
+| 5 | `LatchBolt` | Physical lock type is latch bolt |
+| 6 | `CylindricalLock` | Physical lock type is cylindrical lock |
+| 7 | `TubularLock` | Physical lock type is tubular lock |
+| 8 | `InterconnectedLock` | Physical lock type is interconnected lock |
+| 9 | `DeadLatch` | Physical lock type is dead latch |
+| 10 | `DoorFurniture` | Physical lock type is door furniture |
+| 11 | `Eurocylinder` | Physical lock type is euro cylinder |
+
+Example:
+
+```json
+{
+  "1/257/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ActuatorEnabled`
+
+Path example:
+
+```text
+1/257/2
+```
+
+Indicates if the lock is currently able to (Enabled) or not able to (Disabled) process remote Lock, Unlock, or Unlock with Timeout commands.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/2": true
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `DoorState`
+
+Path example:
+
+```text
+1/257/3
+```
+
+Indicates the current door state as defined in DoorStateEnum. Null only if an internal error prevents the retrieval of the current door state.
+
+| Property | Value |
+|---|---|
+| Type | DoorStateEnum |
+| Conformance | `DPS` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+
+Values (`DoorStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `DoorOpen` | Door state is open |
+| 1 | `DoorClosed` | Door state is closed |
+| 2 | `DoorJammed` | Door state is jammed |
+| 3 | `DoorForcedOpen` | Door state is currently forced open |
+| 4 | `DoorUnspecifiedError` | Door state is invalid for unspecified reason |
+| 5 | `DoorAjar` | Door state is ajar |
+
+Example:
+
+```json
+{
+  "1/257/3": 0
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `DoorOpenEvents`
+
+Path example:
+
+```text
+1/257/4
+```
+
+This attribute holds the number of door open events that have occurred since it was last zeroed.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[DPS]` |
+| Access | R/W (read: view, write: manage) |
+
+Example:
+
+```json
+{
+  "1/257/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `DoorClosedEvents`
+
+Path example:
+
+```text
+1/257/5
+```
+
+This attribute holds the number of door closed events that have occurred since it was last zeroed.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[DPS]` |
+| Access | R/W (read: view, write: manage) |
+
+Example:
+
+```json
+{
+  "1/257/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `OpenPeriod`
+
+Path example:
+
+```text
+1/257/6
+```
+
+This attribute holds the number of minutes the door has been open since the last time it transitioned from closed to open.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[DPS]` |
+| Access | R/W (read: view, write: manage) |
+
+Example:
+
+```json
+{
+  "1/257/6": 1
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `NumberOfTotalUsersSupported`
+
+Path example:
+
+```text
+1/257/17
+```
+
+Indicates the number of total users supported by the lock.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `USR` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/17": 1
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `NumberOfPINUsersSupported`
+
+Path example:
+
+```text
+1/257/18
+```
+
+No condensed specification text is available for `NumberOfPINUsersSupported`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `PIN` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/18": 1
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `NumberOfRFIDUsersSupported`
+
+Path example:
+
+```text
+1/257/19
+```
+
+No condensed specification text is available for `NumberOfRFIDUsersSupported`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `RID` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/19": 1
+}
+```
+
+---
+
+## Attribute `20` / `0x0014` — `NumberOfWeekDaySchedulesSupportedPerUser`
+
+Path example:
+
+```text
+1/257/20
+```
+
+Indicates the number of configurable week day schedule supported per user.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `WDSCH` |
+| Access | R (read: view) |
+| Constraint | max 0xFD |
+
+Example:
+
+```json
+{
+  "1/257/20": 1
+}
+```
+
+---
+
+## Attribute `21` / `0x0015` — `NumberOfYearDaySchedulesSupportedPerUser`
+
+Path example:
+
+```text
+1/257/21
+```
+
+Indicates the number of configurable year day schedule supported per user.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `YDSCH` |
+| Access | R (read: view) |
+| Constraint | max 0xFD |
+
+Example:
+
+```json
+{
+  "1/257/21": 1
+}
+```
+
+---
+
+## Attribute `22` / `0x0016` — `NumberOfHolidaySchedulesSupported`
+
+Path example:
+
+```text
+1/257/22
+```
+
+Indicates the number of holiday schedules supported for the entire door lock device.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `HDSCH` |
+| Access | R (read: view) |
+| Constraint | max 0xFD |
+
+Example:
+
+```json
+{
+  "1/257/22": 1
+}
+```
+
+---
+
+## Attribute `23` / `0x0017` — `MaxPINCodeLength`
+
+Path example:
+
+```text
+1/257/23
+```
+
+No condensed specification text is available for `MaxPINCodeLength`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PIN` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/23": 1
+}
+```
+
+---
+
+## Attribute `24` / `0x0018` — `MinPINCodeLength`
+
+Path example:
+
+```text
+1/257/24
+```
+
+No condensed specification text is available for `MinPINCodeLength`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PIN` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/24": 1
+}
+```
+
+---
+
+## Attribute `25` / `0x0019` — `MaxRFIDCodeLength`
+
+Path example:
+
+```text
+1/257/25
+```
+
+No condensed specification text is available for `MaxRFIDCodeLength`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `RID` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/25": 1
+}
+```
+
+---
+
+## Attribute `26` / `0x001A` — `MinRFIDCodeLength`
+
+Path example:
+
+```text
+1/257/26
+```
+
+No condensed specification text is available for `MinRFIDCodeLength`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `RID` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/26": 1
+}
+```
+
+---
+
+## Attribute `27` / `0x001B` — `CredentialRulesSupport`
+
+Path example:
+
+```text
+1/257/27
+```
+
+This attribute contains a bitmap with the bits set for the values of CredentialRuleEnum supported on this device.
+
+| Property | Value |
+|---|---|
+| Type | CredentialRulesBitmap |
+| Conformance | `USR` |
+| Access | R (read: view) |
+
+Bits (`CredentialRulesBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Single` | Only one credential is required for lock operation |
+| 1 | `Dual` | Any two credentials are required for lock operation |
+| 2 | `Tri` | Any three credentials are required for lock operation |
+
+Example:
+
+```json
+{
+  "1/257/27": 0
+}
+```
+
+---
+
+## Attribute `28` / `0x001C` — `NumberOfCredentialsSupportedPerUser`
+
+Path example:
+
+```text
+1/257/28
+```
+
+Indicates the number of credentials that could be assigned for each user. Depending on the value of NumberOfRFIDUsersSupported and NumberOfPINUsersSupported it may not be possible to assign that number of credentials for a user. For example, if the device supports only PIN and RFID credential types, NumberOfCredentialsSupportedPerUser is set to 10, NumberOfPINUsersSupported is set to 5 and NumberOfRFIDUsersSupported is set to 3, it will not be possible to actually assign 10 credentials for a user because maximum number of credentials in the database is 8.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `USR` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/28": 1
+}
+```
+
+---
+
+## Attribute `33` / `0x0021` — `Language`
+
+Path example:
+
+```text
+1/257/33
+```
+
+Indicates the language for the on-screen or audible user interface using a 2-byte language code from ISO-639-1.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R/W(opt) (read: view, write: manage) |
+| Constraint | max length 3 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/257/33": "example"
+}
+```
+
+---
+
+## Attribute `34` / `0x0022` — `LEDSettings`
+
+Path example:
+
+```text
+1/257/34
+```
+
+No condensed specification text is available for `LEDSettings`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | LEDSettingEnum |
+| Conformance | `O` |
+| Access | R/W(opt) (read: view, write: manage) |
+| Default | `0` |
+
+Values (`LEDSettingEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NoLEDSignal` | Never use LED for signalization |
+| 1 | `NoLEDSignalAccessAllowed` | Use LED signalization except for access allowed events |
+| 2 | `LEDSignalAll` | Use LED signalization for all events |
+
+Example:
+
+```json
+{
+  "1/257/34": 0
+}
+```
+
+---
+
+## Attribute `35` / `0x0023` — `AutoRelockTime`
+
+Path example:
+
+```text
+1/257/35
+```
+
+Indicates the number of seconds to wait after unlocking a lock before it automatically locks again. 0=disabled. If set, unlock operations from any source will be timed. For one time unlock with timeout use the specific command.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `O` |
+| Access | R/W(opt) (read: view, write: manage) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/257/35": 0
+}
+```
+
+---
+
+## Attribute `36` / `0x0024` — `SoundVolume`
+
+Path example:
+
+```text
+1/257/36
+```
+
+Indicates the sound volume on a door lock as defined by SoundVolumeEnum.
+
+| Property | Value |
+|---|---|
+| Type | SoundVolumeEnum |
+| Conformance | `O` |
+| Access | R/W(opt) (read: view, write: manage) |
+| Default | `0` |
+
+Values (`SoundVolumeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Silent` | Silent Mode |
+| 1 | `Low` | Low Volume |
+| 2 | `High` | High Volume |
+| 3 | `Medium` | Medium Volume |
+
+Example:
+
+```json
+{
+  "1/257/36": 0
+}
+```
+
+---
+
+## Attribute `37` / `0x0025` — `OperatingMode`
+
+Path example:
+
+```text
+1/257/37
+```
+
+Indicates the current operating mode of the lock as defined in OperatingModeEnum.
+
+| Property | Value |
+|---|---|
+| Type | OperatingModeEnum |
+| Conformance | `M` |
+| Access | R/W(opt) (read: view, write: manage) |
+| Constraint | desc |
+
+Values (`OperatingModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | The lock operates normally. |
+| 1 | `Vacation` | Only remote interaction is enabled. |
+| 2 | `Privacy` | This mode is only possible if the door is locked. |
+| 3 | `NoRemoteLockUnlock` | This mode only disables remote interaction with the lock. |
+| 4 | `Passage` | The lock is open or can be opened or closed at will without the use of a Keypad or other means of user validation (e.g. a lock for a business during work hours). |
+
+Example:
+
+```json
+{
+  "1/257/37": 0
+}
+```
+
+---
+
+## Attribute `38` / `0x0026` — `SupportedOperatingModes`
+
+Path example:
+
+```text
+1/257/38
+```
+
+This attribute contains a bitmap with all operating bits of the OperatingMode attribute supported by the lock. A bit position set to zero indicates that the mode is supported. A bit position set to one indicates that the mode is not supported. Any bit that is not yet defined in OperatingModesBitmap is set to 1.
+
+| Property | Value |
+|---|---|
+| Type | OperatingModesBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Bits (`OperatingModesBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | Normal operation mode |
+| 1 | `Vacation` | Vacation operation mode |
+| 2 | `Privacy` | Privacy operation mode |
+| 3 | `NoRemoteLockUnlock` | No remote lock and unlock operation mode |
+| 4 | `Passage` | Passage operation mode |
+
+Example:
+
+```json
+{
+  "1/257/38": 0
+}
+```
+
+---
+
+## Attribute `39` / `0x0027` — `DefaultConfigurationRegister`
+
+Path example:
+
+```text
+1/257/39
+```
+
+Indicates the default configurations as they are physically set on the device (example: hardware dip switch setting, etc…) and represents the default setting for some of the attributes within this cluster (for example: LED, Auto Lock, Sound Volume, and Operating Mode attributes). This is a read-only attribute and is intended to allow clients to determine what changes may need to be made without having to query all the included attributes. It may be beneficial for the clients to know what the device’s original settings were in the event that the device needs to be restored to factory default settings.
+
+| Property | Value |
+|---|---|
+| Type | ConfigurationRegisterBitmap |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `0` |
+
+Bits (`ConfigurationRegisterBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `LocalProgramming` | The state of local programming functionality |
+| 1 | `KeypadInterface` | The state of the keypad interface |
+| 2 | `RemoteInterface` | The state of the remote interface |
+| 5 | `SoundVolume` | Sound volume is set to Silent value |
+| 6 | `AutoRelockTime` | Auto relock time it set to 0 |
+| 7 | `LEDSettings` | LEDs is disabled |
+
+Example:
+
+```json
+{
+  "1/257/39": 0
+}
+```
+
+---
+
+## Attribute `40` / `0x0028` — `EnableLocalProgramming`
+
+Path example:
+
+```text
+1/257/40
+```
+
+This attribute must enable/disable local programming on the door lock of certain features. If this value is set to TRUE then local programming is enabled on the door lock for all features. If it is set to FALSE then local programming is disabled on the door lock for those features whose bit is set to 0 in the LocalProgrammingFeatures attribute. Local programming is enabled by default.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R/W(opt) (read: view, write: admin) |
+| Default | `true` |
+
+Example:
+
+```json
+{
+  "1/257/40": true
+}
+```
+
+---
+
+## Attribute `41` / `0x0029` — `EnableOneTouchLocking`
+
+Path example:
+
+```text
+1/257/41
+```
+
+This attribute must enable/disable the ability to lock the door lock with a single touch on the door lock.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "1/257/41": true
+}
+```
+
+---
+
+## Attribute `42` / `0x002A` — `EnableInsideStatusLED`
+
+Path example:
+
+```text
+1/257/42
+```
+
+No condensed specification text is available for `EnableInsideStatusLED`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "1/257/42": true
+}
+```
+
+---
+
+## Attribute `43` / `0x002B` — `EnablePrivacyModeButton`
+
+Path example:
+
+```text
+1/257/43
+```
+
+This attribute must enable/disable a button inside the door that is used to put the lock into privacy mode. When the lock is in privacy mode it cannot be manipulated from the outside.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "1/257/43": true
+}
+```
+
+---
+
+## Attribute `44` / `0x002C` — `LocalProgrammingFeatures`
+
+Path example:
+
+```text
+1/257/44
+```
+
+Indicates the local programming features that will be disabled when EnableLocalProgramming attribute is set to False. If a door lock doesn't support disabling one aspect of local programming it returns CONSTRAINT_ERROR during a write operation of this attribute. If the EnableLocalProgramming attribute is set to True then all local programming features is enabled regardless of the bits set to 0 in this attribute. The features that can be disabled from local programming are defined in LocalProgrammingFeaturesBitmap.
+
+| Property | Value |
+|---|---|
+| Type | LocalProgrammingFeaturesBitmap |
+| Conformance | `O` |
+| Access | R/W(opt) (read: view, write: admin) |
+| Default | `0` |
+
+Bits (`LocalProgrammingFeaturesBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `AddUsersCredentialsSchedules` | The state of the ability to add users, credentials or schedules on the device |
+| 1 | `ModifyUsersCredentialsSchedules` | The state of the ability to modify users, credentials or schedules on the device |
+| 2 | `ClearUsersCredentialsSchedules` | The state of the ability to clear users, credentials or schedules on the device |
+| 3 | `AdjustSettings` | The state of the ability to adjust settings on the device |
+
+Example:
+
+```json
+{
+  "1/257/44": 0
+}
+```
+
+---
+
+## Attribute `48` / `0x0030` — `WrongCodeEntryLimit`
+
+Path example:
+
+```text
+1/257/48
+```
+
+Indicates the number of incorrect Pin codes or RFID presentment attempts a user is allowed to enter before the lock will enter a lockout state. The value of this attribute is compared to all failing forms of credential presentation, including Pin codes used in an Unlock Command when RequirePINforRemoteOperation is set to true. Valid range is 1-255 incorrect attempts. The lockout state will be for the duration of UserCodeTemporaryDisableTime.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PIN \| RID` |
+| Access | R/W(opt) (read: view, write: admin) |
+| Constraint | 1 to 255 |
+
+Example:
+
+```json
+{
+  "1/257/48": 1
+}
+```
+
+---
+
+## Attribute `49` / `0x0031` — `UserCodeTemporaryDisableTime`
+
+Path example:
+
+```text
+1/257/49
+```
+
+Indicates the number of seconds that the lock shuts down following wrong code entry. Valid range is 1-255 seconds. Device can shut down to lock user out for specified amount of time. (Makes it difficult to try and guess a PIN for the device.) If the attribute accepts writes and an attempt to write the attribute to 0 is made, the device must respond with CONSTRAINT_ERROR.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PIN \| RID` |
+| Access | R/W(opt) (read: view, write: admin) |
+| Constraint | 1 to 255 |
+
+Example:
+
+```json
+{
+  "1/257/49": 1
+}
+```
+
+---
+
+## Attribute `50` / `0x0032` — `SendPINOverTheAir`
+
+Path example:
+
+```text
+1/257/50
+```
+
+No condensed specification text is available for `SendPINOverTheAir`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `[!USR & PIN]` |
+| Access | R/W(opt) (read: view, write: admin) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "1/257/50": true
+}
+```
+
+---
+
+## Attribute `51` / `0x0033` — `RequirePINforRemoteOperation`
+
+Path example:
+
+```text
+1/257/51
+```
+
+No condensed specification text is available for `RequirePINforRemoteOperation`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `COTA & PIN` |
+| Access | R/W(opt) (read: view, write: admin) |
+
+Example:
+
+```json
+{
+  "1/257/51": true
+}
+```
+
+---
+
+## Attribute `52` / `0x0034` — `SecurityLevel`
+
+Path example:
+
+```text
+1/257/52
+```
+
+No condensed specification text is available for `SecurityLevel`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | R (read: view) |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/257/52": 0
+}
+```
+
+---
+
+## Attribute `53` / `0x0035` — `ExpiringUserTimeout`
+
+Path example:
+
+```text
+1/257/53
+```
+
+Indicates the number of minutes a PIN, RFID, Fingerprint, or other credential associated with a user of type ExpiringUser must remain valid after its first use before expiring. When the credential expires the UserStatus for the corresponding user record is set to OccupiedDisabled.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[USR]` |
+| Access | R/W(opt) (read: view, write: admin) |
+| Constraint | 1 to 2880 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/257/53": 1
+}
+```
+
+---
+
+## Attribute `128` / `0x0080` — `AliroReaderVerificationKey`
+
+Path example:
+
+```text
+1/257/128
+```
+
+Indicates the verification key component of the Reader's key pair as defined in Aliro.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `ALIRO` |
+| Access | R (read: admin) |
+| Qualities | nullable |
+| Constraint | allowed: 65 |
+
+Example:
+
+```json
+{
+  "1/257/128": "AQID"
+}
+```
+
+---
+
+## Attribute `129` / `0x0081` — `AliroReaderGroupIdentifier`
+
+Path example:
+
+```text
+1/257/129
+```
+
+Indicates the reader_group_identifier as defined in Aliro.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `ALIRO` |
+| Access | R (read: admin) |
+| Qualities | nullable |
+| Constraint | allowed: 16 |
+
+Example:
+
+```json
+{
+  "1/257/129": "AQID"
+}
+```
+
+---
+
+## Attribute `130` / `0x0082` — `AliroReaderGroupSubIdentifier`
+
+Path example:
+
+```text
+1/257/130
+```
+
+Indicates the reader_group_sub_identifier as defined in Aliro.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `ALIRO` |
+| Access | R (read: admin) |
+| Constraint | allowed: 16 |
+
+Example:
+
+```json
+{
+  "1/257/130": "AQID"
+}
+```
+
+---
+
+## Attribute `131` / `0x0083` — `AliroExpeditedTransactionSupportedProtocolVersions`
+
+Path example:
+
+```text
+1/257/131
+```
+
+Indicates the list of protocol versions supported for expedited transactions as defined in Aliro.
+
+| Property | Value |
+|---|---|
+| Type | list of octstr |
+| Conformance | `ALIRO` |
+| Access | R (read: admin) |
+| Constraint | max 16 entries |
+
+Example:
+
+```json
+{
+  "1/257/131": []
+}
+```
+
+---
+
+## Attribute `132` / `0x0084` — `AliroGroupResolvingKey`
+
+Path example:
+
+```text
+1/257/132
+```
+
+Indicates the Group Resolving Key as defined in Aliro.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `ALBU` |
+| Access | R (read: admin) |
+| Qualities | nullable |
+| Constraint | allowed: 16 |
+
+Example:
+
+```json
+{
+  "1/257/132": "AQID"
+}
+```
+
+---
+
+## Attribute `133` / `0x0085` — `AliroSupportedBLEUWBProtocolVersions`
+
+Path example:
+
+```text
+1/257/133
+```
+
+No condensed specification text is available for `AliroSupportedBLEUWBProtocolVersions`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of octstr |
+| Conformance | `ALBU` |
+| Access | R (read: admin) |
+| Constraint | max 16 entries |
+
+Example:
+
+```json
+{
+  "1/257/133": []
+}
+```
+
+---
+
+## Attribute `134` / `0x0086` — `AliroBLEAdvertisingVersion`
+
+Path example:
+
+```text
+1/257/134
+```
+
+No condensed specification text is available for `AliroBLEAdvertisingVersion`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `ALBU` |
+| Access | R (read: admin) |
+
+Example:
+
+```json
+{
+  "1/257/134": 1
+}
+```
+
+---
+
+## Attribute `135` / `0x0087` — `NumberOfAliroCredentialIssuerKeysSupported`
+
+Path example:
+
+```text
+1/257/135
+```
+
+Indicates the maximum number of AliroCredentialIssuerKey credentials that can be stored on the lock.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `ALIRO` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/135": 1
+}
+```
+
+---
+
+## Attribute `136` / `0x0088` — `NumberOfAliroEndpointKeysSupported`
+
+Path example:
+
+```text
+1/257/136
+```
+
+Indicates the maximum number of endpoint key credentials that can be stored on the lock. This limit applies to the sum of the number of AliroEvictableEndpointKey credentials and the number of AliroNonEvictableEndpointKey credentials. The credential indices used for these two credential types are independent of each other, similar to all other credential types. As long as NumberOfAliroEndpointKeysSupported is at least 2 a client could add a credential of type AliroEvictableEndpointKey at any index from 1 to NumberOfAliroEndpointKeysSupported and also add a credential of type AliroNonEvictableEndpointKey at the same index, and both credentials would exist on the server.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `ALIRO` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/257/136": 1
+}
+```
+
+---
+
+# Cluster 257 Commands
+
+Cluster 257 has **22 client-to-server commands** and **6 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `LockDoor` | client → server | `M` | status | This command causes the lock device to lock the door. |
+| 1 | `0x01` | `UnlockDoor` | client → server | `M` | status | This command causes the lock device to unlock the door. |
+| 2 | `0x02` | `Toggle` | client → server | `X` | status | — |
+| 3 | `0x03` | `UnlockWithTimeout` | client → server | `O` | status | This command causes the lock device to unlock the door with a timeout parameter. |
+| 11 | `0x0B` | `SetWeekDaySchedule` | client → server | `WDSCH` | status | Set a weekly repeating schedule for a specified user. |
+| 12 | `0x0C` | `GetWeekDaySchedule` | client → server | `WDSCH` | GetWeekDayScheduleResponse | Retrieve the specific weekly schedule for the specific user. |
+| 12 | `0x0C` | `GetWeekDayScheduleResponse` | server → client | `WDSCH` | — | Returns the weekly repeating schedule data for the specified schedule index. |
+| 13 | `0x0D` | `ClearWeekDaySchedule` | client → server | `WDSCH` | status | Clear the specific weekly schedule or all weekly schedules for the specific user. |
+| 14 | `0x0E` | `SetYearDaySchedule` | client → server | `YDSCH` | status | Set a time-specific schedule ID for a specified user. |
+| 15 | `0x0F` | `GetYearDaySchedule` | client → server | `YDSCH` | GetYearDayScheduleResponse | Retrieve the specific year day schedule for the specific schedule and user indexes. |
+| 15 | `0x0F` | `GetYearDayScheduleResponse` | server → client | `YDSCH` | — | Returns the year day schedule data for the specified schedule and user indexes. |
+| 16 | `0x10` | `ClearYearDaySchedule` | client → server | `YDSCH` | status | Clears the specific year day schedule or all year day schedules for the specific user. |
+| 17 | `0x11` | `SetHolidaySchedule` | client → server | `HDSCH` | status | Set the holiday Schedule by specifying local start time and local end time with respect to any Lock Operating Mode. |
+| 18 | `0x12` | `GetHolidaySchedule` | client → server | `HDSCH` | GetHolidayScheduleResponse | Get the holiday schedule for the specified index. |
+| 18 | `0x12` | `GetHolidayScheduleResponse` | server → client | `HDSCH` | — | Returns the Holiday Schedule Entry for the specified Holiday ID. |
+| 19 | `0x13` | `ClearHolidaySchedule` | client → server | `HDSCH` | status | Clears the holiday schedule or all holiday schedules. |
+| 26 | `0x1A` | `SetUser` | client → server | `USR` | status | Set user into the lock. |
+| 27 | `0x1B` | `GetUser` | client → server | `USR` | GetUserResponse | Retrieve user. |
+| 28 | `0x1C` | `GetUserResponse` | server → client | `USR` | — | Returns the user for the specified UserIndex. |
+| 29 | `0x1D` | `ClearUser` | client → server | `USR` | status | Clears a user or all Users. |
+| 34 | `0x22` | `SetCredential` | client → server | `USR` | SetCredentialResponse | Set a credential (e.g. |
+| 35 | `0x23` | `SetCredentialResponse` | server → client | `USR` | — | Returns the status for setting the specified credential. |
+| 36 | `0x24` | `GetCredentialStatus` | client → server | `USR` | GetCredentialStatusResponse | Retrieve the status of a particular credential (e.g. |
+| 37 | `0x25` | `GetCredentialStatusResponse` | server → client | `USR` | — | Returns the status for the specified credential. |
+| 38 | `0x26` | `ClearCredential` | client → server | `USR` | status | Clear one, one type, or all credentials except ProgrammingPIN credential. |
+| 39 | `0x27` | `UnboltDoor` | client → server | `UBOLT` | status | This command causes the lock device to unlock the door without pulling the latch. |
+| 40 | `0x28` | `SetAliroReaderConfig` | client → server | `ALIRO` | status | This command allows communicating an Aliro Reader configuration, as defined in Aliro, to the lock. |
+| 41 | `0x29` | `ClearAliroReaderConfig` | client → server | `ALIRO` | status | This command allows clearing an existing Aliro Reader configuration for the lock. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 257 / 65529
+```
+
+```json
+{
+  "1/257/65529": [
+    0,
+    1,
+    2,
+    3,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    26,
+    27,
+    29,
+    34,
+    36,
+    38,
+    39,
+    40,
+    41
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 257 command, check that the command ID exists in <code>endpoint/257/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "LockDoor",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 257, always use `"cluster_id": 257`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `LockDoor`
+
+## Purpose
+
+This command causes the lock device to lock the door. This command includes an optional code for the lock. The door lock may require a PIN depending on the value of the RequirePINForRemoteOperation attribute.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `LockDoor` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PINCode` | `pinCode` | octstr | `[COTA & PIN]` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "LockDoor",
+    "payload": {
+      "pinCode": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `UnlockDoor`
+
+## Purpose
+
+This command causes the lock device to unlock the door. This command includes an optional code for the lock. The door lock may require a code depending on the value of the RequirePINForRemoteOperation attribute. If the attribute AutoRelockTime is supported the lock will transition to the locked state when the auto relock time has expired.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `UnlockDoor` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PINCode` | `pinCode` | octstr | `[COTA & PIN]` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "UnlockDoor",
+    "payload": {
+      "pinCode": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `Toggle`
+
+## Purpose
+
+`Toggle` is a client-to-server command of the Door Lock cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `Toggle` |
+| Direction | client → server |
+| Conformance | `X` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "Toggle",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `UnlockWithTimeout`
+
+## Purpose
+
+This command causes the lock device to unlock the door with a timeout parameter. After the time in seconds specified in the timeout field, the lock device will relock itself automatically. This timeout parameter is only temporary for this message transition and overrides the default relock time as specified in the AutoRelockTime attribute. If the door lock device is not capable of or does not want to support temporary Relock Timeout, it should NOT support this optional command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `UnlockWithTimeout` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Timeout` | `timeout` | uint16 | `M` | — | Indicates the timeout in seconds to wait before relocking the door lock. This value is independent of the AutoRelockTime attribute value. |
+| 1 | `PINCode` | `pinCode` | octstr | `[COTA & PIN]` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "UnlockWithTimeout",
+    "payload": {
+      "timeout": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `SetWeekDaySchedule`
+
+## Purpose
+
+Set a weekly repeating schedule for a specified user. The associated UserType may be changed to ScheduleRestrictedUser by the lock when a Week Day schedule is set. Return status is one of the following values:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `11` |
+| Command hex | `0x0B` |
+| Command name | `SetWeekDaySchedule` |
+| Direction | client → server |
+| Conformance | `WDSCH` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WeekDayIndex` | `weekDayIndex` | uint8 | `M` | 1 to NumberOfWeekDaySchedulesSupportedPerUser | Indicates the index of the Week Day schedule. |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+| 2 | `DaysMask` | `daysMask` | DaysMaskBitmap | `M` | — | Indicates which week days the schedule is active. |
+| 3 | `StartHour` | `startHour` | uint8 | `M` | max 23 | Indicates the starting hour for the Week Day schedule. |
+| 4 | `StartMinute` | `startMinute` | uint8 | `M` | max 59 | Indicates the starting minute for the Week Day schedule. |
+| 5 | `EndHour` | `endHour` | uint8 | `M` | max 23 | Indicates the ending hour for the Week Day schedule. EndHour is equal to or greater than StartHour. |
+| 6 | `EndMinute` | `endMinute` | uint8 | `M` | max 59 | Indicates the ending minute for the Week Day schedule. If EndHour is equal to StartHour then EndMinute is greater than StartMinute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "SetWeekDaySchedule",
+    "payload": {
+      "weekDayIndex": 1,
+      "userIndex": 1,
+      "daysMask": 0,
+      "startHour": 1,
+      "startMinute": 1,
+      "endHour": 1,
+      "endMinute": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `GetWeekDaySchedule`
+
+## Purpose
+
+Retrieve the specific weekly schedule for the specific user.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `12` |
+| Command hex | `0x0C` |
+| Command name | `GetWeekDaySchedule` |
+| Direction | client → server |
+| Conformance | `WDSCH` |
+| Response | GetWeekDayScheduleResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WeekDayIndex` | `weekDayIndex` | uint8 | `M` | 1 to NumberOfWeekDaySchedulesSupportedPerUser | — |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "GetWeekDaySchedule",
+    "payload": {
+      "weekDayIndex": 1,
+      "userIndex": 1
+    }
+  }
+}
+```
+
+The device answers with `GetWeekDayScheduleResponse` (see below).
+
+---
+
+# Command: `GetWeekDayScheduleResponse`
+
+## Purpose
+
+Returns the weekly repeating schedule data for the specified schedule index.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `12` |
+| Command hex | `0x0C` |
+| Command name | `GetWeekDayScheduleResponse` |
+| Direction | server → client (response) |
+| Conformance | `WDSCH` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WeekDayIndex` | `weekDayIndex` | uint8 | `M` | 1 to NumberOfWeekDaySchedulesSupportedPerUser | Indicates the index of the Week Day schedule. |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+| 2 | `Status` | `status` | enum8 | `M` | desc | Status is one of the following values: - SUCCESS if both WeekDayIndex and UserIndex are valid and there is a corresponding schedule entry. - INVALID_COMMAND if either WeekDayIndex and/or UserIndex values are not within valid range - NOT_FOUND if no … |
+| 3 | `DaysMask` | `daysMask` | DaysMaskBitmap | `O` | — | — |
+| 4 | `StartHour` | `startHour` | uint8 | `O` | max 23 | Indicates the starting hour for the Week Day schedule. |
+| 5 | `StartMinute` | `startMinute` | uint8 | `O` | max 59 | Indicates the starting minute for the Week Day schedule. |
+| 6 | `EndHour` | `endHour` | uint8 | `O` | max 23 | Indicates the ending hour for the Week Day schedule. EndHour is equal to or greater than StartHour. |
+| 7 | `EndMinute` | `endMinute` | uint8 | `O` | max 59 | Indicates the ending minute for the Week Day schedule. If EndHour is equal to StartHour then EndMinute is greater than StartMinute. |
+
+---
+
+# Command: `ClearWeekDaySchedule`
+
+## Purpose
+
+Clear the specific weekly schedule or all weekly schedules for the specific user. Return status is one of the following values:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `13` |
+| Command hex | `0x0D` |
+| Command name | `ClearWeekDaySchedule` |
+| Direction | client → server |
+| Conformance | `WDSCH` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WeekDayIndex` | `weekDayIndex` | uint8 | `M` | 1 to NumberOfWeekDaySchedulesSupportedPerUser; allowed: 0xFE | Indicates the Week Day schedule index to clear or 0xFE to clear all Week Day schedules for the specified user. |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "ClearWeekDaySchedule",
+    "payload": {
+      "weekDayIndex": 1,
+      "userIndex": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetYearDaySchedule`
+
+## Purpose
+
+Set a time-specific schedule ID for a specified user. The associated UserType may be changed to ScheduleRestrictedUser by the lock when a Year Day schedule is set. Return status is one of the following values:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `14` |
+| Command hex | `0x0E` |
+| Command name | `SetYearDaySchedule` |
+| Direction | client → server |
+| Conformance | `YDSCH` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `YearDayIndex` | `yearDayIndex` | uint8 | `M` | 1 to NumberOfYearDaySchedulesSupportedPerUser | Indicates the index of the Year Day schedule. |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+| 2 | `LocalStartTime` | `localStartTime` | epoch-s | `M` | — | Indicates the starting time for the Year Day schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. |
+| 3 | `LocalEndTime` | `localEndTime` | epoch-s | `M` | — | Indicates the ending time for the Year Day schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. LocalEndTime is greater than LocalStartTime. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "SetYearDaySchedule",
+    "payload": {
+      "yearDayIndex": 1,
+      "userIndex": 1,
+      "localStartTime": 0,
+      "localEndTime": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `GetYearDaySchedule`
+
+## Purpose
+
+Retrieve the specific year day schedule for the specific schedule and user indexes.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `15` |
+| Command hex | `0x0F` |
+| Command name | `GetYearDaySchedule` |
+| Direction | client → server |
+| Conformance | `YDSCH` |
+| Response | GetYearDayScheduleResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `YearDayIndex` | `yearDayIndex` | uint8 | `M` | 1 to NumberOfYearDaySchedulesSupportedPerUser | — |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "GetYearDaySchedule",
+    "payload": {
+      "yearDayIndex": 1,
+      "userIndex": 1
+    }
+  }
+}
+```
+
+The device answers with `GetYearDayScheduleResponse` (see below).
+
+---
+
+# Command: `GetYearDayScheduleResponse`
+
+## Purpose
+
+Returns the year day schedule data for the specified schedule and user indexes.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `15` |
+| Command hex | `0x0F` |
+| Command name | `GetYearDayScheduleResponse` |
+| Direction | server → client (response) |
+| Conformance | `YDSCH` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `YearDayIndex` | `yearDayIndex` | uint8 | `M` | 1 to NumberOfYearDaySchedulesSupportedPerUser | Indicates the index of the Year Day schedule. |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+| 2 | `Status` | `status` | enum8 | `M` | desc | Status is one of the following values: - SUCCESS if both YearDayIndex and UserIndex are valid and there is a corresponding schedule entry. - INVALID_COMMAND if either YearDayIndex and/or UserIndex values are not within valid range - NOT_FOUND if no … |
+| 3 | `LocalStartTime` | `localStartTime` | epoch-s | `O` | — | Indicates the starting time for the Year Day schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. |
+| 4 | `LocalEndTime` | `localEndTime` | epoch-s | `O` | — | Indicates the ending time for the Year Day schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. LocalEndTime is greater than LocalStartTime. |
+
+---
+
+# Command: `ClearYearDaySchedule`
+
+## Purpose
+
+Clears the specific year day schedule or all year day schedules for the specific user. Return status is one of the following values:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `16` |
+| Command hex | `0x10` |
+| Command name | `ClearYearDaySchedule` |
+| Direction | client → server |
+| Conformance | `YDSCH` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `YearDayIndex` | `yearDayIndex` | uint8 | `M` | 1 to NumberOfYearDaySchedulesSupportedPerUser; allowed: 0xFE | Indicates the Year Day schedule index to clear or 0xFE to clear all Year Day schedules for the specified user. |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "ClearYearDaySchedule",
+    "payload": {
+      "yearDayIndex": 1,
+      "userIndex": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetHolidaySchedule`
+
+## Purpose
+
+Set the holiday Schedule by specifying local start time and local end time with respect to any Lock Operating Mode. Return status is one of the following values:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `17` |
+| Command hex | `0x11` |
+| Command name | `SetHolidaySchedule` |
+| Direction | client → server |
+| Conformance | `HDSCH` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `HolidayIndex` | `holidayIndex` | uint8 | `M` | 1 to NumberOfHolidaySchedulesSupported | Indicates the index of the Holiday schedule. |
+| 1 | `LocalStartTime` | `localStartTime` | epoch-s | `M` | — | Indicates the starting time for the Holiday Day schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. |
+| 2 | `LocalEndTime` | `localEndTime` | epoch-s | `M` | — | Indicates the ending time for the Holiday Day schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. LocalEndTime is greater than LocalStartTime. |
+| 3 | `OperatingMode` | `operatingMode` | OperatingModeEnum | `M` | — | Indicates the operating mode to use during this Holiday schedule start/end time. |
+
+`OperatingMode` values (`OperatingModeEnum`): `0` = Normal, `1` = Vacation, `2` = Privacy, `3` = NoRemoteLockUnlock, `4` = Passage
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "SetHolidaySchedule",
+    "payload": {
+      "holidayIndex": 1,
+      "localStartTime": 0,
+      "localEndTime": 0,
+      "operatingMode": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `GetHolidaySchedule`
+
+## Purpose
+
+Get the holiday schedule for the specified index.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `18` |
+| Command hex | `0x12` |
+| Command name | `GetHolidaySchedule` |
+| Direction | client → server |
+| Conformance | `HDSCH` |
+| Response | GetHolidayScheduleResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `HolidayIndex` | `holidayIndex` | uint8 | `M` | 1 to NumberOfHolidaySchedulesSupported | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "GetHolidaySchedule",
+    "payload": {
+      "holidayIndex": 1
+    }
+  }
+}
+```
+
+The device answers with `GetHolidayScheduleResponse` (see below).
+
+---
+
+# Command: `GetHolidayScheduleResponse`
+
+## Purpose
+
+Returns the Holiday Schedule Entry for the specified Holiday ID.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `18` |
+| Command hex | `0x12` |
+| Command name | `GetHolidayScheduleResponse` |
+| Direction | server → client (response) |
+| Conformance | `HDSCH` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `HolidayIndex` | `holidayIndex` | uint8 | `M` | 1 to NumberOfHolidaySchedulesSupported | Indicates the index of the Holiday schedule. |
+| 1 | `Status` | `status` | enum8 | `M` | desc | Status is one of the following values: - FAILURE if the attribute NumberOfHolidaySchedulesSupported is zero. - SUCCESS if the HolidayIndex is valid and there is a corresponding schedule entry. - INVALID_COMMAND if the HolidayIndex is not within valid range - … |
+| 2 | `LocalStartTime` | `localStartTime` | epoch-s (nullable) | `O` | — | Indicates the starting time for the Holiday schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. This is null if the schedule is not set for the HolidayIndex provided. |
+| 3 | `LocalEndTime` | `localEndTime` | epoch-s (nullable) | `O` | — | Indicates the ending time for the Holiday schedule in Epoch Time in Seconds with local time offset based on the local timezone and DST offset on the day represented by the value. LocalEndTime is greater than LocalStartTime. |
+| 4 | `OperatingMode` | `operatingMode` | OperatingModeEnum (nullable) | `O` | — | Indicates the operating mode to use during this Holiday schedule start/end time. This is null if the schedule is not set for the HolidayIndex provided. |
+
+`OperatingMode` values (`OperatingModeEnum`): `0` = Normal, `1` = Vacation, `2` = Privacy, `3` = NoRemoteLockUnlock, `4` = Passage
+
+---
+
+# Command: `ClearHolidaySchedule`
+
+## Purpose
+
+Clears the holiday schedule or all holiday schedules.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `19` |
+| Command hex | `0x13` |
+| Command name | `ClearHolidaySchedule` |
+| Direction | client → server |
+| Conformance | `HDSCH` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `HolidayIndex` | `holidayIndex` | uint8 | `M` | 1 to NumberOfHolidaySchedulesSupported; allowed: 0xFE | Indicates the Holiday schedule index to clear or 0xFE to clear all Holiday schedules. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "ClearHolidaySchedule",
+    "payload": {
+      "holidayIndex": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetUser`
+
+## Purpose
+
+Set user into the lock. Fields used for different use cases: Return status is a global status code or a cluster-specific status code from the Status Codes table and is one of the following values: - SUCCESS, if setting User was successful. - FAILURE, if some unexpected internal error occurred setting User. - Occupied, if OperationType is Add and UserIndex points to an occupied slot. - INVALID_COMMAND, if one or more fields violate constraints or are invalid or if OperationType is Modify and UserIndex points to an available slot.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `26` |
+| Command hex | `0x1A` |
+| Command name | `SetUser` |
+| Direction | client → server |
+| Conformance | `USR` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OperationType` | `operationType` | DataOperationTypeEnum | `M` | allowed: Add, Modify | Indicates the type of operation. |
+| 1 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+| 2 | `UserName` | `userName` | string (nullable) | `M` | max length 10 | This field contains a string to use as a human readable identifier for the user. |
+| 3 | `UserUniqueID` | `userUniqueID` | uint32 (nullable) | `M` | — | — |
+| 4 | `UserStatus` | `userStatus` | UserStatusEnum (nullable) | `M` | allowed: OccupiedEnabled, OccupiedDisabled | Indicates the UserStatus to assign to this user when created or modified. |
+| 5 | `UserType` | `userType` | UserTypeEnum (nullable) | `M` | allowed: UnrestrictedUser, NonAccessUser, ForcedUser, DisposableUser, ExpiringUser, ScheduleRestrictedUser, RemoteOnlyUser | Indicates the UserType to assign to this user when created or modified. |
+| 6 | `CredentialRule` | `credentialRule` | CredentialRuleEnum (nullable) | `M` | — | Indicates the CredentialRule to use for this user. The valid CredentialRule enumeration values depends on the bits in the CredentialRulesBitmap map. |
+
+`OperationType` values (`DataOperationTypeEnum`): `0` = Add, `1` = Clear, `2` = Modify
+
+`UserStatus` values (`UserStatusEnum`): `0` = Available, `1` = OccupiedEnabled, `3` = OccupiedDisabled
+
+`UserType` values (`UserTypeEnum`): `0` = UnrestrictedUser, `1` = YearDayScheduleUser, `2` = WeekDayScheduleUser, `3` = ProgrammingUser, `4` = NonAccessUser, `5` = ForcedUser, `6` = DisposableUser, `7` = ExpiringUser, `8` = ScheduleRestrictedUser, `9` = RemoteOnlyUser
+
+`CredentialRule` values (`CredentialRuleEnum`): `0` = Single, `1` = Dual, `2` = Tri
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "SetUser",
+    "payload": {
+      "operationType": 0,
+      "userIndex": 1,
+      "userName": "example",
+      "userUniqueID": 1,
+      "userStatus": 0,
+      "userType": 0,
+      "credentialRule": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `GetUser`
+
+## Purpose
+
+Retrieve user. An InvokeResponse command is sent with an appropriate error (e.g. FAILURE, INVALID_COMMAND, etc.) as needed otherwise the GetUserResponse Command is sent implying a status of SUCCESS.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `27` |
+| Command hex | `0x1B` |
+| Command name | `GetUser` |
+| Direction | client → server |
+| Conformance | `USR` |
+| Response | GetUserResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "GetUser",
+    "payload": {
+      "userIndex": 1
+    }
+  }
+}
+```
+
+The device answers with `GetUserResponse` (see below).
+
+---
+
+# Command: `GetUserResponse`
+
+## Purpose
+
+Returns the user for the specified UserIndex. If the requested UserIndex is valid and the UserStatus is Available for the requested UserIndex then UserName, UserUniqueID, UserStatus, UserType, CredentialRule, Credentials, CreatorFabricIndex, and LastModifiedFabricIndex must all be null in the response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `28` |
+| Command hex | `0x1C` |
+| Command name | `GetUserResponse` |
+| Direction | server → client (response) |
+| Conformance | `USR` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user ID. |
+| 1 | `UserName` | `userName` | string (nullable) | `M` | max length 10 | This field contains a string to use as a human readable identifier for the user. |
+| 2 | `UserUniqueID` | `userUniqueID` | uint32 (nullable) | `M` | — | — |
+| 3 | `UserStatus` | `userStatus` | UserStatusEnum (nullable) | `M` | — | Indicates the UserStatus assigned to the user when created or modified. |
+| 4 | `UserType` | `userType` | UserTypeEnum (nullable) | `M` | — | Indicates the UserType assigned to this user when created or modified. |
+| 5 | `CredentialRule` | `credentialRule` | CredentialRuleEnum (nullable) | `M` | desc | Indicates the CredentialRule set for this user. |
+| 6 | `Credentials` | `credentials` | list of CredentialStruct (nullable) | `M` | 0 to NumberOfCredentialsSupportedPerUser entries | This field contains a list of credentials for this user. |
+| 7 | `CreatorFabricIndex` | `creatorFabricIndex` | fabric-idx (nullable) | `M` | — | Indicates the user's creator fabric index. CreatorFabricIndex is null if UserStatus is set to Available or when the creator fabric cannot be determined (for example, when user was created outside the Interaction Model) and must NOT be null otherwise. |
+| 8 | `LastModifiedFabricIndex` | `lastModifiedFabricIndex` | fabric-idx (nullable) | `M` | — | Indicates the user's last modifier fabric index. |
+| 9 | `NextUserIndex` | `nextUserIndex` | uint16 (nullable) | `M` | 1 to NumberOfTotalUsersSupported | Indicates the next occupied UserIndex in the database which is useful for quickly identifying occupied user slots in the database. |
+
+`UserStatus` values (`UserStatusEnum`): `0` = Available, `1` = OccupiedEnabled, `3` = OccupiedDisabled
+
+`UserType` values (`UserTypeEnum`): `0` = UnrestrictedUser, `1` = YearDayScheduleUser, `2` = WeekDayScheduleUser, `3` = ProgrammingUser, `4` = NonAccessUser, `5` = ForcedUser, `6` = DisposableUser, `7` = ExpiringUser, `8` = ScheduleRestrictedUser, `9` = RemoteOnlyUser
+
+`CredentialRule` values (`CredentialRuleEnum`): `0` = Single, `1` = Dual, `2` = Tri
+
+---
+
+# Command: `ClearUser`
+
+## Purpose
+
+Clears a user or all Users. For each user to clear, all associated credentials (e.g. PIN, RFID, fingerprint, etc.) is cleared and the user entry values is reset to their default values (e.g. UserStatus is Available, UserType is UnrestrictedUser) and all associated schedules is cleared.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `29` |
+| Command hex | `0x1D` |
+| Command name | `ClearUser` |
+| Direction | client → server |
+| Conformance | `USR` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UserIndex` | `userIndex` | uint16 | `M` | 1 to NumberOfTotalUsersSupported; allowed: 0xFFFE | This field specifies a valid User index or 0xFFFE to indicate all user slots is cleared. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "ClearUser",
+    "payload": {
+      "userIndex": 1
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `SetCredential`
+
+## Purpose
+
+Set a credential (e.g. PIN, RFID, Fingerprint, etc.) into the lock for a new user, existing user, or ProgrammingUser. Fields used for different use cases:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `34` |
+| Command hex | `0x22` |
+| Command name | `SetCredential` |
+| Direction | client → server |
+| Conformance | `USR` |
+| Response | SetCredentialResponse |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OperationType` | `operationType` | DataOperationTypeEnum | `M` | allowed: Add, Modify | Indicates the set credential operation type requested. |
+| 1 | `Credential` | `credential` | CredentialStruct | `M` | — | This field contains a credential structure that contains the CredentialTypeEnum and the credential index (if applicable or 0 if not) to set. |
+| 2 | `CredentialData` | `credentialData` | octstr | `M` | desc | Indicates the credential data to set for the credential being added or modified. |
+| 3 | `UserIndex` | `userIndex` | uint16 (nullable) | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user index to the user record that corresponds to the credential being added or modified. This is null if OperationType is add and a new credential and user is being added at the same time. |
+| 4 | `UserStatus` | `userStatus` | UserStatusEnum (nullable) | `M` | allowed: OccupiedEnabled, OccupiedDisabled | Indicates the user status to use in the new user record if a new user is being created. This is null if OperationType is Modify. |
+| 5 | `UserType` | `userType` | UserTypeEnum (nullable) | `M` | allowed: UnrestrictedUser, ProgrammingUser, NonAccessUser, ForcedUser, DisposableUser, ExpiringUser, RemoteOnlyUser | Indicates the user type to use in the new user record if a new user is being created. This is null if OperationType is Modify. |
+
+`OperationType` values (`DataOperationTypeEnum`): `0` = Add, `1` = Clear, `2` = Modify
+
+`UserStatus` values (`UserStatusEnum`): `0` = Available, `1` = OccupiedEnabled, `3` = OccupiedDisabled
+
+`UserType` values (`UserTypeEnum`): `0` = UnrestrictedUser, `1` = YearDayScheduleUser, `2` = WeekDayScheduleUser, `3` = ProgrammingUser, `4` = NonAccessUser, `5` = ForcedUser, `6` = DisposableUser, `7` = ExpiringUser, `8` = ScheduleRestrictedUser, `9` = RemoteOnlyUser
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "SetCredential",
+    "payload": {
+      "operationType": 0,
+      "credential": {
+        "credentialType": 0,
+        "credentialIndex": 1
+      },
+      "credentialData": "AQID",
+      "userIndex": 1,
+      "userStatus": 0,
+      "userType": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+The device answers with `SetCredentialResponse` (see below).
+
+---
+
+# Command: `SetCredentialResponse`
+
+## Purpose
+
+Returns the status for setting the specified credential.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `35` |
+| Command hex | `0x23` |
+| Command name | `SetCredentialResponse` |
+| Direction | server → client (response) |
+| Conformance | `USR` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | Status comes from the Status Codes table and is one of the following values: - SUCCESS, if setting user credential was successful. - FAILURE, if some unexpected internal error occurred setting user credential. - Occupied, if OperationType is Add and … |
+| 1 | `UserIndex` | `userIndex` | uint16 (nullable) | `M` | 1 to NumberOfTotalUsersSupported | Indicates the user index that was created with the new credential. If the status being returned is not success then this is null. |
+| 2 | `NextCredentialIndex` | `nextCredentialIndex` | uint16 (nullable) | `O` | desc | Indicates the next available index in the database for the credential type set, which is useful for quickly identifying available credential slots in the database. |
+
+---
+
+# Command: `GetCredentialStatus`
+
+## Purpose
+
+Retrieve the status of a particular credential (e.g. PIN, RFID, Fingerprint, etc.) by index. An InvokeResponse command is sent with an appropriate error (e.g. FAILURE, INVALID_COMMAND, etc.) as needed otherwise the GetCredentialStatusResponse command is sent implying a status of SUCCESS.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `36` |
+| Command hex | `0x24` |
+| Command name | `GetCredentialStatus` |
+| Direction | client → server |
+| Conformance | `USR` |
+| Response | GetCredentialStatusResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Credential` | `credential` | CredentialStruct | `M` | — | This field contains a credential structure that contains the CredentialTypeEnum and the credential index (if applicable or 0 if not) to retrieve the status for. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "GetCredentialStatus",
+    "payload": {
+      "credential": {
+        "credentialType": 0,
+        "credentialIndex": 1
+      }
+    }
+  }
+}
+```
+
+The device answers with `GetCredentialStatusResponse` (see below).
+
+---
+
+# Command: `GetCredentialStatusResponse`
+
+## Purpose
+
+Returns the status for the specified credential.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `37` |
+| Command hex | `0x25` |
+| Command name | `GetCredentialStatusResponse` |
+| Direction | server → client (response) |
+| Conformance | `USR` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CredentialExists` | `credentialExists` | bool | `M` | — | Indicates if the requested credential type and index exists and is populated for the requested user index. |
+| 1 | `UserIndex` | `userIndex` | uint16 (nullable) | `M` | 1 to NumberOfTotalUsersSupported | Indicates the credential's corresponding user index value if the credential exists. |
+| 2 | `CreatorFabricIndex` | `creatorFabricIndex` | fabric-idx (nullable) | `M` | — | Indicates the credential's creator fabric index. |
+| 3 | `LastModifiedFabricIndex` | `lastModifiedFabricIndex` | fabric-idx (nullable) | `M` | — | Indicates the credential's last modifier fabric index. |
+| 4 | `NextCredentialIndex` | `nextCredentialIndex` | uint16 (nullable) | `O` | desc | Indicates the next occupied index in the database for the credential type requested, which is useful for quickly identifying occupied credential slots in the database. |
+| 5 | `CredentialData` | `credentialData` | octstr (nullable) | `[ALIRO]` | desc | Indicates the credential data for the requested user index. If the CredentialType in the GetCredentialStatus command was not AliroCredentialIssuerKey, AliroEvictableEndpointKey, or AliroNonEvictableEndpointKey, this field must NOT be included. |
+
+---
+
+# Command: `ClearCredential`
+
+## Purpose
+
+Clear one, one type, or all credentials except ProgrammingPIN credential. Fields used for different use cases: For each credential cleared whose user doesn't have another valid credential, the corresponding user record is reset back to default values and its UserStatus value is set to Available and UserType value is set to UnrestrictedUser and all schedules is cleared. In this case a LockUserChange event is generated for the user being cleared. Return status is one of the following values:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `38` |
+| Command hex | `0x26` |
+| Command name | `ClearCredential` |
+| Direction | client → server |
+| Conformance | `USR` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Credential` | `credential` | CredentialStruct (nullable) | `M` | desc | This field contains a credential structure that contains the CredentialTypeEnum and the credential index (0xFFFE for all credentials or 0 if not applicable) to clear. This is null if clearing all credential types otherwise it must NOT be null. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "ClearCredential",
+    "payload": {
+      "credential": {
+        "credentialType": 0,
+        "credentialIndex": 1
+      }
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `UnboltDoor`
+
+## Purpose
+
+This command causes the lock device to unlock the door without pulling the latch. This command includes an optional code for the lock. The door lock may require a code depending on the value of the RequirePINForRemoteOperation attribute. If the attribute AutoRelockTime is supported, the lock will transition to the locked state when the auto relock time has expired.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `39` |
+| Command hex | `0x27` |
+| Command name | `UnboltDoor` |
+| Direction | client → server |
+| Conformance | `UBOLT` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PINCode` | `pinCode` | octstr | `[COTA & PIN]` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "UnboltDoor",
+    "payload": {
+      "pinCode": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `SetAliroReaderConfig`
+
+## Purpose
+
+This command allows communicating an Aliro Reader configuration, as defined in Aliro, to the lock.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `40` |
+| Command hex | `0x28` |
+| Command name | `SetAliroReaderConfig` |
+| Direction | client → server |
+| Conformance | `ALIRO` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `SigningKey` | `signingKey` | octstr | `M` | allowed: 32 | Indicates the signing key component of the Reader's key pair. |
+| 1 | `VerificationKey` | `verificationKey` | octstr | `M` | allowed: 65 | Indicates the verification key component of the Reader's key pair. |
+| 2 | `GroupIdentifier` | `groupIdentifier` | octstr | `M` | allowed: 16 | Indicates the reader group identifier for the lock. |
+| 3 | `GroupResolvingKey` | `groupResolvingKey` | octstr | `ALBU` | allowed: 16 | Indicates the group resolving key for the lock. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "SetAliroReaderConfig",
+    "payload": {
+      "signingKey": "AQID",
+      "verificationKey": "AQID",
+      "groupIdentifier": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `ClearAliroReaderConfig`
+
+## Purpose
+
+This command allows clearing an existing Aliro Reader configuration for the lock. Administrators must NOT clear an Aliro Reader configuration without explicit user permission. Using this command will revoke the ability of all existing Aliro user devices that have the old verification key to interact with the lock. This effect is not restricted to a single fabric or otherwise scoped in any way.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `41` |
+| Command hex | `0x29` |
+| Command name | `ClearAliroReaderConfig` |
+| Direction | client → server |
+| Conformance | `ALIRO` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 257,
+    "command_name": "ClearAliroReaderConfig",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Cluster 257 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `DoorLockAlarm` | critical | `M` | The door lock server provides several alarms which can be sent when there is a critical state on the door lock. |
+| 1 | `0x01` | `DoorStateChange` | desc | `DPS` | The door lock server sends out a DoorStateChange event when the door lock door state changes. |
+| 2 | `0x02` | `LockOperation` | desc | `M` | The door lock server sends out a LockOperation event when the event is triggered by the various lock operation sources. - If the door lock server supports the Unbolt Door command, it must generate a … |
+| 3 | `0x03` | `LockOperationError` | desc | `M` | The door lock server sends out a LockOperationError event when a lock operation fails for various reasons. |
+| 4 | `0x04` | `LockUserChange` | info | `USR` | The door lock server sends out a LockUserChange event when a lock user, schedule, or credential change has occurred. |
+
+## Event `0` — `DoorLockAlarm`
+
+The door lock server provides several alarms which can be sent when there is a critical state on the door lock. The alarms available for the door lock server are listed in AlarmCodeEnum.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AlarmCode` | AlarmCodeEnum | `M` | Indicates the alarm code of the event that has happened. |
+
+## Event `1` — `DoorStateChange`
+
+The door lock server sends out a DoorStateChange event when the door lock door state changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `DoorState` | DoorStateEnum | `M` | Indicates the new door state for this door event. |
+
+## Event `2` — `LockOperation`
+
+The door lock server sends out a LockOperation event when the event is triggered by the various lock operation sources. - If the door lock server supports the Unbolt Door command, it must generate a LockOperation event with LockOperationType set to Unlock after an Unbolt Door command succeeds. - If the door lock server supports the Unbolting feature and an Unlock Door command is performed, it must generate a LockOperation event with LockOperationType set to Unlatch when the unlatched state is reached and a LockOperation event with LockOperationType set to Unlock when the lock successfully …
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `LockOperationType` | LockOperationTypeEnum | `M` | Indicates the type of the lock operation that was performed. |
+| 1 | `OperationSource` | OperationSourceEnum | `M` | Indicates the source of the lock operation that was performed. |
+| 2 | `UserIndex` | uint16 (nullable) | `M` | Indicates the UserIndex who performed the lock operation. This is null if there is no user index that can be determined for the given operation source. |
+| 3 | `FabricIndex` | fabric-idx (nullable) | `M` | Indicates the fabric index of the fabric that performed the lock operation. This is null if there is no fabric that can be determined for the given operation source. |
+| 4 | `SourceNode` | node-id (nullable) | `M` | Indicates the Node ID of the node that performed the lock operation. This is null if there is no Node associated with the given operation source. |
+| 5 | `Credentials` | list of CredentialStruct (nullable) | `[USR]` | Indicates the list of credentials used in performing the lock operation. This is null if no credentials were involved. |
+
+## Event `3` — `LockOperationError`
+
+The door lock server sends out a LockOperationError event when a lock operation fails for various reasons.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `LockOperationType` | LockOperationTypeEnum | `M` | Indicates the type of the lock operation that was performed. |
+| 1 | `OperationSource` | OperationSourceEnum | `M` | Indicates the source of the lock operation that was performed. |
+| 2 | `OperationError` | OperationErrorEnum | `M` | Indicates the lock operation error triggered when the operation was performed. |
+| 3 | `UserIndex` | uint16 (nullable) | `M` | Indicates the lock UserIndex who performed the lock operation. This is null if there is no user id that can be determined for the given operation source. |
+| 4 | `FabricIndex` | fabric-idx (nullable) | `M` | Indicates the fabric index of the fabric that performed the lock operation. This is null if there is no fabric that can be determined for the given operation source. |
+| 5 | `SourceNode` | node-id (nullable) | `M` | Indicates the Node ID of the node that performed the lock operation. This is null if there is no Node associated with the given operation source. |
+| 6 | `Credentials` | list of CredentialStruct (nullable) | `[USR]` | Indicates the list of credentials used in performing the lock operation. This is null if no credentials were involved. |
+
+## Event `4` — `LockUserChange`
+
+The door lock server sends out a LockUserChange event when a lock user, schedule, or credential change has occurred.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `LockDataType` | LockDataTypeEnum | `M` | Indicates the lock data type that was changed. |
+| 1 | `DataOperationType` | DataOperationTypeEnum | `M` | Indicates the data operation performed on the lock data type changed. |
+| 2 | `OperationSource` | OperationSourceEnum | `M` | Indicates the source of the user data change. |
+| 3 | `UserIndex` | uint16 (nullable) | `M` | Indicates the lock UserIndex associated with the change (if any). This is null if there is no specific user associated with the data operation. |
+| 4 | `FabricIndex` | fabric-idx (nullable) | `M` | Indicates the fabric index of the fabric that performed the change (if any). This is null if there is no fabric that can be determined to have caused the change. |
+| 5 | `SourceNode` | node-id (nullable) | `M` | Indicates the Node ID that performed the change (if any). The Node ID of the node that performed the change. |
+| 6 | `DataIndex` | uint16 (nullable) | `M` | Indicates the index of the specific item that was changed (e.g. schedule, PIN, RFID, etc.) in the list of items identified by LockDataType. This is null if the LockDataType does not correspond to a list that can be indexed into (e.g. |
+
+---
+
+# SmartphoneKey Notes
+
+- Door locks are the primary SmartphoneKey device class. `LockState` (`1/257/0`) drives the lock/unlock state shown in the app.
+- `LockDoor` / `UnlockDoor` are timed commands: the bridge sends them with `timed_request_timeout_ms`. Yale locks enforce a 60 s lockout after repeated wrong PIN codes.
+- `PINCode` in command payloads is sent as a base64-encoded octet string.
+- User, credential and schedule management commands (`SetUser`, `SetCredential`, ...) require the lock to report the `USR` / `PIN` features in `FeatureMap`.
+- Shadow paths follow `endpoint/257/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

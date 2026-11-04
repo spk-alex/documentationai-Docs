@@ -1,0 +1,375 @@
+---
+title: "Matter Cluster 41 — OTA Software Update Provider"
+description: "Matter Cluster 41 (0x0029) OTA Software Update Provider: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 41
+clusterHex: "0x0029"
+clusterName: "OTA Software Update Provider"
+---
+
+# Matter Cluster 41 — OTA Software Update Provider Cluster
+
+<Callout type="info">
+Matter Cluster <code>41</code>, also written as <code>0x0029</code>, is the <strong>OTA Software Update Provider Cluster</strong>.
+This cluster implements the Provider role in the OTA process.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `41` |
+| Cluster ID hex | `0x0029` |
+| Cluster name | `OTA Software Update Provider` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `OTAP` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 41 values in the device shadow use this format:
+
+```text
+endpoint_id / 41 / attribute_id
+```
+
+---
+
+## Data Types
+
+### `ApplyUpdateActionEnum`
+
+This enumeration is used in the Action field of the ApplyUpdateResponse command. See (Action).
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Proceed` | `M` | Apply the update. |
+| 1 | `AwaitNextAction` | `M` | Wait at least the given delay time. |
+| 2 | `Discontinue` | `M` | The OTA Provider is conveying a desire to rescind a previously provided Software Image. |
+
+### `DownloadProtocolEnum`
+
+Note that only HTTP over TLS (HTTPS) is supported. Using HTTP without TLS must NOT be supported, as there is no way to authenticate the involved participants.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `BDXSynchronous` | `M` | Indicates support for synchronous BDX. |
+| 1 | `BDXAsynchronous` | `O` | Indicates support for asynchronous BDX. |
+| 2 | `HTTPS` | `O` | Indicates support for HTTPS. |
+| 3 | `VendorSpecific` | `O` | Indicates support for vendor specific protocol. |
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `UpdateAvailable` | `M` | Indicates that the OTA Provider has an update available. |
+| 1 | `Busy` | `M` | Indicates OTA Provider may have an update, but it is not ready yet. |
+| 2 | `NotAvailable` | `M` | Indicates that there is definitely no update currently available from the OTA Provider. |
+| 3 | `DownloadProtocolNotSupported` | `M` | Indicates that the requested download protocol is not supported by the OTA Provider. |
+
+---
+
+## Cluster 41 Attributes
+
+Cluster 41 defines no cluster-specific attributes; only the global attributes are present.
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Cluster 41 Commands
+
+Cluster 41 has **3 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `QueryImage` | client → server | `M` | QueryImageResponse | On receipt, this command must trigger an attempt to find an updated Software Image by the OTA Provider to match the OTA Requestor's constraints provided in the payload fields. |
+| 1 | `0x01` | `QueryImageResponse` | server → client | `M` | — | This command is sent in response to the QueryImage command. |
+| 2 | `0x02` | `ApplyUpdateRequest` | client → server | `M` | ApplyUpdateResponse | This command requests the specified version be installed on the device. |
+| 3 | `0x03` | `ApplyUpdateResponse` | server → client | `M` | — | This command is sent in response to the ApplyUpdateRequest command. |
+| 4 | `0x04` | `NotifyUpdateApplied` | client → server | `M` | status | This command tells the Provider that the specified update has been applied. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 41 / 65529
+```
+
+```json
+{
+  "0/41/65529": [
+    0,
+    2,
+    4
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 41 command, check that the command ID exists in <code>endpoint/41/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 41,
+    "command_name": "QueryImage",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 41, always use `"cluster_id": 41`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `QueryImage`
+
+## Purpose
+
+On receipt, this command must trigger an attempt to find an updated Software Image by the OTA Provider to match the OTA Requestor's constraints provided in the payload fields.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `QueryImage` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | QueryImageResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `VendorID` | `vendorID` | vendor-id | `M` | — | — |
+| 1 | `ProductID` | `productID` | uint16 | `M` | — | — |
+| 2 | `SoftwareVersion` | `softwareVersion` | uint32 | `M` | — | The SoftwareVersion included in the request payload provides the value representing the current version running on the OTA Requestor invoking the command. This version is equal to the Software Version attribute of the Basic Information Cluster. |
+| 3 | `ProtocolsSupported` | `protocolsSupported` | list of DownloadProtocolEnum | `M` | max 8 entries | This field contains a list of all download protocols supported by the OTA Requestor. This field is used by the OTA Provider to generate the correct URI for the location of the Software Image when one is found to be available. |
+| 4 | `HardwareVersion` | `hardwareVersion` | uint16 | `O` | — | The value of this field, if present, contains the OTA Requestor's hardware version, and is equal to the HardwareVersion attribute of the Basic Information Cluster. |
+| 5 | `Location` | `location` | string | `O` | allowed: 2 | The location, if present, provides the same value as the Basic Information Cluster Location attribute for the OTA Requestor as configured. This may be used by the OTA Provider logic to allow per-region selection of the Software Image. |
+| 6 | `RequestorCanConsent` | `requestorCanConsent` | bool | `O` | — | This field is set to true by an OTA Requestor that is capable of obtaining user consent for OTA application by virtue of built-in user interface capabilities. |
+| 7 | `MetadataForProvider` | `metadataForProvider` | octstr | `O` | max length 512 | This optional field, if present, must consist of a top-level anonymous list; each list element has a profile-specific tag encoded in fully-qualified form. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 41,
+    "command_name": "QueryImage",
+    "payload": {
+      "vendorID": 1,
+      "productID": 1,
+      "softwareVersion": 1,
+      "protocolsSupported": []
+    }
+  }
+}
+```
+
+The device answers with `QueryImageResponse` (see below).
+
+---
+
+# Command: `QueryImageResponse`
+
+## Purpose
+
+This command is sent in response to the QueryImage command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `QueryImageResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | — | — |
+| 1 | `DelayedActionTime` | `delayedActionTime` | uint32 | `Status = Busy, O` | — | This field is provided when the Status field is set to Busy, and may be provided in other cases. |
+| 2 | `ImageURI` | `imageURI` | string | `Status = UpdateAvailable` | max length 256 | — |
+| 3 | `SoftwareVersion` | `softwareVersion` | uint32 | `Status = UpdateAvailable` | — | This field indicates the version of the image being provided to the OTA Requestor by the OTA Provider. |
+| 4 | `SoftwareVersionString` | `softwareVersionString` | string | `Status = UpdateAvailable` | length 1 to 64 | This field provides a string version of the image being provided to the OTA Requestor by the OTA Provider. |
+| 5 | `UpdateToken` | `updateToken` | octstr | `Status = UpdateAvailable` | length 8 to 32 | — |
+| 6 | `UserConsentNeeded` | `userConsentNeeded` | bool | `O` | — | This field, if present, only be interpreted if the OTA Requestor had previously indicated a value of True in the RequestorCanConsent field of the QueryImageRequest. |
+| 7 | `MetadataForRequestor` | `metadataForRequestor` | octstr | `O` | max length 512 | This optional field, if present, must consist of a top-level anonymous list; each list element has a profile-specific tag encoded in fully-qualified form. |
+
+`Status` values (`StatusEnum`): `0` = UpdateAvailable, `1` = Busy, `2` = NotAvailable, `3` = DownloadProtocolNotSupported
+
+---
+
+# Command: `ApplyUpdateRequest`
+
+## Purpose
+
+This command requests the specified version be installed on the device.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `ApplyUpdateRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ApplyUpdateResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UpdateToken` | `updateToken` | octstr | `M` | length 8 to 32 | This field contains the UpdateToken. This field may be used by the OTA Provider to track minimal lifecycle state to allow finer-grained scheduling of the application of Software Images by OTA Requestors. |
+| 1 | `NewVersion` | `newVersion` | uint32 | `M` | — | The NewVersion field included in the request payload provides the SoftwareVersion value of the new Software Image which the OTA Requestor is ready to start applying. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 41,
+    "command_name": "ApplyUpdateRequest",
+    "payload": {
+      "updateToken": "AQID",
+      "newVersion": 1
+    }
+  }
+}
+```
+
+The device answers with `ApplyUpdateResponse` (see below).
+
+---
+
+# Command: `ApplyUpdateResponse`
+
+## Purpose
+
+This command is sent in response to the ApplyUpdateRequest command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `ApplyUpdateResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Action` | `action` | ApplyUpdateActionEnum | `M` | — | — |
+| 1 | `DelayedActionTime` | `delayedActionTime` | uint32 | `M` | — | The minimum time period the OTA Requestor must wait before executing the Action, in seconds from receipt. |
+
+`Action` values (`ApplyUpdateActionEnum`): `0` = Proceed, `1` = AwaitNextAction, `2` = Discontinue
+
+---
+
+# Command: `NotifyUpdateApplied`
+
+## Purpose
+
+This command tells the Provider that the specified update has been applied.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `NotifyUpdateApplied` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UpdateToken` | `updateToken` | octstr | `M` | length 8 to 32 | This field contains the UpdateToken. |
+| 1 | `SoftwareVersion` | `softwareVersion` | uint32 | `M` | — | The SoftwareVersion included in the request payload provides the same value as the SoftwareVersion attribute in the invoking OTA Requestor's Basic Information Cluster, and should be consistent with the value representing a new version running on the Node … |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 41,
+    "command_name": "NotifyUpdateApplied",
+    "payload": {
+      "updateToken": "AQID",
+      "softwareVersion": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 41 Events
+
+Cluster 41 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 41 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/41/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

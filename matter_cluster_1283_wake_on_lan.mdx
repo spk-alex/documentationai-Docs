@@ -1,0 +1,153 @@
+---
+title: "Matter Cluster 1283 — Wake On LAN"
+description: "Matter Cluster 1283 (0x0503) Wake On LAN: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1283
+clusterHex: "0x0503"
+clusterName: "Wake On LAN"
+---
+
+# Matter Cluster 1283 — Wake On LAN Cluster
+
+<Callout type="info">
+Matter Cluster <code>1283</code>, also written as <code>0x0503</code>, is the <strong>Wake On LAN Cluster</strong>.
+This cluster provides an interface for managing low power mode on a device that supports the Wake On LAN or Wake On Wireless LAN (WLAN) protocol. This cluster would be supported on IP devices that have a low power mode AND support the ability to be woken up using the Wake on LAN or Wake on WLAN protocol. This cluster provides the device MAC address which is a required input to the Wake on LAN protocol.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1283` |
+| Cluster ID hex | `0x0503` |
+| Cluster name | `Wake On LAN` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `WAKEONLAN` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1283 values in the device shadow use this format:
+
+```text
+endpoint_id / 1283 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1283/0": "example"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1283` | Wake On LAN cluster |
+| `0` | `MACAddress` attribute |
+
+---
+
+## Cluster 1283 Attributes
+
+Cluster 1283 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MACAddress` | string | `O` | R (read: view) | — | — |
+| 1 | `0x0001` | `LinkLocalAddress` | ipv6adr | `O` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MACAddress`
+
+Path example:
+
+```text
+1/1283/0
+```
+
+No condensed specification text is available for `MACAddress`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 12 |
+
+Example:
+
+```json
+{
+  "1/1283/0": "example"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `LinkLocalAddress`
+
+Path example:
+
+```text
+1/1283/1
+```
+
+Indicates the current link-local address of the device. Only 128-bit IPv6 link-local addresses is used for this attribute. Some companies may consider MAC Address to be protected data subject to PII handling considerations and will therefore choose not to include it or read it. The MAC Address can often be determined using ARP in IPv4 or NDP in IPv6.
+
+| Property | Value |
+|---|---|
+| Type | ipv6adr |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | desc; allowed: 16 |
+
+Example:
+
+```json
+{
+  "1/1283/1": 1
+}
+```
+
+---
+
+# Cluster 1283 Commands
+
+Cluster 1283 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1283 Events
+
+Cluster 1283 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1283 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1283/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

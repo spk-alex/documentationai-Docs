@@ -1,0 +1,319 @@
+---
+title: "Matter Cluster 1289 — Keypad Input"
+description: "Matter Cluster 1289 (0x0509) Keypad Input: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1289
+clusterHex: "0x0509"
+clusterName: "Keypad Input"
+---
+
+# Matter Cluster 1289 — Keypad Input Cluster
+
+<Callout type="info">
+Matter Cluster <code>1289</code>, also written as <code>0x0509</code>, is the <strong>Keypad Input Cluster</strong>.
+This cluster provides an interface for key code based input and control on a device like a Video Player or an endpoint like a Content App. This may include text or action commands such as UP, DOWN, and SELECT. This cluster would be supported on Video Player devices as well as devices that support remote control input from a keypad or remote.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1289` |
+| Cluster ID hex | `0x0509` |
+| Cluster name | `Keypad Input` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `KEYPADINPUT` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1289 values in the device shadow use this format:
+
+```text
+endpoint_id / 1289 / attribute_id
+```
+
+---
+
+## Cluster 1289 Features
+
+The `FeatureMap` attribute (`1/1289/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `NV` | NavigationKeyCodes | `O` | Supports UP, DOWN, LEFT, RIGHT, SELECT, BACK, EXIT, MENU |
+| 1 | `LK` | LocationKeys | `O` | Supports CEC keys 0x0A (Settings) and 0x09 (Home) |
+| 2 | `NK` | NumberKeys | `O` | Supports numeric input 0..9 |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `7` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `CecKeyCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Select` | `M` | — |
+| 1 | `Up` | `M` | — |
+| 2 | `Down` | `M` | — |
+| 3 | `Left` | `M` | — |
+| 4 | `Right` | `M` | — |
+| 5 | `RightUp` | `M` | — |
+| 6 | `RightDown` | `M` | — |
+| 7 | `LeftUp` | `M` | — |
+| 8 | `LeftDown` | `M` | — |
+| 9 | `RootMenu` | `M` | — |
+| 10 | `SetupMenu` | `M` | — |
+| 11 | `ContentsMenu` | `M` | — |
+| 12 | `FavoriteMenu` | `M` | — |
+| 13 | `Exit` | `M` | — |
+| 16 | `MediaTopMenu` | `M` | — |
+| 17 | `MediaContextSensitiveMenu` | `M` | — |
+| 29 | `NumberEntryMode` | `M` | — |
+| 30 | `Number11` | `M` | — |
+| 31 | `Number12` | `M` | — |
+| 32 | `Number0OrNumber10` | `M` | — |
+| 33 | `Numbers1` | `M` | — |
+| 34 | `Numbers2` | `M` | — |
+| 35 | `Numbers3` | `M` | — |
+| 36 | `Numbers4` | `M` | — |
+| 37 | `Numbers5` | `M` | — |
+| 38 | `Numbers6` | `M` | — |
+| 39 | `Numbers7` | `M` | — |
+| 40 | `Numbers8` | `M` | — |
+| 41 | `Numbers9` | `M` | — |
+| 42 | `Dot` | `M` | — |
+| 43 | `Enter` | `M` | — |
+| 44 | `Clear` | `M` | — |
+| 47 | `NextFavorite` | `M` | — |
+| 48 | `ChannelUp` | `M` | — |
+| 49 | `ChannelDown` | `M` | — |
+| 50 | `PreviousChannel` | `M` | — |
+| 51 | `SoundSelect` | `M` | — |
+| 52 | `InputSelect` | `M` | — |
+| 53 | `DisplayInformation` | `M` | — |
+| 54 | `Help` | `M` | — |
+| 55 | `PageUp` | `M` | — |
+| 56 | `PageDown` | `M` | — |
+| 64 | `Power` | `M` | — |
+| 65 | `VolumeUp` | `M` | — |
+| 66 | `VolumeDown` | `M` | — |
+| 67 | `Mute` | `M` | — |
+| 68 | `Play` | `M` | — |
+| 69 | `Stop` | `M` | — |
+| 70 | `Pause` | `M` | — |
+| 71 | `Record` | `M` | — |
+| 72 | `Rewind` | `M` | — |
+| 73 | `FastForward` | `M` | — |
+| 74 | `Eject` | `M` | — |
+| 75 | `Forward` | `M` | — |
+| 76 | `Backward` | `M` | — |
+| 77 | `StopRecord` | `M` | — |
+| 78 | `PauseRecord` | `M` | — |
+| 79 | `Reserved` | `M` | — |
+| 80 | `Angle` | `M` | — |
+| 81 | `SubPicture` | `M` | — |
+| 82 | `VideoOnDemand` | `M` | — |
+| 83 | `ElectronicProgramGuide` | `M` | — |
+| 84 | `TimerProgramming` | `M` | — |
+| 85 | `InitialConfiguration` | `M` | — |
+| 86 | `SelectBroadcastType` | `M` | — |
+| 87 | `SelectSoundPresentation` | `M` | — |
+| 96 | `PlayFunction` | `M` | — |
+| 97 | `PausePlayFunction` | `M` | — |
+| 98 | `RecordFunction` | `M` | — |
+| 99 | `PauseRecordFunction` | `M` | — |
+| 100 | `StopFunction` | `M` | — |
+| 101 | `MuteFunction` | `M` | — |
+| 102 | `RestoreVolumeFunction` | `M` | — |
+| 103 | `TuneFunction` | `M` | — |
+| 104 | `SelectMediaFunction` | `M` | — |
+| 105 | `SelectAvInputFunction` | `M` | — |
+| 106 | `SelectAudioInputFunction` | `M` | — |
+| 107 | `PowerToggleFunction` | `M` | — |
+| 108 | `PowerOffFunction` | `M` | — |
+| 109 | `PowerOnFunction` | `M` | — |
+| 113 | `F1Blue` | `M` | — |
+| 114 | `F2Red` | `M` | — |
+| 115 | `F3Green` | `M` | — |
+| 116 | `F4Yellow` | `M` | — |
+| 117 | `F5` | `M` | — |
+| 118 | `Data` | `M` | — |
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Succeeded |
+| 1 | `UnsupportedKey` | `M` | Key code is not supported. |
+| 2 | `InvalidKeyInCurrentState` | `M` | Requested key code is invalid in the context of the responder's current state. |
+
+---
+
+## Cluster 1289 Attributes
+
+Cluster 1289 defines no cluster-specific attributes; only the global attributes are present.
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Cluster 1289 Commands
+
+Cluster 1289 has **1 client-to-server command** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SendKey` | client → server | `M` | SendKeyResponse | On receipt, this must process a keycode as input to the media endpoint. |
+| 1 | `0x01` | `SendKeyResponse` | server → client | `M` | — | This command is generated in response to a SendKey command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1289 / 65529
+```
+
+```json
+{
+  "1/1289/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1289 command, check that the command ID exists in <code>endpoint/1289/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1289,
+    "command_name": "SendKey",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1289, always use `"cluster_id": 1289`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SendKey`
+
+## Purpose
+
+On receipt, this must process a keycode as input to the media endpoint. If a device has multiple media endpoints implementing this cluster, such as a casting video player endpoint with one or more content app endpoints, then only the endpoint receiving the command must process the keycode as input. In other words, a specific content app endpoint must NOT process a keycode received by a different content app endpoint. If a second SendKey request with the same KeyCode value is received within 200 ms, then the endpoint will consider the first key press to be a press and hold.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SendKey` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | SendKeyResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `KeyCode` | `keyCode` | CecKeyCodeEnum | `M` | — | Indicates the key code to process. |
+
+`KeyCode` values (`CecKeyCodeEnum`): `0` = Select, `1` = Up, `2` = Down, `3` = Left, `4` = Right, `5` = RightUp, `6` = RightDown, `7` = LeftUp, `8` = LeftDown, `9` = RootMenu, `10` = SetupMenu, `11` = ContentsMenu, `12` = FavoriteMenu, `13` = Exit, `16` = MediaTopMenu, `17` = MediaContextSensitiveMenu, `29` = NumberEntryMode, `30` = Number11, `31` = Number12, `32` = Number0OrNumber10, `33` = Numbers1, `34` = Numbers2, `35` = Numbers3, `36` = Numbers4, `37` = Numbers5, `38` = Numbers6, `39` = Numbers7, `40` = Numbers8, `41` = Numbers9, `42` = Dot, `43` = Enter, `44` = Clear, `47` = NextFavorite, `48` = ChannelUp, `49` = ChannelDown, `50` = PreviousChannel, `51` = SoundSelect, `52` = InputSelect, `53` = DisplayInformation, `54` = Help, `55` = PageUp, `56` = PageDown, `64` = Power, `65` = VolumeUp, `66` = VolumeDown, `67` = Mute, `68` = Play, `69` = Stop, `70` = Pause, `71` = Record, `72` = Rewind, `73` = FastForward, `74` = Eject, `75` = Forward, `76` = Backward, `77` = StopRecord, `78` = PauseRecord, `79` = Reserved, `80` = Angle, `81` = SubPicture, `82` = VideoOnDemand, `83` = ElectronicProgramGuide, `84` = TimerProgramming, `85` = InitialConfiguration, `86` = SelectBroadcastType, `87` = SelectSoundPresentation, `96` = PlayFunction, `97` = PausePlayFunction, `98` = RecordFunction, `99` = PauseRecordFunction, `100` = StopFunction, `101` = MuteFunction, `102` = RestoreVolumeFunction, `103` = TuneFunction, `104` = SelectMediaFunction, `105` = SelectAvInputFunction, `106` = SelectAudioInputFunction, `107` = PowerToggleFunction, `108` = PowerOffFunction, `109` = PowerOnFunction, `113` = F1Blue, `114` = F2Red, `115` = F3Green, `116` = F4Yellow, `117` = F5, `118` = Data
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1289,
+    "command_name": "SendKey",
+    "payload": {
+      "keyCode": 0
+    }
+  }
+}
+```
+
+The device answers with `SendKeyResponse` (see below).
+
+---
+
+# Command: `SendKeyResponse`
+
+## Purpose
+
+This command is generated in response to a SendKey command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `SendKeyResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | — | Indicates the status of the request. |
+
+`Status` values (`StatusEnum`): `0` = Success, `1` = UnsupportedKey, `2` = InvalidKeyInCurrentState
+
+---
+
+# Cluster 1289 Events
+
+Cluster 1289 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1289 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1289/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

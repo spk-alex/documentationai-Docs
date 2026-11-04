@@ -1,0 +1,495 @@
+---
+title: "Matter Cluster 1363 — WebRTC Transport Provider"
+description: "Matter Cluster 1363 (0x0553) WebRTC Transport Provider: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1363
+clusterHex: "0x0553"
+clusterName: "WebRTC Transport Provider"
+---
+
+# Matter Cluster 1363 — WebRTC Transport Provider Cluster
+
+<Callout type="info">
+Matter Cluster <code>1363</code>, also written as <code>0x0553</code>, is the <strong>WebRTC Transport Provider Cluster</strong>.
+The WebRTC transport provider cluster provides a way for stream providers (e.g. Cameras) to stream or receive their data through WebRTC. Devices implementing this cluster must also implement Camera AV Stream Management Cluster on the same endpoint.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1363` |
+| Cluster ID hex | `0x0553` |
+| Cluster name | `WebRTC Transport Provider` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `WEBRTCP` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial version of the WebRTC Transport Provider Cluster |
+| 2 | Add multi stream support |
+
+---
+
+## Shadow Path Format
+
+Cluster 1363 values in the device shadow use this format:
+
+```text
+endpoint_id / 1363 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1363/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1363` | WebRTC Transport Provider cluster |
+| `0` | `CurrentSessions` attribute |
+
+---
+
+## Cluster 1363 Features
+
+The `FeatureMap` attribute (`1/1363/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `METADATA` | Metadata | `P, O` | Supports metadata transmission in WebRTC sessions |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Cluster 1363 Attributes
+
+Cluster 1363 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `CurrentSessions` | list of WebRTCSessionStruct | `M` | R (read: manage, fabric-sensitive) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `CurrentSessions`
+
+Path example:
+
+```text
+1/1363/0
+```
+
+This attribute is a list of WebRTCSessionStruct, which represents all the active WebRTC Sessions.
+
+| Property | Value |
+|---|---|
+| Type | list of WebRTCSessionStruct |
+| Conformance | `M` |
+| Access | R (read: manage, fabric-sensitive) |
+
+Example:
+
+```json
+{
+  "1/1363/0": []
+}
+```
+
+---
+
+# Cluster 1363 Commands
+
+Cluster 1363 has **5 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SolicitOffer` | client → server | `M` | SolicitOfferResponse | Requests that the Provider initiates a new session with the Offer / Answer flow in a way that allows for options to be passed and work with devices needing the standby flow. |
+| 1 | `0x01` | `SolicitOfferResponse` | server → client | `M` | — | This command is generated in response to a SolicitOffer command. |
+| 2 | `0x02` | `ProvideOffer` | client → server | `M` | ProvideOfferResponse | This command allows an SDP Offer to be set and start a new session. |
+| 3 | `0x03` | `ProvideOfferResponse` | server → client | `M` | — | This command contains information about the session and streams created as a response to the requestor's offer. |
+| 4 | `0x04` | `ProvideAnswer` | client → server | `M` | status | This command is initiated from a Node in response to an Offer that was previously received from a remote peer. |
+| 5 | `0x05` | `ProvideICECandidates` | client → server | `M` | status | — |
+| 6 | `0x06` | `EndSession` | client → server | `M` | status | This command instructs the stream provider to end the WebRTC session. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1363 / 65529
+```
+
+```json
+{
+  "1/1363/65529": [
+    0,
+    2,
+    4,
+    5,
+    6
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1363 command, check that the command ID exists in <code>endpoint/1363/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1363,
+    "command_name": "SolicitOffer",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1363, always use `"cluster_id": 1363`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SolicitOffer`
+
+## Purpose
+
+Requests that the Provider initiates a new session with the Offer / Answer flow in a way that allows for options to be passed and work with devices needing the standby flow.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SolicitOffer` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | SolicitOfferResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StreamUsage` | `streamUsage` | StreamUsageEnum | `M` | — | This field contains the StreamUsageEnum that indicates the stream usage for this session and is used per Resource Management and Stream Priorities. |
+| 1 | `OriginatingEndpointID` | `originatingEndpointID` | endpoint-no | `M` | — | — |
+| 2 | `VideoStreamID` | `videoStreamID` | VideoStreamID (nullable) | `O, D` | — | — |
+| 3 | `AudioStreamID` | `audioStreamID` | AudioStreamID (nullable) | `O, D` | — | — |
+| 4 | `ICEServers` | `iceServers` | list of ICEServerStruct | `O` | max 10 entries | — |
+| 5 | `ICETransportPolicy` | `iceTransportPolicy` | string | `O` | max length 16 | — |
+| 6 | `MetadataEnabled` | `metadataEnabled` | bool | `METADATA` | — | This field indicates if metadata transmission is active in this session. |
+| 8 | `VideoStreams` | `videoStreams` | list of VideoStreamID | `[ClusterRevision >= 2], O` | 1 to 16 entries | This field is the list of requested VideoStreamID for this session. Valid values are found in the AllocatedVideoStreams attribute. |
+| 9 | `AudioStreams` | `audioStreams` | list of AudioStreamID | `[ClusterRevision >= 2], O` | 1 to 16 entries | This field is a list of requested AudioStreamID for this session. Valid values are found in the AllocatedAudioStreams attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1363,
+    "command_name": "SolicitOffer",
+    "payload": {
+      "streamUsage": 0,
+      "originatingEndpointID": 1
+    }
+  }
+}
+```
+
+The device answers with `SolicitOfferResponse` (see below).
+
+---
+
+# Command: `SolicitOfferResponse`
+
+## Purpose
+
+This command is generated in response to a SolicitOffer command. This response contains information about the session and streams created and/or if a deferred offer will take place. Upon receipt, the client must create a new WebRTCSessionStruct populated with the values from this command, along with the accessing Peer Node ID and Local Fabric Index entries stored in the Secure Session Context as the PeerNodeID and FabricIndex values, and store it in the WebRTC Transport Requestor cluster's CurrentSessions attribute. The session establishment is considered failed unless a Offer command is received by the Requestor from the PeerEndpointID / FabricIndex within 30 seconds.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `SolicitOfferResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WebRTCSessionID` | `webRTCSessionID` | WebRTCSessionID | `M` | — | — |
+| 1 | `DeferredOffer` | `deferredOffer` | bool | `M` | — | This field must indicates the delayed processing hint of the provider. If DeferredOffer is FALSE, the VideoStreamID and AudioStreamID fields must NOT be null in this response and the Provider will without delay invoke the Offer command. |
+| 2 | `VideoStreamID` | `videoStreamID` | VideoStreamID (nullable) | `SolicitOffer, D` | — | — |
+| 3 | `AudioStreamID` | `audioStreamID` | AudioStreamID (nullable) | `SolicitOffer, D` | — | — |
+
+---
+
+# Command: `ProvideOffer`
+
+## Purpose
+
+This command allows an SDP Offer to be set and start a new session. This command can also be used in the re-offer flow of an existing session to change the details of the SDP (e.g. to enable/disable two-way talk).
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `ProvideOffer` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ProvideOfferResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WebRTCSessionID` | `webRTCSessionID` | WebRTCSessionID (nullable) | `M` | — | — |
+| 1 | `SDP` | `sdp` | string | `M` | — | — |
+| 2 | `StreamUsage` | `streamUsage` | StreamUsageEnum | `WebRTCSessionID = null, O` | — | This field contains the StreamUsageEnum that indicates the stream usage for this session. |
+| 3 | `OriginatingEndpointID` | `originatingEndpointID` | endpoint-no | `WebRTCSessionID = null, O` | — | — |
+| 4 | `VideoStreamID` | `videoStreamID` | VideoStreamID (nullable) | `O, D` | — | — |
+| 5 | `AudioStreamID` | `audioStreamID` | AudioStreamID (nullable) | `O, D` | — | — |
+| 6 | `ICEServers` | `iceServers` | list of ICEServerStruct | `O` | max 10 entries | — |
+| 7 | `ICETransportPolicy` | `iceTransportPolicy` | string | `O` | max length 16 | — |
+| 8 | `MetadataEnabled` | `metadataEnabled` | bool | `METADATA & WebRTCSessionID = null` | — | This field indicates if metadata transmission is active in this session. |
+| 10 | `VideoStreams` | `videoStreams` | list of VideoStreamID | `[ClusterRevision >= 2 & WebRTCSessionID = null], O` | 1 to 16 entries | This field is the list of requested VideoStreamID for this session. Valid values are found in the AllocatedVideoStreams attribute. |
+| 11 | `AudioStreams` | `audioStreams` | list of AudioStreamID | `[ClusterRevision >= 2 & WebRTCSessionID = null], O` | 1 to 16 entries | This field is a list of requested AudioStreamID for this session. Valid values are found in the AllocatedAudioStreams attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1363,
+    "command_name": "ProvideOffer",
+    "payload": {
+      "webRTCSessionID": 0,
+      "sdp": "example"
+    }
+  }
+}
+```
+
+The device answers with `ProvideOfferResponse` (see below).
+
+---
+
+# Command: `ProvideOfferResponse`
+
+## Purpose
+
+This command contains information about the session and streams created as a response to the requestor's offer. Upon receipt, the client must create a new WebRTCSessionStruct populated with the values from this command, along with the accessing Peer Node ID and Local Fabric Index entries stored in the Secure Session Context as the PeerNodeID and FabricIndex values, and store it in the WebRTC Transport Requestor cluster's CurrentSessions attribute.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `ProvideOfferResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WebRTCSessionID` | `webRTCSessionID` | WebRTCSessionID | `M` | — | — |
+| 1 | `VideoStreamID` | `videoStreamID` | VideoStreamID (nullable) | `ProvideOffer, D` | — | — |
+| 2 | `AudioStreamID` | `audioStreamID` | AudioStreamID (nullable) | `ProvideOffer, D` | — | — |
+
+---
+
+# Command: `ProvideAnswer`
+
+## Purpose
+
+This command is initiated from a Node in response to an Offer that was previously received from a remote peer. It has the following data fields: This command must respond with a response status of NOT_FOUND if the WebRTCSessionID does not match an entry in CurrentSessions, or if the matching entry's associated fabric and PeerNodeID do not match the accessing fabric and the Peer Node ID entry stored in the Secure Session Context of the session this command was received on.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `ProvideAnswer` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WebRTCSessionID` | `webRTCSessionID` | WebRTCSessionID | `M` | — | — |
+| 1 | `SDP` | `sdp` | string | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1363,
+    "command_name": "ProvideAnswer",
+    "payload": {
+      "webRTCSessionID": 0,
+      "sdp": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `ProvideICECandidates`
+
+## Purpose
+
+`ProvideICECandidates` is a client-to-server command of the WebRTC Transport Provider cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `ProvideICECandidates` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WebRTCSessionID` | `webRTCSessionID` | WebRTCSessionID | `M` | — | — |
+| 1 | `ICECandidates` | `iceCandidates` | list of ICECandidateStruct | `M` | min 1 entries | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1363,
+    "command_name": "ProvideICECandidates",
+    "payload": {
+      "webRTCSessionID": 0,
+      "iceCandidates": []
+    }
+  }
+}
+```
+
+---
+
+# Command: `EndSession`
+
+## Purpose
+
+This command instructs the stream provider to end the WebRTC session.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `EndSession` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `WebRTCSessionID` | `webRTCSessionID` | WebRTCSessionID | `M` | — | — |
+| 1 | `Reason` | `reason` | WebRTCEndReasonEnum | `M` | — | This field is one of the values in WebRTCEndReasonEnum. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1363,
+    "command_name": "EndSession",
+    "payload": {
+      "webRTCSessionID": 0,
+      "reason": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1363 Events
+
+Cluster 1363 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1363 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1363/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

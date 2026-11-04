@@ -1,0 +1,1271 @@
+---
+title: "Matter Cluster 1286 — Media Playback"
+description: "Matter Cluster 1286 (0x0506) Media Playback: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1286
+clusterHex: "0x0506"
+clusterName: "Media Playback"
+---
+
+# Matter Cluster 1286 — Media Playback Cluster
+
+<Callout type="info">
+Matter Cluster <code>1286</code>, also written as <code>0x0506</code>, is the <strong>Media Playback Cluster</strong>.
+This cluster provides an interface for controlling Media Playback (PLAY, PAUSE, etc) on a media device such as a TV, Set-top Box, or Smart Speaker. This cluster server would be supported on Video Player devices or endpoints that provide media playback, such as a Content App. This cluster provides an interface for controlling Media Playback.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1286` |
+| Cluster ID hex | `0x0506` |
+| Cluster name | `Media Playback` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `MEDIAPLAYBACK` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added Text/Audio tracks support, Audio-while-advancing (AA) feature, StateChanged event |
+
+---
+
+## Shadow Path Format
+
+Cluster 1286 values in the device shadow use this format:
+
+```text
+endpoint_id / 1286 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1286/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1286` | Media Playback cluster |
+| `0` | `CurrentState` attribute |
+
+---
+
+## Cluster 1286 Features
+
+The `FeatureMap` attribute (`1/1286/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AS` | AdvancedSeek | `O` | Advanced media seeking |
+| 1 | `VS` | VariableSpeed | `O` | Variable speed playback |
+| 2 | `TT` | TextTracks | `O` | Text Tracks |
+| 3 | `AT` | AudioTracks | `O` | Audio Tracks |
+| 4 | `AA` | AudioAdvance | `O` | Can play audio during fast and slow playback speeds |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `31` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `CharacteristicEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ForcedSubtitles` | `M` | Textual information meant for display when no other text representation is selected. It is used to clarify dialogue, alternate languages, texted graphics or location/person IDs that are not otherwise covered in the dubbed/localized audio |
+| 1 | `DescribesVideo` | `M` | Textual or audio media component containing a textual description (intended for audio synthesis) or an audio description describing a visual component |
+| 2 | `EasyToRead` | `M` | Simplified or reduced captions as specified in &#91;United States Code Title 47 CFR 79.103(c)(9)&#93; |
+| 3 | `FrameBased` | `M` | A media characteristic that indicates that a track selection option includes frame-based content |
+| 4 | `MainProgram` | `M` | Main media component(s) which is/are intended for presentation if no other information is provided |
+| 5 | `OriginalContent` | `M` | A media characteristic that indicates that a track or media selection option contains original content |
+| 6 | `VoiceOverTranslation` | `M` | A media characteristic that indicates that a track or media selection option contains a language translation and verbal interpretation of spoken dialog |
+| 7 | `Caption` | `M` | Textual media component containing transcriptions of spoken dialog and auditory cues such as sound effects and music for the hearing impaired |
+| 8 | `Subtitle` | `M` | Textual transcriptions of spoken dialog. |
+| 9 | `Alternate` | `M` | Textual media component containing transcriptions of spoken dialog and auditory cues such as sound effects and music for the hearing impaired |
+| 10 | `Supplementary` | `M` | Media content component that is supplementary to a media content component of a different media component type |
+| 11 | `Commentary` | `M` | Experience that contains a commentary (e.g. director’s commentary) (typically audio) |
+| 12 | `DubbedTranslation` | `M` | Experience that contains an element that is presented in a different language from the original (e.g. dubbed audio, translated captions) |
+| 13 | `Description` | `M` | Textual or audio media component containing a textual description (intended for audio synthesis) or an audio description describing a visual component |
+| 14 | `Metadata` | `M` | Media component containing information intended to be processed by application specific elements |
+| 15 | `EnhancedAudioIntelligibility` | `M` | Experience containing an element for improved intelligibility of the dialogue. |
+| 16 | `Emergency` | `M` | Experience that provides information, about a current emergency, that is intended to enable the protection of life, health, safety, and property, and may also include critical details regarding the emergency and how to respond to the emergency |
+| 17 | `Karaoke` | `M` | Textual representation of a songs’ lyrics, usually in the same language as the associated song as specified in &#91;SMPTE ST 2067-2&#93; |
+
+### `PlaybackStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Playing` | `M` | Media is currently playing (includes FF and REW) |
+| 1 | `Paused` | `M` | Media is currently paused |
+| 2 | `NotPlaying` | `M` | Media is not currently playing |
+| 3 | `Buffering` | `M` | Media is not currently buffering and playback will start when buffer has been filled |
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Succeeded |
+| 1 | `InvalidStateForCommand` | `M` | Requested playback command is invalid in the current playback state. |
+| 2 | `NotAllowed` | `M` | Requested playback command is not allowed in the current playback state For example, attempting to fast-forward during a commercial might return NotAllowed. |
+| 3 | `NotActive` | `M` | This endpoint is not active for playback. |
+| 4 | `SpeedOutOfRange` | `VS` | The FastForward or Rewind Command was issued but the media is already playing back at the fastest speed supported by the server in the respective direction. |
+| 5 | `SeekOutOfRange` | `AS` | The Seek Command was issued with a value of position outside of the allowed seek range of the media. |
+
+### `PlaybackPositionStruct` (struct)
+
+This structure defines a playback position within a media stream being played.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `UpdatedAt` | epoch-us | `M` | — | Indicates the time when the position was last updated. |
+| 1 | `Position` | uint64 (nullable) | `M` | — | Indicates the associated discrete position within the media stream, in milliseconds from the beginning of the stream, being associated with the time indicated by the UpdatedAt field. |
+
+### `TrackAttributesStruct` (struct)
+
+This structure includes the attributes associated with a Text/Audio Track
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `LanguageCode` | string | `M` | max length 32 | The value is a String containing one of the standard Tags for Identifying Languages RFC5646, which identifies the primary language used in the Track. |
+| 1 | `Characteristics` | list of CharacteristicEnum (nullable) | `O` | — | This is a list of enumerated CharacteristicEnum values that indicate a purpose, trait or feature associated with the Track. |
+| 2 | `DisplayName` | string (nullable) | `O` | max length 256 | The value is a String containing a user displayable name for the Track. |
+
+### `TrackStruct` (struct)
+
+This structure defines a uniquely identifiable Text Track or Audio Track.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ID` | string | `M` | max length 32 | — |
+| 1 | `TrackAttributes` | TrackAttributesStruct | `M` | — | Indicates the Attributes associated to the Track, like languageCode. |
+
+---
+
+## Cluster 1286 Attributes
+
+Cluster 1286 defines **11 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `CurrentState` | PlaybackStateEnum | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `StartTime` | epoch-us | `AS` | R (read: view) | nullable | `null` |
+| 2 | `0x0002` | `Duration` | uint64 | `AS` | R (read: view) | nullable | `null` |
+| 3 | `0x0003` | `SampledPosition` | PlaybackPositionStruct | `AS` | R (read: view) | nullable | `null` |
+| 4 | `0x0004` | `PlaybackSpeed` | single | `AS` | R (read: view) | — | `0` |
+| 5 | `0x0005` | `SeekRangeEnd` | uint64 | `AS` | R (read: view) | nullable | `null` |
+| 6 | `0x0006` | `SeekRangeStart` | uint64 | `AS` | R (read: view) | nullable | `null` |
+| 7 | `0x0007` | `ActiveAudioTrack` | TrackStruct | `AT` | R (read: view) | nullable | `null` |
+| 8 | `0x0008` | `AvailableAudioTracks` | list of TrackStruct | `AT` | R (read: view) | nullable | `null` |
+| 9 | `0x0009` | `ActiveTextTrack` | TrackStruct | `TT` | R (read: view) | nullable | `null` |
+| 10 | `0x000A` | `AvailableTextTracks` | list of TrackStruct | `TT` | R (read: view) | nullable | `null` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `CurrentState`
+
+Path example:
+
+```text
+1/1286/0
+```
+
+Indicates the current playback state of media. During fast-forward, rewind, and other seek operations; this attribute is set to PLAYING.
+
+| Property | Value |
+|---|---|
+| Type | PlaybackStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`PlaybackStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Playing` | Media is currently playing (includes FF and REW) |
+| 1 | `Paused` | Media is currently paused |
+| 2 | `NotPlaying` | Media is not currently playing |
+| 3 | `Buffering` | Media is not currently buffering and playback will start when buffer has been filled |
+
+Example:
+
+```json
+{
+  "1/1286/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `StartTime`
+
+Path example:
+
+```text
+1/1286/1
+```
+
+Indicates the start time of the media, in case the media has a fixed start time (for example, live stream or television broadcast), or null when start time does not apply to the current media (for example, video-on-demand). This time is a UTC time. The client needs to handle conversion to local time, as required, taking in account time zone and possible local DST offset.
+
+| Property | Value |
+|---|---|
+| Type | epoch-us |
+| Conformance | `AS` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/1286/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `Duration`
+
+Path example:
+
+```text
+1/1286/2
+```
+
+Indicates the duration, in milliseconds, of the current media being played back or null when duration is not applicable (for example, in live streaming content with no known duration). This attribute must never be 0.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `AS` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/1286/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `SampledPosition`
+
+Path example:
+
+```text
+1/1286/3
+```
+
+Indicates the position of playback (Position field) at the time (UpdateAt field) specified in the attribute. The client may use the SampledPosition attribute to compute the current position within the media stream based on the PlaybackSpeed, PlaybackPositionStruct.UpdatedAt and PlaybackPositionStruct.Position fields. To enable this, the SampledPosition attribute is updated whenever a change in either the playback speed or the playback position is triggered outside the normal playback of the media.
+
+| Property | Value |
+|---|---|
+| Type | PlaybackPositionStruct |
+| Conformance | `AS` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `PlaybackPositionStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1286/3": {
+    "updatedAt": 1,
+    "position": 1
+  }
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `PlaybackSpeed`
+
+Path example:
+
+```text
+1/1286/4
+```
+
+Indicates the speed at which the current media is being played.
+
+| Property | Value |
+|---|---|
+| Type | single |
+| Conformance | `AS` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1286/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `SeekRangeEnd`
+
+Path example:
+
+```text
+1/1286/5
+```
+
+Indicates the furthest forward valid position to which a client may seek forward, in milliseconds from the start of the media. When the media has an associated StartTime, a value of null indicates that a seek forward is valid only until the current time within the media, using a position computed from the difference between the current time offset and StartTime, in milliseconds from start of the media, truncating fractional milliseconds towards 0. A value of null when StartTime is not specified indicates that seeking forward is not allowed.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `AS` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/1286/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `SeekRangeStart`
+
+Path example:
+
+```text
+1/1286/6
+```
+
+Indicates the earliest valid position to which a client may seek back, in milliseconds from start of the media. A value of null indicates that seeking backwards is not allowed.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `AS` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/1286/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `ActiveAudioTrack`
+
+Path example:
+
+```text
+1/1286/7
+```
+
+Indicates the Audio track currently set and being used for the streaming media. A value of null indicates that no Audio Track corresponding to the current media is currently being played.
+
+| Property | Value |
+|---|---|
+| Type | TrackStruct |
+| Conformance | `AT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `TrackStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1286/7": {
+    "id": "example",
+    "trackAttributes": {
+      "languageCode": "example",
+      "characteristics": [],
+      "displayName": "example"
+    }
+  }
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `AvailableAudioTracks`
+
+Path example:
+
+```text
+1/1286/8
+```
+
+Indicates the list of Audio tracks available for the current title being played. A value of null indicates that no Audio Tracks corresponding to the current media are selectable by the client.
+
+| Property | Value |
+|---|---|
+| Type | list of TrackStruct |
+| Conformance | `AT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Each entry is a `TrackStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1286/8": []
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `ActiveTextTrack`
+
+Path example:
+
+```text
+1/1286/9
+```
+
+Indicates the Text track currently set and being used for the streaming media. This can be nil. A value of null indicates that no Text Track corresponding to the current media is currently being displayed.
+
+| Property | Value |
+|---|---|
+| Type | TrackStruct |
+| Conformance | `TT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `TrackStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1286/9": {
+    "id": "example",
+    "trackAttributes": {
+      "languageCode": "example",
+      "characteristics": [],
+      "displayName": "example"
+    }
+  }
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `AvailableTextTracks`
+
+Path example:
+
+```text
+1/1286/10
+```
+
+Indicates the list of Text tracks available for the current title being played. This can be an empty list. A value of null indicates that no Text Tracks corresponding to the current media are selectable by the client.
+
+| Property | Value |
+|---|---|
+| Type | list of TrackStruct |
+| Conformance | `TT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Each entry is a `TrackStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1286/10": []
+}
+```
+
+---
+
+# Cluster 1286 Commands
+
+Cluster 1286 has **14 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `Play` | client → server | `M` | PlaybackResponse | This command is used to start playback of the media. |
+| 1 | `0x01` | `Pause` | client → server | `M` | PlaybackResponse | This command is used to pause playback of the media. |
+| 2 | `0x02` | `Stop` | client → server | `M` | PlaybackResponse | This command is used to stop playback of the media. |
+| 3 | `0x03` | `StartOver` | client → server | `O` | PlaybackResponse | This command is used to start playback of the media from the beginning. |
+| 4 | `0x04` | `Previous` | client → server | `O` | PlaybackResponse | This command is used to go back to the previous media playback item. |
+| 5 | `0x05` | `Next` | client → server | `O` | PlaybackResponse | This command is used to go to the next media playback item. |
+| 6 | `0x06` | `Rewind` | client → server | `VS` | PlaybackResponse | This command is used to rewind the media. |
+| 7 | `0x07` | `FastForward` | client → server | `VS` | PlaybackResponse | This command is used to fast forward the media. |
+| 8 | `0x08` | `SkipForward` | client → server | `O` | PlaybackResponse | This command is used to skip forward in the media. |
+| 9 | `0x09` | `SkipBackward` | client → server | `O` | PlaybackResponse | This command is used to skip backward in the media. |
+| 10 | `0x0A` | `PlaybackResponse` | server → client | `M` | — | This command is used to indicate the status of the command that was issued by the client. |
+| 11 | `0x0B` | `Seek` | client → server | `AS` | PlaybackResponse | This command is used to seek to a specific position in the media. |
+| 12 | `0x0C` | `ActivateAudioTrack` | client → server | `AT` | status | This command is used to activate a specific Audio Track for the media being played. |
+| 13 | `0x0D` | `ActivateTextTrack` | client → server | `TT` | status | This command is used to activate a specific Text Track for the media being played. |
+| 14 | `0x0E` | `DeactivateTextTrack` | client → server | `TT` | status | This command is used to deactivate a specific Text Track for the media being played. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1286 / 65529
+```
+
+```json
+{
+  "1/1286/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    11,
+    12,
+    13,
+    14
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1286 command, check that the command ID exists in <code>endpoint/1286/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Play",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1286, always use `"cluster_id": 1286`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `Play`
+
+## Purpose
+
+This command is used to start playback of the media. Upon receipt, this must play media. If content is currently in a FastForward or Rewind state. Play returns media to normal playback speed.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Play` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Play",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `Pause`
+
+## Purpose
+
+This command is used to pause playback of the media. Upon receipt, this must pause playback of the media.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `Pause` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Pause",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `Stop`
+
+## Purpose
+
+This command is used to stop playback of the media. Upon receipt, this must stop playback of the media. User-visible outcome is context-specific. This may navigate the user back to the location from where the media was originally launched.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `Stop` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Stop",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `StartOver`
+
+## Purpose
+
+This command is used to start playback of the media from the beginning. Upon receipt, this must Start Over with the current media playback item.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `StartOver` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "StartOver",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `Previous`
+
+## Purpose
+
+This command is used to go back to the previous media playback item. Upon receipt, this must cause the handler to be invoked for "Previous". User experience is context-specific. This will often Go back to the previous media playback item.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `Previous` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Previous",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `Next`
+
+## Purpose
+
+This command is used to go to the next media playback item. Upon receipt, this must cause the handler to be invoked for "Next". User experience is context-specific. This will often Go forward to the next media playback item.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `Next` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Next",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `Rewind`
+
+## Purpose
+
+This command is used to rewind the media. Upon receipt, this must start playback of the media backward in case the media is currently playing in the forward direction or is not playing. If the playback is already happening in the backwards direction receipt of this command must increase the speed of the media playback backwards. Different "rewind" speeds may be reflected on the media playback device based upon the number of sequential calls to this function and the capability of the device.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `Rewind` |
+| Direction | client → server |
+| Conformance | `VS` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `AudioAdvanceUnmuted` | `audioAdvanceUnmuted` | bool | `AA` | — | Indicates whether audio should be unmuted by the player during rewind. A value of true does not guarantee that audio can be heard by the user since the speaker may be muted, turned down to a low level and/or unplugged. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Rewind",
+    "payload": {
+      "audioAdvanceUnmuted": true
+    }
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `FastForward`
+
+## Purpose
+
+This command is used to fast forward the media. Upon receipt, this must start playback of the media in the forward direction in case the media is currently playing in the backward direction or is not playing. If the playback is already happening in the forward direction receipt of this command must increase the speed of the media playback. Different "fast-forward" speeds may be reflected on the media playback device based upon the number of sequential calls to this function and the capability of the device.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `FastForward` |
+| Direction | client → server |
+| Conformance | `VS` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `AudioAdvanceUnmuted` | `audioAdvanceUnmuted` | bool | `AA` | — | Indicates whether audio should be unmuted by the player during fast forward. A value of true does not guarantee that audio can be heard by the user since the speaker may be muted, turned down to a low level and/or unplugged. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "FastForward",
+    "payload": {
+      "audioAdvanceUnmuted": true
+    }
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `SkipForward`
+
+## Purpose
+
+This command is used to skip forward in the media. Upon receipt, this must Skip forward in the media by the given number of milliseconds.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `SkipForward` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DeltaPositionMilliseconds` | `deltaPositionMilliseconds` | uint64 | `M` | — | Indicates the duration of the time span to skip forward in the media, in milliseconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "SkipForward",
+    "payload": {
+      "deltaPositionMilliseconds": 1
+    }
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `SkipBackward`
+
+## Purpose
+
+This command is used to skip backward in the media. Upon receipt, this must Skip backward in the media by the given number of milliseconds.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `9` |
+| Command hex | `0x09` |
+| Command name | `SkipBackward` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DeltaPositionMilliseconds` | `deltaPositionMilliseconds` | uint64 | `M` | — | Indicates the duration of the time span to skip backward in the media, in milliseconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "SkipBackward",
+    "payload": {
+      "deltaPositionMilliseconds": 1
+    }
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `PlaybackResponse`
+
+## Purpose
+
+This command is used to indicate the status of the command that was issued by the client. This command is generated in response to various Playback Commands.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `10` |
+| Command hex | `0x0A` |
+| Command name | `PlaybackResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | desc | Indicates the status of the command which resulted in this response. |
+| 1 | `Data` | `data` | string | `O` | — | Indicates Optional app-specific data. |
+
+`Status` values (`StatusEnum`): `0` = Success, `1` = InvalidStateForCommand, `2` = NotAllowed, `3` = NotActive, `4` = SpeedOutOfRange, `5` = SeekOutOfRange
+
+---
+
+# Command: `Seek`
+
+## Purpose
+
+This command is used to seek to a specific position in the media. Upon receipt, this must change the playback position in the media to the given position.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `11` |
+| Command hex | `0x0B` |
+| Command name | `Seek` |
+| Direction | client → server |
+| Conformance | `AS` |
+| Response | PlaybackResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Position` | `position` | uint64 | `M` | — | Indicates the position (in milliseconds) in the media to seek to. In case the position falls in the middle of a frame, the server must set the position to the beginning of that frame and set the SampledPosition attribute on the cluster accordingly. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "Seek",
+    "payload": {
+      "position": 1
+    }
+  }
+}
+```
+
+The device answers with `PlaybackResponse` (see below).
+
+---
+
+# Command: `ActivateAudioTrack`
+
+## Purpose
+
+This command is used to activate a specific Audio Track for the media being played. Upon receipt, the server must set the active Audio Track to the one identified by the TrackID in the Track catalog for the streaming media. If the TrackID does not exist in the Track catalog, OR does not correspond to the streaming media OR no media is being streamed at the time of receipt of this command, the server will return an error status of INVALID_ARGUMENT.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `12` |
+| Command hex | `0x0C` |
+| Command name | `ActivateAudioTrack` |
+| Direction | client → server |
+| Conformance | `AT` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TrackID` | `trackID` | string | `M` | max length 32 | — |
+| 1 | `AudioOutputIndex` | `audioOutputIndex` | uint8 (nullable) | `AT` | — | This value is the index field of the OutputInfoStruct from the OutputList attribute (from the AudioOutput cluster) and indicates which audio output the Audio Track should be played on. This field is absent for Text Tracks and only present for Audio Tracks. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "ActivateAudioTrack",
+    "payload": {
+      "trackID": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `ActivateTextTrack`
+
+## Purpose
+
+This command is used to activate a specific Text Track for the media being played. Upon receipt, the server must set the active Text Track to the one identified by the TrackID in the Track catalog for the streaming media. If the TrackID does not exist in the Track catalog, OR does not correspond to the streaming media OR no media is being streamed at the time of receipt of this command, the server returns an error status of INVALID_ARGUMENT.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `13` |
+| Command hex | `0x0D` |
+| Command name | `ActivateTextTrack` |
+| Direction | client → server |
+| Conformance | `TT` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TrackID` | `trackID` | string | `M` | max length 32 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "ActivateTextTrack",
+    "payload": {
+      "trackID": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `DeactivateTextTrack`
+
+## Purpose
+
+This command is used to deactivate a specific Text Track for the media being played. If a Text Track is active (i.e. being displayed), upon receipt of this command, the server must stop displaying it.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `14` |
+| Command hex | `0x0E` |
+| Command name | `DeactivateTextTrack` |
+| Direction | client → server |
+| Conformance | `TT` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1286,
+    "command_name": "DeactivateTextTrack",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Cluster 1286 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `StateChanged` | info | `O` | If supported, this event is generated when there is a change in any of the supported attributes of the Media Playback cluster. |
+
+## Event `0` — `StateChanged`
+
+If supported, this event is generated when there is a change in any of the supported attributes of the Media Playback cluster.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CurrentState` | PlaybackStateEnum | `M` | Indicates the updated playback state as defined by the CurrentState attribute, and has the same constraint as that attribute. |
+| 1 | `StartTime` | epoch-us | `AS` | Indicates the updated start time as defined by the StartTime attribute, and has the same constraint as that attribute. This field value is 0 when the value of the StartTime attribute is null. |
+| 2 | `Duration` | uint64 | `AS` | Indicates the updated duration as defined by the Duration attribute, and has the same constraint as that attribute. This field value is 0 when the value of the Duration attribute is null. |
+| 3 | `SampledPosition` | PlaybackPositionStruct | `AS` | Indicates the updated position of playback as defined by the SampledPosition attribute, and has the same constraint as that attribute. |
+| 4 | `PlaybackSpeed` | single | `AS` | Indicates the updated speed at which the current media is being played as defined by the PlaybackSpeed attribute, and has the same constraint as that attribute. |
+| 5 | `SeekRangeEnd` | uint64 | `AS` | Indicates the updated start of the seek range end as defined by the SeekRangeEnd attribute, and has the same constraint as that attribute. This field value is 0 when the value of the SeekRangeEnd attribute is null. |
+| 6 | `SeekRangeStart` | uint64 | `AS` | Indicates the updated start of the seek range start as defined by the SeekRangeStart attribute, and has the same constraint as that attribute. This field value is 0 when the value of the SeekRangeStart attribute is null. |
+| 7 | `Data` | octstr | `O` | Indicates Optional app-specific data. |
+| 8 | `AudioAdvanceUnmuted` | bool | `AA` | Indicates whether audio is unmuted by the player due to a FF or REW command. This field is only meaningful when the PlaybackSpeed is present and not equal to 0 (paused) or 1 (normal playback). |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1286 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1286/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

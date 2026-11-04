@@ -1,0 +1,494 @@
+---
+title: "Matter Cluster 55 — Ethernet Network Diagnostics"
+description: "Matter Cluster 55 (0x0037) Ethernet Network Diagnostics: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 55
+clusterHex: "0x0037"
+clusterName: "Ethernet Network Diagnostics"
+---
+
+# Matter Cluster 55 — Ethernet Network Diagnostics Cluster
+
+<Callout type="info">
+Matter Cluster <code>55</code>, also written as <code>0x0037</code>, is the <strong>Ethernet Network Diagnostics Cluster</strong>.
+The Ethernet Network Diagnostics Cluster provides a means to acquire standardized diagnostics metrics that may be used by a Node to assist a user or Administrator in diagnosing potential problems. The Ethernet Network Diagnostics Cluster attempts to centralize all metrics that are relevant to a potential Ethernet connection to a Node.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `55` |
+| Cluster ID hex | `0x0037` |
+| Cluster name | `Ethernet Network Diagnostics` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `DGETH` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 55 values in the device shadow use this format:
+
+```text
+endpoint_id / 55 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/55/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `55` | Ethernet Network Diagnostics cluster |
+| `0` | `PHYRate` attribute |
+
+---
+
+## Cluster 55 Features
+
+The `FeatureMap` attribute (`0/55/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PKTCNT` | PacketCounts | `O` | Node makes available the counts for the number of received and transmitted packets on the ethernet interface |
+| 1 | `ERRCNT` | ErrorCounts | `O` | Node makes available the counts for the number of errors that have occurred during the reception and transmission of packets on the ethernet interface |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `PHYRateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Rate10M` | `M` | PHY rate is 10Mbps |
+| 1 | `Rate100M` | `M` | PHY rate is 100Mbps |
+| 2 | `Rate1G` | `M` | PHY rate is 1Gbps |
+| 3 | `Rate2_5G` | `M` | PHY rate is 2.5Gbps |
+| 4 | `Rate5G` | `M` | PHY rate is 5Gbps |
+| 5 | `Rate10G` | `M` | PHY rate is 10Gbps |
+| 6 | `Rate40G` | `M` | PHY rate is 40Gbps |
+| 7 | `Rate100G` | `M` | PHY rate is 100Gbps |
+| 8 | `Rate200G` | `M` | PHY rate is 200Gbps |
+| 9 | `Rate400G` | `M` | PHY rate is 400Gbps |
+
+---
+
+## Cluster 55 Attributes
+
+Cluster 55 defines **9 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `PHYRate` | PHYRateEnum | `O` | R (read: view) | nullable | `null` |
+| 1 | `0x0001` | `FullDuplex` | bool | `O` | R (read: view) | nullable | `null` |
+| 2 | `0x0002` | `PacketRxCount` | uint64 | `PKTCNT` | R (read: view) | change omitted | `0` |
+| 3 | `0x0003` | `PacketTxCount` | uint64 | `PKTCNT` | R (read: view) | change omitted | `0` |
+| 4 | `0x0004` | `TxErrCount` | uint64 | `ERRCNT` | R (read: view) | change omitted | `0` |
+| 5 | `0x0005` | `CollisionCount` | uint64 | `ERRCNT` | R (read: view) | change omitted | `0` |
+| 6 | `0x0006` | `OverrunCount` | uint64 | `ERRCNT` | R (read: view) | change omitted | `0` |
+| 7 | `0x0007` | `CarrierDetect` | bool | `O` | R (read: view) | nullable, change omitted | `null` |
+| 8 | `0x0008` | `TimeSinceReset` | uint64 | `O` | R (read: view) | change omitted | `0` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `PHYRate`
+
+Path example:
+
+```text
+0/55/0
+```
+
+No condensed specification text is available for `PHYRate`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | PHYRateEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Values (`PHYRateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Rate10M` | PHY rate is 10Mbps |
+| 1 | `Rate100M` | PHY rate is 100Mbps |
+| 2 | `Rate1G` | PHY rate is 1Gbps |
+| 3 | `Rate2_5G` | PHY rate is 2.5Gbps |
+| 4 | `Rate5G` | PHY rate is 5Gbps |
+| 5 | `Rate10G` | PHY rate is 10Gbps |
+| 6 | `Rate40G` | PHY rate is 40Gbps |
+| 7 | `Rate100G` | PHY rate is 100Gbps |
+| 8 | `Rate200G` | PHY rate is 200Gbps |
+| 9 | `Rate400G` | PHY rate is 400Gbps |
+
+Example:
+
+```json
+{
+  "0/55/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `FullDuplex`
+
+Path example:
+
+```text
+0/55/1
+```
+
+Indicates if the Node is currently utilizing the full-duplex operating mode. A value of null indicates that the interface is not currently configured or operational.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/55/1": true
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `PacketRxCount`
+
+Path example:
+
+```text
+0/55/2
+```
+
+Indicates the number of packets that have been received on the ethernet network interface. The attribute is reset to 0 upon a reboot of the Node.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `PKTCNT` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/55/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `PacketTxCount`
+
+Path example:
+
+```text
+0/55/3
+```
+
+Indicates the number of packets that have been successfully transferred on the ethernet network interface. The attribute is reset to 0 upon a reboot of the Node.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `PKTCNT` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/55/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `TxErrCount`
+
+Path example:
+
+```text
+0/55/4
+```
+
+Indicates the number of failed packet transmissions that have occurred on the ethernet network interface. The attribute is reset to 0 upon a reboot of the Node.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `ERRCNT` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/55/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `CollisionCount`
+
+Path example:
+
+```text
+0/55/5
+```
+
+Indicates the number of collisions that have occurred while attempting to transmit a packet on the ethernet network interface. The attribute is reset to 0 upon a reboot of the Node.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `ERRCNT` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/55/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `OverrunCount`
+
+Path example:
+
+```text
+0/55/6
+```
+
+Indicates the number of packets dropped either at ingress or egress, due to lack of buffer memory to retain all packets on the ethernet network interface. The attribute is reset to 0 upon a reboot of the Node.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `ERRCNT` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/55/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `CarrierDetect`
+
+Path example:
+
+```text
+0/55/7
+```
+
+Indicates the value of the Carrier Detect control signal present on the ethernet network interface. A value of null indicates that the interface is not currently configured or operational.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/55/7": true
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `TimeSinceReset`
+
+Path example:
+
+```text
+0/55/8
+```
+
+Indicates the duration of time, in minutes, that it has been since the ethernet network interface has reset for any reason.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/55/8": 0
+}
+```
+
+---
+
+# Cluster 55 Commands
+
+Cluster 55 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ResetCounts` | client → server | `PKTCNT \| ERRCNT` | status | This command is used to reset the count attributes. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 55 / 65529
+```
+
+```json
+{
+  "0/55/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 55 command, check that the command ID exists in <code>endpoint/55/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 55,
+    "command_name": "ResetCounts",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 55, always use `"cluster_id": 55`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ResetCounts`
+
+## Purpose
+
+This command is used to reset the count attributes. Reception of this command must reset the following attributes to 0: - PacketRxCount - PacketTxCount - TxErrCount - CollisionCount - OverrunCount
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ResetCounts` |
+| Direction | client → server |
+| Conformance | `PKTCNT \| ERRCNT` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 55,
+    "command_name": "ResetCounts",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Cluster 55 Events
+
+Cluster 55 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 55 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/55/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

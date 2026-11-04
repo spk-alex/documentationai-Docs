@@ -1,0 +1,563 @@
+---
+title: "Matter Cluster 1875 — Joint Fabric Administrator"
+description: "Matter Cluster 1875 (0x0753) Joint Fabric Administrator: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1875
+clusterHex: "0x0753"
+clusterName: "Joint Fabric Administrator"
+---
+
+# Matter Cluster 1875 — Joint Fabric Administrator Cluster
+
+<Callout type="info">
+Matter Cluster <code>1875</code>, also written as <code>0x0753</code>, is the <strong>Joint Fabric Administrator Cluster</strong>.
+An instance of the Joint Fabric Administrator Cluster only applies to Joint Fabric Administrator nodes fulfilling the role of Anchor CA.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1875` |
+| Cluster ID hex | `0x0753` |
+| Cluster name | `Joint Fabric Administrator` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `JFADMIN` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1875 values in the device shadow use this format:
+
+```text
+endpoint_id / 1875 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/1875/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `1875` | Joint Fabric Administrator cluster |
+| `0` | `AdministratorFabricIndex` attribute |
+
+---
+
+## Data Types
+
+### `ICACCSRResponseStatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `OK` | `M` | No error |
+| 1 | `Busy` | `M` | Could not be completed because another commissioning is in progress |
+| 2 | `PAKEParameterError` | `M` | Provided PAKE parameters were incorrectly formatted or otherwise invalid |
+| 3 | `WindowNotOpen` | `M` | The Joint Commissioning Method commissioning window is not currently open |
+| 4 | `VIDNotVerified` | `M` | ICACCSRRequest command has been invoked by a peer against which Fabric Table VID Verification hasn't been executed |
+| 5 | `InvalidAdministratorFabricIndex` | `M` | OpenJointCommissioningWindow command has been invoked but the AdministratorFabricIndex field has the value of null |
+
+### `ICACResponseStatusEnum`
+
+This enumeration is used by the AddICAC command to convey the outcome of this cluster's operations.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `OK` | `M` | No error |
+| 1 | `InvalidPublicKey` | `M` | Public Key in the ICAC is invalid |
+| 2 | `InvalidICAC` | `M` | ICAC chain validation failed / ICAC DN Encoding rules verification failed |
+
+### `TransferAnchorResponseStatusEnum`
+
+This enumeration is used by the TransferAnchorResponse command to convey the detailed outcome of this cluster's TransferAnchorRequest command.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `OK` | `M` | No error |
+| 1 | `TransferAnchorStatusDatastoreBusy` | `M` | Anchor Transfer was not started due to on-going Datastore operations |
+| 2 | `TransferAnchorStatusNoUserConsent` | `M` | User has not consented for Anchor Transfer |
+
+---
+
+## Cluster 1875 Attributes
+
+Cluster 1875 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `AdministratorFabricIndex` | fabric-idx | `M` | R (read: admin) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `AdministratorFabricIndex`
+
+Path example:
+
+```text
+0/1875/0
+```
+
+The AdministratorFabricIndex attribute indicates the FabricIndex from the Endpoint 0's Operational Cluster Fabrics attribute (i.e. the Fabric Table) which is associated with the JointFabric. This field has the value of null if there is no fabric associated with the JointFabric.
+
+| Property | Value |
+|---|---|
+| Type | fabric-idx |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | nullable |
+| Constraint | 1 to 254 |
+
+Example:
+
+```json
+{
+  "0/1875/0": 1
+}
+```
+
+---
+
+# Cluster 1875 Commands
+
+Cluster 1875 has **6 client-to-server commands** and **3 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ICACCSRRequest` | client → server | `M` | ICACCSRResponse | — |
+| 1 | `0x01` | `ICACCSRResponse` | server → client | `M` | — | — |
+| 2 | `0x02` | `AddICAC` | client → server | `M` | ICACResponse | — |
+| 3 | `0x03` | `ICACResponse` | server → client | `M` | — | — |
+| 4 | `0x04` | `OpenJointCommissioningWindow` | client → server | `M` | status | This is an alias onto the OpenCommissioningWindow command within the Joint Fabric Administrator Cluster. |
+| 5 | `0x05` | `TransferAnchorRequest` | client → server | `M` | TransferAnchorResponse | This command is sent by a candidate Joint Fabric Anchor Administrator to the current Joint Fabric Anchor Administrator to request transfer of the Anchor Fabric. |
+| 6 | `0x06` | `TransferAnchorResponse` | server → client | `M` | — | This command is generated in response to the Transfer Anchor Request command. |
+| 7 | `0x07` | `TransferAnchorComplete` | client → server | `M` | status | This command indicates the completion of the transfer of the Anchor Fabric to another Joint Fabric Ecosystem Administrator. |
+| 8 | `0x08` | `AnnounceJointFabricAdministrator` | client → server | `M` | status | This command is used for communicating to client the endpoint that holds the Joint Fabric Administrator Cluster. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1875 / 65529
+```
+
+```json
+{
+  "0/1875/65529": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    8
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1875 command, check that the command ID exists in <code>endpoint/1875/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1875,
+    "command_name": "ICACCSRRequest",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1875, always use `"cluster_id": 1875`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ICACCSRRequest`
+
+## Purpose
+
+`ICACCSRRequest` is a client-to-server command of the Joint Fabric Administrator cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ICACCSRRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ICACCSRResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1875,
+    "command_name": "ICACCSRRequest",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `ICACCSRResponse` (see below).
+
+---
+
+# Command: `ICACCSRResponse`
+
+## Purpose
+
+`ICACCSRResponse` is a server response of the Joint Fabric Administrator cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ICACCSRResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StatusCode` | `statusCode` | ICACCSRResponseStatusCodeEnum | `M` | — | — |
+| 1 | `ICACCSR` | `icaccsr` | octstr | `StatusCode = status, O` | max length 600 | — |
+
+`StatusCode` values (`ICACCSRResponseStatusCodeEnum`): `0` = OK, `1` = Busy, `2` = PAKEParameterError, `3` = WindowNotOpen, `4` = VIDNotVerified, `5` = InvalidAdministratorFabricIndex
+
+---
+
+# Command: `AddICAC`
+
+## Purpose
+
+`AddICAC` is a client-to-server command of the Joint Fabric Administrator cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `AddICAC` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ICACResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ICACValue` | `icacValue` | octstr | `M` | max length 400 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1875,
+    "command_name": "AddICAC",
+    "payload": {
+      "icacValue": "AQID"
+    }
+  }
+}
+```
+
+The device answers with `ICACResponse` (see below).
+
+---
+
+# Command: `ICACResponse`
+
+## Purpose
+
+`ICACResponse` is a server response of the Joint Fabric Administrator cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `ICACResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StatusCode` | `statusCode` | ICACResponseStatusEnum | `M` | — | — |
+
+`StatusCode` values (`ICACResponseStatusEnum`): `0` = OK, `1` = InvalidPublicKey, `2` = InvalidICAC
+
+---
+
+# Command: `OpenJointCommissioningWindow`
+
+## Purpose
+
+This is an alias onto the OpenCommissioningWindow command within the Joint Fabric Administrator Cluster. Refer to the OpenCommissioningWindow command for a description of the command behavior and parameters. This command must fail with a InvalidAdministratorFabricIndex status code sent back to the initiator if the AdministratorFabricIndex attribute has the value of null. The parameters for OpenJointCommissioningWindow command are as follows:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `OpenJointCommissioningWindow` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CommissioningTimeout` | `commissioningTimeout` | uint16 | `M` | desc | — |
+| 1 | `PAKEPasscodeVerifier` | `pakePasscodeVerifier` | octstr | `M` | allowed: 97 | — |
+| 2 | `Discriminator` | `discriminator` | uint16 | `M` | max 4095 | — |
+| 3 | `Iterations` | `iterations` | uint32 | `M` | 1000 to 100000 | — |
+| 4 | `Salt` | `salt` | octstr | `M` | length 16 to 32 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1875,
+    "command_name": "OpenJointCommissioningWindow",
+    "payload": {
+      "commissioningTimeout": 0,
+      "pakePasscodeVerifier": "AQID",
+      "discriminator": 1,
+      "iterations": 1000,
+      "salt": "AQID"
+    }
+  }
+}
+```
+
+---
+
+# Command: `TransferAnchorRequest`
+
+## Purpose
+
+This command is sent by a candidate Joint Fabric Anchor Administrator to the current Joint Fabric Anchor Administrator to request transfer of the Anchor Fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `TransferAnchorRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | TransferAnchorResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1875,
+    "command_name": "TransferAnchorRequest",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `TransferAnchorResponse` (see below).
+
+---
+
+# Command: `TransferAnchorResponse`
+
+## Purpose
+
+This command is generated in response to the Transfer Anchor Request command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `TransferAnchorResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StatusCode` | `statusCode` | TransferAnchorResponseStatusEnum | `M` | — | — |
+
+`StatusCode` values (`TransferAnchorResponseStatusEnum`): `0` = OK, `1` = TransferAnchorStatusDatastoreBusy, `2` = TransferAnchorStatusNoUserConsent
+
+---
+
+# Command: `TransferAnchorComplete`
+
+## Purpose
+
+This command indicates the completion of the transfer of the Anchor Fabric to another Joint Fabric Ecosystem Administrator.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `TransferAnchorComplete` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1875,
+    "command_name": "TransferAnchorComplete",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `AnnounceJointFabricAdministrator`
+
+## Purpose
+
+This command is used for communicating to client the endpoint that holds the Joint Fabric Administrator Cluster. This field contains the unique identifier for the endpoint that holds the Joint Fabric Administrator Cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `AnnounceJointFabricAdministrator` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EndpointID` | `endpointID` | endpoint-no | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1875,
+    "command_name": "AnnounceJointFabricAdministrator",
+    "payload": {
+      "endpointID": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1875 Events
+
+Cluster 1875 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1875 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1875/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

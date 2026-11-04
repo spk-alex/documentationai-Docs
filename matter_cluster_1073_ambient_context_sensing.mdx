@@ -1,0 +1,527 @@
+---
+title: "Matter Cluster 1073 — Ambient Context Sensing"
+description: "Matter Cluster 1073 (0x0431) Ambient Context Sensing: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1073
+clusterHex: "0x0431"
+clusterName: "Ambient Context Sensing"
+---
+
+# Matter Cluster 1073 — Ambient Context Sensing Cluster
+
+<Callout type="info">
+Matter Cluster <code>1073</code>, also written as <code>0x0431</code>, is the <strong>Ambient Context Sensing Cluster</strong>.
+This server cluster provides an interface to ambient context sensing functionality. Support for this cluster is provisional.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1073` |
+| Cluster ID hex | `0x0431` |
+| Cluster name | `Ambient Context Sensing` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `ACS` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1073 values in the device shadow use this format:
+
+```text
+endpoint_id / 1073 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1073/0": true
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1073` | Ambient Context Sensing cluster |
+| `0` | `HumanActivityDetected` attribute |
+
+---
+
+## Cluster 1073 Features
+
+The `FeatureMap` attribute (`1/1073/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `HA` | HumanActivity | `P, O` | Supports various human actions and activities classification |
+| 1 | `OC` | ObjectCounting | `P, O` | Supports object counting |
+| 2 | `OI` | ObjectIdentification | `P, O` | Supports object identification |
+| 3 | `AUD` | SoundIdentification | `P, O` | Supports sound identification |
+| 4 | `PRED` | PredictedActivity | `P, O` | Supports predicting various human actions and activities |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `31` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AmbientContextTypeStruct` (struct)
+
+This structure provides information on the server's supported values for the Ambient Context type attribute.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `AmbientContextSensed` | list of SemanticTagStruct | `P, M` | max 2 entries | This field specifies the detail ambient context information associated with the Boolean detection attributes, HumanActivityDetected, ObjectIdentified, and AudioContextDetected. |
+
+### `HoldTimeLimitsStruct` (struct)
+
+This structure provides information on the server's supported values for the HoldTime attribute.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `HoldTimeMin` | uint16 | `P, M` | min 1 | This field specifies the minimum value supported by the server for the HoldTime attribute, in seconds. |
+| 1 | `HoldTimeMax` | uint16 | `P, M` | min maxOf | This field specifies the maximum value supported by the server for the HoldTime attribute, in seconds. |
+| 2 | `HoldTimeDefault` | uint16 | `P, M` | HoldTimeMin to HoldTimeMax | This field specifies the (manufacturer-determined) default value of the server's HoldTime attribute, in seconds. |
+
+### `ObjectCountConfigStruct` (struct)
+
+This structure provides information on the server's supported values for the ObjectCountConfig attribute.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CountingObject` | SemanticTagStruct | `P, M` | — | Indicates the object to be detected and counted. |
+| 1 | `ObjectCountThreshold` | uint16 | `P, M` | min 1 | Indicates the minimum number of detected objects to render the true Boolean state of CountThresholdReached attribute. |
+
+### `PredictedActivityStruct` (struct)
+
+This data structure provides information on future predicted activities.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `StartTimestamp` | epoch-s | `P, M` | max compute | Indicates the predicted start time for the predicted activity. |
+| 1 | `EndTimestamp` | epoch-s | `P, M` | min compute | Indicates the predicted end time for the predicted activity. |
+| 2 | `AmbientContextType` | list of SemanticTagStruct | `P, HA \| OI \| AUD` | max 100 entries | Indicates the predicted state of the AmbientContextType attribute for the specified time period. |
+| 3 | `CrowdDetected` | bool | `P, OC` | — | Indicates the predicted state of the CrowdDetected attribute for the specified time period. |
+| 4 | `CrowdCount` | uint8 | `P, [OC]` | 1 to 254 | Indicates the predicted value of the CrowdCount attribute for the specified time period. |
+| 5 | `Confidence` | percent | `P, M` | — | Indicates confidence level for the predicted activity state. |
+
+---
+
+## Cluster 1073 Attributes
+
+Cluster 1073 defines **12 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `HumanActivityDetected` | bool | `P, HA` | R (read: view) | — | — |
+| 1 | `0x0001` | `ObjectIdentified` | bool | `P, OI` | R (read: view) | — | — |
+| 2 | `0x0002` | `AudioContextDetected` | bool | `P, AUD` | R (read: view) | — | — |
+| 3 | `0x0003` | `AmbientContextType` | list of AmbientContextTypeStruct | `P, HA \| OI \| AUD` | R (read: view) | — | — |
+| 4 | `0x0004` | `AmbientContextTypeSupported` | list of SemanticTagStruct | `P, HA \| OI \| AUD` | R (read: view) | — | — |
+| 5 | `0x0005` | `ObjectCountThresholdReached` | bool | `P, OC & OI` | R (read: view) | — | — |
+| 6 | `0x0006` | `ObjectCountConfig` | ObjectCountConfigStruct | `P, OC & OI` | R/W (read: view, write: manage) | persisted | — |
+| 7 | `0x0007` | `ObjectCount` | uint16 | `P, [OC & OI]` | R (read: view) | — | `0` |
+| 8 | `0x0008` | `SimultaneousDetectionLimit` | uint8 | `P, M` | R (read: view) | — | — |
+| 9 | `0x0009` | `HoldTime` | uint16 | `P, M` | R/W (read: view, write: manage) | persisted | — |
+| 10 | `0x000A` | `HoldTimeLimits` | HoldTimeLimitsStruct | `P, M` | R (read: view) | — | — |
+| 11 | `0x000B` | `PredictedActivity` | list of PredictedActivityStruct | `P, PRED` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `HumanActivityDetected`
+
+Path example:
+
+```text
+1/1073/0
+```
+
+Indicates the human activity detection in Boolean data. The detected human activity type can be found from the AmbientContextType attribute.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `P, HA` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1073/0": true
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ObjectIdentified`
+
+Path example:
+
+```text
+1/1073/1
+```
+
+Indicates the occurrence of object identification in Boolean data. The identified object information can be found from the AmbientContextType attribute.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `P, OI` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1073/1": true
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `AudioContextDetected`
+
+Path example:
+
+```text
+1/1073/2
+```
+
+Indicates the ambient audio context detection in Boolean data. The detected audio context type can be found from the AmbientContextType attribute.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `P, AUD` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1073/2": true
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `AmbientContextType`
+
+Path example:
+
+```text
+1/1073/3
+```
+
+Indicates the details for the currently observed and detected ambient context. This attribute supports multiple simultaneous ambient context detections. The attribute expression rule is defined in the MultipleAmbientSensingDetection section. The total number of simultaneous ambient context detections is constrained by the SimultaneousDetectionLimit attribute.
+
+| Property | Value |
+|---|---|
+| Type | list of AmbientContextTypeStruct |
+| Conformance | `P, HA \| OI \| AUD` |
+| Access | R (read: view) |
+| Constraint | 1 to SimultaneousDetectionLimit entries |
+
+Each entry is a `AmbientContextTypeStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1073/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `AmbientContextTypeSupported`
+
+Path example:
+
+```text
+1/1073/4
+```
+
+Indicates the list of ambient context detection types supported by the server. Each supported ambient context detection type element must correspond to a feature type supported in the AmbientContextFeatureMap and is represented by a SemanticTagStruct from one of the following StandardNamespaces: Identified Human Activity Namespace, Identified Object Namespace, or Identified Sound Namespace.
+
+| Property | Value |
+|---|---|
+| Type | list of SemanticTagStruct |
+| Conformance | `P, HA \| OI \| AUD` |
+| Access | R (read: view) |
+| Constraint | max 50 entries |
+
+Example:
+
+```json
+{
+  "1/1073/4": []
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `ObjectCountThresholdReached`
+
+Path example:
+
+```text
+1/1073/5
+```
+
+Indicates whether the number count of the specified object is greater or equal to the threshold specified by the ObjectCountThreshold. The object being counted is limited to one identified object type and is identified by the tag ID from the Identified Object namespace, as presented in the AmbientContextTypeSupported attribute.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `P, OC & OI` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1073/5": true
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `ObjectCountConfig`
+
+Path example:
+
+```text
+1/1073/6
+```
+
+This attribute specifies the configuration parameters required to support an object counting feature, including the identification of the object to be detected and counted, as well as the counting threshold value for the ObjectCountThresholdReached detection.
+
+| Property | Value |
+|---|---|
+| Type | ObjectCountConfigStruct |
+| Conformance | `P, OC & OI` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+
+Value is a `ObjectCountConfigStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1073/6": {
+    "countingObject": 0,
+    "objectCountThreshold": 1
+  }
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `ObjectCount`
+
+Path example:
+
+```text
+1/1073/7
+```
+
+This optional attribute indicates the number of objects detected in the area covered by the sensor. ObjectCount is exposed only when the ObjectCountThresholdReached attribute is true.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `P, [OC & OI]` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1073/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `SimultaneousDetectionLimit`
+
+Path example:
+
+```text
+1/1073/8
+```
+
+Indicates the maximum number of simultaneous multiple ambient context detections supported by the server. If an additional detection event causes the total number of simultaneous detection events to exceed a SimultaneousDetectionLimit, the oldest ambient sensing detection event is removed and the latest detection is added. The consecutive recurrence of the same ambient context sensing event within the HoldTime duration must not increase the total number of simultaneous detection events. If simultaneous detection is not supported, then the value is set to 1.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `P, M` |
+| Access | R (read: view) |
+| Constraint | 1 to 10 |
+
+Example:
+
+```json
+{
+  "1/1073/8": 1
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `HoldTime`
+
+Path example:
+
+```text
+1/1073/9
+```
+
+Indicates the time duration (in seconds) of True state before transitioning its sensing detection state from True to False after the last detection. Low HoldTime value should be avoided to prevent excessive data reporting for subscription. This attribute is equivalent to the HoldTime attribute of the OccupancySensing cluster. For further information, refer to the HoldTime attribute description of the Occupancy Sensing Cluster.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `P, M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | HoldTimeLimits to HoldTimeLimits |
+
+Example:
+
+```json
+{
+  "1/1073/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `HoldTimeLimits`
+
+Path example:
+
+```text
+1/1073/10
+```
+
+Indicates the server's limits, and default value, for the HoldTime attribute. This is equivalent to the HoldTimeLimits attribute of the Occupancy Sensing Cluster attribute. For further information, refer to the HoldTimeLimits attribute description of the Occupancy Sensing Cluster.
+
+| Property | Value |
+|---|---|
+| Type | HoldTimeLimitsStruct |
+| Conformance | `P, M` |
+| Access | R (read: view) |
+
+Value is a `HoldTimeLimitsStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1073/10": {
+    "holdTimeMin": 1,
+    "holdTimeMax": 0,
+    "holdTimeDefault": 0
+  }
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `PredictedActivity`
+
+Path example:
+
+```text
+1/1073/11
+```
+
+Indicates the server's prediction of upcoming changes to the monitored area's ambient context. The value of the StartTimestamp field on each PredictedActivityStruct in this list other than the first is greater than the value of the EndTimestamp field on the previous PredictedActivityStruct in this list.
+
+| Property | Value |
+|---|---|
+| Type | list of PredictedActivityStruct |
+| Conformance | `P, PRED` |
+| Access | R (read: view) |
+| Constraint | max 20 entries |
+
+Each entry is a `PredictedActivityStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1073/11": []
+}
+```
+
+---
+
+# Cluster 1073 Commands
+
+Cluster 1073 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1073 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `AmbientContextDetectStarted` | info | `P, HA \| OI \| AUD \| (OC & OI)` | This event is generated when a new ambient context detection is added to the AmbientContextType attribute. |
+| 1 | `0x01` | `AmbientContextDetectEnded` | info | `P, HA \| OI \| AUD \| (OC & OI)` | This event is generated when the ambient context previously reported by an AmbientContextDetectStarted event is removed from the AmbientContextType attribute. |
+
+## Event `0` — `AmbientContextDetectStarted`
+
+This event is generated when a new ambient context detection is added to the AmbientContextType attribute.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AmbientContextDetected` | AmbientContextTypeStruct | `P, HA \| OI \| OC \| AUD` | Indicates the detail ambient context information that triggers this event reporting. |
+| 1 | `ObjectCountThresholdReached` | bool | `P, OC & OI` | Indicates an ObjectCountThresholdReached attribute value when the event reporting is triggered by the object counting threshold detection. |
+| 2 | `ObjectCount` | uint16 | `P, [OC & OI]` | Indicates the number of objects detected in the area covered by the sensor when ObjectCountThresholdReached attribute is changed to True. |
+
+## Event `1` — `AmbientContextDetectEnded`
+
+This event is generated when the ambient context previously reported by an AmbientContextDetectStarted event is removed from the AmbientContextType attribute. This termination event doesn't necessarily reflect or coincide with the end of the actual event progression. For example, while both AmbientContextDetectStarted and AmbientContextDetectEnded events are used to inform the "sleeping" event occurrence, the AmbientContextDetectEnded event doesn't necessarily indicate the actual end of "sleeping" action.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `EventStartTimePos` | posix-ms | `P, O` | Indicates the POSIX time stamp when the corresponding AmbientContextDetectStarted Event was generated. |
+| 1 | `EventStartTimeSys` | systime-ms | `P, O` | Indicates the system time stamp when the corresponding AmbientContextDetectStarted Event was generated. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1073 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1073/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

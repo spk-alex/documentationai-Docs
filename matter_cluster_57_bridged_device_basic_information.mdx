@@ -1,0 +1,1025 @@
+---
+title: "Matter Cluster 57 — Bridged Device Basic Information"
+description: "Matter Cluster 57 (0x0039) Bridged Device Basic Information: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 57
+clusterHex: "0x0039"
+clusterName: "Bridged Device Basic Information"
+---
+
+# Matter Cluster 57 — Bridged Device Basic Information Cluster
+
+<Callout type="info">
+Matter Cluster <code>57</code>, also written as <code>0x0039</code>, is the <strong>Bridged Device Basic Information Cluster</strong>.
+This cluster provides attributes and events for determining basic information about Bridged Nodes. This cluster is derived from the Basic Information cluster and serves two purposes towards a Node communicating with a Bridge: - Indicate that the functionality on the Endpoint where it is placed (and its Parts) is bridged, and - Provide a centralized collection of attributes that the Node may collect to aid in conveying information regarding the Bridged Device to a user, such as the vendor name, the model name, or user-assigned name.
+</Callout>
+
+<Callout type="info">
+This cluster is <strong>derived from the Basic Information cluster</strong>: it inherits the base attributes, commands and data types listed below and adds the cluster-specific values. Where the base definition applies, the base text is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `57` |
+| Cluster ID hex | `0x0039` |
+| Cluster name | `Bridged Device Basic Information` |
+| Cluster revision (Matter 1.6.1) | `6` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `BRBINFO` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added ProductAppearance attribute |
+| 3 | Added SpecificationVersion and MaxPathsPerInvoke attributes |
+| 4 | Updated conformance for UniqueID to mandatory, ProductID to optional when bridging Matter devices, add the BridgedICDSupport feature |
+| 5 | Added ConfigurationVersion attribute |
+| 6 | Adopt latest version of base cluster (Basic Information). |
+
+---
+
+## Shadow Path Format
+
+Cluster 57 values in the device shadow use this format:
+
+```text
+endpoint_id / 57 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/57/17": true
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `57` | Bridged Device Basic Information cluster |
+| `17` | `Reachable` attribute |
+
+---
+
+## Cluster 57 Features
+
+The `FeatureMap` attribute (`1/57/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 20 | `BIS` | BridgedICDSupport | `[ClusterRevision >= 4]` | Support bridged ICDs. |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1048576` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ColorEnum`
+
+The data type of ColorEnum is derived from enum8.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Black` | `M` | Approximately RGB #000000. |
+| 1 | `Navy` | `M` | Approximately RGB #000080. |
+| 2 | `Green` | `M` | Approximately RGB #008000. |
+| 3 | `Teal` | `M` | Approximately RGB #008080. |
+| 4 | `Maroon` | `M` | Approximately RGB #800000. |
+| 5 | `Purple` | `M` | Approximately RGB #800080. |
+| 6 | `Olive` | `M` | Approximately RGB #808000. |
+| 7 | `Gray` | `M` | Approximately RGB #808080. |
+| 8 | `Blue` | `M` | Approximately RGB #0000FF. |
+| 9 | `Lime` | `M` | Approximately RGB #00FF00. |
+| 10 | `Aqua` | `M` | Approximately RGB #00FFFF. |
+| 11 | `Red` | `M` | Approximately RGB #FF0000. |
+| 12 | `Fuchsia` | `M` | Approximately RGB #FF00FF. |
+| 13 | `Yellow` | `M` | Approximately RGB #FFFF00. |
+| 14 | `White` | `M` | Approximately RGB #FFFFFF. |
+| 15 | `Nickel` | `M` | Typical hardware "Nickel" color. |
+| 16 | `Chrome` | `M` | Typical hardware "Chrome" color. |
+| 17 | `Brass` | `M` | Typical hardware "Brass" color. |
+| 18 | `Copper` | `M` | Typical hardware "Copper" color. |
+| 19 | `Silver` | `M` | Typical hardware "Silver" color. |
+| 20 | `Gold` | `M` | Typical hardware "Gold" color. |
+
+### `ProductFinishEnum`
+
+The data type of ProductFinishEnum is derived from enum8.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Other` | `M` | Product has some other finish not listed below. |
+| 1 | `Matte` | `M` | Product has a matte finish. |
+| 2 | `Satin` | `M` | Product has a satin finish. |
+| 3 | `Polished` | `M` | Product has a polished or shiny finish. |
+| 4 | `Rugged` | `M` | Product has a rugged finish. |
+| 5 | `Fabric` | `M` | Product has a fabric finish. |
+
+### `CapabilityMinimaStruct` (struct)
+
+This structure provides constant values related to overall global capabilities of this Node, that are not cluster-specific.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CaseSessionsPerFabric` | uint16 | `M` | 3 to 10000 | Indicates the actual minimum number of concurrent CASE sessions that are supported per fabric. |
+| 1 | `SubscriptionsPerFabric` | uint16 | `M` | 3 to 10000 | Indicates the actual minimum number of concurrent subscriptions supported per fabric. |
+| 2 | `SimultaneousInvocationsSupported` | uint16 | `ClusterRevision >= 6` | 1 to 10000 | Indicates the actual maximum number of concurrent Invoke interactions that can be processed simultaneously by the node before possibly returning a BUSY status code. |
+| 3 | `SimultaneousWritesSupported` | uint16 | `ClusterRevision >= 6` | 1 to 10000 | Indicates the actual minimum number of concurrent Write interactions that can be processed simultaneously by the node before possibly returning a BUSY status code. |
+| 4 | `ReadPathsSupported` | uint16 | `ClusterRevision >= 6` | 9 to 10000 | Indicates the actual maximum number of read paths (i.e. the sum of lengths of the lists of AttributePathIB and EventPathIB in the action) which a node guarantees being able to process in any Read Request Action. |
+| 5 | `SubscribePathsSupported` | uint16 | `ClusterRevision >= 6` | 3 to 10000 | Indicates the actual maximum number of subscription paths (i.e. the sum of lengths of the lists of AttributePathIB and EventPathIB in the action) which a node guarantees being able to process in any Subscribe Request … |
+
+### `ProductAppearanceStruct` (struct)
+
+This structure provides a description of the product's appearance.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Finish` | ProductFinishEnum | `M` | — | Indicates the visible finish of the product. |
+| 1 | `PrimaryColor` | ColorEnum (nullable) | `M` | — | This field indicates the representative color of the visible parts of the product. |
+
+---
+
+## Cluster 57 Attributes
+
+Cluster 57 defines **24 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `DataModelRevision` | uint16 | `X` | R (read: view) | — | `MS` |
+| 1 | `0x0001` | `VendorName` | string | `desc` | R (read: view) | — | `MS` |
+| 2 | `0x0002` | `VendorID` | vendor-id | `desc` | R (read: view) | — | `MS` |
+| 3 | `0x0003` | `ProductName` | string | `O` | R (read: view) | — | `MS` |
+| 4 | `0x0004` | `ProductID` | uint16 | `desc` | R (read: view) | — | `MS` |
+| 5 | `0x0005` | `NodeLabel` | string | `O` | R/W (read: view, write: manage) | persisted | `""` |
+| 6 | `0x0006` | `Location` | string | `X` | R/W (read: view, write: admin) | persisted | `"XX"` |
+| 7 | `0x0007` | `HardwareVersion` | uint16 | `O` | R (read: view) | — | `0` |
+| 8 | `0x0008` | `HardwareVersionString` | string | `O` | R (read: view) | — | `MS` |
+| 9 | `0x0009` | `SoftwareVersion` | uint32 | `O` | R (read: view) | — | `0` |
+| 10 | `0x000A` | `SoftwareVersionString` | string | `O` | R (read: view) | — | `MS` |
+| 11 | `0x000B` | `ManufacturingDate` | string | `O` | R (read: view) | — | `MS` |
+| 12 | `0x000C` | `PartNumber` | string | `O` | R (read: view) | — | `MS` |
+| 13 | `0x000D` | `ProductURL` | string | `O` | R (read: view) | — | `MS` |
+| 14 | `0x000E` | `ProductLabel` | string | `O` | R (read: view) | — | `MS` |
+| 15 | `0x000F` | `SerialNumber` | string | `O` | R (read: view) | — | `MS` |
+| 16 | `0x0010` | `LocalConfigDisabled` | bool | `X` | R/W (read: view, write: manage) | persisted | `false` |
+| 17 | `0x0011` | `Reachable` | bool | `M` | R (read: view) | — | `true` |
+| 18 | `0x0012` | `UniqueID` | string | `ClusterRevision >= 4, O` | R (read: view) | — | `MS` |
+| 19 | `0x0013` | `CapabilityMinima` | CapabilityMinimaStruct | `X` | R (read: view) | — | `MS` |
+| 20 | `0x0014` | `ProductAppearance` | ProductAppearanceStruct | `[ClusterRevision >= 2]` | R (read: view) | — | `MS` |
+| 21 | `0x0015` | `SpecificationVersion` | uint32 | `X` | R (read: view) | — | `0` |
+| 22 | `0x0016` | `MaxPathsPerInvoke` | uint16 | `X` | R (read: view) | — | `1` |
+| 24 | `0x0018` | `ConfigurationVersion` | uint32 | `[ClusterRevision >= 6]` | R (read: view) | persisted | `1` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `6` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `DataModelRevision`
+
+Path example:
+
+```text
+1/57/0
+```
+
+No condensed specification text is available for `DataModelRevision`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `X` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `VendorName`
+
+Path example:
+
+```text
+1/57/1
+```
+
+No condensed specification text is available for `VendorName`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `desc` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/1": "example"
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `VendorID`
+
+Path example:
+
+```text
+1/57/2
+```
+
+No condensed specification text is available for `VendorID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | vendor-id |
+| Conformance | `desc` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `ProductName`
+
+Path example:
+
+```text
+1/57/3
+```
+
+No condensed specification text is available for `ProductName`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/3": "example"
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `ProductID`
+
+Path example:
+
+```text
+1/57/4
+```
+
+No condensed specification text is available for `ProductID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `desc` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `NodeLabel`
+
+Path example:
+
+```text
+1/57/5
+```
+
+No condensed specification text is available for `NodeLabel`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | max length 32 |
+| Default | `""` |
+
+Example:
+
+```json
+{
+  "1/57/5": "example"
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `Location`
+
+Path example:
+
+```text
+1/57/6
+```
+
+No condensed specification text is available for `Location`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `X` |
+| Access | R/W (read: view, write: admin) |
+| Qualities | persisted |
+| Constraint | allowed: 2 |
+| Default | `"XX"` |
+
+Example:
+
+```json
+{
+  "1/57/6": "example"
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `HardwareVersion`
+
+Path example:
+
+```text
+1/57/7
+```
+
+No condensed specification text is available for `HardwareVersion`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/57/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `HardwareVersionString`
+
+Path example:
+
+```text
+1/57/8
+```
+
+No condensed specification text is available for `HardwareVersionString`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | length 1 to 64 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/8": "example"
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `SoftwareVersion`
+
+Path example:
+
+```text
+1/57/9
+```
+
+No condensed specification text is available for `SoftwareVersion`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/57/9": 1
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `SoftwareVersionString`
+
+Path example:
+
+```text
+1/57/10
+```
+
+No condensed specification text is available for `SoftwareVersionString`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | length 1 to 64 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/10": "example"
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `ManufacturingDate`
+
+Path example:
+
+```text
+1/57/11
+```
+
+No condensed specification text is available for `ManufacturingDate`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | length 8 to 16 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/11": "example"
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `PartNumber`
+
+Path example:
+
+```text
+1/57/12
+```
+
+No condensed specification text is available for `PartNumber`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/12": "example"
+}
+```
+
+---
+
+## Attribute `13` / `0x000D` — `ProductURL`
+
+Path example:
+
+```text
+1/57/13
+```
+
+No condensed specification text is available for `ProductURL`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 256 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/13": "example"
+}
+```
+
+---
+
+## Attribute `14` / `0x000E` — `ProductLabel`
+
+Path example:
+
+```text
+1/57/14
+```
+
+No condensed specification text is available for `ProductLabel`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 64 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/14": "example"
+}
+```
+
+---
+
+## Attribute `15` / `0x000F` — `SerialNumber`
+
+Path example:
+
+```text
+1/57/15
+```
+
+No condensed specification text is available for `SerialNumber`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/15": "example"
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `LocalConfigDisabled`
+
+Path example:
+
+```text
+1/57/16
+```
+
+No condensed specification text is available for `LocalConfigDisabled`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `X` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "1/57/16": true
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `Reachable`
+
+Path example:
+
+```text
+1/57/17
+```
+
+This attribute is used to indicate whether the bridged device is reachable by the bridge, so a Matter Node which wants to communicate with a bridged device can get an indication that this might fail (when the attribute is False). Determination of reachability might not be perfect (e.g. depending on technology employed), so the Matter Node should be aware of the risk of false positives and negatives on reachability determination. For example, a bridged device may be marked as unreachable while it could actually be reached, and vice-versa.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `true` |
+
+Example:
+
+```json
+{
+  "1/57/17": true
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `UniqueID`
+
+Path example:
+
+```text
+1/57/18
+```
+
+No condensed specification text is available for `UniqueID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `ClusterRevision >= 4, O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/57/18": "example"
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `CapabilityMinima`
+
+Path example:
+
+```text
+1/57/19
+```
+
+No condensed specification text is available for `CapabilityMinima`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | CapabilityMinimaStruct |
+| Conformance | `X` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Value is a `CapabilityMinimaStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/57/19": {
+    "caseSessionsPerFabric": 3,
+    "subscriptionsPerFabric": 3,
+    "simultaneousInvocationsSupported": 1,
+    "simultaneousWritesSupported": 1
+  }
+}
+```
+
+---
+
+## Attribute `20` / `0x0014` — `ProductAppearance`
+
+Path example:
+
+```text
+1/57/20
+```
+
+No condensed specification text is available for `ProductAppearance`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ProductAppearanceStruct |
+| Conformance | `[ClusterRevision >= 2]` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Value is a `ProductAppearanceStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/57/20": {
+    "finish": 0,
+    "primaryColor": 0
+  }
+}
+```
+
+---
+
+## Attribute `21` / `0x0015` — `SpecificationVersion`
+
+Path example:
+
+```text
+1/57/21
+```
+
+No condensed specification text is available for `SpecificationVersion`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `X` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/57/21": 1
+}
+```
+
+---
+
+## Attribute `22` / `0x0016` — `MaxPathsPerInvoke`
+
+Path example:
+
+```text
+1/57/22
+```
+
+No condensed specification text is available for `MaxPathsPerInvoke`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `X` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "1/57/22": 1
+}
+```
+
+---
+
+## Attribute `24` / `0x0018` — `ConfigurationVersion`
+
+Path example:
+
+```text
+1/57/24
+```
+
+This attribute contains the current version number for the configuration of the bridged device. A larger value of ConfigurationVersion indicates a newer configuration than a lower value. If the bridge detects a change on a bridged device, which it deems as a change in the configuration of the bridged device, it must increase this attribute (and the corresponding attribute on the bridge itself). The ability and the method used to detect such a change on a bridged device is manufacturer specific.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[ClusterRevision >= 6]` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | min 1 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "1/57/24": 1
+}
+```
+
+---
+
+# Cluster 57 Commands
+
+Cluster 57 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 128 | `0x80` | `KeepActive` | client → server | `BIS` | status | On receipt, the server must attempt to keep the bridged device active for the duration specified by the command, when the device is next active. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 57 / 65529
+```
+
+```json
+{
+  "1/57/65529": [
+    128
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 57 command, check that the command ID exists in <code>endpoint/57/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 57,
+    "command_name": "KeepActive",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 57, always use `"cluster_id": 57`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `KeepActive`
+
+## Purpose
+
+On receipt, the server must attempt to keep the bridged device active for the duration specified by the command, when the device is next active. The implementation of this is best-effort since it may interact with non-native protocols. However, several specific protocol requirements are: - If the bridged device is a Matter Intermittently Connected Device, then the server must send a StayActiveRequest command with the StayActiveDuration field set to value of the StayActiveDuration field in the received command to the bridged device when the bridged device next sends a checks-in message or subscription report. See Intermittently Connected Devices Behavior for details on ICD state management.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `128` |
+| Command hex | `0x80` |
+| Command name | `KeepActive` |
+| Direction | client → server |
+| Conformance | `BIS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StayActiveDuration` | `stayActiveDuration` | uint32 | `M` | — | Indicates the duration, in milliseconds, that the device is requested to remain active, once the device becomes active again. |
+| 1 | `TimeoutMs` | `timeoutMs` | uint32 | `M` | 30000 to 3600000 | Indicates the period, in milliseconds, that the server will wait before the "pending active" state expires. See the KeepActive Command description for details. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 57,
+    "command_name": "KeepActive",
+    "payload": {
+      "stayActiveDuration": 1,
+      "timeoutMs": 30000
+    }
+  }
+}
+```
+
+---
+
+# Cluster 57 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `StartUp` | critical | `O` | — |
+| 1 | `0x01` | `ShutDown` | critical | `O` | — |
+| 2 | `0x02` | `Leave` | info | `O` | The Leave event should be generated by the bridge when it detects that the associated device has left the non-Matter network. |
+| 3 | `0x03` | `ReachableChanged` | info | `M` | This event is generated when there is a change in the Reachable attribute. |
+| 128 | `0x80` | `ActiveChanged` | info | `BIS` | This event (when supported) is generated the next time a bridged device becomes active after a KeepActive command is received. |
+
+## Event `0` — `StartUp`
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SoftwareVersion` | uint32 | `M` | This field is set to the same value as the one available in the SoftwareVersion attribute. |
+
+## Event `1` — `ShutDown`
+
+This event has no fields.
+
+## Event `2` — `Leave`
+
+The Leave event should be generated by the bridge when it detects that the associated device has left the non-Matter network. The FabricIndex field has the X conformance, indicating it must NOT be present. This event, in the context of Bridged Device Basic Information cluster, has no usable fields, but the original Basic Information cluster's field definition is kept for completeness.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `FabricIndex` | fabric-idx | `X` | This field contains the local fabric-index of the fabric which the node is about to leave. |
+
+## Event `3` — `ReachableChanged`
+
+This event is generated when there is a change in the Reachable attribute. Its purpose is to provide an indication towards interested parties that the reachability of a bridged device has changed over its native connectivity technology, so they may take appropriate action. After (re)start of a bridge this event may be generated.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ReachableNewValue` | bool | `M` | Indicates the value of the Reachable attribute after it was changed. |
+
+## Event `128` — `ActiveChanged`
+
+This event (when supported) is generated the next time a bridged device becomes active after a KeepActive command is received. See KeepActive for more details.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PromisedActiveDuration` | uint32 | `M` | Indicates the minimum duration, in milliseconds, that the bridged device will remain active after receiving the initial request from the KeepActive processing steps. |
+
+---
+
+# SmartphoneKey Notes
+
+- Bridged Device Basic Information appears on child endpoints of a bridge (for example a Zigbee gateway). `Reachable` (attribute `17`) reflects the bridge's own view of the child, not the hub's presence pipeline.
+- Shadow paths follow `endpoint/57/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

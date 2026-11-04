@@ -1,0 +1,769 @@
+---
+title: "Matter Cluster 1365 — Push AV Stream Transport"
+description: "Matter Cluster 1365 (0x0555) Push AV Stream Transport: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1365
+clusterHex: "0x0555"
+clusterName: "Push AV Stream Transport"
+---
+
+# Matter Cluster 1365 — Push AV Stream Transport Cluster
+
+<Callout type="info">
+Matter Cluster <code>1365</code>, also written as <code>0x0555</code>, is the <strong>Push AV Stream Transport Cluster</strong>.
+This cluster implements the upload of Audio and Video streams from the Camera AV Stream Management Cluster using suitable push-based transports. Push AV Stream Transport is the transmission of a stream of media to a server, initiated by the activation of an associated trigger. A push transport can be triggered from a camera operating in an always-on mode for supporting 24/7 style recording, triggered by events based on motion zones defined in the Zone Management Cluster, or manually triggered using commands or bindings.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1365` |
+| Cluster ID hex | `0x0555` |
+| Cluster name | `Push AV Stream Transport` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `PAVST` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial Release |
+| 2 | Add DoorbellPressed to TriggerActivationReason, augment PushTransport events with Session numbers and Event context and add multi-stream support |
+
+---
+
+## Shadow Path Format
+
+Cluster 1365 values in the device shadow use this format:
+
+```text
+endpoint_id / 1365 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1365/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1365` | Push AV Stream Transport cluster |
+| `0` | `SupportedFormats` attribute |
+
+---
+
+## Cluster 1365 Features
+
+The `FeatureMap` attribute (`1/1365/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PERZONESENS` | PerZoneSensitivity | `O` | Supports a sensitivity value per Zone |
+| 1 | `METADATA` | Metadata | `P, O` | Supports metadata transmission in Push transports |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `CMAFInterfaceEnum`
+
+This type indicates the exact mode of CMAF that is in use.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Interface1` | `M` | CMAF Interface-1 Mode |
+| 1 | `Interface2DASH` | `P, M` | CMAF Interface-2 Mode with DASH Support |
+| 2 | `Interface2HLS` | `P, M` | CMAF Interface-2 Mode with HLS Support |
+
+### `ContainerFormatEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CMAF` | `M` | CMAF container format |
+
+### `IngestMethodsEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CMAFIngest` | `M` | CMAF ingestion format |
+
+### `StatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 2 | `InvalidTLSEndpoint` | `M` | The specified TLSEndpointID cannot be found. |
+| 3 | `InvalidStream` | `M` | The specified VideoStreamID or AudioStreamID cannot be found. |
+| 4 | `InvalidURL` | `M` | The specified URL is invalid. |
+| 5 | `InvalidZone` | `M` | A specified ZoneID was invalid. |
+| 6 | `InvalidCombination` | `M` | The specified combination of Ingestion method and Container format is not supported. |
+| 7 | `InvalidTriggerType` | `M` | The trigger type is invalid for this command. |
+| 8 | `InvalidTransportStatus` | `M` | The Stream Transport Status is invalid for this command. |
+| 9 | `InvalidOptions` | `M` | The requested Container options are not supported with the streams indicated. |
+| 10 | `InvalidStreamUsage` | `M` | The requested StreamUsage is not allowed. |
+| 11 | `InvalidTime` | `M` | Time sync has not occurred yet. |
+| 12 | `InvalidPreRollLength` | `ClusterRevision >= 2` | The requested pre roll length is not compatible with the streams key frame interval. |
+| 13 | `DuplicateStreamValues` | `ClusterRevision >= 2` | The requested Streams info contained duplicate entries. |
+
+### `TransportStatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Active` | `M` | Push Transport can transport AV Streams |
+| 1 | `Inactive` | `M` | Push Transport cannot transport AV Streams |
+
+### `TransportTriggerTypeEnum`
+
+The Trigger Type determines the basic operation of the Push Transport and when it will actually transmit content.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Command` | `M` | Triggered only via a command invocation |
+| 1 | `Motion` | `M` | Triggered via motion detection or command |
+| 2 | `Continuous` | `M` | Triggered always when transport status is Active |
+
+### `TriggerActivationReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `UserInitiated` | `M` | Trigger has been activated by user action |
+| 1 | `Automation` | `M` | Trigger has been activated by automation |
+| 2 | `Emergency` | `M` | Trigger has been activated for emergency reasons |
+| 3 | `DoorbellPressed` | `ClusterRevision >= 2` | Trigger has been activated by a doorbell press |
+
+### `AudioStreamStruct` (struct)
+
+This struct holds a video stream id and the symbolic stream name associated with it. For CMAF based transports, this becomes a CMAF Track.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `AudioStreamName` | string | `M` | length 1 to 16 | This field identifies the unique name assigned to this stream. |
+| 1 | `AudioStreamID` | AudioStreamID | `M` | — | — |
+
+### `CMAFContainerOptionsStruct` (struct)
+
+This struct encodes options for configuration of the CMAF container format.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CMAFInterface` | CMAFInterfaceEnum | `M` | — | — |
+| 1 | `SegmentDuration` | uint16 | `M` | 500 to 65500 | Indicates the segment duration (in milliseconds) of the CMAF container. |
+| 2 | `ChunkDuration` | uint16 | `M` | max compute | Indicates the chunk duration (in milliseconds) of the CMAF container. |
+| 3 | `SessionGroup` | uint8 | `O, D` | — | This field is deprecated and has been replaced with the VideoStreams and AudioStreams fields. |
+| 4 | `TrackName` | string | `O, D` | length 1 to 16 | This field is deprecated and has been replaced with the VideoStreamName or AudioStreamName fields of the associated stream entry in the VideoStreams or AudioStreams lists |
+| 7 | `MetadataEnabled` | bool | `[METADATA]` | — | This field, if present and true, indicates that AVMetadataStruct based Metadata tracks and boxes may be included in the CMAF segments. |
+
+### `ContainerOptionsStruct` (struct)
+
+This struct encodes the specific container type options struct
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ContainerType` | ContainerFormatEnum | `M` | — | Indicates the container type chosen for this transport. |
+| 1 | `CMAFContainerOptions` | CMAFContainerOptionsStruct | `ContainerType = CMAF` | — | — |
+
+### `SupportedFormatStruct` (struct)
+
+This struct holds the combination of container format and ingest method which represents a valid combination for a transport.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ContainerFormat` | ContainerFormatEnum | `M` | — | Indicates a supported container format that when combined with IngestMethod, can be used in a transport. |
+| 1 | `IngestMethod` | IngestMethodsEnum | `M` | — | Indicates a supported ingest method that when combined with ContainerFormat, can be used in a transport. |
+
+### `TransportConfigurationStruct` (struct) — fabric-scoped
+
+This encodes the current configuration of an allocated transport.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ConnectionID` | PushTransportConnectionID | `M` | 0 to 65534 | — |
+| 1 | `TransportStatus` | TransportStatusEnum | `M` | — | This field represents the Stream Transport Status of the transport. |
+| 2 | `TransportOptions` | TransportOptionsStruct | `O` | — | This field represents the Stream Transport Options of the transport. |
+
+### `TransportMotionTriggerTimeControlStruct` (struct)
+
+This struct is used to encode a set of values for controlling the lifecycle of a motion triggered transport.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `InitialDuration` | uint16 | `M` | min 1 | Indicates the initial duration (in seconds) of the recording, following the initial trigger. |
+| 1 | `AugmentationDuration` | uint16 | `M` | — | Indicates the duration (in seconds) that the MotionDetectedDuration value is to be extended by if motion is still detected during this period. |
+| 2 | `MaxDuration` | elapsed-s | `M` | min InitialDuration | Indicates the maximum duration (in seconds) after initial motion detection that additional motion will be detected. |
+| 3 | `BlindDuration` | uint16 | `M` | — | Indicates the duration (in seconds) after a transport finishes transmitting that the Node must NOT activate the trigger again. |
+
+### `TransportOptionsStruct` (struct)
+
+This encodes the options and configuration of a transport.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `StreamUsage` | StreamUsageEnum | `M` | — | This field contains the StreamUsageEnum of this transport. |
+| 1 | `VideoStreamID` | VideoStreamID (nullable) | `O, D` | — | — |
+| 2 | `AudioStreamID` | AudioStreamID (nullable) | `O, D` | — | — |
+| 3 | `TLSEndpointID` | TLSEndpointID | `M` | 0 to 65534 | — |
+| 4 | `URL` | string | `M` | length 13 to 2000 | — |
+| 5 | `TriggerOptions` | TransportTriggerOptionsStruct | `M` | — | This field is of type TransportTriggerOptionsStruct and represents the Trigger Type and its sub options. |
+| 6 | `IngestMethod` | IngestMethodsEnum | `M` | — | This field is of type IngestMethodsEnum and represents the Ingest Method to be used. |
+| 7 | `ContainerOptions` | ContainerOptionsStruct | `M` | — | This field is of type ContainerOptionsStruct and represents the type of Push AV Stream Container to be uploaded and any additional options relating to the Container Format used. |
+| 8 | `ExpiryTime` | epoch-s | `O` | — | This field is an unsigned 32 bit integer representing the TTL in seconds of a transport allocation. |
+| 9 | `VideoStreams` | list of VideoStreamStruct | `O, [ClusterRevision >= 2]` | 1 to 16 entries | This field is a list of VideoStreamStruct which indicates the requested video streams and the stream names for this transport. |
+| 10 | `AudioStreams` | list of AudioStreamStruct | `O, [ClusterRevision >= 2]` | 1 to 16 entries | This field is a list of AudioStreamStruct which indicates the requested audio streams and the stream names for this transport. |
+
+### `TransportTriggerOptionsStruct` (struct)
+
+This struct encodes the conditions and options that configures the trigger for the push transport. The transport only start transmitting AV Streams when its associated trigger is activated.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `TriggerType` | TransportTriggerTypeEnum | `M` | — | Indicates the type of the transport trigger. |
+| 1 | `MotionZones` | list of TransportZoneOptionsStruct (nullable) | `TriggerType = Motion` | — | This field is a list of TransportZoneOptionsStruct containing the Motion Zones to trigger on. |
+| 2 | `MotionSensitivity` | uint8 (nullable) | `TriggerType = Motion & !PERZONESENS` | 1 to 10 | Indicates how sensitive the trigger is to motion and must match the same implementation specifics as Sensitivity. |
+| 3 | `MotionTimeControl` | TransportMotionTriggerTimeControlStruct | `TriggerType = Motion` | — | This field must control timing around repeated activation of the trigger. |
+| 4 | `MaxPreRollLen` | uint16 | `TriggerType = Command \| TriggerType = Motion` | — | Indicates the maximum duration in milliseconds of pre-roll content that can be included, if the TriggerType is Motion Value or Command Value, when the trigger activates. |
+
+### `TransportZoneOptionsStruct` (struct)
+
+This struct encodes the options that configure the per Zone portion of a Trigger configuration.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Zone` | ZoneID (nullable) | `M` | — | This field is a Motion ZoneID found in the Zone Management Cluster which must cause the trigger to activate. |
+| 1 | `Sensitivity` | uint8 | `PERZONESENS` | 1 to 10 | Indicates how sensitive the trigger for the specified Zone is, and must match the same implementation specifics as the Sensitivity attribute in the Zone Management Cluster. |
+
+### `VideoStreamStruct` (struct)
+
+This struct holds a video stream id and the symbolic stream name associated with it. For CMAF based transports, this becomes a CMAF Track.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `VideoStreamName` | string | `M` | length 1 to 16 | This field identifies the unique name assigned to this stream. |
+| 1 | `VideoStreamID` | VideoStreamID | `M` | — | — |
+
+---
+
+## Cluster 1365 Attributes
+
+Cluster 1365 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SupportedFormats` | list of SupportedFormatStruct | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `CurrentConnections` | list of TransportConfigurationStruct | `M` | R (read: view, fabric-sensitive) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SupportedFormats`
+
+Path example:
+
+```text
+1/1365/0
+```
+
+This attribute contains a list of Supported Container Format structs, which represents the combinations of Ingestion Method and Container Format that the Node supports. Nodes must support at least the combination CMAFIngest,CMAF.
+
+| Property | Value |
+|---|---|
+| Type | list of SupportedFormatStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | min 1 entries |
+
+Each entry is a `SupportedFormatStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1365/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentConnections`
+
+Path example:
+
+```text
+1/1365/1
+```
+
+This attribute is a list of TransportConfigurationStruct which represents all the allocated connections added via AllocatePushTransport. When this attribute is read over a non Large Message (See Large Message Quality in the Data Model section of MatterCore) capable transport, the TransportOptions field must NOT be included. To get the full details of the connections use the FindTransport command. The maximum size of this list is run-time dependent upon the resource constraints of the system as described in Resource Management and Stream Priorities and the currently used bandwidth of the total available specified by MaxNetworkBandwidth.
+
+| Property | Value |
+|---|---|
+| Type | list of TransportConfigurationStruct |
+| Conformance | `M` |
+| Access | R (read: view, fabric-sensitive) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Each entry is a `TransportConfigurationStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1365/1": []
+}
+```
+
+---
+
+# Cluster 1365 Commands
+
+Cluster 1365 has **6 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `AllocatePushTransport` | client → server | `M` | AllocatePushTransportResponse | This command must allocate a transport and return a PushTransportConnectionID. |
+| 1 | `0x01` | `AllocatePushTransportResponse` | server → client | `M` | — | This command is generated in response to a successful AllocatePushTransport command. |
+| 2 | `0x02` | `DeallocatePushTransport` | client → server | `M` | status | This command is generated to request the Node deallocates the specified transport. |
+| 3 | `0x03` | `ModifyPushTransport` | client → server | `M` | status | This command is used to request the Node modifies the configuration of the specified push transport. |
+| 4 | `0x04` | `SetTransportStatus` | client → server | `M` | status | This command is generated to request the Node modifies the Transport Status of a specified transport or all transports. |
+| 5 | `0x05` | `ManuallyTriggerTransport` | client → server | `M` | status | This command is generated to request the Node to manually start the specified push transport. |
+| 6 | `0x06` | `FindTransport` | client → server | `M` | FindTransportResponse | This command returns the Transport Configuration for the specified push transport or all allocated transports for the fabric if null. |
+| 7 | `0x07` | `FindTransportResponse` | server → client | `M` | — | This command is generated in response to a successful FindTransport command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1365 / 65529
+```
+
+```json
+{
+  "1/1365/65529": [
+    0,
+    2,
+    3,
+    4,
+    5,
+    6
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1365 command, check that the command ID exists in <code>endpoint/1365/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1365,
+    "command_name": "AllocatePushTransport",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1365, always use `"cluster_id": 1365`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `AllocatePushTransport`
+
+## Purpose
+
+This command must allocate a transport and return a PushTransportConnectionID.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AllocatePushTransport` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | AllocatePushTransportResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TransportOptions` | `transportOptions` | TransportOptionsStruct | `M` | — | This field represents the configuration options of the transport to be allocated. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1365,
+    "command_name": "AllocatePushTransport",
+    "payload": {
+      "transportOptions": {
+        "streamUsage": 0,
+        "videoStreamID": 0,
+        "audioStreamID": 0,
+        "tlsEndpointID": 0
+      }
+    }
+  }
+}
+```
+
+The device answers with `AllocatePushTransportResponse` (see below).
+
+---
+
+# Command: `AllocatePushTransportResponse`
+
+## Purpose
+
+This command is generated in response to a successful AllocatePushTransport command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `AllocatePushTransportResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TransportConfiguration` | `transportConfiguration` | TransportConfigurationStruct | `M` | — | This field is a TransportConfigurationStruct representing the newly allocated transport. |
+
+---
+
+# Command: `DeallocatePushTransport`
+
+## Purpose
+
+This command is generated to request the Node deallocates the specified transport.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `DeallocatePushTransport` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ConnectionID` | `connectionID` | PushTransportConnectionID | `M` | 0 to 65534 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1365,
+    "command_name": "DeallocatePushTransport",
+    "payload": {
+      "connectionID": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `ModifyPushTransport`
+
+## Purpose
+
+This command is used to request the Node modifies the configuration of the specified push transport.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `ModifyPushTransport` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ConnectionID` | `connectionID` | PushTransportConnectionID | `M` | 0 to 65534 | — |
+| 1 | `TransportOptions` | `transportOptions` | TransportOptionsStruct | `M` | — | This field represents the Transport Options to modify. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1365,
+    "command_name": "ModifyPushTransport",
+    "payload": {
+      "connectionID": 0,
+      "transportOptions": {
+        "streamUsage": 0,
+        "videoStreamID": 0,
+        "audioStreamID": 0,
+        "tlsEndpointID": 0
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetTransportStatus`
+
+## Purpose
+
+This command is generated to request the Node modifies the Transport Status of a specified transport or all transports.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `SetTransportStatus` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ConnectionID` | `connectionID` | PushTransportConnectionID (nullable) | `M` | — | — |
+| 1 | `TransportStatus` | `transportStatus` | TransportStatusEnum | `M` | — | This field is a TransportStatusEnum and represent the new transport status to apply. |
+
+`TransportStatus` values (`TransportStatusEnum`): `0` = Active, `1` = Inactive
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1365,
+    "command_name": "SetTransportStatus",
+    "payload": {
+      "connectionID": 0,
+      "transportStatus": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `ManuallyTriggerTransport`
+
+## Purpose
+
+This command is generated to request the Node to manually start the specified push transport.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `ManuallyTriggerTransport` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ConnectionID` | `connectionID` | PushTransportConnectionID | `M` | 0 to 65534 | — |
+| 1 | `ActivationReason` | `activationReason` | TriggerActivationReasonEnum | `M` | — | This field provides information as to why the transport was started or stopped. |
+| 2 | `TimeControl` | `timeControl` | TransportMotionTriggerTimeControlStruct | `O` | — | This field is a struct of type TransportMotionTriggerTimeControlStruct, but the BlindDuration field is ignored. |
+| 3 | `UserDefined` | `userDefined` | octstr | `[METADATA]` | max length 256 | This field is an octet string representing arbitrary format user defined metadata that will be included in the recording via the UserDefined field of AVMetadataStruct. |
+
+`ActivationReason` values (`TriggerActivationReasonEnum`): `0` = UserInitiated, `1` = Automation, `2` = Emergency, `3` = DoorbellPressed
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1365,
+    "command_name": "ManuallyTriggerTransport",
+    "payload": {
+      "connectionID": 0,
+      "activationReason": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `FindTransport`
+
+## Purpose
+
+This command returns the Transport Configuration for the specified push transport or all allocated transports for the fabric if null.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `FindTransport` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | FindTransportResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ConnectionID` | `connectionID` | PushTransportConnectionID (nullable) | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1365,
+    "command_name": "FindTransport",
+    "payload": {
+      "connectionID": 0
+    }
+  }
+}
+```
+
+The device answers with `FindTransportResponse` (see below).
+
+---
+
+# Command: `FindTransportResponse`
+
+## Purpose
+
+This command is generated in response to a successful FindTransport command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `FindTransportResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TransportConfigurations` | `transportConfigurations` | list of TransportConfigurationStruct | `M` | — | This field is a list of Transport Configurations. |
+
+---
+
+# Cluster 1365 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `PushTransportBegin` | info | `M` | This event indicates a push transport transmission has begun. |
+| 1 | `0x01` | `PushTransportEnd` | info | `M` | This event indicates a push transport upload of the indicated recording has completed. |
+
+## Event `0` — `PushTransportBegin`
+
+This event indicates a push transport transmission has begun. With Motion and Continuous based triggers, this event is generated when each new recording starts uploading. With Command based triggers, this event is generated when uploading starts via the ManuallyTriggerTransport command.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ConnectionID` | PushTransportConnectionID | `M` | — |
+| 1 | `TriggerType` | TransportTriggerTypeEnum | `M` | This field represents the type of trigger which caused this event to be generated. |
+| 2 | `ActivationReason` | TriggerActivationReasonEnum | `TriggerType = Command` | This field only be present when the TriggerType is Command and provides the reason for the event. |
+| 3 | `ContainerType` | ContainerFormatEnum | `ClusterRevision >= 2` | Indicates the container type chosen for this transport. |
+| 4 | `CMAFSessionNumber` | uint64 | `ContainerType = CMAF` | — |
+
+## Event `1` — `PushTransportEnd`
+
+This event indicates a push transport upload of the indicated recording has completed. With Motion, Continuous, and Command based triggers, this event is generated when each new recording finishes uploading. The data on this event contains the following information.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ConnectionID` | PushTransportConnectionID | `M` | — |
+| 1 | `ContainerType` | ContainerFormatEnum | `ClusterRevision >= 2` | Indicates the container type chosen for this transport. |
+| 2 | `CMAFSessionNumber` | uint64 | `ContainerType = CMAF` | — |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1365 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1365/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

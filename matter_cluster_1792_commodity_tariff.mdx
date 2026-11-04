@@ -1,0 +1,1088 @@
+---
+title: "Matter Cluster 1792 — Commodity Tariff"
+description: "Matter Cluster 1792 (0x0700) Commodity Tariff: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1792
+clusterHex: "0x0700"
+clusterName: "Commodity Tariff"
+---
+
+# Matter Cluster 1792 — Commodity Tariff Cluster
+
+<Callout type="info">
+Matter Cluster <code>1792</code>, also written as <code>0x0700</code>, is the <strong>Commodity Tariff Cluster</strong>.
+The CommodityTariffCluster provides the mechanism for communicating Commodity Tariff information within the premises.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1792` |
+| Cluster ID hex | `0x0700` |
+| Cluster name | `Commodity Tariff` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `SETRF` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial Matter revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1792 values in the device shadow use this format:
+
+```text
+endpoint_id / 1792 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1792/0": {
+    "tariffLabel": "example",
+    "providerName": "example",
+    "currency": 0,
+    "blockMode": 0
+  }
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1792` | Commodity Tariff cluster |
+| `0` | `TariffInfo` attribute |
+
+---
+
+## Cluster 1792 Features
+
+The `FeatureMap` attribute (`1/1792/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PRICE` | Pricing | `O` | Supports information about commodity pricing |
+| 1 | `FCRED` | FriendlyCredit | `O` | Supports information about when friendly credit periods begin and end |
+| 2 | `AUXLD` | AuxiliaryLoad | `O` | Supports information about when auxiliary loads should be enabled or disabled |
+| 3 | `PEAKP` | PeakPeriod | `O` | Supports information about peak periods |
+| 4 | `PWRTHLD` | PowerThreshold | `O` | Supports information about power threshold |
+| 5 | `RNDM` | Randomization | `O` | Supports information about randomization of calendar day entries |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `63` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AuxiliaryLoadSettingEnum`
+
+This enumeration must indicated the required state of an auxiliary switch.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Off` | `M` | The switch should be in the OFF state |
+| 1 | `On` | `M` | The switch should be in the ON state |
+| 2 | `None` | `M` | No state is required |
+
+### `BlockModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoBlock` | `M` | Tariff has no usage blocks |
+| 1 | `Combined` | `M` | Usage is metered in combined blocks |
+| 2 | `Individual` | `M` | Usage is metered separately by tariff component |
+
+### `DayEntryRandomizationTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `None` | `M` | No randomization applied |
+| 1 | `Fixed` | `M` | An unchanging offset |
+| 2 | `Random` | `M` | A random value |
+| 3 | `RandomPositive` | `M` | A random positive value |
+| 4 | `RandomNegative` | `M` | A random negative value |
+
+### `DayTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Standard` | `M` | Standard |
+| 1 | `Holiday` | `M` | Holiday |
+| 2 | `Dynamic` | `M` | Dynamic Pricing |
+| 3 | `Event` | `M` | Individual Events |
+
+### `PeakPeriodSeverityEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unused` | `M` | Unused |
+| 1 | `Low` | `M` | Low |
+| 2 | `Medium` | `M` | Medium |
+| 3 | `High` | `M` | High |
+
+### `DayPatternDayOfWeekBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Sunday` | `M` | Sunday |
+| 1 | `Monday` | `M` | Monday |
+| 2 | `Tuesday` | `M` | Tuesday |
+| 3 | `Wednesday` | `M` | Wednesday |
+| 4 | `Thursday` | `M` | Thursday |
+| 5 | `Friday` | `M` | Friday |
+| 6 | `Saturday` | `M` | Saturday |
+
+### `AuxiliaryLoadSwitchSettingsStruct` (struct)
+
+This represents the settings for a given auxiliary load switch in a tariff component.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Number` | uint8 | `M` | — | — |
+| 1 | `RequiredState` | AuxiliaryLoadSettingEnum | `M` | — | — |
+
+### `AuxiliaryLoadSwitchesSettingsStruct` (struct)
+
+This represents the set of auxiliary load settings in a tariff component.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `SwitchStates` | list of AuxiliaryLoadSwitchSettingsStruct | `M` | max 8 entries | — |
+
+### `CalendarPeriodStruct` (struct)
+
+This represents a sub period of a calendar, commencing on its StartDate. A 'Calendar Period', while normally considered to be a 3 or 6 month period, could be used for other arbitrary periods e.g. monthly or quarterly.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `StartDate` | epoch-s (nullable) | `M` | min StartDate | Indicates the timestamp in UTC when the calendar period becomes active. |
+| 1 | `DayPatternIDs` | list of uint32 | `M` | 1 to 7 entries | — |
+
+### `DayEntryStruct` (struct)
+
+This struct represents a day entry at a particular time of day, along with an optional duration and randomization parameters.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `DayEntryID` | uint32 | `M` | — | — |
+| 1 | `StartTime` | uint16 | `M` | max 1499 | Indicates the start time of the DayEntryStruct, expressed as the number of minutes that have elapsed since midnight on the associated days. |
+| 2 | `Duration` | uint16 | `O` | max compute | Indicates the duration of the day entry, expressed as the number of minutes since the time indicated by the StartTime field. |
+| 3 | `RandomizationOffset` | int16 | `[RNDM]` | — | Indicates a randomization offset for this particular day entry in seconds. |
+| 4 | `RandomizationType` | DayEntryRandomizationTypeEnum | `[RNDM]` | — | Indicates a randomization type for this particular day entry. |
+
+### `DayPatternStruct` (struct)
+
+This represents a series of day entries over the course of a day for a given set of days of the week.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `DayPatternID` | uint32 | `M` | — | — |
+| 1 | `DaysOfWeek` | DayPatternDayOfWeekBitmap | `M` | — | Indicates which days of the week the associated set of DayEntryStructs applies to. |
+| 2 | `DayEntryIDs` | list of uint32 | `M` | 1 to 96 entries | — |
+
+### `DayStruct` (struct)
+
+This represents a series of day entries over the course of a day for a specific date.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Date` | epoch-s | `M` | — | Indicates the date the associated set of DayEntryStructs applies to. |
+| 1 | `DayType` | DayTypeEnum | `M` | — | Indicates the type of day represented by the struct. |
+| 2 | `DayEntryIDs` | list of uint32 | `M` | 1 to 96 entries | — |
+
+### `PeakPeriodStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Severity` | PeakPeriodSeverityEnum | `M` | — | Indicates the severity of the peak period. |
+| 1 | `PeakPeriod` | uint16 | `M` | min 1 | Indicates the PeakPeriod number. |
+
+### `TariffComponentStruct` (struct)
+
+This represents components of a tariff. Tariff components typically represent a price or price level, though they may also specify other aspects of a tariff.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `TariffComponentID` | uint32 | `M` | — | — |
+| 1 | `Price` | TariffPriceStruct (nullable) | `[PRICE]` | — | Indicates the price when the tariff component is active. |
+| 2 | `FriendlyCredit` | bool | `[FCRED]` | — | Indicates whether the calendar is entering a friendly credit period or not. |
+| 3 | `AuxiliaryLoad` | AuxiliaryLoadSwitchSettingsStruct | `[AUXLD]` | — | Indicates the required state of auxiliary load switches. |
+| 4 | `PeakPeriod` | PeakPeriodStruct | `[PEAKP]` | — | Indicates whether the tariff component represents a peak period. |
+| 5 | `PowerThreshold` | PowerThresholdStruct | `[PWRTHLD]` | — | Indicates whether the tariff component represents a power threshold. |
+| 6 | `Threshold` | int64 (nullable) | `M` | — | Indicates the maximum level of consumption this tariff component applies to, in units specified by the TariffUnit attribute. |
+| 7 | `Label` | string (nullable) | `O` | max length 128 | A free-form label for the tariff component. |
+| 8 | `Predicted` | bool | `O` | — | Indicates whether the tariff component represents a price prediction. |
+
+### `TariffInformationStruct` (struct)
+
+This represents particular Tariff Price information.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `TariffLabel` | string (nullable) | `M` | max length 128 | Indicates a label for the tariff. |
+| 1 | `ProviderName` | string (nullable) | `M` | max length 128 | Indicates the name of the commodity provider for this tariff. |
+| 2 | `Currency` | CurrencyStruct (nullable) | `PRICE` | — | Indicates the currency for the value of the Price field on all TariffPriceStruct. |
+| 3 | `BlockMode` | BlockModeEnum (nullable) | `M` | — | Indicates the mode for metering blocks of usage. |
+
+### `TariffPeriodStruct` (struct)
+
+This represents the tariff components in effect for a set of calendar day entry IDs.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Label` | string (nullable) | `M` | max length 128 | A free-form label for the tariff period. |
+| 1 | `DayEntryIDs` | list of uint32 | `M` | 1 to 20 entries | — |
+| 2 | `TariffComponentIDs` | list of uint32 | `M` | 1 to 20 entries | — |
+
+### `TariffPriceStruct` (struct)
+
+This indicates a price or price level for a given tariff component, as well as what type of pricing it represents
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PriceType` | TariffPriceTypeEnum | `M` | — | Indicates the type of price for the Price or PriceLevel fields. |
+| 1 | `Price` | money | `O` | — | Indicates the tariff price. |
+| 2 | `PriceLevel` | int16 | `O` | — | Indicates the tariff price level. |
+
+---
+
+## Cluster 1792 Attributes
+
+Cluster 1792 defines **19 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `TariffInfo` | TariffInformationStruct | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `TariffUnit` | TariffUnitEnum | `M` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `StartDate` | epoch-s | `M` | R (read: view) | nullable | — |
+| 3 | `0x0003` | `DayEntries` | list of DayEntryStruct | `M` | R (read: view) | nullable | — |
+| 4 | `0x0004` | `DayPatterns` | list of DayPatternStruct | `M` | R (read: view) | nullable | — |
+| 5 | `0x0005` | `CalendarPeriods` | list of CalendarPeriodStruct | `M` | R (read: view) | nullable | — |
+| 6 | `0x0006` | `IndividualDays` | list of DayStruct | `M` | R (read: view) | nullable | — |
+| 7 | `0x0007` | `CurrentDay` | DayStruct | `M` | R (read: view) | nullable | — |
+| 8 | `0x0008` | `NextDay` | DayStruct | `M` | R (read: view) | nullable | — |
+| 9 | `0x0009` | `CurrentDayEntry` | DayEntryStruct | `M` | R (read: view) | nullable | — |
+| 10 | `0x000A` | `CurrentDayEntryDate` | epoch-s | `M` | R (read: view) | nullable | — |
+| 11 | `0x000B` | `NextDayEntry` | DayEntryStruct | `M` | R (read: view) | nullable | — |
+| 12 | `0x000C` | `NextDayEntryDate` | epoch-s | `M` | R (read: view) | nullable | — |
+| 13 | `0x000D` | `TariffComponents` | list of TariffComponentStruct | `M` | R (read: view) | nullable | — |
+| 14 | `0x000E` | `TariffPeriods` | list of TariffPeriodStruct | `M` | R (read: view) | nullable | — |
+| 15 | `0x000F` | `CurrentTariffComponents` | list of TariffComponentStruct | `M` | R (read: view) | nullable | — |
+| 16 | `0x0010` | `NextTariffComponents` | list of TariffComponentStruct | `M` | R (read: view) | nullable | — |
+| 17 | `0x0011` | `DefaultRandomizationOffset` | int16 | `RNDM` | R (read: view) | nullable | — |
+| 18 | `0x0012` | `DefaultRandomizationType` | DayEntryRandomizationTypeEnum | `RNDM` | R (read: view) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `TariffInfo`
+
+Path example:
+
+```text
+1/1792/0
+```
+
+Indicates basic information about the tariff. If the tariff is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | TariffInformationStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Value is a `TariffInformationStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/0": {
+    "tariffLabel": "example",
+    "providerName": "example",
+    "currency": 0,
+    "blockMode": 0
+  }
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `TariffUnit`
+
+Path example:
+
+```text
+1/1792/1
+```
+
+Indicates the unit of the commodity for pricing. If the tariff is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | TariffUnitEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/1792/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `StartDate`
+
+Path example:
+
+```text
+1/1792/2
+```
+
+Indicates a timestamp in UTC to denote the time at which the published calendar becomes active. A start date/time of 0x00000000 indicates that the calendar should become active immediately. If the tariff is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/1792/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `DayEntries`
+
+Path example:
+
+```text
+1/1792/3
+```
+
+Indicates the list of DayEntryStructs included in this calendar. The maximum constraint of this attribute is intended to allow representation of seven days of tariff information at 15 minute intervals. If the tariff is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | list of DayEntryStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 672 entries |
+
+Each entry is a `DayEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `DayPatterns`
+
+Path example:
+
+```text
+1/1792/4
+```
+
+Indicates the list of DayPatternStructs used in the CalendarPeriodStruct in this calendar. Each day pattern in this list must define the specific schedule that applies to the days it covers.
+
+| Property | Value |
+|---|---|
+| Type | list of DayPatternStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 28 entries |
+
+Each entry is a `DayPatternStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/4": []
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `CalendarPeriods`
+
+Path example:
+
+```text
+1/1792/5
+```
+
+Indicates the list of CalendarPeriodStructs comprising this calendar. The CalendarPeriodStructs in this list is arranged in increasing order by the value of StartDate. If and only if the value of the StartDate attribute is null, the value of the StartDate field on the first CalendarPeriodStruct in the CalendarPeriods attribute must also be null, indicating that the period begins immediately. The value of the StartDate field on any subsequent CalendarPeriodStruct in CalendarPeriods must NOT be null.
+
+| Property | Value |
+|---|---|
+| Type | list of CalendarPeriodStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | 1 to 4 entries |
+
+Each entry is a `CalendarPeriodStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/5": []
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `IndividualDays`
+
+Path example:
+
+```text
+1/1792/6
+```
+
+Indicates the list of days to overlay on this calendar. The DayStruct in this list is arranged in increasing order by the value of Date. The DayStruct in this list must not overlap. If the calendar is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | list of DayStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 50 entries |
+
+Each entry is a `DayStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/6": []
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `CurrentDay`
+
+Path example:
+
+```text
+1/1792/7
+```
+
+Indicates the current day's day entries. If the tariff is not active or CurrentDay information is not available, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | DayStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Value is a `DayStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/7": {
+    "date": 1,
+    "dayType": 0,
+    "dayEntryIDs": []
+  }
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `NextDay`
+
+Path example:
+
+```text
+1/1792/8
+```
+
+Indicates the next day's day entries. If the tariff is not active or NextDay information is not available, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | DayStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Value is a `DayStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/8": {
+    "date": 1,
+    "dayType": 0,
+    "dayEntryIDs": []
+  }
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `CurrentDayEntry`
+
+Path example:
+
+```text
+1/1792/9
+```
+
+Indicates the currently active DayEntryStruct. If the tariff is not active or day entry information is not available, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | DayEntryStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Value is a `DayEntryStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/9": {
+    "dayEntryID": 1,
+    "startTime": 0,
+    "duration": 1,
+    "randomizationOffset": 1
+  }
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `CurrentDayEntryDate`
+
+Path example:
+
+```text
+1/1792/10
+```
+
+Indicates the UTC date when the CurrentDay, CurrentDayEntry, and CurrentTariffComponents attributes were last updated. If the tariff is not active or day entry information is not available, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/1792/10": 1
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `NextDayEntry`
+
+Path example:
+
+```text
+1/1792/11
+```
+
+Indicates the predicted next active DayEntryStruct. If the tariff is not active or is not available, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | DayEntryStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Value is a `DayEntryStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/11": {
+    "dayEntryID": 1,
+    "startTime": 0,
+    "duration": 1,
+    "randomizationOffset": 1
+  }
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `NextDayEntryDate`
+
+Path example:
+
+```text
+1/1792/12
+```
+
+Indicates the predicted UTC date when the CurrentDay, CurrentDayEntry, and CurrentTariffComponents attributes will update to the values in the NextDay, NextDayEntry, and NextTariffComponents attributes, respectively. If the tariff is not active or is not available, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/1792/12": 1
+}
+```
+
+---
+
+## Attribute `13` / `0x000D` — `TariffComponents`
+
+Path example:
+
+```text
+1/1792/13
+```
+
+Indicates a list of TariffComponentStructs for the tariff. If the tariff is unavailable, this attribute is empty.
+
+| Property | Value |
+|---|---|
+| Type | list of TariffComponentStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | 1 to 672 entries |
+
+Each entry is a `TariffComponentStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/13": []
+}
+```
+
+---
+
+## Attribute `14` / `0x000E` — `TariffPeriods`
+
+Path example:
+
+```text
+1/1792/14
+```
+
+Indicates a list of TariffPeriodStructs for the tariff. If the tariff is unavailable, this attribute is empty.
+
+| Property | Value |
+|---|---|
+| Type | list of TariffPeriodStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | 1 to 672 entries |
+
+Each entry is a `TariffPeriodStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/14": []
+}
+```
+
+---
+
+## Attribute `15` / `0x000F` — `CurrentTariffComponents`
+
+Path example:
+
+```text
+1/1792/15
+```
+
+Indicates a list of the currently active TariffComponentStructs. If the tariff is unavailable, this attribute is empty.
+
+| Property | Value |
+|---|---|
+| Type | list of TariffComponentStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 20 entries |
+
+Each entry is a `TariffComponentStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/15": []
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `NextTariffComponents`
+
+Path example:
+
+```text
+1/1792/16
+```
+
+Indicates the predicted next active TariffComponentStructs. If the tariff is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | list of TariffComponentStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 20 entries |
+
+Each entry is a `TariffComponentStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1792/16": []
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `DefaultRandomizationOffset`
+
+Path example:
+
+```text
+1/1792/17
+```
+
+Indicates a default randomization offset for DayEntryStructs in this tariff. See RandomizationOffset for details.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `RNDM` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/1792/17": 1
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `DefaultRandomizationType`
+
+Path example:
+
+```text
+1/1792/18
+```
+
+Indicates a default randomization type for DayEntryStruct in this tariff. See RandomizationType for details.
+
+| Property | Value |
+|---|---|
+| Type | DayEntryRandomizationTypeEnum |
+| Conformance | `RNDM` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Values (`DayEntryRandomizationTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `None` | No randomization applied |
+| 1 | `Fixed` | An unchanging offset |
+| 2 | `Random` | A random value |
+| 3 | `RandomPositive` | A random positive value |
+| 4 | `RandomNegative` | A random negative value |
+
+Example:
+
+```json
+{
+  "1/1792/18": 0
+}
+```
+
+---
+
+# Cluster 1792 Commands
+
+Cluster 1792 has **2 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `GetTariffComponent` | client → server | `M` | GetTariffComponentResponse | The GetTariffComponent command allows a client to request information for a tariff component identifier that may no longer be available in the TariffPeriods attributes. |
+| 0 | `0x00` | `GetTariffComponentResponse` | server → client | `M` | — | The GetTariffComponentResponse command is sent in response to a GetTariffComponent command. |
+| 1 | `0x01` | `GetDayEntry` | client → server | `M` | GetDayEntryResponse | The GetDayEntry command allows a client to request information for a calendar day entry identifier that may no longer be available in the CalendarPeriods or IndividualDays … |
+| 1 | `0x01` | `GetDayEntryResponse` | server → client | `M` | — | The GetDayEntryResponse command is sent in response to a GetDayEntry command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1792 / 65529
+```
+
+```json
+{
+  "1/1792/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1792 command, check that the command ID exists in <code>endpoint/1792/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1792,
+    "command_name": "GetTariffComponent",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1792, always use `"cluster_id": 1792`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `GetTariffComponent`
+
+## Purpose
+
+The GetTariffComponent command allows a client to request information for a tariff component identifier that may no longer be available in the TariffPeriods attributes.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `GetTariffComponent` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | GetTariffComponentResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TariffComponentID` | `tariffComponentID` | uint32 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1792,
+    "command_name": "GetTariffComponent",
+    "payload": {
+      "tariffComponentID": 1
+    }
+  }
+}
+```
+
+The device answers with `GetTariffComponentResponse` (see below).
+
+---
+
+# Command: `GetTariffComponentResponse`
+
+## Purpose
+
+The GetTariffComponentResponse command is sent in response to a GetTariffComponent command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `GetTariffComponentResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Label` | `label` | string (nullable) | `M` | max length 128 | A free-form label for the tariff period. |
+| 1 | `DayEntryIDs` | `dayEntryIDs` | list of uint32 | `M` | 1 to 96 entries | — |
+| 2 | `TariffComponent` | `tariffComponent` | TariffComponentStruct | `M` | — | Indicates the TariffComponentStruct whose TariffComponentID field matches the requested GetTariffComponentTariffComponentID. |
+
+---
+
+# Command: `GetDayEntry`
+
+## Purpose
+
+The GetDayEntry command allows a client to request information for a calendar day entry identifier that may no longer be available in the CalendarPeriods or IndividualDays attributes.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `GetDayEntry` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | GetDayEntryResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DayEntryID` | `dayEntryID` | uint32 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1792,
+    "command_name": "GetDayEntry",
+    "payload": {
+      "dayEntryID": 1
+    }
+  }
+}
+```
+
+The device answers with `GetDayEntryResponse` (see below).
+
+---
+
+# Command: `GetDayEntryResponse`
+
+## Purpose
+
+The GetDayEntryResponse command is sent in response to a GetDayEntry command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `GetDayEntryResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DayEntry` | `dayEntry` | DayEntryStruct | `M` | — | — |
+
+---
+
+# Cluster 1792 Events
+
+Cluster 1792 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1792 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1792/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

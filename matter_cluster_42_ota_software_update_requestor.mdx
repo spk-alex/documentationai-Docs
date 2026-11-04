@@ -1,0 +1,410 @@
+---
+title: "Matter Cluster 42 — OTA Software Update Requestor"
+description: "Matter Cluster 42 (0x002A) OTA Software Update Requestor: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 42
+clusterHex: "0x002A"
+clusterName: "OTA Software Update Requestor"
+---
+
+# Matter Cluster 42 — OTA Software Update Requestor Cluster
+
+<Callout type="info">
+Matter Cluster <code>42</code>, also written as <code>0x002A</code>, is the <strong>OTA Software Update Requestor Cluster</strong>.
+This cluster implements the Requestor role in the OTA process.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `42` |
+| Cluster ID hex | `0x002A` |
+| Cluster name | `OTA Software Update Requestor` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `OTAR` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 42 values in the device shadow use this format:
+
+```text
+endpoint_id / 42 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/42/1": true
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `42` | OTA Software Update Requestor cluster |
+| `1` | `UpdatePossible` attribute |
+
+---
+
+## Data Types
+
+### `AnnouncementReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `SimpleAnnouncement` | `M` | An OTA Provider is announcing its presence. |
+| 1 | `UpdateAvailable` | `M` | An OTA Provider is announcing, either to a single Node or to a group of Nodes, that a new Software Image MAY be available |
+| 2 | `UrgentUpdateAvailable` | `M` | An OTA Provider is announcing, either to a single Node or to a group of Nodes, that a new Software Image MAY be available, which contains an update that needs to be applied urgently. |
+
+### `ChangeReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `M` | The reason for a state change is unknown. |
+| 1 | `Success` | `M` | The reason for a state change is the success of a prior operation. |
+| 2 | `Failure` | `M` | The reason for a state change is the failure of a prior operation. |
+| 3 | `TimeOut` | `M` | The reason for a state change is a time-out. |
+| 4 | `DelayByProvider` | `O` | The reason for a state change is a request by the OTA Provider to wait. |
+
+### `UpdateStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `M` | Current state is not yet determined. |
+| 1 | `Idle` | `M` | Indicate a Node not yet in the process of software update. |
+| 2 | `Querying` | `M` | Indicate a Node in the process of querying an OTA Provider. |
+| 3 | `DelayedOnQuery` | `M` | Indicate a Node waiting after a Busy response. |
+| 4 | `Downloading` | `M` | Indicate a Node currently in the process of downloading a software update. |
+| 5 | `Applying` | `M` | Indicate a Node currently in the process of verifying and applying a software update. |
+| 6 | `DelayedOnApply` | `M` | Indicate a Node waiting caused by AwaitNextAction response. |
+| 7 | `RollingBack` | `M` | Indicate a Node in the process of recovering to a previous version. |
+| 8 | `DelayedOnUserConsent` | `M` | Indicate a Node is capable of user consent. |
+
+### `ProviderLocation` (struct) — fabric-scoped
+
+This structure encodes a fabric-scoped location of an OTA provider on a given fabric.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 1 | `ProviderNodeID` | node-id | `M` | — | — |
+| 2 | `Endpoint` | endpoint-no | `M` | — | This field contains the endpoint number which has the OTA Provider device type and OTA Software Update Provider cluster server on the ProviderNodeID. |
+
+---
+
+## Cluster 42 Attributes
+
+Cluster 42 defines **4 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `DefaultOTAProviders` | list of ProviderLocation | `M` | R/W (read: view, write: admin, fabric-scoped) | persisted | `empty` |
+| 1 | `0x0001` | `UpdatePossible` | bool | `M` | R (read: view) | — | `true` |
+| 2 | `0x0002` | `UpdateState` | UpdateStateEnum | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `UpdateStateProgress` | uint8 | `M` | R (read: view) | nullable | `null` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `DefaultOTAProviders`
+
+Path example:
+
+```text
+0/42/0
+```
+
+No condensed specification text is available for `DefaultOTAProviders`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of ProviderLocation |
+| Conformance | `M` |
+| Access | R/W (read: view, write: admin, fabric-scoped) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `empty` |
+
+Each entry is a `ProviderLocation` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/42/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `UpdatePossible`
+
+Path example:
+
+```text
+0/42/1
+```
+
+This field is set to True if the OTA Requestor is currently able to be updated. Otherwise, it is set to False in case of any condition preventing update being possible, such as insufficient capacity of an internal battery. This field is merely informational for diagnostics purposes and must NOT affect the responses provided by an OTA Provider to an OTA Requestor.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `true` |
+
+Example:
+
+```json
+{
+  "0/42/1": true
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `UpdateState`
+
+Path example:
+
+```text
+0/42/2
+```
+
+This field should be updated in a timely manner whenever OTA Requestor internal state updates.
+
+| Property | Value |
+|---|---|
+| Type | UpdateStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`UpdateStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unknown` | Current state is not yet determined. |
+| 1 | `Idle` | Indicate a Node not yet in the process of software update. |
+| 2 | `Querying` | Indicate a Node in the process of querying an OTA Provider. |
+| 3 | `DelayedOnQuery` | Indicate a Node waiting after a Busy response. |
+| 4 | `Downloading` | Indicate a Node currently in the process of downloading a software update. |
+| 5 | `Applying` | Indicate a Node currently in the process of verifying and applying a software update. |
+| 6 | `DelayedOnApply` | Indicate a Node waiting caused by AwaitNextAction response. |
+| 7 | `RollingBack` | Indicate a Node in the process of recovering to a previous version. |
+| 8 | `DelayedOnUserConsent` | Indicate a Node is capable of user consent. |
+
+Example:
+
+```json
+{
+  "0/42/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `UpdateStateProgress`
+
+Path example:
+
+```text
+0/42/3
+```
+
+This field reflects the percentage value of progress, relative to the current UpdateState, if applicable to the state. The value of this field is null if a progress indication does not apply to the current state. A value of 0 indicates that the beginning has occurred. A value of 100 indicates completion.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | 0 to 100 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/42/3": 0
+}
+```
+
+---
+
+# Cluster 42 Commands
+
+Cluster 42 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `AnnounceOTAProvider` | client → server | `O` | status | — |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 42 / 65529
+```
+
+```json
+{
+  "0/42/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 42 command, check that the command ID exists in <code>endpoint/42/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 42,
+    "command_name": "AnnounceOTAProvider",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 42, always use `"cluster_id": 42`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `AnnounceOTAProvider`
+
+## Purpose
+
+`AnnounceOTAProvider` is a client-to-server command of the OTA Software Update Requestor cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AnnounceOTAProvider` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ProviderNodeID` | `providerNodeID` | node-id | `M` | — | — |
+| 1 | `VendorID` | `vendorID` | vendor-id | `M` | — | — |
+| 2 | `AnnouncementReason` | `announcementReason` | AnnouncementReasonEnum | `M` | — | — |
+| 3 | `MetadataForNode` | `metadataForNode` | octstr | `O` | max length 512 | — |
+| 4 | `Endpoint` | `endpoint` | endpoint-no | `M` | — | — |
+
+`AnnouncementReason` values (`AnnouncementReasonEnum`): `0` = SimpleAnnouncement, `1` = UpdateAvailable, `2` = UrgentUpdateAvailable
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 42,
+    "command_name": "AnnounceOTAProvider",
+    "payload": {
+      "providerNodeID": 1,
+      "vendorID": 1,
+      "announcementReason": 0,
+      "endpoint": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 42 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `StateTransition` | info | `M` | This event is generated when a change of the UpdateState attribute occurs due to an OTA Requestor moving through the states necessary to query for updates. |
+| 1 | `0x01` | `VersionApplied` | critical | `M` | This event is generated whenever a new version starts executing after being applied due to a software update. |
+| 2 | `0x02` | `DownloadError` | info | `M` | This event is generated whenever an error occurs during OTA Requestor download operation. |
+
+## Event `0` — `StateTransition`
+
+This event is generated when a change of the UpdateState attribute occurs due to an OTA Requestor moving through the states necessary to query for updates.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousState` | UpdateStateEnum | `M` | This field is set to the state that preceded the transition causing this event to be generated, if such a state existed. If no previous state exists, the value is Unknown. |
+| 1 | `NewState` | UpdateStateEnum | `M` | This field is set to the state now in effect through the transition causing this event to be generated. |
+| 2 | `Reason` | ChangeReasonEnum | `M` | This field is set to the reason why this event was generated. |
+| 3 | `TargetSoftwareVersion` | uint32 (nullable) | `M` | This field is set to the target SoftwareVersion which is the subject of the operation, whenever the NewState is Downloading, Applying or RollingBack. Otherwise TargetSoftwareVersion is null. |
+
+## Event `1` — `VersionApplied`
+
+This event is generated whenever a new version starts executing after being applied due to a software update. This event should be generated even if a software update was done using means outside of this cluster.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SoftwareVersion` | uint32 | `M` | This field is set to the same value as the one available in the Software Version attribute of the Basic Information Cluster for the newly executing version. |
+| 1 | `ProductID` | uint16 | `M` | — |
+
+## Event `2` — `DownloadError`
+
+This event is generated whenever an error occurs during OTA Requestor download operation.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SoftwareVersion` | uint32 | `M` | This field is set to the value of the SoftwareVersion being downloaded, matching the SoftwareVersion field of the QueryImageResponse that caused the failing download to take place. |
+| 1 | `BytesDownloaded` | uint64 | `M` | This field is set to the number of bytes that have been downloaded during the failing transfer that caused this event to be generated. |
+| 2 | `ProgressPercent` | uint8 (nullable) | `M` | This field is set to the nearest integer percent value reflecting how far within the transfer the failure occurred during the failing transfer that caused this event to be generated, unless the total length of the transfer is unknown, in which case it is null. |
+| 3 | `PlatformCode` | int64 (nullable) | `M` | This field should be set to some internal product-specific error code, closest in temporal/functional proximity to the failure that caused this event to be generated. Otherwise, it is null. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 42 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/42/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

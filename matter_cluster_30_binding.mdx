@@ -1,0 +1,142 @@
+---
+title: "Matter Cluster 30 — Binding"
+description: "Matter Cluster 30 (0x001E) Binding: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 30
+clusterHex: "0x001E"
+clusterName: "Binding"
+---
+
+# Matter Cluster 30 — Binding Cluster
+
+<Callout type="info">
+Matter Cluster <code>30</code>, also written as <code>0x001E</code>, is the <strong>Binding Cluster</strong>.
+This scope of this document is the Binding cluster as part of the Cluster Library. The Binding cluster is meant to replace the support from the Zigbee Device Object (ZDO) for supporting the binding table. A binding represents a persistent relationship between an endpoint and one or more other local or remote endpoints.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `30` |
+| Cluster ID hex | `0x001E` |
+| Cluster name | `Binding` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `BIND` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 30 values in the device shadow use this format:
+
+```text
+endpoint_id / 30 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/30/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `30` | Binding cluster |
+| `0` | `Binding` attribute |
+
+---
+
+## Data Types
+
+### `TargetStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 1 | `Node` | node-id | `Endpoint` | — | This field is the remote target node ID. |
+| 2 | `Group` | group-id | `!Endpoint` | min 1 | This field is the target group ID that represents remote endpoints. |
+| 3 | `Endpoint` | endpoint-no | `!Group` | — | This field is the remote endpoint that the local endpoint is bound to. |
+| 4 | `Cluster` | cluster-id | `O` | — | This field is the cluster ID (client & server) on the local and target endpoint(s). |
+
+---
+
+## Cluster 30 Attributes
+
+Cluster 30 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Binding` | list of TargetStruct | `M` | R/W (read: view, write: manage, fabric-scoped) | persisted | `empty` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Binding`
+
+Path example:
+
+```text
+0/30/0
+```
+
+Each entry represents a binding.
+
+| Property | Value |
+|---|---|
+| Type | list of TargetStruct |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage, fabric-scoped) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `empty` |
+
+Each entry is a `TargetStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/30/0": []
+}
+```
+
+---
+
+# Cluster 30 Commands
+
+Cluster 30 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 30 Events
+
+Cluster 30 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 30 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/30/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

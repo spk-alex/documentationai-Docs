@@ -1,0 +1,607 @@
+---
+title: "Matter Cluster 1030 — Occupancy Sensing"
+description: "Matter Cluster 1030 (0x0406) Occupancy Sensing: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1030
+clusterHex: "0x0406"
+clusterName: "Occupancy Sensing"
+---
+
+# Matter Cluster 1030 — Occupancy Sensing Cluster
+
+<Callout type="info">
+Matter Cluster <code>1030</code>, also written as <code>0x0406</code>, is the <strong>Occupancy Sensing Cluster</strong>.
+The server cluster provides an interface to occupancy sensing functionality based on one or more sensing modalities, including configuration and provision of notifications of occupancy status.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1030` |
+| Cluster ID hex | `0x0406` |
+| Cluster name | `Occupancy Sensing` |
+| Cluster revision (Matter 1.6.1) | `7` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `OCC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | Physical Contact Occupancy feature with mandatory OccupancySensorTypeBitmap |
+| 3 | New data model format and notation |
+| 4 | Remove nullable from PhysicalContact delay attributes and ability to not report transitions |
+| 5 | Rework to add modalities: radar-, ambient-sensing- and vision-based sensors; add sensitivity setting (via co-located BooleanStateConfiguration cluster on same endpoint); add new attribute for tuning the sensor's reporting; add event OccupancyChanged; add N quality for HoldTime and other timing attributes; describe how to accommodate legacy clients |
+| 6 | Removed P quality |
+| 7 | Added OccupancyEvent feature |
+
+---
+
+## Shadow Path Format
+
+Cluster 1030 values in the device shadow use this format:
+
+```text
+endpoint_id / 1030 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1030/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1030` | Occupancy Sensing cluster |
+| `0` | `Occupancy` attribute |
+
+---
+
+## Cluster 1030 Features
+
+The `FeatureMap` attribute (`1/1030/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `OTHER` | Other | `O` | Supports sensing using a modality not listed in the other bits |
+| 1 | `PIR` | PassiveInfrared | `O` | Supports sensing using PIR (Passive InfraRed) |
+| 2 | `US` | Ultrasonic | `O` | Supports sensing using UltraSound |
+| 3 | `PHY` | PhysicalContact | `O` | Supports sensing using a physical contact |
+| 4 | `AIR` | ActiveInfrared | `O` | Supports sensing using Active InfraRed measurement (e.g. time-of-flight or transflective/reflective IR sensing) |
+| 5 | `RAD` | Radar | `O` | Supports sensing using radar waves (microwave) |
+| 6 | `RFS` | RFSensing | `O` | Supports sensing using analysis of radio signals, e.g.: RSSI, CSI and/or any other metric from the signal |
+| 7 | `VIS` | Vision | `O` | Supports sensing based on analyzing images |
+| 9 | `OCCEVENT` | OccupancyEvent | `[ClusterRevision >= 7]` | Supports generating OccupancyChanged events |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `767` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `OccupancySensorTypeEnum`
+
+This enum is as defined in ClusterRevision 4 and its definition must NOT be extended; the feature flags provide the sensor modality (or modalities) for later cluster revisions. See Backward Compatibility section.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `PIR` | `M` | Indicates a passive infrared sensor. |
+| 1 | `Ultrasonic` | `M` | Indicates a ultrasonic sensor. |
+| 2 | `PIRAndUltrasonic` | `M` | Indicates a passive infrared and ultrasonic sensor. |
+| 3 | `PhysicalContact` | `M` | Indicates a physical contact sensor. |
+
+### `OccupancyBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Occupied` | `M` | Indicates the sensed occupancy state |
+
+### `OccupancySensorTypeBitmap` (bitmap)
+
+This enum is as defined in ClusterRevision 4 and its definition must NOT be extended; the feature flags provide the sensor modality (or modalities) for later cluster revisions. See Backward Compatibility section.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `PIR` | `M` | Indicates a passive infrared sensor. |
+| 1 | `Ultrasonic` | `M` | Indicates a ultrasonic sensor. |
+| 2 | `PhysicalContact` | `M` | Indicates a physical contact sensor. |
+
+### `HoldTimeLimitsStruct` (struct)
+
+This structure provides information on the server's supported values for the HoldTime attribute.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `HoldTimeMin` | uint16 | `M` | min 1 | This field specifies the minimum value of the server's supported value for the HoldTime attribute, in seconds. |
+| 1 | `HoldTimeMax` | uint16 | `M` | min maxOf | This field specifies the maximum value of the server's supported value for the HoldTime attribute, in seconds. |
+| 2 | `HoldTimeDefault` | uint16 | `M` | HoldTimeMin to HoldTimeMax | This field specifies the (manufacturer-determined) default value of the server's HoldTime attribute, in seconds. |
+
+---
+
+## Cluster 1030 Attributes
+
+Cluster 1030 defines **14 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Occupancy` | OccupancyBitmap | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `OccupancySensorType` | OccupancySensorTypeEnum | `M, D` | R (read: view) | — | — |
+| 2 | `0x0002` | `OccupancySensorTypeBitmap` | OccupancySensorTypeBitmap | `M, D` | R (read: view) | — | — |
+| 3 | `0x0003` | `HoldTime` | uint16 | `O` | R/W (read: view, write: manage) | persisted | — |
+| 4 | `0x0004` | `HoldTimeLimits` | HoldTimeLimitsStruct | `HoldTime` | R (read: view) | — | — |
+| 16 | `0x0010` | `PIROccupiedToUnoccupiedDelay` | uint16 | `[HoldTime & PIR \| (!PIR & !US & !PHY)], D` | R/W (read: view, write: manage) | persisted | `0` |
+| 17 | `0x0011` | `PIRUnoccupiedToOccupiedDelay` | uint16 | `HoldTime & PIR \| (!PIR & !US & !PHY) & PIRUnoccupiedToOccupiedThreshold, [HoldTime & PIR \| (!PIR & !US & !PHY)], D` | R/W (read: view, write: manage) | persisted | `0` |
+| 18 | `0x0012` | `PIRUnoccupiedToOccupiedThreshold` | uint8 | `HoldTime & PIR \| (!PIR & !US & !PHY) & PIRUnoccupiedToOccupiedDelay, [HoldTime & PIR \| (!PIR & !US & !PHY)], D` | R/W (read: view, write: manage) | persisted | `1` |
+| 32 | `0x0020` | `UltrasonicOccupiedToUnoccupiedDelay` | uint16 | `[HoldTime & US], D` | R/W (read: view, write: manage) | persisted | `0` |
+| 33 | `0x0021` | `UltrasonicUnoccupiedToOccupiedDelay` | uint16 | `HoldTime & US & UltrasonicUnoccupiedToOccupiedThreshold, [HoldTime & US], D` | R/W (read: view, write: manage) | persisted | `0` |
+| 34 | `0x0022` | `UltrasonicUnoccupiedToOccupiedThreshold` | uint8 | `HoldTime & US & UltrasonicUnoccupiedToOccupiedDelay, [HoldTime & US], D` | R/W (read: view, write: manage) | persisted | `1` |
+| 48 | `0x0030` | `PhysicalContactOccupiedToUnoccupiedDelay` | uint16 | `[HoldTime & PHY], D` | R/W (read: view, write: manage) | persisted | `0` |
+| 49 | `0x0031` | `PhysicalContactUnoccupiedToOccupiedDelay` | uint16 | `HoldTime & PHY & PhysicalContactUnoccupiedToOccupiedThreshold, [HoldTime & PHY], D` | R/W (read: view, write: manage) | persisted | `0` |
+| 50 | `0x0032` | `PhysicalContactUnoccupiedToOccupiedThreshold` | uint8 | `HoldTime & PHY & PhysicalContactUnoccupiedToOccupiedDelay, [HoldTime & PHY], D` | R/W (read: view, write: manage) | persisted | `1` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `7` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Occupancy`
+
+Path example:
+
+```text
+1/1030/0
+```
+
+Indicates the sensed (processed) status of occupancy. For compatibility reasons this is expressed as a bitmap where the status is indicated in bit 0: a value of 1 means occupied, and 0 means unoccupied, with the other bits set to 0; this can be considered equivalent to a boolean.
+
+| Property | Value |
+|---|---|
+| Type | OccupancyBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 0 to 1 |
+
+Bits (`OccupancyBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Occupied` | Indicates the sensed occupancy state |
+
+Example:
+
+```json
+{
+  "1/1030/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `OccupancySensorType`
+
+Path example:
+
+```text
+1/1030/1
+```
+
+No condensed specification text is available for `OccupancySensorType`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | OccupancySensorTypeEnum |
+| Conformance | `M, D` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`OccupancySensorTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `PIR` | Indicates a passive infrared sensor. |
+| 1 | `Ultrasonic` | Indicates a ultrasonic sensor. |
+| 2 | `PIRAndUltrasonic` | Indicates a passive infrared and ultrasonic sensor. |
+| 3 | `PhysicalContact` | Indicates a physical contact sensor. |
+
+Example:
+
+```json
+{
+  "1/1030/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `OccupancySensorTypeBitmap`
+
+Path example:
+
+```text
+1/1030/2
+```
+
+No condensed specification text is available for `OccupancySensorTypeBitmap`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | OccupancySensorTypeBitmap |
+| Conformance | `M, D` |
+| Access | R (read: view) |
+| Constraint | 0 to 7 |
+
+Bits (`OccupancySensorTypeBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `PIR` | Indicates a passive infrared sensor. |
+| 1 | `Ultrasonic` | Indicates a ultrasonic sensor. |
+| 2 | `PhysicalContact` | Indicates a physical contact sensor. |
+
+Example:
+
+```json
+{
+  "1/1030/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `HoldTime`
+
+Path example:
+
+```text
+1/1030/3
+```
+
+This attribute specifies the time delay, in seconds, before the sensor changes to its unoccupied state after the last detection of occupancy in the sensed area. This is equivalent to the legacy &#42;OccupiedToUnoccupiedDelay attributes. Low values of HoldTime should be avoided since they could lead to many reporting messages. A value 0 for HoldTime must NOT be used.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | HoldTimeLimits to HoldTimeLimits |
+
+Example:
+
+```json
+{
+  "1/1030/3": 0
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `HoldTimeLimits`
+
+Path example:
+
+```text
+1/1030/4
+```
+
+Indicates the server's limits, and default value, for the HoldTime attribute.
+
+| Property | Value |
+|---|---|
+| Type | HoldTimeLimitsStruct |
+| Conformance | `HoldTime` |
+| Access | R (read: view) |
+
+Value is a `HoldTimeLimitsStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1030/4": {
+    "holdTimeMin": 1,
+    "holdTimeMax": 0,
+    "holdTimeDefault": 0
+  }
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `PIROccupiedToUnoccupiedDelay`
+
+Path example:
+
+```text
+1/1030/16
+```
+
+No condensed specification text is available for `PIROccupiedToUnoccupiedDelay`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[HoldTime & PIR \| (!PIR & !US & !PHY)], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1030/16": 1
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `PIRUnoccupiedToOccupiedDelay`
+
+Path example:
+
+```text
+1/1030/17
+```
+
+No condensed specification text is available for `PIRUnoccupiedToOccupiedDelay`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `HoldTime & PIR \| (!PIR & !US & !PHY) & PIRUnoccupiedToOccupiedThreshold, [HoldTime & PIR \| (!PIR & !US & !PHY)], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1030/17": 1
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `PIRUnoccupiedToOccupiedThreshold`
+
+Path example:
+
+```text
+1/1030/18
+```
+
+No condensed specification text is available for `PIRUnoccupiedToOccupiedThreshold`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `HoldTime & PIR \| (!PIR & !US & !PHY) & PIRUnoccupiedToOccupiedDelay, [HoldTime & PIR \| (!PIR & !US & !PHY)], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | 1 to 254 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "1/1030/18": 1
+}
+```
+
+---
+
+## Attribute `32` / `0x0020` — `UltrasonicOccupiedToUnoccupiedDelay`
+
+Path example:
+
+```text
+1/1030/32
+```
+
+This attribute specifies the time delay, in seconds, before the Ultrasonic sensor changes to its unoccupied state after the last detection of occupancy in the sensed area.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[HoldTime & US], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1030/32": 1
+}
+```
+
+---
+
+## Attribute `33` / `0x0021` — `UltrasonicUnoccupiedToOccupiedDelay`
+
+Path example:
+
+```text
+1/1030/33
+```
+
+This attribute specifies the time delay, in seconds, before the Ultrasonic sensor changes to its occupied state after the first detection of occupancy in the sensed area.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `HoldTime & US & UltrasonicUnoccupiedToOccupiedThreshold, [HoldTime & US], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1030/33": 1
+}
+```
+
+---
+
+## Attribute `34` / `0x0022` — `UltrasonicUnoccupiedToOccupiedThreshold`
+
+Path example:
+
+```text
+1/1030/34
+```
+
+This attribute specifies the number of occupancy detection events that must occur in the period UltrasonicUnoccupiedToOccupiedDelay, before the Ultrasonic sensor changes to its occupied state.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `HoldTime & US & UltrasonicUnoccupiedToOccupiedDelay, [HoldTime & US], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | 1 to 254 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "1/1030/34": 1
+}
+```
+
+---
+
+## Attribute `48` / `0x0030` — `PhysicalContactOccupiedToUnoccupiedDelay`
+
+Path example:
+
+```text
+1/1030/48
+```
+
+This attribute specifies the time delay, in seconds, before the physical contact occupancy sensor changes to its unoccupied state after detecting the unoccupied event.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[HoldTime & PHY], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1030/48": 1
+}
+```
+
+---
+
+## Attribute `49` / `0x0031` — `PhysicalContactUnoccupiedToOccupiedDelay`
+
+Path example:
+
+```text
+1/1030/49
+```
+
+This attribute specifies the time delay, in seconds, before the physical contact sensor changes to its occupied state after the first detection of the occupied event.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `HoldTime & PHY & PhysicalContactUnoccupiedToOccupiedThreshold, [HoldTime & PHY], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1030/49": 1
+}
+```
+
+---
+
+## Attribute `50` / `0x0032` — `PhysicalContactUnoccupiedToOccupiedThreshold`
+
+Path example:
+
+```text
+1/1030/50
+```
+
+This attribute specifies the number of occupancy detection events that must occur in the period PhysicalContactUnoccupiedToOccupiedDelay, before the PhysicalContact sensor changes to its occupied state.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `HoldTime & PHY & PhysicalContactUnoccupiedToOccupiedDelay, [HoldTime & PHY], D` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | 1 to 254 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "1/1030/50": 1
+}
+```
+
+---
+
+# Cluster 1030 Commands
+
+Cluster 1030 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1030 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `OccupancyChanged` | info | `OCCEVENT, O` | If this event is supported, it is generated when the Occupancy attribute changes. |
+
+## Event `0` — `OccupancyChanged`
+
+If this event is supported, it is generated when the Occupancy attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Occupancy` | OccupancyBitmap | `M` | Indicates the new value of the Occupancy attribute. |
+
+---
+
+# SmartphoneKey Notes
+
+- `Occupancy` (attribute `0`) is a bitmap; bit 0 set = occupied. Aqara FP400 presence sensors additionally expose vendor clusters that are not covered here.
+- Shadow paths follow `endpoint/1030/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

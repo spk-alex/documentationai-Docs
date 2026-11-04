@@ -1,0 +1,547 @@
+---
+title: "Matter Cluster 128 — Boolean State Configuration"
+description: "Matter Cluster 128 (0x0080) Boolean State Configuration: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 128
+clusterHex: "0x0080"
+clusterName: "Boolean State Configuration"
+---
+
+# Matter Cluster 128 — Boolean State Configuration Cluster
+
+<Callout type="info">
+Matter Cluster <code>128</code>, also written as <code>0x0080</code>, is the <strong>Boolean State Configuration Cluster</strong>.
+This cluster is used to configure a boolean sensor, including optional state change alarm features and configuration of the sensitivity level associated with the sensor.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `128` |
+| Cluster ID hex | `0x0080` |
+| Cluster name | `Boolean State Configuration` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `BOOLCFG` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added FaultEvents feature |
+
+---
+
+## Shadow Path Format
+
+Cluster 128 values in the device shadow use this format:
+
+```text
+endpoint_id / 128 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/128/0": 100
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `128` | Boolean State Configuration cluster |
+| `0` | `CurrentSensitivityLevel` attribute |
+
+---
+
+## Cluster 128 Features
+
+The `FeatureMap` attribute (`1/128/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `VIS` | Visual | `O` | Supports visual alarms |
+| 1 | `AUD` | Audible | `O` | Supports audible alarms |
+| 2 | `SPRS` | AlarmSuppress | `[VIS \| AUD]` | Supports ability to suppress or acknowledge alarms |
+| 3 | `SENSLVL` | SensitivityLevel | `O` | Supports ability to set sensor sensitivity |
+| 4 | `FAULTEV` | FaultEvents | `[ClusterRevision >= 2]` | Supports reporting fault events |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `31` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AlarmModeBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Visual` | `VIS` | Visual alarming |
+| 1 | `Audible` | `AUD` | Audible alarming |
+
+### `SensorFaultBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `GeneralFault` | `M` | Unspecified fault detected |
+
+---
+
+## Cluster 128 Attributes
+
+Cluster 128 defines **8 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `CurrentSensitivityLevel` | uint8 | `SENSLVL` | R/W (read: view, write: operate) | persisted | — |
+| 1 | `0x0001` | `SupportedSensitivityLevels` | uint8 | `SENSLVL` | R (read: view) | — | — |
+| 2 | `0x0002` | `DefaultSensitivityLevel` | uint8 | `[SENSLVL]` | R (read: view) | — | `MS` |
+| 3 | `0x0003` | `AlarmsActive` | AlarmModeBitmap | `VIS \| AUD` | R (read: view) | — | — |
+| 4 | `0x0004` | `AlarmsSuppressed` | AlarmModeBitmap | `SPRS` | R (read: view) | — | — |
+| 5 | `0x0005` | `AlarmsEnabled` | AlarmModeBitmap | `[VIS \| AUD]` | R (read: view) | persisted | `MS` |
+| 6 | `0x0006` | `AlarmsSupported` | AlarmModeBitmap | `VIS \| AUD` | R (read: view) | — | — |
+| 7 | `0x0007` | `SensorFault` | SensorFaultBitmap | `O` | R (read: view) | — | `0` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `CurrentSensitivityLevel`
+
+Path example:
+
+```text
+1/128/0
+```
+
+Indicates the currently selected sensitivity level. If a write interaction to this attribute contains an unsupported sensitivity value, a CONSTRAINT_ERROR status is returned.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `SENSLVL` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | max compute |
+
+Example:
+
+```json
+{
+  "1/128/0": 100
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SupportedSensitivityLevels`
+
+Path example:
+
+```text
+1/128/1
+```
+
+Indicates the number of supported sensitivity levels by the device. These supported sensitivity levels is ordered by sensitivity, where a value of 0 is considered the lowest sensitivity level (least sensitive) and the highest supported value is considered the highest sensitivity level. The number of supported sensitivity levels should represent unique sensitivity levels supported by the device.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `SENSLVL` |
+| Access | R (read: view) |
+| Constraint | 2 to 10 |
+
+Example:
+
+```json
+{
+  "1/128/1": 2
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `DefaultSensitivityLevel`
+
+Path example:
+
+```text
+1/128/2
+```
+
+Indicates the default sensitivity level selected by the manufacturer.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `[SENSLVL]` |
+| Access | R (read: view) |
+| Constraint | max compute |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/128/2": 100
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `AlarmsActive`
+
+Path example:
+
+```text
+1/128/3
+```
+
+Indicates which specific alarm modes on the server are currently active. When the sensor is no longer triggered, this attribute is set to the inactive state, by setting the bit to 0, for all supported alarm modes. If an alarm mode is not supported, the bit indicating this alarm mode must always be 0. A bit indicates whether the alarm mode inactive or not: - 0 = Inactive - 1 = Active
+
+| Property | Value |
+|---|---|
+| Type | AlarmModeBitmap |
+| Conformance | `VIS \| AUD` |
+| Access | R (read: view) |
+
+Bits (`AlarmModeBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Visual` | Visual alarming |
+| 1 | `Audible` | Audible alarming |
+
+Example:
+
+```json
+{
+  "1/128/3": 0
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `AlarmsSuppressed`
+
+Path example:
+
+```text
+1/128/4
+```
+
+Indicates which specific alarm modes on the server are currently suppressed. When the sensor is no longer triggered, this attribute is set to the unsuppressed state, by setting the bit to 0, for all supported alarm modes. If an alarm mode is not supported, the bit indicating this alarm mode must always be 0. A bit indicates whether the alarm mode is suppressed or not: - 0 = Not suppressed - 1 = Suppressed
+
+| Property | Value |
+|---|---|
+| Type | AlarmModeBitmap |
+| Conformance | `SPRS` |
+| Access | R (read: view) |
+
+Bits (`AlarmModeBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Visual` | Visual alarming |
+| 1 | `Audible` | Audible alarming |
+
+Example:
+
+```json
+{
+  "1/128/4": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `AlarmsEnabled`
+
+Path example:
+
+```text
+1/128/5
+```
+
+Indicates the alarm modes that will be emitted if the sensor is triggered. If an alarm mode is not supported, the bit indicating this alarm mode must always be 0. A bit indicates whether the alarm mode is enabled or disabled: - 0 = Disabled - 1 = Enabled
+
+| Property | Value |
+|---|---|
+| Type | AlarmModeBitmap |
+| Conformance | `[VIS \| AUD]` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Default | `MS` |
+
+Bits (`AlarmModeBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Visual` | Visual alarming |
+| 1 | `Audible` | Audible alarming |
+
+Example:
+
+```json
+{
+  "1/128/5": 0
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `AlarmsSupported`
+
+Path example:
+
+```text
+1/128/6
+```
+
+Indicates the alarms supported by the sensor. A bit indicates whether the alarm mode is supported: - 0 = Not supported - 1 = Supported
+
+| Property | Value |
+|---|---|
+| Type | AlarmModeBitmap |
+| Conformance | `VIS \| AUD` |
+| Access | R (read: view) |
+
+Bits (`AlarmModeBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Visual` | Visual alarming |
+| 1 | `Audible` | Audible alarming |
+
+Example:
+
+```json
+{
+  "1/128/6": 0
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `SensorFault`
+
+Path example:
+
+```text
+1/128/7
+```
+
+Indicates any faults registered by the device.
+
+| Property | Value |
+|---|---|
+| Type | SensorFaultBitmap |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `0` |
+
+Bits (`SensorFaultBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `GeneralFault` | Unspecified fault detected |
+
+Example:
+
+```json
+{
+  "1/128/7": 0
+}
+```
+
+---
+
+# Cluster 128 Commands
+
+Cluster 128 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SuppressAlarm` | client → server | `SPRS` | status | This command will suppress the alarm modes specified. |
+| 1 | `0x01` | `EnableDisableAlarm` | client → server | `VIS \| AUD` | status | This command allows setting the enable or disable value for the specified alarm modes. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 128 / 65529
+```
+
+```json
+{
+  "1/128/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 128 command, check that the command ID exists in <code>endpoint/128/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 128,
+    "command_name": "SuppressAlarm",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 128, always use `"cluster_id": 128`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SuppressAlarm`
+
+## Purpose
+
+This command will suppress the alarm modes specified.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SuppressAlarm` |
+| Direction | client → server |
+| Conformance | `SPRS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `AlarmsToSuppress` | `alarmsToSuppress` | AlarmModeBitmap | `M` | — | Indicates the alarm modes to suppress. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 128,
+    "command_name": "SuppressAlarm",
+    "payload": {
+      "alarmsToSuppress": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `EnableDisableAlarm`
+
+## Purpose
+
+This command allows setting the enable or disable value for the specified alarm modes.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `EnableDisableAlarm` |
+| Direction | client → server |
+| Conformance | `VIS \| AUD` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `AlarmsToEnableDisable` | `alarmsToEnableDisable` | AlarmModeBitmap | `M` | — | Indicates the alarm modes to either enable or disable depending on the bit status, as specified for the AlarmsEnabled attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 128,
+    "command_name": "EnableDisableAlarm",
+    "payload": {
+      "alarmsToEnableDisable": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 128 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `AlarmsStateChanged` | info | `VIS \| AUD` | This event is generated after any bits in the AlarmsActive and/or AlarmsSuppressed attributes change. |
+| 1 | `0x01` | `SensorFault` | info | `FAULTEV, O` | This event is generated when the device registers or clears a fault. |
+
+## Event `0` — `AlarmsStateChanged`
+
+This event is generated after any bits in the AlarmsActive and/or AlarmsSuppressed attributes change. This may occur in situations such as when internal processing by the server determines that an alarm mode becomes active or inactive, or when the SuppressAlarm or EnableDisableAlarm commands are processed in a way that some alarm modes becomes suppressed, active or inactive. If several alarm modes change state at the same time, a single event combining multiple changes may be emitted instead of multiple events each representing a single change.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `AlarmsActive` | AlarmModeBitmap | `M` | Indicates the state of active alarm modes, as indicated by the AlarmsActive attribute, at the time the event was generated. |
+| 1 | `AlarmsSuppressed` | AlarmModeBitmap | `SPRS` | Indicates the state of suppressed alarm modes, as indicated by the AlarmsSuppressed attribute, at the time the event was generated. |
+
+## Event `1` — `SensorFault`
+
+This event is generated when the device registers or clears a fault.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SensorFault` | SensorFaultBitmap | `M` | Indicates the value of the SensorFault attribute, at the time this event is generated. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 128 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/128/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,186 @@
+---
+title: "Matter Cluster 45 — Unit Localization"
+description: "Matter Cluster 45 (0x002D) Unit Localization: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 45
+clusterHex: "0x002D"
+clusterName: "Unit Localization"
+---
+
+# Matter Cluster 45 — Unit Localization Cluster
+
+<Callout type="info">
+Matter Cluster <code>45</code>, also written as <code>0x002D</code>, is the <strong>Unit Localization Cluster</strong>.
+Nodes should be expected to be deployed to any and all regions of the world. These global regions may have differing preferences for the units in which values are conveyed in communication to a user. As such, Nodes that visually or audibly convey measurable values to the user need a mechanism by which they can be configured to use a user’s preferred unit.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `45` |
+| Cluster ID hex | `0x002D` |
+| Cluster name | `Unit Localization` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `LUNIT` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added SupportedTemperatureUnits attribute |
+
+---
+
+## Shadow Path Format
+
+Cluster 45 values in the device shadow use this format:
+
+```text
+endpoint_id / 45 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/45/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `45` | Unit Localization cluster |
+| `0` | `TemperatureUnit` attribute |
+
+---
+
+## Cluster 45 Features
+
+The `FeatureMap` attribute (`0/45/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `TEMP` | TemperatureUnit | `O` | The Node can be configured to use different units of temperature when conveying values to a user |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `TempUnitEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Fahrenheit` | `O` | Temperature conveyed in Fahrenheit |
+| 1 | `Celsius` | `O` | Temperature conveyed in Celsius |
+| 2 | `Kelvin` | `O` | Temperature conveyed in Kelvin |
+
+---
+
+## Cluster 45 Attributes
+
+Cluster 45 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `TemperatureUnit` | TempUnitEnum | `TEMP` | R/W (read: view, write: manage) | persisted | — |
+| 1 | `0x0001` | `SupportedTemperatureUnits` | list of TempUnitEnum | `TEMP` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `TemperatureUnit`
+
+Path example:
+
+```text
+0/45/0
+```
+
+Indicates the unit for the Node to use only when conveying temperature in communication to the user, for example such as via a user interface on the device. If provided, this value must take priority over any unit implied through the ActiveLocale Attribute. An attempt to write to this attribute with a value not included in the SupportedTemperatureUnits attribute list must result in a CONSTRAINT_ERROR.
+
+| Property | Value |
+|---|---|
+| Type | TempUnitEnum |
+| Conformance | `TEMP` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+
+Values (`TempUnitEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Fahrenheit` | Temperature conveyed in Fahrenheit |
+| 1 | `Celsius` | Temperature conveyed in Celsius |
+| 2 | `Kelvin` | Temperature conveyed in Kelvin |
+
+Example:
+
+```json
+{
+  "0/45/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SupportedTemperatureUnits`
+
+Path example:
+
+```text
+0/45/1
+```
+
+Indicates a list of units supported by the Node to be used when writing the TemperatureUnit attribute of this cluster. Each entry in the list is unique.
+
+| Property | Value |
+|---|---|
+| Type | list of TempUnitEnum |
+| Conformance | `TEMP` |
+| Access | R (read: view) |
+| Constraint | 2 to 3 entries |
+
+Example:
+
+```json
+{
+  "0/45/1": []
+}
+```
+
+---
+
+# Cluster 45 Commands
+
+Cluster 45 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 45 Events
+
+Cluster 45 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 45 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/45/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

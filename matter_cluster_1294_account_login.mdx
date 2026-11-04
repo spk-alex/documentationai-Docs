@@ -1,0 +1,311 @@
+---
+title: "Matter Cluster 1294 — Account Login"
+description: "Matter Cluster 1294 (0x050E) Account Login: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1294
+clusterHex: "0x050E"
+clusterName: "Account Login"
+---
+
+# Matter Cluster 1294 — Account Login Cluster
+
+<Callout type="info">
+Matter Cluster <code>1294</code>, also written as <code>0x050E</code>, is the <strong>Account Login Cluster</strong>.
+This cluster provides commands that facilitate user account login on a Content App or a node. For example, a Content App running on a Video Player device, which is represented as an endpoint, can use this cluster to help make the user account on the Content App match the user account on the Client. Often a fabric administrator will facilitate commissioning of a Client (such as a Casting Video Client), and invoke commands on the Account Login cluster on the Content App associated with that client.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1294` |
+| Cluster ID hex | `0x050E` |
+| Cluster name | `Account Login` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `ALOGIN` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Add support for 8 character Passcode in GetSetupPIN and Login, Add Node to Login, Logout commands. Add LoggedOut event |
+
+---
+
+## Shadow Path Format
+
+Cluster 1294 values in the device shadow use this format:
+
+```text
+endpoint_id / 1294 / attribute_id
+```
+
+---
+
+## Cluster 1294 Attributes
+
+Cluster 1294 defines no cluster-specific attributes; only the global attributes are present.
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Cluster 1294 Commands
+
+Cluster 1294 has **3 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `GetSetupPIN` | client → server | `M` | GetSetupPINResponse | — |
+| 1 | `0x01` | `GetSetupPINResponse` | server → client | `M` | — | — |
+| 2 | `0x02` | `Login` | client → server | `M` | status | The purpose of this command is to allow the Content App to assume the user account of a given Commissionee by leveraging the Setup PIN input by the user during the commissioning … |
+| 3 | `0x03` | `Logout` | client → server | `M` | status | The purpose of this command is to instruct the Content App to clear the current user account. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1294 / 65529
+```
+
+```json
+{
+  "1/1294/65529": [
+    0,
+    2,
+    3
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1294 command, check that the command ID exists in <code>endpoint/1294/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1294,
+    "command_name": "GetSetupPIN",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1294, always use `"cluster_id": 1294`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `GetSetupPIN`
+
+## Purpose
+
+`GetSetupPIN` is a client-to-server command of the Account Login cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `GetSetupPIN` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | GetSetupPINResponse |
+| Access | (invoke: admin, timed, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TempAccountIdentifier` | `tempAccountIdentifier` | string | `M` | length 16 to 100 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1294,
+    "command_name": "GetSetupPIN",
+    "payload": {
+      "tempAccountIdentifier": "example"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+The device answers with `GetSetupPINResponse` (see below).
+
+---
+
+# Command: `GetSetupPINResponse`
+
+## Purpose
+
+`GetSetupPINResponse` is a server response of the Account Login cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `GetSetupPINResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `SetupPIN` | `setupPIN` | string | `M` | desc | — |
+
+---
+
+# Command: `Login`
+
+## Purpose
+
+The purpose of this command is to allow the Content App to assume the user account of a given Commissionee by leveraging the Setup PIN input by the user during the commissioning process. For example, a Video Player with a Content App Platform may invoke this command on one of its Content App endpoints after the commissioning has completed of a Phone App made by the same vendor as the Content App. The Content App may determine whether the Temporary Account Identifier maps to an account with a corresponding Setup PIN and, if so, it may automatically login to the account for the corresponding user.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `Login` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin, timed, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TempAccountIdentifier` | `tempAccountIdentifier` | string | `M` | length 16 to 100 | This field specifies the client's temporary account identifier. |
+| 1 | `SetupPIN` | `setupPIN` | string | `M` | min length 8 | — |
+| 2 | `Node` | `node` | node-id | `O` | — | This optional field provides the Node ID of the Client. This field can be used by the Content App to keep track of Nodes which currently have access to it. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1294,
+    "command_name": "Login",
+    "payload": {
+      "tempAccountIdentifier": "example",
+      "setupPIN": "example"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `Logout`
+
+## Purpose
+
+The purpose of this command is to instruct the Content App to clear the current user account. This command should be used by clients of a Content App to indicate the end of a user session.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `Logout` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, timed, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Node` | `node` | node-id | `O` | — | This optional field provides the Node ID of the Client. This field can be used by the Content App to keep track of Nodes which currently have access to it. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1294,
+    "command_name": "Logout",
+    "payload": {
+      "node": 1
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Cluster 1294 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `LoggedOut` | critical | `O` | This event can be used by the Content App to indicate that the current user has logged out. |
+
+## Event `0` — `LoggedOut`
+
+This event can be used by the Content App to indicate that the current user has logged out. In response to this event, the Fabric Admin must remove access to this Content App by the specified Node. If no Node is provided, then the Fabric Admin must remove access to all non-Admin Nodes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Node` | node-id | `O` | This field provides the Node ID corresponding to the user account that has logged out, if that Node ID is available. If it is NOT available, this field must NOT be present in the event. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1294 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1294/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

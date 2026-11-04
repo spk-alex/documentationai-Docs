@@ -1,0 +1,489 @@
+---
+title: "Matter Cluster 148 — Water Heater Management"
+description: "Matter Cluster 148 (0x0094) Water Heater Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 148
+clusterHex: "0x0094"
+clusterName: "Water Heater Management"
+---
+
+# Matter Cluster 148 — Water Heater Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>148</code>, also written as <code>0x0094</code>, is the <strong>Water Heater Management Cluster</strong>.
+This cluster is used to allow clients to control the operation of a hot water heating appliance so that it can be used with energy management. Heating of hot water is one of the main energy uses in homes, and when coupled with the Energy Management cluster, it can help consumers save cost (e.g. using power at cheaper times or from local solar PV generation).
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `148` |
+| Cluster ID hex | `0x0094` |
+| Cluster name | `Water Heater Management` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `EWATERHTR` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added events and simplified data types |
+
+---
+
+## Shadow Path Format
+
+Cluster 148 values in the device shadow use this format:
+
+```text
+endpoint_id / 148 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/148/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `148` | Water Heater Management cluster |
+| `0` | `HeaterTypes` attribute |
+
+---
+
+## Cluster 148 Features
+
+The `FeatureMap` attribute (`1/148/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `EM` | EnergyManagement | `O` | Allows energy management control of the tank |
+| 1 | `TP` | TankPercent | `O` | Supports monitoring the percentage of hot water in the tank |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `BoostStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Inactive` | `M` | Boost is not currently active |
+| 1 | `Active` | `M` | Boost is currently active |
+
+### `WaterHeaterHeatSourceBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ImmersionElement1` | `M` | Immersion Heating Element 1 |
+| 1 | `ImmersionElement2` | `M` | Immersion Heating Element 2 |
+| 2 | `HeatPump` | `M` | Heat pump Heating |
+| 3 | `Boiler` | `M` | Boiler Heating (e.g. Gas or Oil) |
+| 4 | `Other` | `M` | Other Heating |
+
+### `WaterHeaterBoostInfoStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Duration` | elapsed-s | `M` | min 1 | Indicates the time period, in seconds, for which the boost state is activated. |
+| 1 | `OneShot` | bool | `[!TP], [TP]` | — | Indicates whether the boost state is automatically canceled once the hot water has reached either: - the set point temperature (from the thermostat cluster) - the TemporarySetpoint temperature (if specified) - the … |
+| 2 | `EmergencyBoost` | bool | `O` | — | Indicates that the consumer wants the water to be heated quickly. |
+| 3 | `TemporarySetpoint` | temperature | `O` | desc | Indicates the target temperature to which the water will be heated. |
+| 4 | `TargetPercentage` | percent | `TargetReheat, [TP]` | — | Indicates the target percentage of hot water in the tank that the TankPercentage attribute must reach before the heating is switched off. |
+| 5 | `TargetReheat` | percent | `[TP]` | max TargetPercentage | Indicates the percentage to which the hot water in the tank is allowed to fall before again beginning to reheat it. |
+
+---
+
+## Cluster 148 Attributes
+
+Cluster 148 defines **6 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `HeaterTypes` | WaterHeaterHeatSourceBitmap | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `HeatDemand` | WaterHeaterHeatSourceBitmap | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `TankVolume` | uint16 | `EM` | R (read: view) | — | — |
+| 3 | `0x0003` | `EstimatedHeatRequired` | energy-mWh | `EM` | R (read: view) | — | — |
+| 4 | `0x0004` | `TankPercentage` | percent | `TP` | R (read: view) | — | — |
+| 5 | `0x0005` | `BoostState` | BoostStateEnum | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `HeaterTypes`
+
+Path example:
+
+```text
+1/148/0
+```
+
+Indicates the heat sources that the water heater can call on for heating. If a bit is set then the water heater supports the corresponding heat source.
+
+| Property | Value |
+|---|---|
+| Type | WaterHeaterHeatSourceBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Bits (`WaterHeaterHeatSourceBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `ImmersionElement1` | Immersion Heating Element 1 |
+| 1 | `ImmersionElement2` | Immersion Heating Element 2 |
+| 2 | `HeatPump` | Heat pump Heating |
+| 3 | `Boiler` | Boiler Heating (e.g. Gas or Oil) |
+| 4 | `Other` | Other Heating |
+
+Example:
+
+```json
+{
+  "1/148/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `HeatDemand`
+
+Path example:
+
+```text
+1/148/1
+```
+
+Indicates if the water heater is heating water. If a bit is set then the corresponding heat source is active.
+
+| Property | Value |
+|---|---|
+| Type | WaterHeaterHeatSourceBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Bits (`WaterHeaterHeatSourceBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `ImmersionElement1` | Immersion Heating Element 1 |
+| 1 | `ImmersionElement2` | Immersion Heating Element 2 |
+| 2 | `HeatPump` | Heat pump Heating |
+| 3 | `Boiler` | Boiler Heating (e.g. Gas or Oil) |
+| 4 | `Other` | Other Heating |
+
+Example:
+
+```json
+{
+  "1/148/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `TankVolume`
+
+Path example:
+
+```text
+1/148/2
+```
+
+Indicates the volume of water that the hot water tank can hold (in units of Litres). This allows an energy management system to estimate the required heating energy needed to reach the target temperature.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `EM` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/148/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `EstimatedHeatRequired`
+
+Path example:
+
+```text
+1/148/3
+```
+
+Indicates the estimated heat energy needed to raise the water temperature to the target setpoint. This can be computed by taking the specific heat capacity of water (4182 J/kg °C) and by knowing the current temperature of the water, the tank volume and target temperature.
+
+| Property | Value |
+|---|---|
+| Type | energy-mWh |
+| Conformance | `EM` |
+| Access | R (read: view) |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/148/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `TankPercentage`
+
+Path example:
+
+```text
+1/148/4
+```
+
+Indicates an approximate level of hot water stored in the tank, which might help consumers understand the amount of hot water remaining in the tank. The accuracy of this attribute is manufacturer specific. In most hot water tanks, there is a stratification effect where the hot water layer rests above a cooler layer of water below. For this reason cold water is fed in at the bottom of the tank and the hot water is drawn from the top.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `TP` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/148/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `BoostState`
+
+Path example:
+
+```text
+1/148/5
+```
+
+No condensed specification text is available for `BoostState`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | BoostStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`BoostStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Inactive` | Boost is not currently active |
+| 1 | `Active` | Boost is currently active |
+
+Example:
+
+```json
+{
+  "1/148/5": 0
+}
+```
+
+---
+
+# Cluster 148 Commands
+
+Cluster 148 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `Boost` | client → server | `M` | status | Allows a client to request that the water heater is put into a Boost state. |
+| 1 | `0x01` | `CancelBoost` | client → server | `M` | status | Allows a client to cancel an ongoing Boost operation. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 148 / 65529
+```
+
+```json
+{
+  "1/148/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 148 command, check that the command ID exists in <code>endpoint/148/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 148,
+    "command_name": "Boost",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 148, always use `"cluster_id": 148`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `Boost`
+
+## Purpose
+
+Allows a client to request that the water heater is put into a Boost state.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Boost` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `BoostInfo` | `boostInfo` | WaterHeaterBoostInfoStruct | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 148,
+    "command_name": "Boost",
+    "payload": {
+      "boostInfo": {
+        "duration": 1,
+        "oneShot": true,
+        "emergencyBoost": true,
+        "temporarySetpoint": 1
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `CancelBoost`
+
+## Purpose
+
+Allows a client to cancel an ongoing Boost operation. This command has no payload.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `CancelBoost` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 148,
+    "command_name": "CancelBoost",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Cluster 148 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `BoostStarted` | info | `M` | This event is generated whenever a Boost command is accepted. |
+| 1 | `0x01` | `BoostEnded` | info | `M` | This event is generated whenever the BoostState transitions from Active to Inactive. |
+
+## Event `0` — `BoostStarted`
+
+This event is generated whenever a Boost command is accepted. The corresponding structure fields within the WaterHeaterBoostInfoStruct are copied from the Boost command.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `BoostInfo` | WaterHeaterBoostInfoStruct | `M` | — |
+
+## Event `1` — `BoostEnded`
+
+This event is generated whenever the BoostState transitions from Active to Inactive.
+
+This event has no fields.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 148 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/148/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

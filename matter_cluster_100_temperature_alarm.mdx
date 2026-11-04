@@ -1,0 +1,661 @@
+---
+title: "Matter Cluster 100 — Temperature Alarm"
+description: "Matter Cluster 100 (0x0064) Temperature Alarm: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 100
+clusterHex: "0x0064"
+clusterName: "Temperature Alarm"
+---
+
+# Matter Cluster 100 — Temperature Alarm Cluster
+
+<Callout type="info">
+Matter Cluster <code>100</code>, also written as <code>0x0064</code>, is the <strong>Temperature Alarm Cluster</strong>.
+This cluster is a derived cluster of Alarm Base cluster and provides the alarm definition related to temperature measurements. Support for this cluster is provisional.
+</Callout>
+
+<Callout type="info">
+This cluster is <strong>derived from the Alarm Base cluster</strong>: it inherits the base attributes, commands and data types listed below and adds the cluster-specific values. Where the base definition applies, the base text is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `100` |
+| Cluster ID hex | `0x0064` |
+| Cluster name | `Temperature Alarm` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `TEMPALM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 100 values in the device shadow use this format:
+
+```text
+endpoint_id / 100 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/100/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `100` | Temperature Alarm cluster |
+| `0` | `Mask` attribute |
+
+---
+
+## Cluster 100 Features
+
+The `FeatureMap` attribute (`1/100/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 20 | `OVER` | OverTemperature | `O` | Supports activating alarms when a temperature measurement goes over a threshold |
+| 21 | `UNDER` | UnderTemperature | `O` | Supports activating alarms when a temperature measurement goes under a threshold |
+| 22 | `MAJOR` | MajorThreshold | `O` | Supports the major threshold for alarms |
+| 23 | `MINOR` | MinorThreshold | `[MAJOR]` | Supports the minor threshold for alarms |
+| 24 | `OCRIADJ` | OverCriticalAdjustable | `[OVER]` | Supports the ability to adjust the over critical temperature threshold |
+| 25 | `OMAJADJ` | OverMajorAdjustable | `[OVER & MAJOR]` | Supports the ability to adjust the over major temperature threshold |
+| 26 | `OMINADJ` | OverMinorAdjustable | `[OVER & MINOR]` | Supports the ability to adjust the over minor temperature threshold |
+| 27 | `UMINADJ` | UnderMinorAdjustable | `[UNDER & MINOR]` | Supports the ability to adjust the under minor temperature threshold |
+| 28 | `UMAJADJ` | UnderMajorAdjustable | `[UNDER & MAJOR]` | Supports the ability to adjust the under major temperature threshold |
+| 29 | `UCRIADJ` | UnderCriticalAdjustable | `[UNDER]` | Supports the ability to adjust the under critical temperature threshold |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1072693248` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AlarmBitmap` (bitmap)
+
+This data type is a map32 with values defined by the derived cluster. The meaning of each bit position is consistent for all attributes in a derived cluster.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CriticalOverTemperatureAlarm` | `M` | The measured temperature is above the critical threshold. |
+| 1 | `MajorOverTemperatureAlarm` | `M` | The measured temperature is above the major threshold. |
+| 2 | `MinorOverTemperatureAlarm` | `M` | The measured temperature is above the minor threshold. |
+| 3 | `MinorUnderTemperatureAlarm` | `M` | The measured temperature is below the minor threshold. |
+| 4 | `MajorUnderTemperatureAlarm` | `M` | The measured temperature is below the major threshold. |
+| 5 | `CriticalUnderTemperatureAlarm` | `M` | The measured temperature is below the critical threshold. |
+
+---
+
+## Cluster 100 Attributes
+
+Cluster 100 defines **10 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Mask` | AlarmBitmap | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `Latch` | AlarmBitmap | `RESET` | R (read: view) | — | — |
+| 2 | `0x0002` | `State` | AlarmBitmap | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `Supported` | AlarmBitmap | `M` | R (read: view) | — | — |
+| 128 | `0x0080` | `CriticalOverTemperatureThreshold` | temperature | `OVER` | R (read: view) | — | — |
+| 129 | `0x0081` | `MajorOverTemperatureThreshold` | temperature | `OVER & MAJOR` | R (read: view) | — | — |
+| 130 | `0x0082` | `MinorOverTemperatureThreshold` | temperature | `OVER & MINOR` | R (read: view) | — | — |
+| 131 | `0x0083` | `MinorUnderTemperatureThreshold` | temperature | `UNDER & MINOR` | R (read: view) | — | — |
+| 132 | `0x0084` | `MajorUnderTemperatureThreshold` | temperature | `UNDER & MAJOR` | R (read: view) | — | — |
+| 133 | `0x0085` | `CriticalUnderTemperatureThreshold` | temperature | `UNDER` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Mask`
+
+Path example:
+
+```text
+1/100/0
+```
+
+Indicates a bitmap where each bit set in the Mask attribute corresponds to an alarm that is enabled.
+
+| Property | Value |
+|---|---|
+| Type | AlarmBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Bits (`AlarmBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `CriticalOverTemperatureAlarm` | The measured temperature is above the critical threshold. |
+| 1 | `MajorOverTemperatureAlarm` | The measured temperature is above the major threshold. |
+| 2 | `MinorOverTemperatureAlarm` | The measured temperature is above the minor threshold. |
+| 3 | `MinorUnderTemperatureAlarm` | The measured temperature is below the minor threshold. |
+| 4 | `MajorUnderTemperatureAlarm` | The measured temperature is below the major threshold. |
+| 5 | `CriticalUnderTemperatureAlarm` | The measured temperature is below the critical threshold. |
+
+Example:
+
+```json
+{
+  "1/100/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `Latch`
+
+Path example:
+
+```text
+1/100/1
+```
+
+Indicates a bitmap where each bit set in the Latch attribute indicates that the corresponding alarm will be latched when set, and will not reset to inactive when the underlying condition which caused the alarm is no longer present, and so requires an explicit reset using the Reset command.
+
+| Property | Value |
+|---|---|
+| Type | AlarmBitmap |
+| Conformance | `RESET` |
+| Access | R (read: view) |
+
+Bits (`AlarmBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `CriticalOverTemperatureAlarm` | The measured temperature is above the critical threshold. |
+| 1 | `MajorOverTemperatureAlarm` | The measured temperature is above the major threshold. |
+| 2 | `MinorOverTemperatureAlarm` | The measured temperature is above the minor threshold. |
+| 3 | `MinorUnderTemperatureAlarm` | The measured temperature is below the minor threshold. |
+| 4 | `MajorUnderTemperatureAlarm` | The measured temperature is below the major threshold. |
+| 5 | `CriticalUnderTemperatureAlarm` | The measured temperature is below the critical threshold. |
+
+Example:
+
+```json
+{
+  "1/100/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `State`
+
+Path example:
+
+```text
+1/100/2
+```
+
+Indicates a bitmap where each bit represents the state of an alarm. The value of true means the alarm is active, otherwise the alarm is inactive.
+
+| Property | Value |
+|---|---|
+| Type | AlarmBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Bits (`AlarmBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `CriticalOverTemperatureAlarm` | The measured temperature is above the critical threshold. |
+| 1 | `MajorOverTemperatureAlarm` | The measured temperature is above the major threshold. |
+| 2 | `MinorOverTemperatureAlarm` | The measured temperature is above the minor threshold. |
+| 3 | `MinorUnderTemperatureAlarm` | The measured temperature is below the minor threshold. |
+| 4 | `MajorUnderTemperatureAlarm` | The measured temperature is below the major threshold. |
+| 5 | `CriticalUnderTemperatureAlarm` | The measured temperature is below the critical threshold. |
+
+Example:
+
+```json
+{
+  "1/100/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `Supported`
+
+Path example:
+
+```text
+1/100/3
+```
+
+Indicates a bitmap where each bit represents whether or not an alarm is supported. The value of true means the alarm is supported, otherwise the alarm is not supported. If an alarm is not supported, the corresponding bit in Mask, Latch, and State is false.
+
+| Property | Value |
+|---|---|
+| Type | AlarmBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Bits (`AlarmBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `CriticalOverTemperatureAlarm` | The measured temperature is above the critical threshold. |
+| 1 | `MajorOverTemperatureAlarm` | The measured temperature is above the major threshold. |
+| 2 | `MinorOverTemperatureAlarm` | The measured temperature is above the minor threshold. |
+| 3 | `MinorUnderTemperatureAlarm` | The measured temperature is below the minor threshold. |
+| 4 | `MajorUnderTemperatureAlarm` | The measured temperature is below the major threshold. |
+| 5 | `CriticalUnderTemperatureAlarm` | The measured temperature is below the critical threshold. |
+
+Example:
+
+```json
+{
+  "1/100/3": 0
+}
+```
+
+---
+
+## Attribute `128` / `0x0080` — `CriticalOverTemperatureThreshold`
+
+Path example:
+
+```text
+1/100/128
+```
+
+Indicates the threshold for temperature measurement over which the CriticalOverTemperature alarm is active.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `OVER` |
+| Access | R (read: view) |
+| Constraint | min compute |
+
+Example:
+
+```json
+{
+  "1/100/128": 1
+}
+```
+
+---
+
+## Attribute `129` / `0x0081` — `MajorOverTemperatureThreshold`
+
+Path example:
+
+```text
+1/100/129
+```
+
+Indicates the threshold for temperature measurement over which the MajorOverTemperature alarm is active.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `OVER & MAJOR` |
+| Access | R (read: view) |
+| Constraint | min compute |
+
+Example:
+
+```json
+{
+  "1/100/129": 1
+}
+```
+
+---
+
+## Attribute `130` / `0x0082` — `MinorOverTemperatureThreshold`
+
+Path example:
+
+```text
+1/100/130
+```
+
+Indicates the threshold for temperature measurement over which the MinorOverTemperature alarm is active.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `OVER & MINOR` |
+| Access | R (read: view) |
+| Constraint | min compute |
+
+Example:
+
+```json
+{
+  "1/100/130": 1
+}
+```
+
+---
+
+## Attribute `131` / `0x0083` — `MinorUnderTemperatureThreshold`
+
+Path example:
+
+```text
+1/100/131
+```
+
+Indicates the threshold for temperature measurement under which the MinorUnderTemperature alarm is active.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `UNDER & MINOR` |
+| Access | R (read: view) |
+| Constraint | max compute |
+
+Example:
+
+```json
+{
+  "1/100/131": 1
+}
+```
+
+---
+
+## Attribute `132` / `0x0084` — `MajorUnderTemperatureThreshold`
+
+Path example:
+
+```text
+1/100/132
+```
+
+Indicates the threshold for temperature measurement under which the MajorUnderTemperature alarm is active.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `UNDER & MAJOR` |
+| Access | R (read: view) |
+| Constraint | max compute |
+
+Example:
+
+```json
+{
+  "1/100/132": 1
+}
+```
+
+---
+
+## Attribute `133` / `0x0085` — `CriticalUnderTemperatureThreshold`
+
+Path example:
+
+```text
+1/100/133
+```
+
+Indicates the threshold for temperature measurement under which the CriticalUnderTemperature alarm is active.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `UNDER` |
+| Access | R (read: view) |
+| Constraint | max compute |
+
+Example:
+
+```json
+{
+  "1/100/133": 1
+}
+```
+
+---
+
+# Cluster 100 Commands
+
+Cluster 100 has **3 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `Reset` | client → server | `RESET` | status | This command resets active and latched alarms (if possible). |
+| 1 | `0x01` | `ModifyEnabledAlarms` | client → server | `O` | status | This command allows a client to request that an alarm be enabled or suppressed at the server. |
+| 128 | `0x80` | `SetTemperatureAlarmThresholds` | client → server | `OCRIADJ \| OMAJADJ \| OMINADJ \| UMINADJ \| UMAJADJ \| UCRIADJ` | status | This command will set the alarm thresholds for the specified values. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 100 / 65529
+```
+
+```json
+{
+  "1/100/65529": [
+    0,
+    1,
+    128
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 100 command, check that the command ID exists in <code>endpoint/100/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 100,
+    "command_name": "Reset",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 100, always use `"cluster_id": 100`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `Reset`
+
+## Purpose
+
+This command resets active and latched alarms (if possible). Any generated Notify event contains fields that represent the state of the server after the command has been processed.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Reset` |
+| Direction | client → server |
+| Conformance | `RESET` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Alarms` | `alarms` | AlarmBitmap | `M` | — | Indicates a bitmap where each bit set in this field corresponds to an alarm that is reset to inactive in the State attribute unless the alarm definition requires manual intervention. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 100,
+    "command_name": "Reset",
+    "payload": {
+      "alarms": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `ModifyEnabledAlarms`
+
+## Purpose
+
+This command allows a client to request that an alarm be enabled or suppressed at the server.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ModifyEnabledAlarms` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Mask` | `mask` | AlarmBitmap | `M` | — | Indicates a bitmap where each bit set in the this field corresponds to an alarm that should be enabled or suppressed. A value of 1 indicates that the alarm should be enabled while a value of 0 indicates that the alarm should be suppressed. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 100,
+    "command_name": "ModifyEnabledAlarms",
+    "payload": {
+      "mask": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetTemperatureAlarmThresholds`
+
+## Purpose
+
+This command will set the alarm thresholds for the specified values. The constraints related to the field values in the table above has the relationship as represented by the illustration below:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `128` |
+| Command hex | `0x80` |
+| Command name | `SetTemperatureAlarmThresholds` |
+| Direction | client → server |
+| Conformance | `OCRIADJ \| OMAJADJ \| OMINADJ \| UMINADJ \| UMAJADJ \| UCRIADJ` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CriticalOverTemperatureThreshold` | `criticalOverTemperatureThreshold` | temperature | `[OCRIADJ]` | min compute | This field specifies the new value of the CriticalOverTemperatureThreshold attribute. |
+| 1 | `MajorOverTemperatureThreshold` | `majorOverTemperatureThreshold` | temperature | `[OMAJADJ]` | min compute | This field specifies the new value of the MajorOverTemperatureThreshold attribute. |
+| 2 | `MinorOverTemperatureThreshold` | `minorOverTemperatureThreshold` | temperature | `[OMINADJ]` | min compute | This field specifies the new value of the MinorOverTemperatureThreshold attribute. |
+| 3 | `MinorUnderTemperatureThreshold` | `minorUnderTemperatureThreshold` | temperature | `[UMINADJ]` | max compute | This field specifies the new value of the MinorUnderTemperatureThreshold attribute. |
+| 4 | `MajorUnderTemperatureThreshold` | `majorUnderTemperatureThreshold` | temperature | `[UMAJADJ]` | max compute | This field specifies the new value of the MajorUnderTemperatureThreshold attribute. |
+| 5 | `CriticalUnderTemperatureThreshold` | `criticalUnderTemperatureThreshold` | temperature | `[UCRIADJ]` | max compute | This field specifies the new value of the CriticalUnderTemperatureThreshold attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 100,
+    "command_name": "SetTemperatureAlarmThresholds",
+    "payload": {
+      "criticalOverTemperatureThreshold": 1,
+      "majorOverTemperatureThreshold": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 100 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `Notify` | info | `M` | This event is generated when one or more alarms change state. |
+
+## Event `0` — `Notify`
+
+This event is generated when one or more alarms change state.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Active` | AlarmBitmap | `M` | Indicates those alarms that have become active. |
+| 1 | `Inactive` | AlarmBitmap | `M` | Indicates those alarms that have become inactive. |
+| 2 | `State` | AlarmBitmap | `M` | This field is a copy of the new State attribute value that resulted in the event being generated. That is, this field has all the bits in Active set and must NOT have any of the bits in Inactive set. |
+| 3 | `Mask` | AlarmBitmap | `M` | This field is a copy of the Mask attribute when this event was generated. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 100 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/100/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

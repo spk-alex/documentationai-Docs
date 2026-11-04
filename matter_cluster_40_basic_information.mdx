@@ -1,0 +1,909 @@
+---
+title: "Matter Cluster 40 — Basic Information"
+description: "Matter Cluster 40 (0x0028) Basic Information: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 40
+clusterHex: "0x0028"
+clusterName: "Basic Information"
+---
+
+# Matter Cluster 40 — Basic Information Cluster
+
+<Callout type="info">
+Matter Cluster <code>40</code>, also written as <code>0x0028</code>, is the <strong>Basic Information Cluster</strong>.
+This cluster provides attributes and events for determining basic information about Nodes, which supports both Commissioning and operational determination of Node characteristics, such as Vendor ID, Product ID and serial number, which apply to the whole Node.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `40` |
+| Cluster ID hex | `0x0028` |
+| Cluster name | `Basic Information` |
+| Cluster revision (Matter 1.6.1) | `6` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `BINFO` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added ProductAppearance attribute |
+| 3 | Added SpecificationVersion and MaxPathsPerInvoke attributes |
+| 4 | Updated conformance for UniqueID to mandatory |
+| 5 | Added ConfigurationVersion attribute as provisional |
+| 6 | Added extended information fields to CapabilityMinimaStruct and removed provisional status for ConfigurationVersion |
+
+---
+
+## Shadow Path Format
+
+Cluster 40 values in the device shadow use this format:
+
+```text
+endpoint_id / 40 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/40/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `40` | Basic Information cluster |
+| `0` | `DataModelRevision` attribute |
+
+---
+
+## Data Types
+
+### `ColorEnum`
+
+The data type of ColorEnum is derived from enum8.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Black` | `M` | Approximately RGB #000000. |
+| 1 | `Navy` | `M` | Approximately RGB #000080. |
+| 2 | `Green` | `M` | Approximately RGB #008000. |
+| 3 | `Teal` | `M` | Approximately RGB #008080. |
+| 4 | `Maroon` | `M` | Approximately RGB #800000. |
+| 5 | `Purple` | `M` | Approximately RGB #800080. |
+| 6 | `Olive` | `M` | Approximately RGB #808000. |
+| 7 | `Gray` | `M` | Approximately RGB #808080. |
+| 8 | `Blue` | `M` | Approximately RGB #0000FF. |
+| 9 | `Lime` | `M` | Approximately RGB #00FF00. |
+| 10 | `Aqua` | `M` | Approximately RGB #00FFFF. |
+| 11 | `Red` | `M` | Approximately RGB #FF0000. |
+| 12 | `Fuchsia` | `M` | Approximately RGB #FF00FF. |
+| 13 | `Yellow` | `M` | Approximately RGB #FFFF00. |
+| 14 | `White` | `M` | Approximately RGB #FFFFFF. |
+| 15 | `Nickel` | `M` | Typical hardware "Nickel" color. |
+| 16 | `Chrome` | `M` | Typical hardware "Chrome" color. |
+| 17 | `Brass` | `M` | Typical hardware "Brass" color. |
+| 18 | `Copper` | `M` | Typical hardware "Copper" color. |
+| 19 | `Silver` | `M` | Typical hardware "Silver" color. |
+| 20 | `Gold` | `M` | Typical hardware "Gold" color. |
+
+### `ProductFinishEnum`
+
+The data type of ProductFinishEnum is derived from enum8.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Other` | `M` | Product has some other finish not listed below. |
+| 1 | `Matte` | `M` | Product has a matte finish. |
+| 2 | `Satin` | `M` | Product has a satin finish. |
+| 3 | `Polished` | `M` | Product has a polished or shiny finish. |
+| 4 | `Rugged` | `M` | Product has a rugged finish. |
+| 5 | `Fabric` | `M` | Product has a fabric finish. |
+
+### `CapabilityMinimaStruct` (struct)
+
+This structure provides constant values related to overall global capabilities of this Node, that are not cluster-specific.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CaseSessionsPerFabric` | uint16 | `M` | 3 to 10000 | Indicates the actual minimum number of concurrent CASE sessions that are supported per fabric. |
+| 1 | `SubscriptionsPerFabric` | uint16 | `M` | 3 to 10000 | Indicates the actual minimum number of concurrent subscriptions supported per fabric. |
+| 2 | `SimultaneousInvocationsSupported` | uint16 | `ClusterRevision >= 6` | 1 to 10000 | Indicates the actual maximum number of concurrent Invoke interactions that can be processed simultaneously by the node before possibly returning a BUSY status code. |
+| 3 | `SimultaneousWritesSupported` | uint16 | `ClusterRevision >= 6` | 1 to 10000 | Indicates the actual minimum number of concurrent Write interactions that can be processed simultaneously by the node before possibly returning a BUSY status code. |
+| 4 | `ReadPathsSupported` | uint16 | `ClusterRevision >= 6` | 9 to 10000 | Indicates the actual maximum number of read paths (i.e. the sum of lengths of the lists of AttributePathIB and EventPathIB in the action) which a node guarantees being able to process in any Read Request Action. |
+| 5 | `SubscribePathsSupported` | uint16 | `ClusterRevision >= 6` | 3 to 10000 | Indicates the actual maximum number of subscription paths (i.e. the sum of lengths of the lists of AttributePathIB and EventPathIB in the action) which a node guarantees being able to process in any Subscribe Request … |
+
+### `ProductAppearanceStruct` (struct)
+
+This structure provides a description of the product's appearance.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Finish` | ProductFinishEnum | `M` | — | Indicates the visible finish of the product. |
+| 1 | `PrimaryColor` | ColorEnum (nullable) | `M` | — | This field indicates the representative color of the visible parts of the product. |
+
+---
+
+## Cluster 40 Attributes
+
+Cluster 40 defines **24 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `DataModelRevision` | uint16 | `M` | R (read: view) | — | `MS` |
+| 1 | `0x0001` | `VendorName` | string | `M` | R (read: view) | — | `MS` |
+| 2 | `0x0002` | `VendorID` | vendor-id | `M` | R (read: view) | — | `MS` |
+| 3 | `0x0003` | `ProductName` | string | `M` | R (read: view) | — | `MS` |
+| 4 | `0x0004` | `ProductID` | uint16 | `M` | R (read: view) | — | `MS` |
+| 5 | `0x0005` | `NodeLabel` | string | `M` | R/W (read: view, write: manage) | persisted | `""` |
+| 6 | `0x0006` | `Location` | string | `M` | R/W (read: view, write: admin) | persisted | `"XX"` |
+| 7 | `0x0007` | `HardwareVersion` | uint16 | `M` | R (read: view) | — | `0` |
+| 8 | `0x0008` | `HardwareVersionString` | string | `M` | R (read: view) | — | `MS` |
+| 9 | `0x0009` | `SoftwareVersion` | uint32 | `M` | R (read: view) | — | `0` |
+| 10 | `0x000A` | `SoftwareVersionString` | string | `M` | R (read: view) | — | `MS` |
+| 11 | `0x000B` | `ManufacturingDate` | string | `O` | R (read: view) | — | `MS` |
+| 12 | `0x000C` | `PartNumber` | string | `O` | R (read: view) | — | `MS` |
+| 13 | `0x000D` | `ProductURL` | string | `O` | R (read: view) | — | `MS` |
+| 14 | `0x000E` | `ProductLabel` | string | `O` | R (read: view) | — | `MS` |
+| 15 | `0x000F` | `SerialNumber` | string | `O` | R (read: view) | — | `MS` |
+| 16 | `0x0010` | `LocalConfigDisabled` | bool | `O` | R/W (read: view, write: manage) | persisted | `false` |
+| 17 | `0x0011` | `Reachable` | bool | `O` | R (read: view) | — | `true` |
+| 18 | `0x0012` | `UniqueID` | string | `ClusterRevision >= 4, O` | R (read: view) | — | `MS` |
+| 19 | `0x0013` | `CapabilityMinima` | CapabilityMinimaStruct | `M` | R (read: view) | — | `MS` |
+| 20 | `0x0014` | `ProductAppearance` | ProductAppearanceStruct | `[ClusterRevision >= 2]` | R (read: view) | — | `MS` |
+| 21 | `0x0015` | `SpecificationVersion` | uint32 | `ClusterRevision >= 3` | R (read: view) | — | `0` |
+| 22 | `0x0016` | `MaxPathsPerInvoke` | uint16 | `ClusterRevision >= 3` | R (read: view) | — | `1` |
+| 24 | `0x0018` | `ConfigurationVersion` | uint32 | `ClusterRevision >= 6` | R (read: view) | persisted | `1` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `6` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `DataModelRevision`
+
+Path example:
+
+```text
+0/40/0
+```
+
+This attribute is set to the revision number of the Data Model against which the Node is certified.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `VendorName`
+
+Path example:
+
+```text
+0/40/1
+```
+
+This attribute specifies a human readable (displayable) name of the vendor for the Node.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/1": "example"
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `VendorID`
+
+Path example:
+
+```text
+0/40/2
+```
+
+No condensed specification text is available for `VendorID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | vendor-id |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `ProductName`
+
+Path example:
+
+```text
+0/40/3
+```
+
+This attribute specifies a human readable (displayable) name of the model for the Node such as the model number (or other identifier) assigned by the vendor.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/3": "example"
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `ProductID`
+
+Path example:
+
+```text
+0/40/4
+```
+
+No condensed specification text is available for `ProductID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `NodeLabel`
+
+Path example:
+
+```text
+0/40/5
+```
+
+Indicates a user defined name for the Node. This attribute should be set during initial commissioning and may be updated by further reconfigurations.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | max length 32 |
+| Default | `""` |
+
+Example:
+
+```json
+{
+  "0/40/5": "example"
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `Location`
+
+Path example:
+
+```text
+0/40/6
+```
+
+This attribute is an ISO 3166-1 alpha-2 code to represent the country, dependent territory, or special area of geographic interest in which the Node is located at the time of the attribute being set. This attribute is set during initial commissioning (unless already set) and may be updated by further reconfigurations. This attribute may affect some regulatory aspects of the Node's operation, such as radio transmission power levels in given spectrum allocation bands if technologies where this is applicable are used. The Location's region code is interpreted in a case-insensitive manner.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R/W (read: view, write: admin) |
+| Qualities | persisted |
+| Constraint | allowed: 2 |
+| Default | `"XX"` |
+
+Example:
+
+```json
+{
+  "0/40/6": "example"
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `HardwareVersion`
+
+Path example:
+
+```text
+0/40/7
+```
+
+This attribute specifies the version number of the hardware of the Node. The meaning of its value, and the versioning scheme, are vendor defined.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/40/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `HardwareVersionString`
+
+Path example:
+
+```text
+0/40/8
+```
+
+This attribute specifies the version number of the hardware of the Node. The meaning of its value, and the versioning scheme, are vendor defined. The HardwareVersionString attribute is used to provide a more user-friendly value than that represented by the HardwareVersion attribute.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | length 1 to 64 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/8": "example"
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `SoftwareVersion`
+
+Path example:
+
+```text
+0/40/9
+```
+
+This attribute contains the current version number for the software running on this Node. A larger value of SoftwareVersion is newer than a lower value, from the perspective of software updates. Nodes may query this field to determine the currently running version of software on another given Node.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/40/9": 1
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `SoftwareVersionString`
+
+Path example:
+
+```text
+0/40/10
+```
+
+This attribute contains a current human-readable representation for the software running on the Node. This version information may be conveyed to users. The maximum length of the SoftwareVersionString attribute is 64 bytes of UTF-8 characters. The contents should only use simple 7-bit ASCII alphanumeric and punctuation characters, so as to simplify the conveyance of the value to a variety of cultures.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | length 1 to 64 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/10": "example"
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `ManufacturingDate`
+
+Path example:
+
+```text
+0/40/11
+```
+
+This attribute specifies the date that the Node was manufactured. The first 8 characters specifies the date of manufacture of the Node in international date notation according to ISO 8601, i.e., YYYYMMDD, e.g., 20060814. The final 8 characters may include country, factory, line, shift or other related information at the option of the vendor. The format of this information is vendor defined.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | length 8 to 16 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/11": "example"
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `PartNumber`
+
+Path example:
+
+```text
+0/40/12
+```
+
+This attribute specifies a human-readable (displayable) vendor assigned part number for the Node whose meaning and numbering scheme is vendor defined. Multiple products (and hence PartNumbers) can share a ProductID. For instance, there may be different packaging (with different PartNumbers) for different regions; also different colors of a product might share the ProductID but may have a different PartNumber.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/12": "example"
+}
+```
+
+---
+
+## Attribute `13` / `0x000D` — `ProductURL`
+
+Path example:
+
+```text
+0/40/13
+```
+
+No condensed specification text is available for `ProductURL`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 256 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/13": "example"
+}
+```
+
+---
+
+## Attribute `14` / `0x000E` — `ProductLabel`
+
+Path example:
+
+```text
+0/40/14
+```
+
+This attribute specifies a vendor specific human readable (displayable) product label. The ProductLabel attribute may be used to provide a more user-friendly value than that represented by the ProductName attribute. The ProductLabel attribute should NOT include the name of the vendor as defined within the VendorName attribute.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 64 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/14": "example"
+}
+```
+
+---
+
+## Attribute `15` / `0x000F` — `SerialNumber`
+
+Path example:
+
+```text
+0/40/15
+```
+
+This attribute specifies a human readable (displayable) serial number.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/15": "example"
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `LocalConfigDisabled`
+
+Path example:
+
+```text
+0/40/16
+```
+
+This attribute must allow a local Node configuration to be disabled. When this attribute is set to True the Node must disable the ability to configure the Node through an on-Node user interface. The value of the LocalConfigDisabled attribute must NOT in any way modify, disable, or otherwise affect the user's ability to trigger a factory reset on the Node.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "0/40/16": true
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `Reachable`
+
+Path example:
+
+```text
+0/40/17
+```
+
+This attribute (when used) indicates whether the Node can be reached. For a native Node this is implicitly True (and its use is optional). Its main use case is in the derived Bridged Device Basic Information cluster where it is used to indicate whether the bridged device is reachable by the bridge over the non-native network.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `true` |
+
+Example:
+
+```json
+{
+  "0/40/17": true
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `UniqueID`
+
+Path example:
+
+```text
+0/40/18
+```
+
+No condensed specification text is available for `UniqueID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `ClusterRevision >= 4, O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/40/18": "example"
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `CapabilityMinima`
+
+Path example:
+
+```text
+0/40/19
+```
+
+This attribute provides the minimum guaranteed value for some system-wide resource capabilities that are not otherwise cluster-specific and do not appear elsewhere. This attribute may be used by clients to optimize communication with Nodes by allowing them to use more than the strict minimum values required by this specification, wherever available. The values supported by the server in reality may be larger than the values provided in this attribute, such as if a server is not resource-constrained at all. However, clients should only rely on the amounts provided in this attribute.
+
+| Property | Value |
+|---|---|
+| Type | CapabilityMinimaStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Value is a `CapabilityMinimaStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "0/40/19": {
+    "caseSessionsPerFabric": 3,
+    "subscriptionsPerFabric": 3,
+    "simultaneousInvocationsSupported": 1,
+    "simultaneousWritesSupported": 1
+  }
+}
+```
+
+---
+
+## Attribute `20` / `0x0014` — `ProductAppearance`
+
+Path example:
+
+```text
+0/40/20
+```
+
+This attribute provides information about the appearance of the product, which could be useful to a user trying to locate or identify the node.
+
+| Property | Value |
+|---|---|
+| Type | ProductAppearanceStruct |
+| Conformance | `[ClusterRevision >= 2]` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Value is a `ProductAppearanceStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "0/40/20": {
+    "finish": 0,
+    "primaryColor": 0
+  }
+}
+```
+
+---
+
+## Attribute `21` / `0x0015` — `SpecificationVersion`
+
+Path example:
+
+```text
+0/40/21
+```
+
+This attribute contains the current version number for the specification version this Node was certified against. A larger value of SpecificationVersion is newer than a lower value. Nodes may query this field to determine the currently supported version of the specification on another given Node. The format of this number is segmented as its four component bytes.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `ClusterRevision >= 3` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/40/21": 1
+}
+```
+
+---
+
+## Attribute `22` / `0x0016` — `MaxPathsPerInvoke`
+
+Path example:
+
+```text
+0/40/22
+```
+
+Indicates the maximum number of elements in a single InvokeRequests list that the Node is able to process. Note that since this attribute may change over time, both increasing and decreasing, as software versions change for a given Node, clients should take care not to assume forever unchanging values and should NOT cache this value permanently at Commissioning time. If the MaxPathsPerInvoke attribute is absent or zero, such as in Basic Information cluster revisions prior to Revision 3, clients must assume a value of 1.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `ClusterRevision >= 3` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "0/40/22": 1
+}
+```
+
+---
+
+## Attribute `24` / `0x0018` — `ConfigurationVersion`
+
+Path example:
+
+```text
+0/40/24
+```
+
+This attribute contains the current version number for the configuration of the Node. A larger value of ConfigurationVersion indicates a newer configuration than a lower value.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `ClusterRevision >= 6` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | min 1 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "0/40/24": 1
+}
+```
+
+---
+
+# Cluster 40 Commands
+
+Cluster 40 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 40 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `StartUp` | critical | `M` | The StartUp event is generated by a Node as soon as reasonable after completing a boot or reboot process. |
+| 1 | `0x01` | `ShutDown` | critical | `O` | The ShutDown event should be generated by a Node prior to any orderly shutdown sequence on a best-effort basis. |
+| 2 | `0x02` | `Leave` | info | `O` | The Leave event should be generated by a Node prior to permanently leaving a given Fabric, such as when the RemoveFabric command is invoked for a given fabric, or triggered by factory reset or some … |
+| 3 | `0x03` | `ReachableChanged` | info | `Reachable` | This event (when supported) is generated when there is a change in the Reachable attribute. |
+
+## Event `0` — `StartUp`
+
+The StartUp event is generated by a Node as soon as reasonable after completing a boot or reboot process. The StartUp event should be the first Data Model event recorded by the Node after it completes a boot or reboot process.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SoftwareVersion` | uint32 | `M` | This field is set to the same value as the one available in the SoftwareVersion attribute. |
+
+## Event `1` — `ShutDown`
+
+The ShutDown event should be generated by a Node prior to any orderly shutdown sequence on a best-effort basis. When a ShutDown event is generated, it should be the last Data Model event recorded by the Node. This event should be delivered urgently to current subscribers on a best-effort basis.
+
+This event has no fields.
+
+## Event `2` — `Leave`
+
+The Leave event should be generated by a Node prior to permanently leaving a given Fabric, such as when the RemoveFabric command is invoked for a given fabric, or triggered by factory reset or some other manufacturer specific action to disable or reset the operational data in the Node. When a Leave event is generated, it should be assumed that the fabric recorded in the event is no longer usable, and subsequent interactions targeting that fabric will most likely fail.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `FabricIndex` | fabric-idx | `M` | This field contains the local fabric-index of the fabric which the node is about to leave. |
+
+## Event `3` — `ReachableChanged`
+
+This event (when supported) is generated when there is a change in the Reachable attribute. Its main use case is in the derived Bridged Device Basic Information cluster.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ReachableNewValue` | bool | `M` | Indicates the value of the Reachable attribute after it was changed. |
+
+---
+
+# SmartphoneKey Notes
+
+- Basic Information on endpoint `0` is written to the device-info part of the shadow (vendor, product, serial, software version, `UniqueID`).
+- Shadow paths follow `endpoint/40/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

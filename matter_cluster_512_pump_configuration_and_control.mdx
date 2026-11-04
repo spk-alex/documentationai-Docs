@@ -1,0 +1,997 @@
+---
+title: "Matter Cluster 512 — Pump Configuration and Control"
+description: "Matter Cluster 512 (0x0200) Pump Configuration and Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 512
+clusterHex: "0x0200"
+clusterName: "Pump Configuration and Control"
+---
+
+# Matter Cluster 512 — Pump Configuration and Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>512</code>, also written as <code>0x0200</code>, is the <strong>Pump Configuration and Control Cluster</strong>.
+The Pump Configuration and Control cluster provides an interface for the setup and control of pump devices, and the automatic reporting of pump status information. Note that control of pump speed is not included – speed is controlled by the On/Off and Level Control clusters.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `512` |
+| Cluster ID hex | `0x0200` |
+| Cluster name | `Pump Configuration and Control` |
+| Cluster revision (Matter 1.6.1) | `5` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `PCC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | All Hubs changes |
+| 3 | New data model format and notation, added additional events |
+| 4 | Added feature map |
+| 5 | Removed P quality |
+
+---
+
+## Shadow Path Format
+
+Cluster 512 values in the device shadow use this format:
+
+```text
+endpoint_id / 512 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/512/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `512` | Pump Configuration and Control cluster |
+| `0` | `MaxPressure` attribute |
+
+---
+
+## Cluster 512 Features
+
+The `FeatureMap` attribute (`1/512/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PRSCONST` | ConstantPressure | `O` | Supports operating in constant pressure mode |
+| 1 | `PRSCOMP` | CompensatedPressure | `O` | Supports operating in compensated pressure mode |
+| 2 | `FLW` | ConstantFlow | `O` | Supports operating in constant flow mode |
+| 3 | `SPD` | ConstantSpeed | `O` | Supports operating in constant speed mode |
+| 4 | `TEMP` | ConstantTemperature | `O` | Supports operating in constant temperature mode |
+| 5 | `AUTO` | Automatic | `O` | Supports operating in automatic mode |
+| 6 | `LOCAL` | LocalOperation | `O` | Supports operating using local settings |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `127` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ControlModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ConstantSpeed` | `SPD` | The pump is running at a constant speed. |
+| 1 | `ConstantPressure` | `PRSCONST` | The pump will regulate its speed to maintain a constant differential pressure over its flanges. |
+| 2 | `ProportionalPressure` | `PRSCOMP` | The pump will regulate its speed to maintain a constant differential pressure over its flanges. |
+| 3 | `ConstantFlow` | `FLW` | The pump will regulate its speed to maintain a constant flow through the pump. |
+| 5 | `ConstantTemperature` | `TEMP` | The pump will regulate its speed to maintain a constant temperature. |
+| 7 | `Automatic` | `AUTO` | The operation of the pump is automatically optimized to provide the most suitable performance with respect to comfort and energy savings. |
+
+### `OperationModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Normal` | `M` | The pump is controlled by a setpoint, as defined by a connected remote sensor or by the ControlMode attribute. |
+| 1 | `Minimum` | `SPD` | This value sets the pump to run at the minimum possible speed it can without being stopped. |
+| 2 | `Maximum` | `SPD` | This value sets the pump to run at its maximum possible speed. |
+| 3 | `Local` | `LOCAL` | This value sets the pump to run with the local settings of the pump, regardless of what these are. |
+
+### `PumpStatusBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `DeviceFault` | `M` | A fault related to the system or pump device is detected. |
+| 1 | `SupplyFault` | `M` | A fault related to the supply to the pump is detected. |
+| 2 | `SpeedLow` | `M` | Setpoint is too low to achieve. |
+| 3 | `SpeedHigh` | `M` | Setpoint is too high to achieve. |
+| 4 | `LocalOverride` | `M` | Device control is overridden by hardware, such as an external STOP button or via a local HMI. |
+| 5 | `Running` | `M` | Pump is currently running |
+| 6 | `RemotePressure` | `M` | A remote pressure sensor is used as the sensor for the regulation of the pump. |
+| 7 | `RemoteFlow` | `M` | A remote flow sensor is used as the sensor for the regulation of the pump. |
+| 8 | `RemoteTemperature` | `M` | A remote temperature sensor is used as the sensor for the regulation of the pump. |
+
+---
+
+## Cluster 512 Attributes
+
+Cluster 512 defines **24 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MaxPressure` | int16 | `M` | R (read: view) | nullable | `null` |
+| 1 | `0x0001` | `MaxSpeed` | uint16 | `M` | R (read: view) | nullable | `null` |
+| 2 | `0x0002` | `MaxFlow` | uint16 | `M` | R (read: view) | nullable | `null` |
+| 3 | `0x0003` | `MinConstPressure` | int16 | `PRSCONST, [AUTO]` | R (read: view) | nullable | `null` |
+| 4 | `0x0004` | `MaxConstPressure` | int16 | `PRSCONST, [AUTO]` | R (read: view) | nullable | `null` |
+| 5 | `0x0005` | `MinCompPressure` | int16 | `PRSCOMP, [AUTO]` | R (read: view) | nullable | `null` |
+| 6 | `0x0006` | `MaxCompPressure` | int16 | `PRSCOMP, [AUTO]` | R (read: view) | nullable | `null` |
+| 7 | `0x0007` | `MinConstSpeed` | uint16 | `SPD, [AUTO]` | R (read: view) | nullable | `null` |
+| 8 | `0x0008` | `MaxConstSpeed` | uint16 | `SPD, [AUTO]` | R (read: view) | nullable | `null` |
+| 9 | `0x0009` | `MinConstFlow` | uint16 | `FLW, [AUTO]` | R (read: view) | nullable | `null` |
+| 10 | `0x000A` | `MaxConstFlow` | uint16 | `FLW, [AUTO]` | R (read: view) | nullable | `null` |
+| 11 | `0x000B` | `MinConstTemp` | int16 | `TEMP, [AUTO]` | R (read: view) | nullable | `null` |
+| 12 | `0x000C` | `MaxConstTemp` | int16 | `TEMP, [AUTO]` | R (read: view) | nullable | `null` |
+| 16 | `0x0010` | `PumpStatus` | PumpStatusBitmap | `O` | R (read: view) | — | `0` |
+| 17 | `0x0011` | `EffectiveOperationMode` | OperationModeEnum | `M` | R (read: view) | persisted | `desc` |
+| 18 | `0x0012` | `EffectiveControlMode` | ControlModeEnum | `M` | R (read: view) | persisted | `desc` |
+| 19 | `0x0013` | `Capacity` | int16 | `M` | R (read: view) | nullable | `null` |
+| 20 | `0x0014` | `Speed` | uint16 | `O` | R (read: view) | nullable | `null` |
+| 21 | `0x0015` | `LifetimeRunningHours` | uint24 | `O` | R/W (read: view, write: manage) | nullable, persisted | `0` |
+| 22 | `0x0016` | `Power` | uint24 | `O` | R (read: view) | nullable | `null` |
+| 23 | `0x0017` | `LifetimeEnergyConsumed` | uint32 | `O` | R/W (read: view, write: manage) | nullable, persisted | `0` |
+| 32 | `0x0020` | `OperationMode` | OperationModeEnum | `M` | R/W (read: view, write: manage) | persisted | `0` |
+| 33 | `0x0021` | `ControlMode` | ControlModeEnum | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 34 | `0x0022` | `AlarmMask` |  | `D` | — | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `5` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MaxPressure`
+
+Path example:
+
+```text
+1/512/0
+```
+
+This attribute specifies the maximum pressure the pump can achieve. It is a physical limit, and does not apply to any specific control mode or operation mode. Valid range is -3,276.7 kPa to 3,276.7 kPa (steps of 0.1 kPa). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MaxSpeed`
+
+Path example:
+
+```text
+1/512/1
+```
+
+This attribute specifies the maximum speed the pump can achieve. It is a physical limit, and does not apply to any specific control mode or operation mode. Valid range is 0 to 65,534 RPM (steps of 1 RPM). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MaxFlow`
+
+Path example:
+
+```text
+1/512/2
+```
+
+This attribute specifies the maximum flow the pump can achieve. It is a physical limit, and does not apply to any specific control mode or operation mode. Valid range is 0 m^3/h to 6,553.4 m^3/h (steps of 0.1 m^3/h). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `MinConstPressure`
+
+Path example:
+
+```text
+1/512/3
+```
+
+This attribute specifies the minimum pressure the pump can achieve when it is working with the ControlMode attribute set to ConstantPressure. Valid range is –3,276.7 kPa to 3,276.7 kPa (steps of 0.1 kPa). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `PRSCONST, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `MaxConstPressure`
+
+Path example:
+
+```text
+1/512/4
+```
+
+This attribute specifies the maximum pressure the pump can achieve when it is working with the ControlMode attribute set to ConstantPressure. Valid range is –3,276.7 kPa to 3,276.7 kPa (steps of 0.1 kPa). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `PRSCONST, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `MinCompPressure`
+
+Path example:
+
+```text
+1/512/5
+```
+
+This attribute specifies the minimum compensated pressure the pump can achieve when it is working with the ControlMode attribute set to ProportionalPressure. Valid range is –3,276.7 kPa to 3,276.7 kPa (steps of 0.1 kPa). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `PRSCOMP, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `MaxCompPressure`
+
+Path example:
+
+```text
+1/512/6
+```
+
+This attribute specifies the maximum compensated pressure the pump can achieve when it is working with the ControlMode attribute set to ProportionalPressure. Valid range is –3,276.7 kPa to 3,276.7 kPa (steps of 0.1 kPa). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `PRSCOMP, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `MinConstSpeed`
+
+Path example:
+
+```text
+1/512/7
+```
+
+This attribute specifies the minimum speed the pump can achieve when it is working with the ControlMode attribute set to ConstantSpeed. Valid range is 0 to 65,534 RPM (steps of 1 RPM). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `SPD, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `MaxConstSpeed`
+
+Path example:
+
+```text
+1/512/8
+```
+
+This attribute specifies the maximum speed the pump can achieve when it is working with the ControlMode attribute set to ConstantSpeed. Valid range is 0 to 65,534 RPM (steps of 1 RPM). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `SPD, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/8": 1
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `MinConstFlow`
+
+Path example:
+
+```text
+1/512/9
+```
+
+This attribute specifies the minimum flow the pump can achieve when it is working with the ControlMode attribute set to ConstantFlow. Valid range is 0 m^3/h to 6,553.4 m^3/h (steps of 0.1 m^3/h). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `FLW, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/9": 1
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `MaxConstFlow`
+
+Path example:
+
+```text
+1/512/10
+```
+
+This attribute specifies the maximum flow the pump can achieve when it is working with the ControlMode attribute set to ConstantFlow. Valid range is 0 m^3/h to 6,553.4 m^3/h (steps of 0.1 m^3/h). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `FLW, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/10": 1
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `MinConstTemp`
+
+Path example:
+
+```text
+1/512/11
+```
+
+This attribute specifies the minimum temperature the pump can maintain in the system when it is working with the ControlMode attribute set to ConstantTemperature. Valid range is –273.15 °C to 327.67 °C (steps of 0.01 °C). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `TEMP, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min -27315 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/11": 1
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `MaxConstTemp`
+
+Path example:
+
+```text
+1/512/12
+```
+
+This attribute specifies the maximum temperature the pump can maintain in the system when it is working with the ControlMode attribute set to ConstantTemperature. MaxConstTemp is greater than or equal to MinConstTemp Valid range is –273.15 °C to 327.67 °C (steps of 0.01 °C). Null if the value is invalid.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `TEMP, [AUTO]` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min -27315 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/12": 1
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `PumpStatus`
+
+Path example:
+
+```text
+1/512/16
+```
+
+This attribute specifies the activity status of the pump functions as listed in PumpStatusBitmap. Where a pump controller function is active, the corresponding bit is set to 1. Where a pump controller function is not active, the corresponding bit is set to 0.
+
+| Property | Value |
+|---|---|
+| Type | PumpStatusBitmap |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Bits (`PumpStatusBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `DeviceFault` | A fault related to the system or pump device is detected. |
+| 1 | `SupplyFault` | A fault related to the supply to the pump is detected. |
+| 2 | `SpeedLow` | Setpoint is too low to achieve. |
+| 3 | `SpeedHigh` | Setpoint is too high to achieve. |
+| 4 | `LocalOverride` | Device control is overridden by hardware, such as an external STOP button or via a local HMI. |
+| 5 | `Running` | Pump is currently running |
+| 6 | `RemotePressure` | A remote pressure sensor is used as the sensor for the regulation of the pump. |
+| 7 | `RemoteFlow` | A remote flow sensor is used as the sensor for the regulation of the pump. |
+| 8 | `RemoteTemperature` | A remote temperature sensor is used as the sensor for the regulation of the pump. |
+
+Example:
+
+```json
+{
+  "1/512/16": 0
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `EffectiveOperationMode`
+
+Path example:
+
+```text
+1/512/17
+```
+
+This attribute specifies current effective operation mode of the pump as defined in OperationModeEnum. The value of the EffectiveOperationMode attribute is the same as the OperationMode attribute, unless one of the following points are true: - The pump is physically set to run with the local settings - The LocalOverride bit in the PumpStatus attribute is set, See OperationMode Attribute and ControlMode Attribute for a detailed description of the operation and control of the pump.
+
+| Property | Value |
+|---|---|
+| Type | OperationModeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `desc` |
+
+Values (`OperationModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | The pump is controlled by a setpoint, as defined by a connected remote sensor or by the ControlMode attribute. |
+| 1 | `Minimum` | This value sets the pump to run at the minimum possible speed it can without being stopped. |
+| 2 | `Maximum` | This value sets the pump to run at its maximum possible speed. |
+| 3 | `Local` | This value sets the pump to run with the local settings of the pump, regardless of what these are. |
+
+Example:
+
+```json
+{
+  "1/512/17": 0
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `EffectiveControlMode`
+
+Path example:
+
+```text
+1/512/18
+```
+
+This attribute specifies the current effective control mode of the pump as defined in ControlModeEnum. This attribute contains the control mode that currently applies to the pump. It will have the value of the ControlMode attribute, unless one of the following points are true: - The ControlMode attribute is set to Automatic. In this case, the value of the EffectiveControlMode must match the behavior of the pump. - A remote sensor is used as the sensor for regulation of the pump.
+
+| Property | Value |
+|---|---|
+| Type | ControlModeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `desc` |
+
+Values (`ControlModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `ConstantSpeed` | The pump is running at a constant speed. |
+| 1 | `ConstantPressure` | The pump will regulate its speed to maintain a constant differential pressure over its flanges. |
+| 2 | `ProportionalPressure` | The pump will regulate its speed to maintain a constant differential pressure over its flanges. |
+| 3 | `ConstantFlow` | The pump will regulate its speed to maintain a constant flow through the pump. |
+| 5 | `ConstantTemperature` | The pump will regulate its speed to maintain a constant temperature. |
+| 7 | `Automatic` | The operation of the pump is automatically optimized to provide the most suitable performance with respect to comfort and energy savings. |
+
+Example:
+
+```json
+{
+  "1/512/18": 0
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `Capacity`
+
+Path example:
+
+```text
+1/512/19
+```
+
+This attribute specifies the actual capacity of the pump as a percentage of the effective maximum setpoint value. It is updated dynamically as the speed of the pump changes. If the value is not available (the measurement or estimation of the speed is done in the pump), this attribute will indicate the null value. Valid range is 0 % to 163.835% (0.005 % granularity).
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/19": 1
+}
+```
+
+---
+
+## Attribute `20` / `0x0014` — `Speed`
+
+Path example:
+
+```text
+1/512/20
+```
+
+This attribute specifies the actual speed of the pump measured in RPM. It is updated dynamically as the speed of the pump changes. If the value is not available (the measurement or estimation of the speed is done in the pump), this attribute will indicate the null value. Valid range is 0 to 65,534 RPM.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/20": 1
+}
+```
+
+---
+
+## Attribute `21` / `0x0015` — `LifetimeRunningHours`
+
+Path example:
+
+```text
+1/512/21
+```
+
+This attribute specifies the accumulated number of hours that the pump has been powered and the motor has been running. It is updated dynamically as it increases. It is preserved over power cycles of the pump. If LifeTimeRunningHours rises above maximum value it “rolls over” and starts at 0 (zero).
+
+| Property | Value |
+|---|---|
+| Type | uint24 |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | nullable, persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/512/21": 0
+}
+```
+
+---
+
+## Attribute `22` / `0x0016` — `Power`
+
+Path example:
+
+```text
+1/512/22
+```
+
+This attribute specifies the actual power consumption of the pump in Watts. The value of this attribute is updated dynamically as the power consumption of the pump changes. This attribute is read only. If the value is not available (the measurement of power consumption is not done in the pump), this attribute will indicate the null value.
+
+| Property | Value |
+|---|---|
+| Type | uint24 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/512/22": 1
+}
+```
+
+---
+
+## Attribute `23` / `0x0017` — `LifetimeEnergyConsumed`
+
+Path example:
+
+```text
+1/512/23
+```
+
+This attribute specifies the accumulated energy consumption of the pump through the entire lifetime of the pump in kWh. The value of the LifetimeEnergyConsumed attribute is updated dynamically as the energy consumption of the pump increases. If LifetimeEnergyConsumed rises above maximum value it “rolls over” and starts at 0 (zero). This attribute is writeable, in order to allow setting to an appropriate value after maintenance.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | nullable, persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/512/23": 0
+}
+```
+
+---
+
+## Attribute `32` / `0x0020` — `OperationMode`
+
+Path example:
+
+```text
+1/512/32
+```
+
+This attribute specifies the operation mode of the pump as defined in OperationModeEnum. The actual operating mode of the pump is a result of the setting of the attributes OperationMode, ControlMode and the optional connection of a remote sensor. The operation and control is prioritized as shown in the scheme below: If this attribute is Maximum, Minimum or Local, the OperationMode attribute decides how the pump is operated. If this attribute is Normal and a remote sensor is connected to the pump, the type of the remote sensor decides the control mode of the pump.
+
+| Property | Value |
+|---|---|
+| Type | OperationModeEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`OperationModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Normal` | The pump is controlled by a setpoint, as defined by a connected remote sensor or by the ControlMode attribute. |
+| 1 | `Minimum` | This value sets the pump to run at the minimum possible speed it can without being stopped. |
+| 2 | `Maximum` | This value sets the pump to run at its maximum possible speed. |
+| 3 | `Local` | This value sets the pump to run with the local settings of the pump, regardless of what these are. |
+
+Example:
+
+```json
+{
+  "1/512/32": 0
+}
+```
+
+---
+
+## Attribute `33` / `0x0021` — `ControlMode`
+
+Path example:
+
+```text
+1/512/33
+```
+
+This attribute specifies the control mode of the pump as defined in ControlModeEnum. See OperationMode Attribute for a detailed description of the operation and control of the pump. ControlMode may be changed at any time, even when the pump is running. The behavior of the pump at the point of changing is vendor-specific.
+
+| Property | Value |
+|---|---|
+| Type | ControlModeEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`ControlModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `ConstantSpeed` | The pump is running at a constant speed. |
+| 1 | `ConstantPressure` | The pump will regulate its speed to maintain a constant differential pressure over its flanges. |
+| 2 | `ProportionalPressure` | The pump will regulate its speed to maintain a constant differential pressure over its flanges. |
+| 3 | `ConstantFlow` | The pump will regulate its speed to maintain a constant flow through the pump. |
+| 5 | `ConstantTemperature` | The pump will regulate its speed to maintain a constant temperature. |
+| 7 | `Automatic` | The operation of the pump is automatically optimized to provide the most suitable performance with respect to comfort and energy savings. |
+
+Example:
+
+```json
+{
+  "1/512/33": 0
+}
+```
+
+---
+
+## Attribute `34` / `0x0022` — `AlarmMask`
+
+Path example:
+
+```text
+1/512/34
+```
+
+No condensed specification text is available for `AlarmMask`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/512/34": 0
+}
+```
+
+---
+
+# Cluster 512 Commands
+
+Cluster 512 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 512 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `SupplyVoltageLow` | info | `O` | — |
+| 1 | `0x01` | `SupplyVoltageHigh` | info | `O` | — |
+| 2 | `0x02` | `PowerMissingPhase` | info | `O` | — |
+| 3 | `0x03` | `SystemPressureLow` | info | `O` | — |
+| 4 | `0x04` | `SystemPressureHigh` | info | `O` | — |
+| 5 | `0x05` | `DryRunning` | critical | `O` | — |
+| 6 | `0x06` | `MotorTemperatureHigh` | info | `O` | — |
+| 7 | `0x07` | `PumpMotorFatalFailure` | critical | `O` | — |
+| 8 | `0x08` | `ElectronicTemperatureHigh` | info | `O` | — |
+| 9 | `0x09` | `PumpBlocked` | critical | `O` | — |
+| 10 | `0x0A` | `SensorFailure` | info | `O` | — |
+| 11 | `0x0B` | `ElectronicNonFatalFailure` | info | `O` | — |
+| 12 | `0x0C` | `ElectronicFatalFailure` | critical | `O` | — |
+| 13 | `0x0D` | `GeneralFault` | info | `O` | — |
+| 14 | `0x0E` | `Leakage` | info | `O` | — |
+| 15 | `0x0F` | `AirDetection` | info | `O` | — |
+| 16 | `0x10` | `TurbineOperation` | info | `O` | — |
+
+## Event `0` — `SupplyVoltageLow`
+
+This event has no fields.
+
+## Event `1` — `SupplyVoltageHigh`
+
+This event has no fields.
+
+## Event `2` — `PowerMissingPhase`
+
+This event has no fields.
+
+## Event `3` — `SystemPressureLow`
+
+This event has no fields.
+
+## Event `4` — `SystemPressureHigh`
+
+This event has no fields.
+
+## Event `5` — `DryRunning`
+
+This event has no fields.
+
+## Event `6` — `MotorTemperatureHigh`
+
+This event has no fields.
+
+## Event `7` — `PumpMotorFatalFailure`
+
+This event has no fields.
+
+## Event `8` — `ElectronicTemperatureHigh`
+
+This event has no fields.
+
+## Event `9` — `PumpBlocked`
+
+This event has no fields.
+
+## Event `10` — `SensorFailure`
+
+This event has no fields.
+
+## Event `11` — `ElectronicNonFatalFailure`
+
+This event has no fields.
+
+## Event `12` — `ElectronicFatalFailure`
+
+This event has no fields.
+
+## Event `13` — `GeneralFault`
+
+This event has no fields.
+
+## Event `14` — `Leakage`
+
+This event has no fields.
+
+## Event `15` — `AirDetection`
+
+This event has no fields.
+
+## Event `16` — `TurbineOperation`
+
+This event has no fields.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 512 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/512/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

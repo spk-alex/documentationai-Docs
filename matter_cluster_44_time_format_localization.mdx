@@ -1,0 +1,249 @@
+---
+title: "Matter Cluster 44 — Time Format Localization"
+description: "Matter Cluster 44 (0x002C) Time Format Localization: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 44
+clusterHex: "0x002C"
+clusterName: "Time Format Localization"
+---
+
+# Matter Cluster 44 — Time Format Localization Cluster
+
+<Callout type="info">
+Matter Cluster <code>44</code>, also written as <code>0x002C</code>, is the <strong>Time Format Localization Cluster</strong>.
+Nodes should be expected to be deployed to any and all regions of the world. These global regions may have differing preferences for how dates and times are conveyed. As such, Nodes that visually or audibly convey time information need a mechanism by which they can be configured to use a user’s preferred format.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `44` |
+| Cluster ID hex | `0x002C` |
+| Cluster name | `Time Format Localization` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `LTIME` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 44 values in the device shadow use this format:
+
+```text
+endpoint_id / 44 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/44/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `44` | Time Format Localization cluster |
+| `0` | `HourFormat` attribute |
+
+---
+
+## Cluster 44 Features
+
+The `FeatureMap` attribute (`0/44/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CALFMT` | CalendarFormat | `O` | The Node can be configured to use different calendar formats when conveying values to a user |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `CalendarTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Buddhist` | `O` | Dates conveyed using the Buddhist calendar |
+| 1 | `Chinese` | `O` | Dates conveyed using the Chinese calendar |
+| 2 | `Coptic` | `O` | Dates conveyed using the Coptic calendar |
+| 3 | `Ethiopian` | `O` | Dates conveyed using the Ethiopian calendar |
+| 4 | `Gregorian` | `O` | Dates conveyed using the Gregorian calendar |
+| 5 | `Hebrew` | `O` | Dates conveyed using the Hebrew calendar |
+| 6 | `Indian` | `O` | Dates conveyed using the Indian calendar |
+| 7 | `Islamic` | `O` | Dates conveyed using the Islamic calendar |
+| 8 | `Japanese` | `O` | Dates conveyed using the Japanese calendar |
+| 9 | `Korean` | `O` | Dates conveyed using the Korean calendar |
+| 10 | `Persian` | `O` | Dates conveyed using the Persian calendar |
+| 11 | `Taiwanese` | `O` | Dates conveyed using the Taiwanese calendar |
+| 255 | `UseActiveLocale` | `O` | calendar implied from active locale |
+
+### `HourFormatEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `12hr` | `M` | Time conveyed with a 12-hour clock |
+| 1 | `24hr` | `M` | Time conveyed with a 24-hour clock |
+| 255 | `UseActiveLocale` | `M` | Use active locale clock |
+
+---
+
+## Cluster 44 Attributes
+
+Cluster 44 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `HourFormat` | HourFormatEnum | `M` | R/W (read: view, write: manage) | persisted | — |
+| 1 | `0x0001` | `ActiveCalendarType` | CalendarTypeEnum | `CALFMT` | R/W (read: view, write: manage) | persisted | — |
+| 2 | `0x0002` | `SupportedCalendarTypes` | list of CalendarTypeEnum | `CALFMT` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `HourFormat`
+
+Path example:
+
+```text
+0/44/0
+```
+
+Indicates the format that the Node is currently configured to use when conveying the hour unit of time. If not UseActiveLocale, this value must take priority over any unit implied through the ActiveLocale attribute. If UseActiveLocale, any unit implied through the ActiveLocale attribute is used as the hour format, and if ActiveLocale is not present, the hour format is unknown.
+
+| Property | Value |
+|---|---|
+| Type | HourFormatEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+
+Values (`HourFormatEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `12hr` | Time conveyed with a 12-hour clock |
+| 1 | `24hr` | Time conveyed with a 24-hour clock |
+| 255 | `UseActiveLocale` | Use active locale clock |
+
+Example:
+
+```json
+{
+  "0/44/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ActiveCalendarType`
+
+Path example:
+
+```text
+0/44/1
+```
+
+Indicates the calendar format that the Node is currently configured to use when conveying dates. If not UseActiveLocale, this value must take priority over any unit implied through the ActiveLocale attribute. If UseActiveLocale, any unit implied through the ActiveLocale attribute is used as the calendar type, and if ActiveLocale is not present, the calendar type is unknown.
+
+| Property | Value |
+|---|---|
+| Type | CalendarTypeEnum |
+| Conformance | `CALFMT` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+
+Values (`CalendarTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Buddhist` | Dates conveyed using the Buddhist calendar |
+| 1 | `Chinese` | Dates conveyed using the Chinese calendar |
+| 2 | `Coptic` | Dates conveyed using the Coptic calendar |
+| 3 | `Ethiopian` | Dates conveyed using the Ethiopian calendar |
+| 4 | `Gregorian` | Dates conveyed using the Gregorian calendar |
+| 5 | `Hebrew` | Dates conveyed using the Hebrew calendar |
+| 6 | `Indian` | Dates conveyed using the Indian calendar |
+| 7 | `Islamic` | Dates conveyed using the Islamic calendar |
+| 8 | `Japanese` | Dates conveyed using the Japanese calendar |
+| 9 | `Korean` | Dates conveyed using the Korean calendar |
+| 10 | `Persian` | Dates conveyed using the Persian calendar |
+| 11 | `Taiwanese` | Dates conveyed using the Taiwanese calendar |
+| 255 | `UseActiveLocale` | calendar implied from active locale |
+
+Example:
+
+```json
+{
+  "0/44/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `SupportedCalendarTypes`
+
+Path example:
+
+```text
+0/44/2
+```
+
+Indicates a list of CalendarTypeEnum values that are supported by the Node. The list must NOT contain any duplicate entries. The ordering of items within the list should NOT express any meaning. The maximum length of the SupportedCalendarTypes list is equivalent to the number of enumerations within CalendarTypeEnum.
+
+| Property | Value |
+|---|---|
+| Type | list of CalendarTypeEnum |
+| Conformance | `CALFMT` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "0/44/2": []
+}
+```
+
+---
+
+# Cluster 44 Commands
+
+Cluster 44 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 44 Events
+
+Cluster 44 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 44 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/44/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

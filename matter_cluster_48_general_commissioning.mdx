@@ -1,0 +1,907 @@
+---
+title: "Matter Cluster 48 — General Commissioning"
+description: "Matter Cluster 48 (0x0030) General Commissioning: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 48
+clusterHex: "0x0030"
+clusterName: "General Commissioning"
+---
+
+# Matter Cluster 48 — General Commissioning Cluster
+
+<Callout type="info">
+Matter Cluster <code>48</code>, also written as <code>0x0030</code>, is the <strong>General Commissioning Cluster</strong>.
+This cluster is used to manage basic commissioning lifecycle. It also hosts functionalities those other clusters may depend on.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `48` |
+| Cluster ID hex | `0x0030` |
+| Cluster name | `General Commissioning` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `CGEN` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Add Enhanced Setup Flow |
+
+---
+
+## Shadow Path Format
+
+Cluster 48 values in the device shadow use this format:
+
+```text
+endpoint_id / 48 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/48/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `48` | General Commissioning cluster |
+| `0` | `Breadcrumb` attribute |
+
+---
+
+## Cluster 48 Features
+
+The `FeatureMap` attribute (`0/48/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `TC` | TermsAndConditions | `O` | Supports Terms & Conditions acknowledgement |
+| 1 | `NR` | NetworkRecovery | `P, O` | Supports Network Recovery |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `CommissioningErrorEnum`
+
+This enumeration is used by several response commands in this cluster to indicate particular errors.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `OK` | `M` | No error |
+| 1 | `ValueOutsideRange` | `M` | Attempting to set regulatory configuration to a region or indoor/outdoor mode for which the server does not have proper configuration. |
+| 2 | `InvalidAuthentication` | `M` | Executed CommissioningComplete outside CASE session. |
+| 3 | `NoFailSafe` | `M` | Executed CommissioningComplete when there was no active Fail-Safe context. |
+| 4 | `BusyWithOtherAdmin` | `M` | Attempting to arm fail-safe or execute CommissioningComplete from a fabric different than the one associated with the current fail-safe context. |
+| 5 | `RequiredTCNotAccepted` | `TC` | One or more required TC features from the Enhanced Setup Flow were not accepted. |
+| 6 | `TCAcknowledgementsNotReceived` | `TC` | TCAcknowledgementsNotReceived No or insufficient acknowledgements from the user for the TC features were received. |
+| 7 | `TCMinVersionNotMet` | `TC` | TCMinVersionNotMet The version of the TC features acknowledged by the user did not meet the minimum required version. |
+
+### `NetworkRecoveryReasonEnum`
+
+This data type is derived from enum8, however, the maximum value of the enumeration is less than 15. This enumeration is used by the NetworkRecoveryReason attribute and may be embedded in the beacons advertising the need for Network Recovery.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `P, M` | Unspecified / unknown reason of network failure |
+| 1 | `Auth` | `P, M` | Credentials for the configured operational network are not valid |
+| 2 | `Visibility` | `P, M` | Configured network cannot be found (e.g. the device cannot see the configured Wi-Fi SSID, Thread end-node is unable to find a parent router on the PAN) |
+
+### `RegulatoryLocationTypeEnum`
+
+This enumeration is used by the RegulatoryConfig and LocationCapability attributes to indicate possible radio usage.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Indoor` | `M` | Indoor only |
+| 1 | `Outdoor` | `M` | Outdoor only |
+| 2 | `IndoorOutdoor` | `M` | Indoor/Outdoor |
+
+### `BasicCommissioningInfo` (struct)
+
+This structure provides some constant values that may be of use to all commissioners.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `FailSafeExpiryLengthSeconds` | uint16 | `M` | — | This field contains a conservative initial duration (in seconds) to set in the FailSafe for the commissioning flow to complete successfully. |
+| 1 | `MaxCumulativeFailsafeSeconds` | uint16 | `M` | desc | The value of this field is greater than or equal to the FailSafeExpiryLengthSeconds. |
+
+---
+
+## Cluster 48 Attributes
+
+Cluster 48 defines **13 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Breadcrumb` | uint64 | `M` | R/W (read: view, write: admin) | — | `0` |
+| 1 | `0x0001` | `BasicCommissioningInfo` | BasicCommissioningInfo | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `RegulatoryConfig` | RegulatoryLocationTypeEnum | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `LocationCapability` | RegulatoryLocationTypeEnum | `M` | R (read: view) | — | — |
+| 4 | `0x0004` | `SupportsConcurrentConnection` | bool | `M` | R (read: view) | — | `true` |
+| 5 | `0x0005` | `TCAcceptedVersion` | uint16 | `TC` | R (read: admin) | persisted | — |
+| 6 | `0x0006` | `TCMinRequiredVersion` | uint16 | `TC` | R (read: admin) | persisted | — |
+| 7 | `0x0007` | `TCAcknowledgements` | map16 | `TC` | R (read: admin) | persisted | — |
+| 8 | `0x0008` | `TCAcknowledgementsRequired` | bool | `TC` | R (read: admin) | persisted | `true` |
+| 9 | `0x0009` | `TCUpdateDeadline` | uint32 | `TC` | R (read: admin) | nullable, persisted | — |
+| 10 | `0x000A` | `RecoveryIdentifier` | octstr | `P, NR` | R (read: manage) | persisted | `0` |
+| 11 | `0x000B` | `NetworkRecoveryReason` | NetworkRecoveryReasonEnum | `P, NR` | R (read: manage) | nullable | `null` |
+| 12 | `0x000C` | `IsCommissioningWithoutPower` | bool | `O` | R (read: view) | — | `false` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Breadcrumb`
+
+Path example:
+
+```text
+0/48/0
+```
+
+This attribute allows for the storage of a client-provided small payload which Administrators and Commissioners may write and then subsequently read, to keep track of their own progress. This may be used by the Commissioner to avoid repeating already-executed actions upon re-establishing a commissioning link after an error. On start/restart of the server, such as when a device is power-cycled, this attribute is reset to zero. Some commands related to commissioning also have a side-effect of updating or resetting this attribute and this is specified in their respective functional descriptions.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `M` |
+| Access | R/W (read: view, write: admin) |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/48/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `BasicCommissioningInfo`
+
+Path example:
+
+```text
+0/48/1
+```
+
+No condensed specification text is available for `BasicCommissioningInfo`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | BasicCommissioningInfo |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Value is a `BasicCommissioningInfo` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "0/48/1": {
+    "failSafeExpiryLengthSeconds": 1,
+    "maxCumulativeFailsafeSeconds": 1
+  }
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `RegulatoryConfig`
+
+Path example:
+
+```text
+0/48/2
+```
+
+Indicates the regulatory configuration for the product.
+
+| Property | Value |
+|---|---|
+| Type | RegulatoryLocationTypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`RegulatoryLocationTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Indoor` | Indoor only |
+| 1 | `Outdoor` | Outdoor only |
+| 2 | `IndoorOutdoor` | Indoor/Outdoor |
+
+Example:
+
+```json
+{
+  "0/48/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `LocationCapability`
+
+Path example:
+
+```text
+0/48/3
+```
+
+LocationCapability is statically set by the manufacturer and indicates if this Node needs to be told an exact RegulatoryLocation. For example a Node which is "Indoor Only" would not be certified for outdoor use at all, and thus there is no need for a commissioner to set or ask the user about whether the device will be used inside or outside. However a device which states its capability is "Indoor/Outdoor" means it would like clarification if possible. For Nodes without radio network interfaces (e.g.
+
+| Property | Value |
+|---|---|
+| Type | RegulatoryLocationTypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`RegulatoryLocationTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Indoor` | Indoor only |
+| 1 | `Outdoor` | Outdoor only |
+| 2 | `IndoorOutdoor` | Indoor/Outdoor |
+
+Example:
+
+```json
+{
+  "0/48/3": 0
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `SupportsConcurrentConnection`
+
+Path example:
+
+```text
+0/48/4
+```
+
+Indicates whether this device supports "concurrent connection flow" commissioning mode. If false, the device only supports "non-concurrent connection flow" mode.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `true` |
+
+Example:
+
+```json
+{
+  "0/48/4": true
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `TCAcceptedVersion`
+
+Path example:
+
+```text
+0/48/5
+```
+
+No condensed specification text is available for `TCAcceptedVersion`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `TC` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "0/48/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `TCMinRequiredVersion`
+
+Path example:
+
+```text
+0/48/6
+```
+
+No condensed specification text is available for `TCMinRequiredVersion`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `TC` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "0/48/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `TCAcknowledgements`
+
+Path example:
+
+```text
+0/48/7
+```
+
+No condensed specification text is available for `TCAcknowledgements`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | map16 |
+| Conformance | `TC` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "0/48/7": 0
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `TCAcknowledgementsRequired`
+
+Path example:
+
+```text
+0/48/8
+```
+
+No condensed specification text is available for `TCAcknowledgementsRequired`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `TC` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Default | `true` |
+
+Example:
+
+```json
+{
+  "0/48/8": true
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `TCUpdateDeadline`
+
+Path example:
+
+```text
+0/48/9
+```
+
+No condensed specification text is available for `TCUpdateDeadline`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `TC` |
+| Access | R (read: admin) |
+| Qualities | nullable, persisted |
+
+Example:
+
+```json
+{
+  "0/48/9": 1
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `RecoveryIdentifier`
+
+Path example:
+
+```text
+0/48/10
+```
+
+This attribute contains the identifier to be included in the advertisements used during the Network Recovery Flow. This identifier is intended to be advertised over the air and used by an Administrator to establish a Node's identity without revealing its Node ID. The attribute contains a random 64-bit value, that value is reset on factory reset and must remain unchanged until a next factory reset. It is important that this value be selected at random from a 64-bit number space to ensure a high likelihood of uniqueness from values selected by other Nodes.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `P, NR` |
+| Access | R (read: manage) |
+| Qualities | persisted |
+| Constraint | allowed: 8 |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/48/10": "AQID"
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `NetworkRecoveryReason`
+
+Path example:
+
+```text
+0/48/11
+```
+
+This attribute contains the primary reason that triggered the Network Recovery flow and its associated advertisements. Null when the Node is not undergoing a Network Recovery flow.
+
+| Property | Value |
+|---|---|
+| Type | NetworkRecoveryReasonEnum |
+| Conformance | `P, NR` |
+| Access | R (read: manage) |
+| Qualities | nullable |
+| Default | `null` |
+
+Values (`NetworkRecoveryReasonEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | Unspecified / unknown reason of network failure |
+| 1 | `Auth` | Credentials for the configured operational network are not valid |
+| 2 | `Visibility` | Configured network cannot be found (e.g. the device cannot see the configured Wi-Fi SSID, Thread end-node is unable to find a parent router on the PAN) |
+
+Example:
+
+```json
+{
+  "0/48/11": 1
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `IsCommissioningWithoutPower`
+
+Path example:
+
+```text
+0/48/12
+```
+
+The server must set this attribute to true if and only if is currently operating on the commissioning channel but cannot operate on the operational channel because it is not powered. This may happen during NFC-based commissioning, when the commissioning channel is NFC Transport Layer (NTL), because it can harvest energy from NFC to operate. However, such a Commissionee must be powered on to switch to the operational channel. This attribute is linked to the Commissionee behavior after reception of the ConnectNetwork Command.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "0/48/12": true
+}
+```
+
+---
+
+# Cluster 48 Commands
+
+Cluster 48 has **4 client-to-server commands** and **4 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ArmFailSafe` | client → server | `M` | ArmFailSafeResponse | This command is used to arm or disarm the fail-safe timer. |
+| 1 | `0x01` | `ArmFailSafeResponse` | server → client | `M` | — | This command is used to report the result of the ArmFailSafe command. |
+| 2 | `0x02` | `SetRegulatoryConfig` | client → server | `M` | SetRegulatoryConfigResponse | This command is used to set the regulatory configuration for the device. |
+| 3 | `0x03` | `SetRegulatoryConfigResponse` | server → client | `M` | — | This command is used to report the result of the SetRegulatoryConfig command. |
+| 4 | `0x04` | `CommissioningComplete` | client → server | `M` | CommissioningCompleteResponse | This command is used to indicate that the commissioning process is complete. |
+| 5 | `0x05` | `CommissioningCompleteResponse` | server → client | `M` | — | This command is used to report the result of the CommissioningComplete command. |
+| 6 | `0x06` | `SetTCAcknowledgements` | client → server | `TC` | SetTCAcknowledgementsResponse | — |
+| 7 | `0x07` | `SetTCAcknowledgementsResponse` | server → client | `TC` | — | — |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 48 / 65529
+```
+
+```json
+{
+  "0/48/65529": [
+    0,
+    2,
+    4,
+    6
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 48 command, check that the command ID exists in <code>endpoint/48/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 48,
+    "command_name": "ArmFailSafe",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 48, always use `"cluster_id": 48`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ArmFailSafe`
+
+## Purpose
+
+This command is used to arm or disarm the fail-safe timer. Success or failure of this command is communicated by the ArmFailSafeResponse command, unless some data model validations caused a failure status code to be issued during the processing of the command. If the fail-safe timer is not currently armed, the commissioning window is open, and the command was received over a CASE session, the command must leave the current fail-safe state unchanged and immediately respond with an ArmFailSafeResponse containing an ErrorCode value of BusyWithOtherAdmin.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ArmFailSafe` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ArmFailSafeResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ExpiryLengthSeconds` | `expiryLengthSeconds` | uint16 | `M` | — | — |
+| 1 | `Breadcrumb` | `breadcrumb` | uint64 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 48,
+    "command_name": "ArmFailSafe",
+    "payload": {
+      "expiryLengthSeconds": 1,
+      "breadcrumb": 1
+    }
+  }
+}
+```
+
+The device answers with `ArmFailSafeResponse` (see below).
+
+---
+
+# Command: `ArmFailSafeResponse`
+
+## Purpose
+
+This command is used to report the result of the ArmFailSafe command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ArmFailSafeResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ErrorCode` | `errorCode` | CommissioningErrorEnum | `M` | — | This field contains the result of the operation, based on the behavior specified in the functional description of the ArmFailSafe command. |
+| 1 | `DebugText` | `debugText` | string | `M` | max length 128 | — |
+
+`ErrorCode` values (`CommissioningErrorEnum`): `0` = OK, `1` = ValueOutsideRange, `2` = InvalidAuthentication, `3` = NoFailSafe, `4` = BusyWithOtherAdmin, `5` = RequiredTCNotAccepted, `6` = TCAcknowledgementsNotReceived, `7` = TCMinVersionNotMet
+
+---
+
+# Command: `SetRegulatoryConfig`
+
+## Purpose
+
+This command is used to set the regulatory configuration for the device. This must add or update the regulatory configuration in the RegulatoryConfig Attribute to the value provided in the NewRegulatoryConfig field. Success or failure of this command is communicated by the SetRegulatoryConfigResponse command, unless some data model validations caused a failure status code to be issued during the processing of the command. The CountryCode field must conforms to ISO 3166-1 alpha-2 and is used to set the Location attribute reflected by the Basic Information Cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `SetRegulatoryConfig` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | SetRegulatoryConfigResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NewRegulatoryConfig` | `newRegulatoryConfig` | RegulatoryLocationTypeEnum | `M` | — | — |
+| 1 | `CountryCode` | `countryCode` | string | `M` | allowed: 2 | — |
+| 2 | `Breadcrumb` | `breadcrumb` | uint64 | `M` | — | — |
+
+`NewRegulatoryConfig` values (`RegulatoryLocationTypeEnum`): `0` = Indoor, `1` = Outdoor, `2` = IndoorOutdoor
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 48,
+    "command_name": "SetRegulatoryConfig",
+    "payload": {
+      "newRegulatoryConfig": 0,
+      "countryCode": "example",
+      "breadcrumb": 1
+    }
+  }
+}
+```
+
+The device answers with `SetRegulatoryConfigResponse` (see below).
+
+---
+
+# Command: `SetRegulatoryConfigResponse`
+
+## Purpose
+
+This command is used to report the result of the SetRegulatoryConfig command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `SetRegulatoryConfigResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ErrorCode` | `errorCode` | CommissioningErrorEnum | `M` | — | This field contains the result of the operation, based on the behavior specified in the functional description of the SetRegulatoryConfig command. |
+| 1 | `DebugText` | `debugText` | string | `M` | — | — |
+
+`ErrorCode` values (`CommissioningErrorEnum`): `0` = OK, `1` = ValueOutsideRange, `2` = InvalidAuthentication, `3` = NoFailSafe, `4` = BusyWithOtherAdmin, `5` = RequiredTCNotAccepted, `6` = TCAcknowledgementsNotReceived, `7` = TCMinVersionNotMet
+
+---
+
+# Command: `CommissioningComplete`
+
+## Purpose
+
+This command is used to indicate that the commissioning process is complete. Success or failure of this command is communicated by the CommissioningCompleteResponse command, unless some data model validations caused a failure status code to be issued during the processing of the command. This command signals the Server that the Commissioner or Administrator has successfully completed all steps needed during the Fail-Safe period, such as commissioning or other Administrator operations requiring usage of the Fail Safe timer.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `CommissioningComplete` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | CommissioningCompleteResponse |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 48,
+    "command_name": "CommissioningComplete",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `CommissioningCompleteResponse` (see below).
+
+---
+
+# Command: `CommissioningCompleteResponse`
+
+## Purpose
+
+This command is used to report the result of the CommissioningComplete command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `CommissioningCompleteResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ErrorCode` | `errorCode` | CommissioningErrorEnum | `M` | — | This field contains the result of the operation, based on the behavior specified in the functional description of the CommissioningComplete command. |
+| 1 | `DebugText` | `debugText` | string | `M` | — | — |
+
+`ErrorCode` values (`CommissioningErrorEnum`): `0` = OK, `1` = ValueOutsideRange, `2` = InvalidAuthentication, `3` = NoFailSafe, `4` = BusyWithOtherAdmin, `5` = RequiredTCNotAccepted, `6` = TCAcknowledgementsNotReceived, `7` = TCMinVersionNotMet
+
+---
+
+# Command: `SetTCAcknowledgements`
+
+## Purpose
+
+`SetTCAcknowledgements` is a client-to-server command of the General Commissioning cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `SetTCAcknowledgements` |
+| Direction | client → server |
+| Conformance | `TC` |
+| Response | SetTCAcknowledgementsResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TCVersion` | `tcVersion` | uint16 | `M` | — | — |
+| 1 | `TCUserResponse` | `tcUserResponse` | map16 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 48,
+    "command_name": "SetTCAcknowledgements",
+    "payload": {
+      "tcVersion": 1,
+      "tcUserResponse": 0
+    }
+  }
+}
+```
+
+The device answers with `SetTCAcknowledgementsResponse` (see below).
+
+---
+
+# Command: `SetTCAcknowledgementsResponse`
+
+## Purpose
+
+`SetTCAcknowledgementsResponse` is a server response of the General Commissioning cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `SetTCAcknowledgementsResponse` |
+| Direction | server → client (response) |
+| Conformance | `TC` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ErrorCode` | `errorCode` | CommissioningErrorEnum | `M` | — | — |
+
+`ErrorCode` values (`CommissioningErrorEnum`): `0` = OK, `1` = ValueOutsideRange, `2` = InvalidAuthentication, `3` = NoFailSafe, `4` = BusyWithOtherAdmin, `5` = RequiredTCNotAccepted, `6` = TCAcknowledgementsNotReceived, `7` = TCMinVersionNotMet
+
+---
+
+# Cluster 48 Events
+
+Cluster 48 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 48 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/48/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

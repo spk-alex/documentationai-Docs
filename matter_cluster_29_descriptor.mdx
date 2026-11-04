@@ -1,0 +1,296 @@
+---
+title: "Matter Cluster 29 — Descriptor"
+description: "Matter Cluster 29 (0x001D) Descriptor: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 29
+clusterHex: "0x001D"
+clusterName: "Descriptor"
+---
+
+# Matter Cluster 29 — Descriptor Cluster
+
+<Callout type="info">
+Matter Cluster <code>29</code>, also written as <code>0x001D</code>, is the <strong>Descriptor Cluster</strong>.
+The Descriptor cluster is meant to replace the support from the Zigbee Device Object (ZDO) for describing a node, its endpoints and clusters. This cluster describes an endpoint instance on the node, independently from other endpoints, but also allows composition of endpoints to conform to complex device type patterns. This cluster supports a list of one or more device type identifiers that represent conformance to device type specifications.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `29` |
+| Cluster ID hex | `0x001D` |
+| Cluster name | `Descriptor` |
+| Cluster revision (Matter 1.6.1) | `3` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `DESC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Semantic tag list; TagList feature |
+| 3 | Add EndpointUniqueID attribute |
+
+---
+
+## Shadow Path Format
+
+Cluster 29 values in the device shadow use this format:
+
+```text
+endpoint_id / 29 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/29/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `29` | Descriptor cluster |
+| `0` | `DeviceTypeList` attribute |
+
+---
+
+## Cluster 29 Features
+
+The `FeatureMap` attribute (`1/29/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `TAGLIST` | TagList | `desc` | The TagList attribute is present |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `DeviceTypeStruct` (struct)
+
+The device type and revision define endpoint conformance to a release of a device type definition. See the Data Model specification for more information.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `DeviceType` | devtype-id | `M` | — | This indicates the device type definition. |
+| 1 | `Revision` | uint16 | `M` | min 1 | This is the implemented revision of the device type definition. |
+
+---
+
+## Cluster 29 Attributes
+
+Cluster 29 defines **6 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `DeviceTypeList` | list of DeviceTypeStruct | `M` | R (read: view) | — | `desc` |
+| 1 | `0x0001` | `ServerList` | list of cluster-id | `M` | R (read: view) | — | `empty` |
+| 2 | `0x0002` | `ClientList` | list of cluster-id | `M` | R (read: view) | — | `empty` |
+| 3 | `0x0003` | `PartsList` | list of endpoint-no | `M` | R (read: view) | — | `empty` |
+| 4 | `0x0004` | `TagList` | list of SemanticTagStruct | `TAGLIST` | R (read: view) | — | `MS` |
+| 5 | `0x0005` | `EndpointUniqueID` | string | `O` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `3` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `DeviceTypeList`
+
+Path example:
+
+```text
+1/29/0
+```
+
+This is a list of device types and corresponding revisions declaring endpoint conformance. At least one device type entry is present. An endpoint must conform to all device types listed in the DeviceTypeList. A cluster instance that is in common for more than one device type in the DeviceTypeList is supported as a shared cluster instance on the endpoint.
+
+| Property | Value |
+|---|---|
+| Type | list of DeviceTypeStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | min 1 entries |
+| Default | `desc` |
+
+Each entry is a `DeviceTypeStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/29/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ServerList`
+
+Path example:
+
+```text
+1/29/1
+```
+
+This attribute lists each cluster ID for the server clusters present on the endpoint instance.
+
+| Property | Value |
+|---|---|
+| Type | list of cluster-id |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `empty` |
+
+Example:
+
+```json
+{
+  "1/29/1": []
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ClientList`
+
+Path example:
+
+```text
+1/29/2
+```
+
+This attribute lists each cluster ID for the client clusters present on the endpoint instance.
+
+| Property | Value |
+|---|---|
+| Type | list of cluster-id |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `empty` |
+
+Example:
+
+```json
+{
+  "1/29/2": []
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `PartsList`
+
+Path example:
+
+```text
+1/29/3
+```
+
+This attribute indicates composition of the device type instance. Device type instance composition includes the endpoints in this list. See Endpoint Composition for more information about which endpoints to include in this list.
+
+| Property | Value |
+|---|---|
+| Type | list of endpoint-no |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `empty` |
+
+Example:
+
+```json
+{
+  "1/29/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `TagList`
+
+Path example:
+
+```text
+1/29/4
+```
+
+This attribute is used to disambiguate sibling endpoints in certain situations, as defined in the Disambiguation section in the System Model specification. An example of such a situation might be a device with two buttons, with this attribute being used to indicate which of the two endpoints corresponds to the button on the left side.
+
+| Property | Value |
+|---|---|
+| Type | list of SemanticTagStruct |
+| Conformance | `TAGLIST` |
+| Access | R (read: view) |
+| Constraint | 1 to 6 entries |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/29/4": []
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `EndpointUniqueID`
+
+Path example:
+
+```text
+1/29/5
+```
+
+No condensed specification text is available for `EndpointUniqueID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+
+Example:
+
+```json
+{
+  "1/29/5": "example"
+}
+```
+
+---
+
+# Cluster 29 Commands
+
+Cluster 29 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 29 Events
+
+Cluster 29 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Descriptor is read on every endpoint at commissioning to detect device types and bridge structure (`PartsList`). The primary device type is selected from `DeviceTypeList` for the shadow.
+- Shadow paths follow `endpoint/29/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

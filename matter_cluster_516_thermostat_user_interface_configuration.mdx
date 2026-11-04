@@ -1,0 +1,235 @@
+---
+title: "Matter Cluster 516 — Thermostat User Interface Configuration"
+description: "Matter Cluster 516 (0x0204) Thermostat User Interface Configuration: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 516
+clusterHex: "0x0204"
+clusterName: "Thermostat User Interface Configuration"
+---
+
+# Matter Cluster 516 — Thermostat User Interface Configuration Cluster
+
+<Callout type="info">
+Matter Cluster <code>516</code>, also written as <code>0x0204</code>, is the <strong>Thermostat User Interface Configuration Cluster</strong>.
+This cluster provides an interface to allow configuration of the user interface for a thermostat, or a thermostat controller device, that supports a keypad and LCD screen.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `516` |
+| Cluster ID hex | `0x0204` |
+| Cluster name | `Thermostat User Interface Configuration` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `TSUIC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | New data model format and notation, added "Conversion of Temperature Values for Display" section |
+
+---
+
+## Shadow Path Format
+
+Cluster 516 values in the device shadow use this format:
+
+```text
+endpoint_id / 516 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/516/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `516` | Thermostat User Interface Configuration cluster |
+| `0` | `TemperatureDisplayMode` attribute |
+
+---
+
+## Data Types
+
+### `KeypadLockoutEnum`
+
+The interpretation of the various levels is device-dependent.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoLockout` | `M` | All functionality available to the user |
+| 1 | `Lockout1` | `M` | Level 1 reduced functionality |
+| 2 | `Lockout2` | `M` | Level 2 reduced functionality |
+| 3 | `Lockout3` | `M` | Level 3 reduced functionality |
+| 4 | `Lockout4` | `M` | Level 4 reduced functionality |
+| 5 | `Lockout5` | `M` | Least functionality available to the user |
+
+### `ScheduleProgrammingVisibilityEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ScheduleProgrammingPermitted` | `M` | Local schedule programming functionality is enabled at the thermostat |
+| 1 | `ScheduleProgrammingDenied` | `M` | Local schedule programming functionality is disabled at the thermostat |
+
+### `TemperatureDisplayModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Celsius` | `M` | Temperature displayed in °C |
+| 1 | `Fahrenheit` | `M` | Temperature displayed in °F |
+
+---
+
+## Cluster 516 Attributes
+
+Cluster 516 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `TemperatureDisplayMode` | TemperatureDisplayModeEnum | `M` | R/W (read: view, write: operate) | — | — |
+| 1 | `0x0001` | `KeypadLockout` | KeypadLockoutEnum | `M` | R/W (read: view, write: manage) | — | — |
+| 2 | `0x0002` | `ScheduleProgrammingVisibility` | ScheduleProgrammingVisibilityEnum | `O` | R/W (read: view, write: manage) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `TemperatureDisplayMode`
+
+Path example:
+
+```text
+1/516/0
+```
+
+Indicates the units of the temperature displayed on the thermostat screen.
+
+| Property | Value |
+|---|---|
+| Type | TemperatureDisplayModeEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+
+Values (`TemperatureDisplayModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Celsius` | Temperature displayed in °C |
+| 1 | `Fahrenheit` | Temperature displayed in °F |
+
+Example:
+
+```json
+{
+  "1/516/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `KeypadLockout`
+
+Path example:
+
+```text
+1/516/1
+```
+
+Indicates the level of functionality that is available to the user via the keypad.
+
+| Property | Value |
+|---|---|
+| Type | KeypadLockoutEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+
+Values (`KeypadLockoutEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NoLockout` | All functionality available to the user |
+| 1 | `Lockout1` | Level 1 reduced functionality |
+| 2 | `Lockout2` | Level 2 reduced functionality |
+| 3 | `Lockout3` | Level 3 reduced functionality |
+| 4 | `Lockout4` | Level 4 reduced functionality |
+| 5 | `Lockout5` | Least functionality available to the user |
+
+Example:
+
+```json
+{
+  "1/516/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ScheduleProgrammingVisibility`
+
+Path example:
+
+```text
+1/516/2
+```
+
+This attribute is used to hide the weekly schedule programming functionality or menu on a thermostat from a user to prevent local user programming of the weekly schedule. The schedule programming may still be performed via a remote interface, and the thermostat may operate in schedule programming mode. This attribute is designed to prevent local tampering with or disabling of schedules that may have been programmed by users or service providers via a more capable remote interface. The programming schedule must continue to run even though it is not visible to the user locally at the thermostat.
+
+| Property | Value |
+|---|---|
+| Type | ScheduleProgrammingVisibilityEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+
+Values (`ScheduleProgrammingVisibilityEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `ScheduleProgrammingPermitted` | Local schedule programming functionality is enabled at the thermostat |
+| 1 | `ScheduleProgrammingDenied` | Local schedule programming functionality is disabled at the thermostat |
+
+Example:
+
+```json
+{
+  "1/516/2": 0
+}
+```
+
+---
+
+# Cluster 516 Commands
+
+Cluster 516 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 516 Events
+
+Cluster 516 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 516 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/516/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,239 @@
+---
+title: "Matter Cluster 50 — Diagnostic Logs"
+description: "Matter Cluster 50 (0x0032) Diagnostic Logs: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 50
+clusterHex: "0x0032"
+clusterName: "Diagnostic Logs"
+---
+
+# Matter Cluster 50 — Diagnostic Logs Cluster
+
+<Callout type="info">
+Matter Cluster <code>50</code>, also written as <code>0x0032</code>, is the <strong>Diagnostic Logs Cluster</strong>.
+This Cluster supports an interface to a Node. It provides commands for retrieving unstructured diagnostic logs from a Node that may be used to aid in diagnostics. It will often be the case that unstructured diagnostic logs will be Node-wide and not specific to any subset of Endpoints.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `50` |
+| Cluster ID hex | `0x0032` |
+| Cluster name | `Diagnostic Logs` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `DLOG` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 50 values in the device shadow use this format:
+
+```text
+endpoint_id / 50 / attribute_id
+```
+
+---
+
+## Data Types
+
+### `IntentEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `EndUserSupport` | `M` | Logs to be used for end-user support |
+| 1 | `NetworkDiag` | `M` | Logs to be used for network diagnostics |
+| 2 | `CrashLogs` | `M` | Obtain crash logs from the Node |
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Successful transfer of logs |
+| 1 | `Exhausted` | `M` | All logs have been transferred |
+| 2 | `NoLogs` | `M` | No logs of the requested type available |
+| 3 | `Busy` | `M` | Unable to handle request, retry later |
+| 4 | `Denied` | `M` | The request is denied, no logs being transferred |
+
+### `TransferProtocolEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ResponsePayload` | `M` | Logs to be returned as a response |
+| 1 | `BDX` | `M` | Logs to be returned using BDX |
+
+---
+
+## Cluster 50 Attributes
+
+Cluster 50 defines no cluster-specific attributes; only the global attributes are present.
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Cluster 50 Commands
+
+Cluster 50 has **1 client-to-server command** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `RetrieveLogsRequest` | client → server | `M` | RetrieveLogsResponse | Reception of this command starts the process of retrieving diagnostic logs from a Node. |
+| 1 | `0x01` | `RetrieveLogsResponse` | server → client | `M` | — | This is generated as a response to the RetrieveLogsRequest. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 50 / 65529
+```
+
+```json
+{
+  "0/50/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 50 command, check that the command ID exists in <code>endpoint/50/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 50,
+    "command_name": "RetrieveLogsRequest",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 50, always use `"cluster_id": 50`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `RetrieveLogsRequest`
+
+## Purpose
+
+Reception of this command starts the process of retrieving diagnostic logs from a Node.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `RetrieveLogsRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | RetrieveLogsResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Intent` | `intent` | IntentEnum | `M` | — | Indicates why the diagnostic logs are being retrieved from the Node. A Node may utilize this field to selectively determine the logs to transfer. |
+| 1 | `RequestedProtocol` | `requestedProtocol` | TransferProtocolEnum | `M` | — | This field is used to indicate how the log transfer is to be realized. |
+| 2 | `TransferFileDesignator` | `transferFileDesignator` | string | `O` | max length 32 | This field is present if the RequestedProtocol is BDX. The TransferFileDesignator is set as the File Designator of the BDX transfer if initiated. |
+
+`Intent` values (`IntentEnum`): `0` = EndUserSupport, `1` = NetworkDiag, `2` = CrashLogs
+
+`RequestedProtocol` values (`TransferProtocolEnum`): `0` = ResponsePayload, `1` = BDX
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 50,
+    "command_name": "RetrieveLogsRequest",
+    "payload": {
+      "intent": 0,
+      "requestedProtocol": 0
+    }
+  }
+}
+```
+
+The device answers with `RetrieveLogsResponse` (see below).
+
+---
+
+# Command: `RetrieveLogsResponse`
+
+## Purpose
+
+This is generated as a response to the RetrieveLogsRequest. The data for this command is shown in the following.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `RetrieveLogsResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | — | Indicates the result of an attempt to retrieve diagnostic logs. |
+| 1 | `LogContent` | `logContent` | octstr | `M` | max length 1024 | This field is included in the command if the Status field has a value of Success or Exhausted. A Node should utilize this field to transfer the newest diagnostic log entries. |
+| 2 | `UTCTimeStamp` | `utcTimeStamp` | epoch-us | `O` | — | — |
+| 3 | `TimeSinceBoot` | `timeSinceBoot` | systemtime-us | `O` | — | This field should be included in the command if the Status field has a value of Success. |
+
+`Status` values (`StatusEnum`): `0` = Success, `1` = Exhausted, `2` = NoLogs, `3` = Busy, `4` = Denied
+
+---
+
+# Cluster 50 Events
+
+Cluster 50 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 50 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/50/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,345 @@
+---
+title: "Matter Cluster 3 — Identify"
+description: "Matter Cluster 3 (0x0003) Identify: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 3
+clusterHex: "0x0003"
+clusterName: "Identify"
+---
+
+# Matter Cluster 3 — Identify Cluster
+
+<Callout type="info">
+Matter Cluster <code>3</code>, also written as <code>0x0003</code>, is the <strong>Identify Cluster</strong>.
+This cluster supports an endpoint identification state (e.g., flashing a light), that indicates to an observer (e.g., an installer) which of several nodes and/or endpoints it is. It also supports a multicast request that any endpoint that is identifying itself to respond to the initiator. The state of this cluster may be shared on more than one endpoint on a node.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `3` |
+| Cluster ID hex | `0x0003` |
+| Cluster name | `Identify` |
+| Cluster revision (Matter 1.6.1) | `6` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `I` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | CCB 2808 |
+| 3 | All Hubs changes |
+| 4 | New data model format and notation; add IdentifyType |
+| 5 | Removed Query feature |
+| 6 | Added Q quality for IdentifyTime attribute |
+
+---
+
+## Shadow Path Format
+
+Cluster 3 values in the device shadow use this format:
+
+```text
+endpoint_id / 3 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/3/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `3` | Identify cluster |
+| `0` | `IdentifyTime` attribute |
+
+---
+
+## Data Types
+
+### `EffectIdentifierEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Blink` | `M` | e.g., Light is turned on/off once. |
+| 1 | `Breathe` | `M` | e.g., Light is turned on/off over 1 second and repeated 15 times. |
+| 2 | `Okay` | `M` | e.g., Colored light turns green for 1 second; non-colored light flashes twice. |
+| 11 | `ChannelChange` | `M` | e.g., Colored light turns orange for 8 seconds; non-colored light switches to the maximum brightness for 0.5s and then minimum brightness for 7.5s. |
+| 254 | `FinishEffect` | `M` | Complete the current effect sequence before terminating. e.g., if in the middle of a breathe effect (as above), first complete the current 1s breathe effect and then terminate the effect. |
+| 255 | `StopEffect` | `M` | Terminate the effect as soon as possible. |
+
+### `EffectVariantEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Default` | `M` | Indicates the default effect is used |
+
+### `IdentifyTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `None` | `M` | No presentation. |
+| 1 | `LightOutput` | `M` | Light output of a lighting product. |
+| 2 | `VisibleIndicator` | `M` | Typically a small LED. |
+| 3 | `AudibleBeep` | `M` | — |
+| 4 | `Display` | `M` | Presentation will be visible on display screen. |
+| 5 | `Actuator` | `M` | Presentation will be conveyed by actuator functionality such as through a window blind operation or in-wall relay. |
+
+---
+
+## Cluster 3 Attributes
+
+Cluster 3 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `IdentifyTime` | uint16 | `M` | R/W (read: view, write: operate) | quiet reporting | — |
+| 1 | `0x0001` | `IdentifyType` | IdentifyTypeEnum | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `6` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `IdentifyTime`
+
+Path example:
+
+```text
+1/3/0
+```
+
+Indicates the remaining length of time, in seconds, that the endpoint will continue to identify itself. If this attribute is set to a value other than 0 then the device must enter its identification state, in order to indicate to an observer which of several nodes and/or endpoints it is. It is recommended that this state consists of flashing a light with a period of 0.5 seconds. The IdentifyTime attribute is decremented every second while in this state.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | quiet reporting |
+
+Example:
+
+```json
+{
+  "1/3/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `IdentifyType`
+
+Path example:
+
+```text
+1/3/1
+```
+
+Indicates how the identification state is presented to the user. This attribute contains one of the values defined in IdentifyTypeEnum. The value None must NOT be used if the device is capable of presenting its identification state using one of the other methods defined in IdentifyTypeEnum.
+
+| Property | Value |
+|---|---|
+| Type | IdentifyTypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`IdentifyTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `None` | No presentation. |
+| 1 | `LightOutput` | Light output of a lighting product. |
+| 2 | `VisibleIndicator` | Typically a small LED. |
+| 3 | `AudibleBeep` | — |
+| 4 | `Display` | Presentation will be visible on display screen. |
+| 5 | `Actuator` | Presentation will be conveyed by actuator functionality such as through a window blind operation or in-wall relay. |
+
+Example:
+
+```json
+{
+  "1/3/1": 0
+}
+```
+
+---
+
+# Cluster 3 Commands
+
+Cluster 3 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `Identify` | client → server | `M` | status | This command starts or stops the receiving device identifying itself. |
+| 64 | `0x40` | `TriggerEffect` | client → server | `O` | status | This command allows the support of feedback to the user, such as a certain light effect. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 3 / 65529
+```
+
+```json
+{
+  "1/3/65529": [
+    0,
+    64
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 3 command, check that the command ID exists in <code>endpoint/3/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 3,
+    "command_name": "Identify",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 3, always use `"cluster_id": 3`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `Identify`
+
+## Purpose
+
+This command starts or stops the receiving device identifying itself.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Identify` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `IdentifyTime` | `identifyTime` | uint16 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 3,
+    "command_name": "Identify",
+    "payload": {
+      "identifyTime": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `TriggerEffect`
+
+## Purpose
+
+This command allows the support of feedback to the user, such as a certain light effect. It is used to allow an implementation to provide visual feedback to the user under certain circumstances such as a color light turning green when it has successfully connected to a network. The use of this command and the effects themselves are entirely up to the implementer to use whenever a visual feedback is useful but it is not the same as and does not replace the identify mechanism used during commissioning.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `64` |
+| Command hex | `0x40` |
+| Command name | `TriggerEffect` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EffectIdentifier` | `effectIdentifier` | EffectIdentifierEnum | `M` | desc | Indicates the identify effect to use and contains one of the non-reserved values in EffectIdentifierEnum. All values of the EffectIdentifierEnum is supported. |
+| 1 | `EffectVariant` | `effectVariant` | EffectVariantEnum | `M` | desc | Indicates which variant of the effect, indicated in the EffectIdentifier field, should be triggered. If a device does not support the given variant, it must use the default variant. |
+
+`EffectIdentifier` values (`EffectIdentifierEnum`): `0` = Blink, `1` = Breathe, `2` = Okay, `11` = ChannelChange, `254` = FinishEffect, `255` = StopEffect
+
+`EffectVariant` values (`EffectVariantEnum`): `0` = Default
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 3,
+    "command_name": "TriggerEffect",
+    "payload": {
+      "effectIdentifier": 0,
+      "effectVariant": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 3 Events
+
+Cluster 3 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 3 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/3/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

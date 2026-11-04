@@ -1,0 +1,428 @@
+---
+title: "Matter Cluster 2050 — TLS Client Management"
+description: "Matter Cluster 2050 (0x0802) TLS Client Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 2050
+clusterHex: "0x0802"
+clusterName: "TLS Client Management"
+---
+
+# Matter Cluster 2050 — TLS Client Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>2050</code>, also written as <code>0x0802</code>, is the <strong>TLS Client Management Cluster</strong>.
+This Cluster is used to provision TLS Endpoints with enough information to facilitate subsequent connection. Commands in this cluster uniformly use the Large Message qualifier, even when the command doesn't require it, to reduce the testing matrix. This cluster is present on the root node endpoint when required by a device type, may be present on that endpoint otherwise, and must NOT be present on any other Endpoint of any Node.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `2050` |
+| Cluster ID hex | `0x0802` |
+| Cluster name | `TLS Client Management` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `TLSCLIENT` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial Release |
+
+---
+
+## Shadow Path Format
+
+Cluster 2050 values in the device shadow use this format:
+
+```text
+endpoint_id / 2050 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/2050/0": 5
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `2050` | TLS Client Management cluster |
+| `0` | `MaxProvisioned` attribute |
+
+---
+
+## Data Types
+
+### `StatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 2 | `EndpointAlreadyInstalled` | `M` | The endpoint is already installed. |
+| 3 | `RootCertificateNotFound` | `M` | No root certificate exists for this CAID. |
+| 4 | `ClientCertificateNotFound` | `M` | No client certificate exists for this CCDID. |
+| 5 | `EndpointInUse` | `M` | The endpoint is in use and cannot be removed. |
+| 6 | `InvalidTime` | `M` | Time sync has not yet occurred. |
+
+### `TLSEndpointStruct` (struct) — fabric-scoped
+
+This struct encodes details about a TLS Endpoint.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `EndpointID` | TLSEndpointID | `M` | 0 to 65534 | — |
+| 1 | `Hostname` | octstr | `M` | length 4 to 253 | This field represents a TLS Hostname. |
+| 2 | `Port` | uint16 | `M` | 1 to 65535 | This field represents a TLS Port Number. |
+| 3 | `CAID` | TLSCAID | `M` | 0 to 65534 | — |
+| 4 | `CCDID` | TLSCCDID (nullable) | `M` | — | — |
+| 5 | `ReferenceCount` | uint8 | `M` | — | Indicates a reference count of the number of entities currently using this TLS Endpoint. |
+
+---
+
+## Cluster 2050 Attributes
+
+Cluster 2050 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MaxProvisioned` | uint8 | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `ProvisionedEndpoints` | list of TLSEndpointStruct | `M` | R (read: view, fabric-sensitive) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MaxProvisioned`
+
+Path example:
+
+```text
+0/2050/0
+```
+
+Indicates the maximum number of per fabric TLSEndpoints that can be installed on this Node.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 5 to 254 |
+
+Example:
+
+```json
+{
+  "0/2050/0": 5
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ProvisionedEndpoints`
+
+Path example:
+
+```text
+0/2050/1
+```
+
+Indicates a list of currently provisioned TLS Endpoints on this Node. The maximum length of this list when read will be the value of MaxProvisioned.
+
+| Property | Value |
+|---|---|
+| Type | list of TLSEndpointStruct |
+| Conformance | `M` |
+| Access | R (read: view, fabric-sensitive) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Each entry is a `TLSEndpointStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/2050/1": []
+}
+```
+
+---
+
+# Cluster 2050 Commands
+
+Cluster 2050 has **3 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ProvisionEndpoint` | client → server | `M` | ProvisionEndpointResponse | This command is used to provision a TLS Endpoint for the provided Hostname / Port combination. |
+| 1 | `0x01` | `ProvisionEndpointResponse` | server → client | `M` | — | This command is used to report the result of the ProvisionEndpoint command. |
+| 2 | `0x02` | `FindEndpoint` | client → server | `M` | FindEndpointResponse | This command is used to find a TLS Endpoint by its ID. |
+| 3 | `0x03` | `FindEndpointResponse` | server → client | `M` | — | This command is used to report the result of the FindEndpoint command. |
+| 4 | `0x04` | `RemoveEndpoint` | client → server | `M` | — | This command is used to remove a TLS Endpoint by its ID. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 2050 / 65529
+```
+
+```json
+{
+  "0/2050/65529": [
+    0,
+    2,
+    4
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 2050 command, check that the command ID exists in <code>endpoint/2050/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 2050,
+    "command_name": "ProvisionEndpoint",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 2050, always use `"cluster_id": 2050`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ProvisionEndpoint`
+
+## Purpose
+
+This command is used to provision a TLS Endpoint for the provided Hostname / Port combination.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ProvisionEndpoint` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ProvisionEndpointResponse |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Hostname` | `hostname` | octstr | `M` | length 4 to 253 | This field represents a TLS Hostname. |
+| 1 | `Port` | `port` | uint16 | `M` | 1 to 65535 | This field represents a TLS Port Number. |
+| 2 | `CAID` | `caid` | TLSCAID | `M` | 0 to 65534 | — |
+| 3 | `CCDID` | `ccdid` | TLSCCDID (nullable) | `M` | — | — |
+| 4 | `EndpointID` | `endpointID` | TLSEndpointID (nullable) | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 2050,
+    "command_name": "ProvisionEndpoint",
+    "payload": {
+      "hostname": "AQID",
+      "port": 1,
+      "caid": 0,
+      "ccdid": 0,
+      "endpointID": 0
+    }
+  }
+}
+```
+
+The device answers with `ProvisionEndpointResponse` (see below).
+
+---
+
+# Command: `ProvisionEndpointResponse`
+
+## Purpose
+
+This command is used to report the result of the ProvisionEndpoint command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ProvisionEndpointResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EndpointID` | `endpointID` | TLSEndpointID | `M` | 0 to 65534 | — |
+
+---
+
+# Command: `FindEndpoint`
+
+## Purpose
+
+This command is used to find a TLS Endpoint by its ID. This command returns the TLSEndpointStruct for the passed in EndpointID.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `FindEndpoint` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | FindEndpointResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EndpointID` | `endpointID` | TLSEndpointID | `M` | 0 to 65534 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 2050,
+    "command_name": "FindEndpoint",
+    "payload": {
+      "endpointID": 0
+    }
+  }
+}
+```
+
+The device answers with `FindEndpointResponse` (see below).
+
+---
+
+# Command: `FindEndpointResponse`
+
+## Purpose
+
+This command is used to report the result of the FindEndpoint command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `FindEndpointResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Endpoint` | `endpoint` | TLSEndpointStruct | `M` | 0 to 65534 | The field is a TLSEndpointStruct containing the requested entry. |
+
+---
+
+# Command: `RemoveEndpoint`
+
+## Purpose
+
+This command is used to remove a TLS Endpoint by its ID. This command is generated to request the Node remove any TLS Endpoint.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `RemoveEndpoint` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status only |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EndpointID` | `endpointID` | TLSEndpointID | `M` | 0 to 65534 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 2050,
+    "command_name": "RemoveEndpoint",
+    "payload": {
+      "endpointID": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 2050 Events
+
+Cluster 2050 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 2050 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/2050/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

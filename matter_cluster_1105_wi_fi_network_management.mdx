@@ -1,0 +1,270 @@
+---
+title: "Matter Cluster 1105 — Wi-Fi Network Management"
+description: "Matter Cluster 1105 (0x0451) Wi-Fi Network Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1105
+clusterHex: "0x0451"
+clusterName: "Wi-Fi Network Management"
+---
+
+# Matter Cluster 1105 — Wi-Fi Network Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>1105</code>, also written as <code>0x0451</code>, is the <strong>Wi-Fi Network Management Cluster</strong>.
+This cluster provides an interface for getting information about the Wi-Fi network that a Network Infrastructure Manager device type provides. Privileged nodes within the same fabric as a Network Infrastructure Manager can use these interfaces to request information related to the Wi-Fi Network such as SSID and Passphrase.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1105` |
+| Cluster ID hex | `0x0451` |
+| Cluster name | `Wi-Fi Network Management` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `WIFINM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1105 values in the device shadow use this format:
+
+```text
+endpoint_id / 1105 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1105/0": "AQID"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1105` | Wi-Fi Network Management cluster |
+| `0` | `SSID` attribute |
+
+---
+
+## Cluster 1105 Attributes
+
+Cluster 1105 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SSID` | octstr | `M` | R (read: view) | nullable, persisted | — |
+| 1 | `0x0001` | `PassphraseSurrogate` | uint64 | `M` | R (read: manage) | nullable, persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SSID`
+
+Path example:
+
+```text
+1/1105/0
+```
+
+No condensed specification text is available for `SSID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Constraint | length 1 to 32 |
+
+Example:
+
+```json
+{
+  "1/1105/0": "AQID"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `PassphraseSurrogate`
+
+Path example:
+
+```text
+1/1105/1
+```
+
+This attribute contains an arbitrary numeric value; this value must increase whenever the passphrase or PSK associated with the primary Wi-Fi network provided by this device changes. A value of null indicates that no primary Wi-Fi network is available. Clients can subscribe to this attribute or compare its value to a locally cached copy to detect if a cached passphrase value has become stale. It is recommended that servers implement this attribute as either a timestamp or a counter.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `M` |
+| Access | R (read: manage) |
+| Qualities | nullable, persisted |
+
+Example:
+
+```json
+{
+  "1/1105/1": 1
+}
+```
+
+---
+
+# Cluster 1105 Commands
+
+Cluster 1105 has **1 client-to-server command** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `NetworkPassphraseRequest` | client → server | `M` | NetworkPassphraseResponse | This command is used to request the current WPA-Personal passphrase or PSK associated with the Wi-Fi network provided by this device. |
+| 1 | `0x01` | `NetworkPassphraseResponse` | server → client | `M` | — | This command is generated in response to a NetworkPassphraseRequest command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1105 / 65529
+```
+
+```json
+{
+  "1/1105/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1105 command, check that the command ID exists in <code>endpoint/1105/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1105,
+    "command_name": "NetworkPassphraseRequest",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1105, always use `"cluster_id": 1105`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `NetworkPassphraseRequest`
+
+## Purpose
+
+This command is used to request the current WPA-Personal passphrase or PSK associated with the Wi-Fi network provided by this device. If the command is not executed via a CASE session, the command is rejected with a status of UNSUPPORTED_ACCESS. If no primary Wi-Fi network is available (the SSID attribute is null), the command is rejected with a status of INVALID_IN_STATE. Otherwise a NetworkPassphraseResponse is generated.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `NetworkPassphraseRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | NetworkPassphraseResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1105,
+    "command_name": "NetworkPassphraseRequest",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `NetworkPassphraseResponse` (see below).
+
+---
+
+# Command: `NetworkPassphraseResponse`
+
+## Purpose
+
+This command is generated in response to a NetworkPassphraseRequest command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `NetworkPassphraseResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Passphrase` | `passphrase` | octstr | `M` | max length 64 | Indicates the current WPA-Personal passphrase or PSK associated with the primary Wi-Fi network provided by this device, in one of the following formats: - 8..63 bytes: WPA/WPA2/WPA3 passphrase. - 64 bytes: WPA/WPA2/WPA3 raw hex PSK. |
+
+---
+
+# Cluster 1105 Events
+
+Cluster 1105 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1105 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1105/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

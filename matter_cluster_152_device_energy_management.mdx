@@ -1,0 +1,1018 @@
+---
+title: "Matter Cluster 152 — Device Energy Management"
+description: "Matter Cluster 152 (0x0098) Device Energy Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 152
+clusterHex: "0x0098"
+clusterName: "Device Energy Management"
+---
+
+# Matter Cluster 152 — Device Energy Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>152</code>, also written as <code>0x0098</code>, is the <strong>Device Energy Management Cluster</strong>.
+This cluster allows a client to manage the power draw of a device. An example of such a client could be an Energy Management System (EMS) which controls an Energy Smart Appliance (ESA). In most deployments the EMS will be the client, and the ESA will host the Device Energy Management Cluster server.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `152` |
+| Cluster ID hex | `0x0098` |
+| Cluster name | `Device Energy Management` |
+| Cluster revision (Matter 1.6.1) | `4` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `DEM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Updates after 0.7 Ballot review |
+| 3 | Updates to match cluster spec updates |
+| 4 | Updates to feature conformance. Corrected ForecastID type |
+
+---
+
+## Shadow Path Format
+
+Cluster 152 values in the device shadow use this format:
+
+```text
+endpoint_id / 152 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/152/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `152` | Device Energy Management cluster |
+| `0` | `ESAType` attribute |
+
+---
+
+## Cluster 152 Features
+
+The `FeatureMap` attribute (`1/152/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PA` | PowerAdjustment | `O` | Allows an EMS to make a temporary power adjustment (within the limits offered by the ESA). |
+| 1 | `PFR` | PowerForecastReporting | `[!PA], STA \| PAU \| FA \| CON, O` | Allows an ESA to advertise its indicative future power consumption vs time. |
+| 2 | `SFR` | StateForecastReporting | `[!PA]` | Allows an ESA to advertise its indicative future state vs time. |
+| 3 | `STA` | StartTimeAdjustment | `O` | Allows an EMS to delay an ESA's planned operation. |
+| 4 | `PAU` | Pausable | `O` | Allows an EMS to pause an ESA's planned operation. |
+| 5 | `FA` | ForecastAdjustment | `O` | Allows an EMS to adjust an ESA's planned operation. |
+| 6 | `CON` | ConstraintBasedAdjustment | `O` | Allows an EMS to request constraints to an ESA's planned operation. |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `127` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AdjustmentCauseEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `LocalOptimization` | `M` | The adjustment is to optimize the local energy usage |
+| 1 | `GridOptimization` | `M` | The adjustment is to optimize the grid energy usage |
+
+### `CauseEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NormalCompletion` | `M` | The ESA completed the adjustment as requested |
+| 1 | `Offline` | `M` | The ESA was set to offline |
+| 2 | `Fault` | `M` | The ESA has developed a fault could not complete the adjustment |
+| 3 | `UserOptOut` | `M` | The user has disabled the ESA's flexibility capability |
+| 4 | `Cancelled` | `M` | The adjustment was cancelled by a client |
+
+### `CostTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Financial` | `M` | Financial cost |
+| 1 | `GHGEmissions` | `M` | Grid CO2e grams cost |
+| 2 | `Comfort` | `M` | Consumer comfort impact cost |
+| 3 | `Temperature` | `M` | Temperature impact cost |
+
+### `ESAStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Offline` | `M` | The ESA is not available to the EMS (e.g. start-up, maintenance mode) |
+| 1 | `Online` | `M` | The ESA is working normally and can be controlled by the EMS |
+| 2 | `Fault` | `M` | The ESA has developed a fault and cannot provide service |
+| 3 | `PowerAdjustActive` | `PA` | The ESA is in the middle of a power adjustment event |
+| 4 | `Paused` | `PAU` | The ESA is currently paused by a client using the PauseRequest command |
+
+### `ESATypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `EVSE` | `O` | EV Supply Equipment |
+| 1 | `SpaceHeating` | `O` | Space heating appliance |
+| 2 | `WaterHeating` | `O` | Water heating appliance |
+| 3 | `SpaceCooling` | `O` | Space cooling appliance |
+| 4 | `SpaceHeatingCooling` | `O` | Space heating and cooling appliance |
+| 5 | `BatteryStorage` | `O` | Battery Electric Storage System |
+| 6 | `SolarPV` | `O` | Solar PV inverter |
+| 7 | `FridgeFreezer` | `O` | Fridge / Freezer |
+| 8 | `WashingMachine` | `O` | Washing Machine |
+| 9 | `Dishwasher` | `O` | Dishwasher |
+| 10 | `Cooking` | `O` | Cooking appliance |
+| 11 | `HomeWaterPump` | `O` | Home water pump (e.g. drinking well) |
+| 12 | `IrrigationWaterPump` | `O` | Irrigation water pump |
+| 13 | `PoolPump` | `O` | Pool pump |
+| 255 | `Other` | `O` | Other appliance type |
+
+### `ForecastUpdateReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `InternalOptimization` | `M` | The update was due to internal ESA device optimization |
+| 1 | `LocalOptimization` | `M` | The update was due to local EMS optimization |
+| 2 | `GridOptimization` | `M` | The update was due to grid optimization |
+
+### `OptOutStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoOptOut` | `M` | The user has not opted out of either local or grid optimizations |
+| 1 | `LocalOptOut` | `M` | The user has opted out of local EMS optimizations only |
+| 2 | `GridOptOut` | `M` | The user has opted out of grid EMS optimizations only |
+| 3 | `OptOut` | `M` | The user has opted out of all external optimizations |
+
+### `PowerAdjustReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoAdjustment` | `M` | There is no Power Adjustment active |
+| 1 | `LocalOptimizationAdjustment` | `M` | There is PowerAdjustment active due to local EMS optimization |
+| 2 | `GridOptimizationAdjustment` | `M` | There is PowerAdjustment active due to grid optimization |
+
+### `ConstraintsStruct` (struct)
+
+The ConstraintsStruct allows a client to inform an ESA about a constraint period (such as a grid event, or perhaps excess solar PV). The format allows the client to suggest that the ESA can either turn up its energy consumption, or turn down its energy consumption during this period.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `StartTime` | epoch-s | `M` | desc | Indicates the start time of the constraint period that the client wishes the ESA to compute a new Forecast. |
+| 1 | `Duration` | elapsed-s | `M` | max 86400 | Indicates the duration of the constraint in seconds. |
+| 2 | `NominalPower` | power-mW | `PFR` | desc | Indicates the nominal power that client wishes the ESA to operate at during the constrained period. |
+| 3 | `MaximumEnergy` | energy-mWh | `PFR` | — | Indicates the maximum energy that can be transferred to or from the ESA during the constraint period. |
+| 4 | `LoadControl` | int8 | `SFR` | — | Indicates the turn up or turn down nature that the grid wants as the outcome by the ESA during the constraint period. |
+
+### `CostStruct` (struct)
+
+This indicates a generic mechanism for expressing cost to run an appliance, in terms of financial, GHG emissions, comfort value etc.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CostType` | CostTypeEnum | `M` | — | Indicates the type of cost being represented. |
+| 1 | `Value` | int32 | `M` | — | Indicates the value of the cost. |
+| 2 | `DecimalPoints` | uint8 | `M` | — | Indicates the number of digits to the right of the decimal point in the Value field. |
+| 3 | `Currency` | uint16 | `O` | max 999 | Indicates the currency for the value in the Value field. |
+
+### `ForecastStruct` (struct)
+
+This indicates a list of 'slots' describing the overall timing of the ESA's planned energy and power use, with different power and energy demands per slot. For example, slots might be used to describe the distinct stages of a washing machine cycle.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ForecastID` | uint32 | `M` | — | — |
+| 1 | `ActiveSlotNumber` | uint16 (nullable) | `M` | — | Indicates which element of the Slots list is currently active in the Forecast sequence. |
+| 2 | `StartTime` | epoch-s | `M` | — | Indicates the planned start time, in UTC, for the entire Forecast. |
+| 3 | `EndTime` | epoch-s | `M` | — | Indicates the planned end time, in UTC, for the entire Forecast. |
+| 4 | `EarliestStartTime` | epoch-s (nullable) | `STA` | — | Indicates the earliest start time, in UTC, that the entire Forecast can be shifted to. |
+| 5 | `LatestEndTime` | epoch-s | `STA` | — | Indicates the latest end time, in UTC, for the entire Forecast. e.g. for an EVSE charging session, this may indicate the departure time for the vehicle, by which time the charging session must end. |
+| 6 | `IsPausable` | bool | `M` | — | Indicates that some part of the Forecast can be paused. |
+| 7 | `Slots` | list of SlotStruct | `M` | max 10 entries | This field contains a list of SlotStructs. |
+| 8 | `ForecastUpdateReason` | ForecastUpdateReasonEnum | `M` | — | This field contains the reason the current Forecast was generated. |
+
+### `PowerAdjustCapabilityStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PowerAdjustCapability` | list of PowerAdjustStruct (nullable) | `M` | max 8 entries | Indicates how the ESA can be adjusted at the current time. |
+| 1 | `Cause` | PowerAdjustReasonEnum | `M` | — | — |
+
+### `PowerAdjustStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MinPower` | power-mW | `M` | — | Indicates the minimum power that the ESA can have its power adjusted to. |
+| 1 | `MaxPower` | power-mW | `M` | min MinPower | Indicates the maximum power that the ESA can have its power adjusted to. |
+| 2 | `MinDuration` | elapsed-s | `M` | — | Indicates the minimum duration, in seconds, that a controller may invoke an ESA power adjustment. |
+| 3 | `MaxDuration` | elapsed-s | `M` | min MinDuration | Indicates the maximum duration, in seconds, that a controller may invoke an ESA power adjustment. |
+
+### `SlotAdjustmentStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `SlotIndex` | uint8 | `M` | desc | Indicates the index into the Slots list within the Forecast that is to be modified. |
+| 1 | `NominalPower` | power-mW | `PFR` | desc | Indicates the new requested power that the ESA must operate at. |
+| 2 | `Duration` | elapsed-s | `M` | desc | Indicates the new requested duration, in seconds, that the ESA must extend or shorten the slot duration to. |
+
+### `SlotStruct` (struct)
+
+This indicates a specific stage of an ESA's operation.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MinDuration` | elapsed-s | `M` | — | Indicates the minimum time (in seconds) that the appliance expects to be in this slot for. |
+| 1 | `MaxDuration` | elapsed-s | `M` | — | Indicates the maximum time (in seconds) that the appliance expects to be in this slot for. |
+| 2 | `DefaultDuration` | elapsed-s | `M` | — | Indicates the expected time (in seconds) that the appliance expects to be in this slot for. |
+| 3 | `ElapsedSlotTime` | elapsed-s | `M` | — | Indicates the time (in seconds) that has already elapsed whilst in this slot. |
+| 4 | `RemainingSlotTime` | elapsed-s | `M` | — | Indicates the time (in seconds) that is estimated to be remaining. |
+| 5 | `SlotIsPausable` | bool | `PAU` | — | Indicates whether this slot can be paused. |
+| 6 | `MinPauseDuration` | elapsed-s | `PAU` | — | Indicates the shortest period that the slot can be paused for. |
+| 7 | `MaxPauseDuration` | elapsed-s | `PAU` | — | Indicates the longest period that the slot can be paused for. |
+| 8 | `ManufacturerESAState` | uint16 | `SFR` | — | — |
+| 9 | `NominalPower` | power-mW | `PFR` | — | Indicates the expected power that the appliance will use during this slot. |
+| 10 | `MinPower` | power-mW | `PFR` | — | Indicates the lowest power that the appliance expects to use during this slot. |
+| 11 | `MaxPower` | power-mW | `PFR` | — | Indicates the maximum power that the appliance expects to use during this slot. |
+| 12 | `NominalEnergy` | energy-mWh | `PFR` | — | Indicates the expected energy that the appliance expects to use or produce during this slot. |
+| 13 | `Costs` | list of CostStruct | `O` | max 5 entries | Indicates the current estimated cost for operating. |
+| 14 | `MinPowerAdjustment` | power-mW | `FA & PFR` | — | Indicates the minimum power that the appliance can be requested to use. |
+| 15 | `MaxPowerAdjustment` | power-mW | `FA & PFR` | — | Indicates the maximum power that the appliance can be requested to use. |
+| 16 | `MinDurationAdjustment` | elapsed-s | `FA` | — | Indicates the minimum time, in seconds, that the slot can be requested to shortened to. |
+| 17 | `MaxDurationAdjustment` | elapsed-s | `FA` | — | Indicates the maximum time, in seconds, that the slot can be requested to extended to. |
+
+---
+
+## Cluster 152 Attributes
+
+Cluster 152 defines **8 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `ESAType` | ESATypeEnum | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `ESACanGenerate` | bool | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `ESAState` | ESAStateEnum | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `AbsMinPower` | power-mW | `M` | R (read: view) | — | — |
+| 4 | `0x0004` | `AbsMaxPower` | power-mW | `M` | R (read: view) | — | — |
+| 5 | `0x0005` | `PowerAdjustmentCapability` | PowerAdjustCapabilityStruct | `PA` | R (read: view) | nullable, quiet reporting | — |
+| 6 | `0x0006` | `Forecast` | ForecastStruct | `PFR \| SFR` | R (read: view) | nullable, quiet reporting | — |
+| 7 | `0x0007` | `OptOutState` | OptOutStateEnum | `PA \| STA \| PAU \| FA \| CON` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `4` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `ESAType`
+
+Path example:
+
+```text
+1/152/0
+```
+
+No condensed specification text is available for `ESAType`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ESATypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`ESATypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `EVSE` | EV Supply Equipment |
+| 1 | `SpaceHeating` | Space heating appliance |
+| 2 | `WaterHeating` | Water heating appliance |
+| 3 | `SpaceCooling` | Space cooling appliance |
+| 4 | `SpaceHeatingCooling` | Space heating and cooling appliance |
+| 5 | `BatteryStorage` | Battery Electric Storage System |
+| 6 | `SolarPV` | Solar PV inverter |
+| 7 | `FridgeFreezer` | Fridge / Freezer |
+| 8 | `WashingMachine` | Washing Machine |
+| 9 | `Dishwasher` | Dishwasher |
+| 10 | `Cooking` | Cooking appliance |
+| 11 | `HomeWaterPump` | Home water pump (e.g. drinking well) |
+| 12 | `IrrigationWaterPump` | Irrigation water pump |
+| 13 | `PoolPump` | Pool pump |
+| 255 | `Other` | Other appliance type |
+
+Example:
+
+```json
+{
+  "1/152/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ESACanGenerate`
+
+Path example:
+
+```text
+1/152/1
+```
+
+No condensed specification text is available for `ESACanGenerate`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/152/1": true
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ESAState`
+
+Path example:
+
+```text
+1/152/2
+```
+
+No condensed specification text is available for `ESAState`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ESAStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`ESAStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Offline` | The ESA is not available to the EMS (e.g. start-up, maintenance mode) |
+| 1 | `Online` | The ESA is working normally and can be controlled by the EMS |
+| 2 | `Fault` | The ESA has developed a fault and cannot provide service |
+| 3 | `PowerAdjustActive` | The ESA is in the middle of a power adjustment event |
+| 4 | `Paused` | The ESA is currently paused by a client using the PauseRequest command |
+
+Example:
+
+```json
+{
+  "1/152/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `AbsMinPower`
+
+Path example:
+
+```text
+1/152/3
+```
+
+Indicates the minimum electrical power that the ESA can consume when switched on. This does not include when in power save or standby modes. For Generator ESAs that can discharge an internal battery (such as a battery storage inverter) to loads in the home, the AbsMinPower will be a negative number representing the maximum power that the ESA can discharge its internal battery.
+
+| Property | Value |
+|---|---|
+| Type | power-mW |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/152/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `AbsMaxPower`
+
+Path example:
+
+```text
+1/152/4
+```
+
+Indicates the maximum electrical power that the ESA can consume when switched on. Note that for Generator ESAs that can charge a battery by importing power into the node (such as a battery storage inverter), the AbsMaxPower will be a positive number representing the maximum power at which the ESA can charge its internal battery. For example, a battery storage inverter that can charge its battery at a maximum power of 2000W and can discharge the battery at a maximum power of 3000W, would have a AbsMinPower: -3000, AbsMaxPower: 2000W.
+
+| Property | Value |
+|---|---|
+| Type | power-mW |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | min AbsMinPower |
+
+Example:
+
+```json
+{
+  "1/152/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `PowerAdjustmentCapability`
+
+Path example:
+
+```text
+1/152/5
+```
+
+Indicates how the ESA can be adjusted at the current time, and the state of any active adjustment. A null value indicates that no power adjustment is currently possible, and nor is any adjustment currently active. This attribute should be updated periodically by ESAs to reflect any changes in internal state, for example temperature or stored energy, which would affect the power or duration limits. Changes to this attribute only be marked as reportable in the following cases: - At most once every 10 seconds on changes, or - When it changes from null to any other value and vice versa.
+
+| Property | Value |
+|---|---|
+| Type | PowerAdjustCapabilityStruct |
+| Conformance | `PA` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+
+Value is a `PowerAdjustCapabilityStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/152/5": {
+    "powerAdjustCapability": [],
+    "cause": 0
+  }
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `Forecast`
+
+Path example:
+
+```text
+1/152/6
+```
+
+This attribute allows an ESA to share its intended forecast with a client (such as an Energy Management System). A null value indicates that there is no forecast currently available (for example, a program has not yet been selected by the user). A server may reset this value attribute to null on a reboot, and it does not need to persist any previous forecasts.
+
+| Property | Value |
+|---|---|
+| Type | ForecastStruct |
+| Conformance | `PFR \| SFR` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+
+Value is a `ForecastStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/152/6": {
+    "forecastID": 1,
+    "activeSlotNumber": 1,
+    "startTime": 0,
+    "endTime": 0
+  }
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `OptOutState`
+
+Path example:
+
+```text
+1/152/7
+```
+
+Indicates the current Opt-Out state of the ESA. The ESA may have a local user interface to allow the user to control this OptOutState. An EMS may subscribe to the OptOutState to get notified about changes in operational state. If the ESA is in the LocalOptOut or OptOut states, so it cannot be controlled by an EMS for local optimization reasons, it must reject any commands which have the AdjustmentCauseEnum value LocalOptimization.
+
+| Property | Value |
+|---|---|
+| Type | OptOutStateEnum |
+| Conformance | `PA \| STA \| PAU \| FA \| CON` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`OptOutStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NoOptOut` | The user has not opted out of either local or grid optimizations |
+| 1 | `LocalOptOut` | The user has opted out of local EMS optimizations only |
+| 2 | `GridOptOut` | The user has opted out of grid EMS optimizations only |
+| 3 | `OptOut` | The user has opted out of all external optimizations |
+
+Example:
+
+```json
+{
+  "1/152/7": 0
+}
+```
+
+---
+
+# Cluster 152 Commands
+
+Cluster 152 has **8 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `PowerAdjustRequest` | client → server | `PA` | status | Allows a client to request an adjustment in the power consumption of an ESA for a specified duration. |
+| 1 | `0x01` | `CancelPowerAdjustRequest` | client → server | `PA` | status | Allows a client to cancel an ongoing PowerAdjustmentRequest operation. |
+| 2 | `0x02` | `StartTimeAdjustRequest` | client → server | `STA` | status | Allows a client to adjust the start time of a Forecast sequence that has not yet started operation (i.e. where the current Forecast StartTime is in the future). |
+| 3 | `0x03` | `PauseRequest` | client → server | `PAU` | status | Allows a client to temporarily pause an operation and reduce the ESAs energy demand. |
+| 4 | `0x04` | `ResumeRequest` | client → server | `PAU` | status | Allows a client to cancel the PauseRequest command and enable earlier resumption of operation. |
+| 5 | `0x05` | `ModifyForecastRequest` | client → server | `FA` | status | Allows a client to modify a Forecast within the limits allowed by the ESA. |
+| 6 | `0x06` | `RequestConstraintBasedForecast` | client → server | `CON` | status | Allows a client to ask the ESA to recompute its Forecast based on power and time constraints. |
+| 7 | `0x07` | `CancelRequest` | client → server | `STA \| FA \| CON` | status | Allows a client to request cancellation of a previous adjustment request in a StartTimeAdjustRequest, ModifyForecastRequest or RequestConstraintBasedForecast command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 152 / 65529
+```
+
+```json
+{
+  "1/152/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 152 command, check that the command ID exists in <code>endpoint/152/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "PowerAdjustRequest",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 152, always use `"cluster_id": 152`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `PowerAdjustRequest`
+
+## Purpose
+
+Allows a client to request an adjustment in the power consumption of an ESA for a specified duration.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `PowerAdjustRequest` |
+| Direction | client → server |
+| Conformance | `PA` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Power` | `power` | power-mW | `M` | desc | Indicates the power that the ESA must use during the adjustment period. This value is between the MinPower and MaxPower fields of the PowerAdjustStruct in the PowerAdjustmentCapability attribute. |
+| 1 | `Duration` | `duration` | elapsed-s | `M` | desc | Indicates the duration that the ESA must maintain the requested power for. This value is between the MinDuration and MaxDuration fields of the PowerAdjustStruct in the PowerAdjustmentCapability attribute. |
+| 2 | `Cause` | `cause` | AdjustmentCauseEnum | `M` | desc | Indicates the cause of the request from the EMS. |
+
+`Cause` values (`AdjustmentCauseEnum`): `0` = LocalOptimization, `1` = GridOptimization
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "PowerAdjustRequest",
+    "payload": {
+      "power": 1,
+      "duration": 1,
+      "cause": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `CancelPowerAdjustRequest`
+
+## Purpose
+
+Allows a client to cancel an ongoing PowerAdjustmentRequest operation.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `CancelPowerAdjustRequest` |
+| Direction | client → server |
+| Conformance | `PA` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "CancelPowerAdjustRequest",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `StartTimeAdjustRequest`
+
+## Purpose
+
+Allows a client to adjust the start time of a Forecast sequence that has not yet started operation (i.e. where the current Forecast StartTime is in the future).
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `StartTimeAdjustRequest` |
+| Direction | client → server |
+| Conformance | `STA` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `RequestedStartTime` | `requestedStartTime` | epoch-s | `M` | desc | Indicates the requested start time, in UTC, that the client would like the appliance to shift its Forecast to. This value is in the future. |
+| 1 | `Cause` | `cause` | AdjustmentCauseEnum | `M` | — | Indicates the cause of the request from the EMS. |
+
+`Cause` values (`AdjustmentCauseEnum`): `0` = LocalOptimization, `1` = GridOptimization
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "StartTimeAdjustRequest",
+    "payload": {
+      "requestedStartTime": 0,
+      "cause": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `PauseRequest`
+
+## Purpose
+
+Allows a client to temporarily pause an operation and reduce the ESAs energy demand.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `PauseRequest` |
+| Direction | client → server |
+| Conformance | `PAU` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Duration` | `duration` | elapsed-s | `M` | desc | Indicates the duration that the ESA is paused for. This value is between the MinPauseDuration and MaxPauseDuration indicated in the ActiveSlotNumber index in the Slots list in the Forecast. |
+| 1 | `Cause` | `cause` | AdjustmentCauseEnum | `M` | — | Indicates the cause of the request from the EMS. |
+
+`Cause` values (`AdjustmentCauseEnum`): `0` = LocalOptimization, `1` = GridOptimization
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "PauseRequest",
+    "payload": {
+      "duration": 1,
+      "cause": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `ResumeRequest`
+
+## Purpose
+
+Allows a client to cancel the PauseRequest command and enable earlier resumption of operation.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `ResumeRequest` |
+| Direction | client → server |
+| Conformance | `PAU` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "ResumeRequest",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `ModifyForecastRequest`
+
+## Purpose
+
+Allows a client to modify a Forecast within the limits allowed by the ESA.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `ModifyForecastRequest` |
+| Direction | client → server |
+| Conformance | `FA` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ForecastID` | `forecastID` | uint32 | `M` | — | — |
+| 1 | `SlotAdjustments` | `slotAdjustments` | list of SlotAdjustmentStruct | `M` | max 10 entries | This field contains a list of SlotAdjustment parameters that should be modified in the corresponding Forecast with matching ForecastID. |
+| 2 | `Cause` | `cause` | AdjustmentCauseEnum | `M` | — | Indicates the cause of the request from the EMS. |
+
+`Cause` values (`AdjustmentCauseEnum`): `0` = LocalOptimization, `1` = GridOptimization
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "ModifyForecastRequest",
+    "payload": {
+      "forecastID": 1,
+      "slotAdjustments": [],
+      "cause": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `RequestConstraintBasedForecast`
+
+## Purpose
+
+Allows a client to ask the ESA to recompute its Forecast based on power and time constraints.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `RequestConstraintBasedForecast` |
+| Direction | client → server |
+| Conformance | `CON` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Constraints` | `constraints` | list of ConstraintsStruct | `M` | max 10 entries | Indicates the series of turn up or turn down power requests that the ESA is being asked to constrain its operation within. These requests is in the future, is in chronological order, starting with the earliest start time, and must NOT overlap in time. |
+| 1 | `Cause` | `cause` | AdjustmentCauseEnum | `M` | — | Indicates the cause of the request from the EMS. |
+
+`Cause` values (`AdjustmentCauseEnum`): `0` = LocalOptimization, `1` = GridOptimization
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "RequestConstraintBasedForecast",
+    "payload": {
+      "constraints": [],
+      "cause": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `CancelRequest`
+
+## Purpose
+
+Allows a client to request cancellation of a previous adjustment request in a StartTimeAdjustRequest, ModifyForecastRequest or RequestConstraintBasedForecast command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `CancelRequest` |
+| Direction | client → server |
+| Conformance | `STA \| FA \| CON` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 152,
+    "command_name": "CancelRequest",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Cluster 152 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `PowerAdjustStart` | info | `PA` | This event is generated when the Power Adjustment session is started. |
+| 1 | `0x01` | `PowerAdjustEnd` | info | `PA` | This event is generated when the Power Adjustment session ends. |
+| 2 | `0x02` | `Paused` | info | `PAU` | This event is generated when the ESA enters the Paused state. |
+| 3 | `0x03` | `Resumed` | info | `PAU` | This event is generated when the ESA leaves the Paused state and resumes operation. |
+
+## Event `0` — `PowerAdjustStart`
+
+This event is generated when the Power Adjustment session is started.
+
+This event has no fields.
+
+## Event `1` — `PowerAdjustEnd`
+
+This event is generated when the Power Adjustment session ends.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Cause` | CauseEnum | `M` | Indicates the reason why the power adjustment session ended. |
+| 1 | `Duration` | elapsed-s | `M` | Indicates the number of seconds that the power adjustment session lasted before ending. |
+| 2 | `EnergyUse` | energy-mWh | `M` | Indicates the approximate energy used by the ESA during the session. For example, if the ESA was on and was adjusted to be switched off, then this is 0 mWh. |
+
+## Event `2` — `Paused`
+
+This event is generated when the ESA enters the Paused state. There is no data for this event.
+
+This event has no fields.
+
+## Event `3` — `Resumed`
+
+This event is generated when the ESA leaves the Paused state and resumes operation.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Cause` | CauseEnum | `M` | Indicates the reason why the pause ended. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 152 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/152/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,153 @@
+---
+title: "Matter Cluster 1072 — Soil Measurement"
+description: "Matter Cluster 1072 (0x0430) Soil Measurement: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1072
+clusterHex: "0x0430"
+clusterName: "Soil Measurement"
+---
+
+# Matter Cluster 1072 — Soil Measurement Cluster
+
+<Callout type="info">
+Matter Cluster <code>1072</code>, also written as <code>0x0430</code>, is the <strong>Soil Measurement Cluster</strong>.
+This cluster provides an interface to soil measurement functionality, including configuration and provision of notifications of soil measurements.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1072` |
+| Cluster ID hex | `0x0430` |
+| Cluster name | `Soil Measurement` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `SOIL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1072 values in the device shadow use this format:
+
+```text
+endpoint_id / 1072 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1072/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1072` | Soil Measurement cluster |
+| `0` | `SoilMoistureMeasurementLimits` attribute |
+
+---
+
+## Cluster 1072 Attributes
+
+Cluster 1072 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SoilMoistureMeasurementLimits` | MeasurementAccuracyStruct | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `SoilMoistureMeasuredValue` | percent | `M` | R (read: view) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SoilMoistureMeasurementLimits`
+
+Path example:
+
+```text
+1/1072/0
+```
+
+Indicates the limits for the SoilMoistureMeasuredValue attribute. Given the measurements are in percentage, the MinMeasuredValue field in the SoilMoistureMeasurementLimits attribute must NOT be less than 0 and must NOT be greater than 99. The MaxMeasuredValue field in the SoilMoistureMeasurementLimits attribute must NOT be less than (SoilMoistureMinMeasurableValue + 1) and must NOT be greater than 100. The MeasurementType field value is set to SoilMoisture.
+
+| Property | Value |
+|---|---|
+| Type | MeasurementAccuracyStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1072/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SoilMoistureMeasuredValue`
+
+Path example:
+
+```text
+1/1072/1
+```
+
+Indicates the water content of the soil in percentage. The null value indicates that the measurement is unknown e.g. no measurement has been performed yet.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | SoilMoistureMeasurementLimits to SoilMoistureMeasurementLimits |
+
+Example:
+
+```json
+{
+  "1/1072/1": 1
+}
+```
+
+---
+
+# Cluster 1072 Commands
+
+Cluster 1072 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1072 Events
+
+Cluster 1072 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1072 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1072/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

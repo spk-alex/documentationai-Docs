@@ -1,0 +1,570 @@
+---
+title: "Matter Cluster 336 — Service Area"
+description: "Matter Cluster 336 (0x0150) Service Area: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 336
+clusterHex: "0x0150"
+clusterName: "Service Area"
+---
+
+# Matter Cluster 336 — Service Area Cluster
+
+<Callout type="info">
+Matter Cluster <code>336</code>, also written as <code>0x0150</code>, is the <strong>Service Area Cluster</strong>.
+This cluster provides an interface for controlling the areas where a device should operate, for reporting the status at each area, and for querying the current area. The device may operate at one area at a time, as in the case of a mobile device, such as a robot. Other devices may operate at (service) multiple areas simultaneously, as in the case of a sensor that can monitor multiple areas.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `336` |
+| Cluster ID hex | `0x0150` |
+| Cluster name | `Service Area` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `SEAR` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Rename InitialTimeEstimate to EstimatedTime |
+
+---
+
+## Shadow Path Format
+
+Cluster 336 values in the device shadow use this format:
+
+```text
+endpoint_id / 336 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/336/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `336` | Service Area cluster |
+| `0` | `SupportedAreas` attribute |
+
+---
+
+## Cluster 336 Features
+
+The `FeatureMap` attribute (`1/336/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SELRUN` | SelectWhileRunning | `O` | The device allows changing the selected areas while running |
+| 1 | `PROG` | ProgressReporting | `O` | The device implements the progress reporting feature |
+| 2 | `MAPS` | Maps | `O` | The device has map support |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `7` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `OperationalStatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Pending` | `M` | The device has not yet started operating at the given area, or has not finished operating at that area but it is not currently operating at the area |
+| 1 | `Operating` | `M` | The device is currently operating at the given area |
+| 2 | `Skipped` | `M` | The device has skipped the given area, before or during operating at it, due to a SkipArea command, due an out of band command (e.g. from the vendor's application), due to a vendor specific reason, such as a time limit used by the device, or due the device ending operating unsuccessfully |
+| 3 | `Completed` | `M` | The device has completed operating at the given area |
+
+### `SelectAreasStatus`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Attempting to operate in the areas identified by the entries of the NewAreas field is allowed and possible, the SelectedAreas attribute is set to the value of the NewAreas field |
+| 1 | `UnsupportedArea` | `M` | The value of at least one of the entries of the NewAreas field doesn't match any entries in the SupportedAreas attribute |
+| 2 | `InvalidInMode` | `M` | The received request cannot be handled due to the current mode of the device |
+| 3 | `InvalidSet` | `M` | The set of values is invalid. For example, areas on different floors, that a robot knows it can't reach on its own |
+
+### `SkipAreaStatus`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Skipping the area is allowed and possible, or the device was operating at the last available area and has stopped |
+| 1 | `InvalidAreaList` | `M` | The SelectedAreas attribute is empty. |
+| 2 | `InvalidInMode` | `M` | The received request cannot be handled due to the current mode of the device. For example, the CurrentArea attribute is null or the device is not operating |
+| 3 | `InvalidSkippedArea` | `M` | The SkippedArea field doesn't match an entry in the SupportedAreas list |
+
+### `AreaInfoStruct` (struct)
+
+The data from this structure indicates the name and/or semantic data describing an area, as detailed below. This data type includes the LocationInfo field, with the following fields: LocationName, FloorNumber, AreaType.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `LocationInfo` | LocationDescriptorStruct (nullable) | `M` | — | Indicates the name of the area, floor number and/or area type. |
+| 1 | `LandmarkInfo` | LandmarkInfoStruct (nullable) | `M` | — | Indicates an association with a landmark. |
+
+### `AreaStruct` (struct)
+
+This is a struct representing an area known to the server.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `AreaID` | uint32 | `M` | — | — |
+| 1 | `MapID` | uint32 (nullable) | `M` | desc | — |
+| 2 | `AreaInfo` | AreaInfoStruct | `M` | — | This field contains data describing the area. |
+
+### `LandmarkInfoStruct` (struct)
+
+The data from this structure indicates a landmark and position relative to the landmark.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `LandmarkTag` | tag | `M` | — | Indicates that the area is associated with a landmark. |
+| 1 | `RelativePositionTag` | tag (nullable) | `M` | — | This field identifies the position of the area relative to a landmark. |
+
+### `MapStruct` (struct)
+
+This is a struct representing a map.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MapID` | uint32 | `M` | — | — |
+| 1 | `Name` | string | `M` | max length 64 | This field represents a human understandable map description. |
+
+### `ProgressStruct` (struct)
+
+This is a struct indicating the progress.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `AreaID` | uint32 | `M` | — | — |
+| 1 | `Status` | OperationalStatusEnum | `M` | — | Indicates the operational status of the device regarding the area indicated by the AreaID field. |
+| 2 | `TotalOperationalTime` | elapsed-s (nullable) | `O` | — | Indicates the total operational time, in seconds, from when the device started to operate at the area indicated by the AreaID field, until the operation finished, due to completion or due to skipping, including any time … |
+| 3 | `EstimatedTime` | elapsed-s (nullable) | `O` | — | Indicates the estimated time for the operation, in seconds, from when the device will start operating at the area indicated by the AreaID field, until the operation completes, excluding any time spent while not … |
+
+---
+
+## Cluster 336 Attributes
+
+Cluster 336 defines **6 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SupportedAreas` | list of AreaStruct | `M` | R (read: view) | — | `MS` |
+| 1 | `0x0001` | `SupportedMaps` | list of MapStruct | `MAPS` | R (read: view) | — | `MS` |
+| 2 | `0x0002` | `SelectedAreas` | list of uint32 | `M` | R (read: view) | — | `empty` |
+| 3 | `0x0003` | `CurrentArea` | uint32 | `desc` | R (read: view) | nullable | `null` |
+| 4 | `0x0004` | `EstimatedEndTime` | epoch-s | `[CurrentArea]` | R (read: view) | nullable, quiet reporting | `null` |
+| 5 | `0x0005` | `Progress` | list of ProgressStruct | `PROG` | R (read: view) | — | `empty` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SupportedAreas`
+
+Path example:
+
+```text
+1/336/0
+```
+
+This attribute contains the list of areas that can be included in the SelectedAreas attribute's list. Each item in this list represents a unique area, as indicated by the AreaID field of AreaStruct. Each entry in this list has a unique value for the AreaID field. If the SupportedMaps attribute is not empty, each entry in this list has a unique value for the combination of the MapID and AreaInfo fields.
+
+| Property | Value |
+|---|---|
+| Type | list of AreaStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 255 entries |
+| Default | `MS` |
+
+Each entry is a `AreaStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/336/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SupportedMaps`
+
+Path example:
+
+```text
+1/336/1
+```
+
+This attribute contains the list of supported maps. A map is a full or a partial representation of a home, known to the device. For example: - a single level home may be represented using a single map - a two level home may be represented using two maps, one for each level - a single level home may be represented using two maps, each including a different set of rooms, such as "map of living room and kitchen" and "map of bedrooms and hallway" - a single level home may be represented using one map for the indoor areas (living room, bedrooms etc.) and one for the outdoor areas (garden, swimming pool etc.) Each map includes one or more areas - see the SupportedAreas attribute.
+
+| Property | Value |
+|---|---|
+| Type | list of MapStruct |
+| Conformance | `MAPS` |
+| Access | R (read: view) |
+| Constraint | max 255 entries |
+| Default | `MS` |
+
+Each entry is a `MapStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/336/1": []
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `SelectedAreas`
+
+Path example:
+
+```text
+1/336/2
+```
+
+Indicates the set of areas where the device should attempt to operate. The mobile devices may travel without operating across any areas while attempting to reach the areas indicated by the SelectedAreas attribute. For example, a robotic vacuum cleaner may drive without cleaning when traveling without operating. If this attribute is empty, the device is not constrained to operate in any specific areas.
+
+| Property | Value |
+|---|---|
+| Type | list of uint32 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `empty` |
+
+Example:
+
+```json
+{
+  "1/336/2": []
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `CurrentArea`
+
+Path example:
+
+```text
+1/336/3
+```
+
+If the device is mobile, this attribute indicates the area where the device is currently located, regardless of whether it is operating or not, such as while traveling between areas. If the device is not mobile and can operate at multiple areas sequentially, this attribute indicates the area which is currently being serviced, or the area which is currently traversed by the device. For example, a camera device may use this attribute to indicate which area it currently takes video of (serviced area) or which area it currently has in view but not taking video of (e.g. an area which is traversed while panning).
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `desc` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/336/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `EstimatedEndTime`
+
+Path example:
+
+```text
+1/336/4
+```
+
+Indicates the estimated Epoch time for completing operating at the area indicated by the CurrentArea attribute, in seconds. A value of 0 means that the operation has completed. When this attribute is null, that represents that there is no time currently defined until operation completion. This may happen, for example, because no operation is in progress or because the completion time is unknown.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `[CurrentArea]` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/336/4": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `Progress`
+
+Path example:
+
+```text
+1/336/5
+```
+
+Indicates the operating status at one or more areas. Each entry in this list has a unique value for the AreaID field. For each entry in this list, the AreaID field must match an entry on the SupportedAreas attribute's list. When this attribute is empty, that represents that no progress information is currently available.
+
+| Property | Value |
+|---|---|
+| Type | list of ProgressStruct |
+| Conformance | `PROG` |
+| Access | R (read: view) |
+| Constraint | max 255 entries |
+| Default | `empty` |
+
+Each entry is a `ProgressStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/336/5": []
+}
+```
+
+---
+
+# Cluster 336 Commands
+
+Cluster 336 has **2 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SelectAreas` | client → server | `M` | SelectAreasResponse | This command is used to select a set of device areas, where the device is to operate. |
+| 1 | `0x01` | `SelectAreasResponse` | server → client | `M` | — | This command is sent by the device on receipt of the SelectAreas command. |
+| 2 | `0x02` | `SkipArea` | client → server | `[CurrentArea \| Progress]` | SkipAreaResponse | This command is used to skip the given area, and to attempt operating at other areas on the SupportedAreas attribute list. |
+| 3 | `0x03` | `SkipAreaResponse` | server → client | `SkipArea` | — | This command is sent by the device on receipt of the SkipArea command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 336 / 65529
+```
+
+```json
+{
+  "1/336/65529": [
+    0,
+    2
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 336 command, check that the command ID exists in <code>endpoint/336/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 336,
+    "command_name": "SelectAreas",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 336, always use `"cluster_id": 336`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SelectAreas`
+
+## Purpose
+
+This command is used to select a set of device areas, where the device is to operate. On receipt of this command the device must respond with a SelectAreasResponse command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SelectAreas` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | SelectAreasResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NewAreas` | `newAreas` | list of uint32 | `M` | desc | This field indicates which areas the device is to operate at. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 336,
+    "command_name": "SelectAreas",
+    "payload": {
+      "newAreas": []
+    }
+  }
+}
+```
+
+The device answers with `SelectAreasResponse` (see below).
+
+---
+
+# Command: `SelectAreasResponse`
+
+## Purpose
+
+This command is sent by the device on receipt of the SelectAreas command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `SelectAreasResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | SelectAreasStatus | `M` | — | If the Status field is set to Success or UnsupportedArea, the server may use a non-empty string for the StatusText field to provide additional information. |
+| 1 | `StatusText` | `statusText` | string | `M` | max length 256 | — |
+
+`Status` values (`SelectAreasStatus`): `0` = Success, `1` = UnsupportedArea, `2` = InvalidInMode, `3` = InvalidSet
+
+---
+
+# Command: `SkipArea`
+
+## Purpose
+
+This command is used to skip the given area, and to attempt operating at other areas on the SupportedAreas attribute list. On receipt of this command the device must respond with a SkipAreaResponse command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `SkipArea` |
+| Direction | client → server |
+| Conformance | `[CurrentArea \| Progress]` |
+| Response | SkipAreaResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `SkippedArea` | `skippedArea` | uint32 | `M` | desc | The SkippedArea field indicates the area to be skipped. The SkippedArea field must match an entry in the SupportedAreas list. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 336,
+    "command_name": "SkipArea",
+    "payload": {
+      "skippedArea": 1
+    }
+  }
+}
+```
+
+The device answers with `SkipAreaResponse` (see below).
+
+---
+
+# Command: `SkipAreaResponse`
+
+## Purpose
+
+This command is sent by the device on receipt of the SkipArea command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `SkipAreaResponse` |
+| Direction | server → client (response) |
+| Conformance | `SkipArea` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | SkipAreaStatus | `M` | — | If the Status field is set to Success or InvalidAreaList, the server may use a non-empty string for the StatusText field to provide additional information. |
+| 1 | `StatusText` | `statusText` | string | `M` | max length 256 | — |
+
+`Status` values (`SkipAreaStatus`): `0` = Success, `1` = InvalidAreaList, `2` = InvalidInMode, `3` = InvalidSkippedArea
+
+---
+
+# Cluster 336 Events
+
+Cluster 336 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 336 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/336/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

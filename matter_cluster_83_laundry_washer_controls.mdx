@@ -1,0 +1,248 @@
+---
+title: "Matter Cluster 83 — Laundry Washer Controls"
+description: "Matter Cluster 83 (0x0053) Laundry Washer Controls: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 83
+clusterHex: "0x0053"
+clusterName: "Laundry Washer Controls"
+---
+
+# Matter Cluster 83 — Laundry Washer Controls Cluster
+
+<Callout type="info">
+Matter Cluster <code>83</code>, also written as <code>0x0053</code>, is the <strong>Laundry Washer Controls Cluster</strong>.
+This cluster provides a way to access options associated with the operation of a laundry washer device type.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `83` |
+| Cluster ID hex | `0x0053` |
+| Cluster name | `Laundry Washer Controls` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `WASHERCTRL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Updated Feature Map Conformance |
+
+---
+
+## Shadow Path Format
+
+Cluster 83 values in the device shadow use this format:
+
+```text
+endpoint_id / 83 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/83/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `83` | Laundry Washer Controls cluster |
+| `0` | `SpinSpeeds` attribute |
+
+---
+
+## Cluster 83 Features
+
+The `FeatureMap` attribute (`1/83/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SPIN` | Spin | `O` | Multiple spin speeds supported |
+| 1 | `RINSE` | Rinse | `O` | Multiple rinse cycles supported |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `NumberOfRinsesEnum`
+
+The NumberOfRinsesEnum provides a representation of the number of rinses that will be performed for a selected mode. NumberOfRinsesEnum is derived from enum8.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `None` | `RINSE` | This laundry washer mode does not perform rinse cycles |
+| 1 | `Normal` | `RINSE` | This laundry washer mode performs normal rinse cycles determined by the manufacturer |
+| 2 | `Extra` | `RINSE` | This laundry washer mode performs an extra rinse cycle |
+| 3 | `Max` | `RINSE` | This laundry washer mode performs the maximum number of rinse cycles determined by the manufacturer |
+
+---
+
+## Cluster 83 Attributes
+
+Cluster 83 defines **4 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SpinSpeeds` | list of string | `SPIN` | R (read: view) | — | — |
+| 1 | `0x0001` | `SpinSpeedCurrent` | uint8 | `SPIN` | R/W (read: view, write: operate) | nullable | — |
+| 2 | `0x0002` | `NumberOfRinses` | NumberOfRinsesEnum | `RINSE` | R/W (read: view, write: operate) | — | — |
+| 3 | `0x0003` | `SupportedRinses` | list of NumberOfRinsesEnum | `RINSE` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SpinSpeeds`
+
+Path example:
+
+```text
+1/83/0
+```
+
+Indicates the list of spin speeds available to the appliance in the currently selected mode. The spin speed values are determined by the manufacturer. At least one spin speed value is provided in the SpinSpeeds list. The list of spin speeds may change depending on the currently selected Laundry Washer mode.
+
+| Property | Value |
+|---|---|
+| Type | list of string |
+| Conformance | `SPIN` |
+| Access | R (read: view) |
+| Constraint | max 16 entries |
+
+Example:
+
+```json
+{
+  "1/83/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SpinSpeedCurrent`
+
+Path example:
+
+```text
+1/83/1
+```
+
+Indicates the currently selected spin speed. It is the index into the SpinSpeeds list of the selected spin speed, as such, this attribute can be an integer between 0 and the number of entries in SpinSpeeds - 1. If a value is received that is outside of the defined constraints, a CONSTRAINT_ERROR is sent as the response. If a value is attempted to be written that doesn't match a valid index (e.g. an index of 5 when the list has 4 values), a CONSTRAINT_ERROR is sent as the response.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `SPIN` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable |
+| Constraint | max 15 |
+
+Example:
+
+```json
+{
+  "1/83/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `NumberOfRinses`
+
+Path example:
+
+```text
+1/83/2
+```
+
+Indicates how many times a rinse cycle is performed on a device for the current mode of operation. A value of None indicates that no rinse cycle will be performed. This value may be set by the client to adjust the number of rinses that are performed for the current mode of operation. If the device is not in a compatible state to accept the provided value, an INVALID_IN_STATE error is sent as the response.
+
+| Property | Value |
+|---|---|
+| Type | NumberOfRinsesEnum |
+| Conformance | `RINSE` |
+| Access | R/W (read: view, write: operate) |
+| Constraint | desc |
+
+Values (`NumberOfRinsesEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `None` | This laundry washer mode does not perform rinse cycles |
+| 1 | `Normal` | This laundry washer mode performs normal rinse cycles determined by the manufacturer |
+| 2 | `Extra` | This laundry washer mode performs an extra rinse cycle |
+| 3 | `Max` | This laundry washer mode performs the maximum number of rinse cycles determined by the manufacturer |
+
+Example:
+
+```json
+{
+  "1/83/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `SupportedRinses`
+
+Path example:
+
+```text
+1/83/3
+```
+
+Indicates the amount of rinses allowed for a specific mode. Each entry indicates a NumberOfRinsesEnum value that is possible in the selected mode on the device. The value of this attribute may change at runtime based on the currently selected mode. Each entry is distinct.
+
+| Property | Value |
+|---|---|
+| Type | list of NumberOfRinsesEnum |
+| Conformance | `RINSE` |
+| Access | R (read: view) |
+| Constraint | max 4 entries |
+
+Example:
+
+```json
+{
+  "1/83/3": []
+}
+```
+
+---
+
+# Cluster 83 Commands
+
+Cluster 83 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 83 Events
+
+Cluster 83 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 83 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/83/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

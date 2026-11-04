@@ -1,0 +1,1370 @@
+---
+title: "Matter Cluster 153 — Energy EVSE"
+description: "Matter Cluster 153 (0x0099) Energy EVSE: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 153
+clusterHex: "0x0099"
+clusterName: "Energy EVSE"
+---
+
+# Matter Cluster 153 — Energy EVSE Cluster
+
+<Callout type="info">
+Matter Cluster <code>153</code>, also written as <code>0x0099</code>, is the <strong>Energy EVSE Cluster</strong>.
+Electric Vehicle Supply Equipment (EVSE) is equipment used to charge an Electric Vehicle (EV) or Plug-In Hybrid Electric Vehicle. This cluster provides an interface to the functionality of Electric Vehicle Supply Equipment (EVSE) management. Devices targeted by this cluster include Electric Vehicle Supply Equipment (EVSE).
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `153` |
+| Cluster ID hex | `0x0099` |
+| Cluster name | `Energy EVSE` |
+| Cluster revision (Matter 1.6.1) | `4` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `EEVSE` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Updates after 0.7 Ballot review |
+| 3 | Added Q quality for SessionDuration, SessionEnergyCharged and SessionEnergyDischarged, updated to V2X and associated areas and made PREF mandatory |
+| 4 | Sync with SDK revision number |
+
+---
+
+## Shadow Path Format
+
+Cluster 153 values in the device shadow use this format:
+
+```text
+endpoint_id / 153 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/153/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `153` | Energy EVSE cluster |
+| `0` | `State` attribute |
+
+---
+
+## Cluster 153 Features
+
+The `FeatureMap` attribute (`1/153/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PREF` | ChargingPreferences | `M` | EVSE supports storing user charging preferences |
+| 1 | `SOC` | SoCReporting | `O` | EVSE supports reporting of vehicle State of Charge (SoC) |
+| 2 | `PNC` | PlugAndCharge | `O` | EVSE supports PLC to support Plug and Charge |
+| 3 | `RFID` | RFID | `O` | EVSE is fitted with an RFID reader |
+| 4 | `V2X` | V2X | `O` | EVSE supports bi-directional charging / discharging |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `31` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `EnergyTransferStoppedReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `EVStopped` | `M` | The EV decided to stop |
+| 1 | `EVSEStopped` | `M` | The EVSE decided to stop |
+| 2 | `Other` | `M` | An other unknown reason |
+
+### `FaultStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoError` | `M` | The EVSE is not in an error state. |
+| 1 | `MeterFailure` | `M` | The EVSE is unable to obtain electrical measurements. |
+| 2 | `OverVoltage` | `M` | The EVSE input voltage level is too high. |
+| 3 | `UnderVoltage` | `M` | The EVSE input voltage level is too low. |
+| 4 | `OverCurrent` | `M` | The EVSE detected charging current higher than allowed by charger. |
+| 5 | `ContactWetFailure` | `M` | The EVSE detected voltage on charging pins when the contactor is open. |
+| 6 | `ContactDryFailure` | `M` | The EVSE detected absence of voltage after enabling contactor. |
+| 7 | `GroundFault` | `M` | The EVSE has an unbalanced current supply. |
+| 8 | `PowerLoss` | `M` | The EVSE has detected a loss in power. |
+| 9 | `PowerQuality` | `M` | The EVSE has detected another power quality issue (e.g. phase imbalance). |
+| 10 | `PilotShortCircuit` | `M` | The EVSE pilot signal amplitude short circuited to ground. |
+| 11 | `EmergencyStop` | `M` | The emergency stop button was pressed. |
+| 12 | `EVDisconnected` | `M` | The EVSE detected that the cable has been disconnected. |
+| 13 | `WrongPowerSupply` | `M` | The EVSE could not determine proper power supply level. |
+| 14 | `LiveNeutralSwap` | `M` | The EVSE detected Live and Neutral are swapped. |
+| 15 | `OverTemperature` | `M` | The EVSE internal temperature is too high. |
+| 255 | `Other` | `M` | Any other reason. |
+
+### `StateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NotPluggedIn` | `M` | The EV is not plugged in. |
+| 1 | `PluggedInNoDemand` | `M` | The EV is plugged in, but not demanding current. |
+| 2 | `PluggedInDemand` | `M` | The EV is plugged in and is demanding current, but EVSE is not allowing current to flow. |
+| 3 | `PluggedInCharging` | `M` | The EV is plugged in, charging is in progress, and current is flowing |
+| 4 | `PluggedInDischarging` | `V2X` | The EV is plugged in, discharging is in progress, and current is flowing |
+| 5 | `SessionEnding` | `M` | The EVSE is transitioning from any plugged-in state to NotPluggedIn |
+| 6 | `Fault` | `M` | There is a fault, further details in the FaultState attribute |
+
+### `SupplyStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Disabled` | `M` | The EV is not currently allowed to charge or discharge |
+| 1 | `ChargingEnabled` | `M` | The EV is currently allowed to charge |
+| 2 | `DischargingEnabled` | `[V2X]` | The EV is currently allowed to discharge |
+| 3 | `DisabledError` | `M` | The EV is not currently allowed to charge or discharge due to an error, the error must be cleared before operation can continue |
+| 4 | `DisabledDiagnostics` | `M` | The EV is not currently allowed to charge or discharge due to self-diagnostics mode. |
+| 5 | `Enabled` | `[V2X]` | The EV is currently allowed to charge and discharge |
+
+### `TargetDayOfWeekBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Sunday` | `M` | Sunday |
+| 1 | `Monday` | `M` | Monday |
+| 2 | `Tuesday` | `M` | Tuesday |
+| 3 | `Wednesday` | `M` | Wednesday |
+| 4 | `Thursday` | `M` | Thursday |
+| 5 | `Friday` | `M` | Friday |
+| 6 | `Saturday` | `M` | Saturday |
+
+### `ChargingTargetScheduleStruct` (struct)
+
+This represents a set of user specified charging targets for an EV for a set of specified days.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `DayOfWeekForSequence` | TargetDayOfWeekBitmap | `M` | — | Indicates the days of the week that the charging targets should be associated to. |
+| 1 | `ChargingTargets` | list of ChargingTargetStruct | `M` | max 10 entries | Indicates a list of up to 10 charging targets for each of the associated days of the week. |
+
+### `ChargingTargetStruct` (struct)
+
+This represents a single user specified charging target for an EV. An EVSE or EMS system optimizer may use this information to take the Time of Use Tariff, grid carbon intensity, local generation (solar PV) into account to provide the cheapest and cleanest energy to the EV.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `TargetTimeMinutesPastMidnight` | uint16 | `M` | max 1439 | Indicates the desired charging completion time of the associated day. |
+| 1 | `TargetSoC` | percent | `SOC, O` | — | This field represents the target SoC that the vehicle should be charged to before the TargetTimeMinutesPastMidnight. |
+| 2 | `AddedEnergy` | energy-mWh | `[SOC], O` | min 0 | This field represents the amount of energy that the user would like to have added to the vehicle before the TargetTimeMinutesPastMidnight. |
+
+---
+
+## Cluster 153 Attributes
+
+Cluster 153 defines **23 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `State` | StateEnum | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `SupplyState` | SupplyStateEnum | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `FaultState` | FaultStateEnum | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `ChargingEnabledUntil` | epoch-s | `M` | R (read: view) | nullable, persisted | — |
+| 4 | `0x0004` | `DischargingEnabledUntil` | epoch-s | `V2X` | R (read: view) | nullable, persisted | — |
+| 5 | `0x0005` | `CircuitCapacity` | amperage-mA | `M` | R (read: view) | persisted | — |
+| 6 | `0x0006` | `MinimumChargeCurrent` | amperage-mA | `M` | R (read: view) | persisted | — |
+| 7 | `0x0007` | `MaximumChargeCurrent` | amperage-mA | `M` | R (read: view) | persisted | — |
+| 8 | `0x0008` | `MaximumDischargeCurrent` | amperage-mA | `V2X` | R (read: view) | persisted | — |
+| 9 | `0x0009` | `UserMaximumChargeCurrent` | amperage-mA | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 10 | `0x000A` | `RandomizationDelayWindow` | elapsed-s | `O` | R/W (read: view, write: manage) | persisted | `600` |
+| 35 | `0x0023` | `NextChargeStartTime` | epoch-s | `PREF` | R (read: view) | nullable | — |
+| 36 | `0x0024` | `NextChargeTargetTime` | epoch-s | `PREF` | R (read: view) | nullable | — |
+| 37 | `0x0025` | `NextChargeRequiredEnergy` | energy-mWh | `PREF` | R (read: view) | nullable | — |
+| 38 | `0x0026` | `NextChargeTargetSoC` | percent | `PREF` | R (read: view) | nullable | — |
+| 39 | `0x0027` | `ApproximateEVEfficiency` | uint16 | `[PREF]` | R/W (read: view, write: manage) | nullable, persisted | `null` |
+| 48 | `0x0030` | `StateOfCharge` | percent | `SOC` | R (read: view) | nullable | — |
+| 49 | `0x0031` | `BatteryCapacity` | energy-mWh | `SOC` | R (read: view) | nullable | — |
+| 50 | `0x0032` | `VehicleID` | string | `PNC` | R (read: view) | nullable | — |
+| 64 | `0x0040` | `SessionID` | uint32 | `M` | R (read: view) | nullable, persisted | — |
+| 65 | `0x0041` | `SessionDuration` | elapsed-s | `M` | R (read: view) | nullable, persisted, quiet reporting | — |
+| 66 | `0x0042` | `SessionEnergyCharged` | energy-mWh | `M` | R (read: view) | nullable, persisted, quiet reporting | — |
+| 67 | `0x0043` | `SessionEnergyDischarged` | energy-mWh | `V2X` | R (read: view) | nullable, persisted, quiet reporting | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `4` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `State`
+
+Path example:
+
+```text
+1/153/0
+```
+
+Indicates the current status of the EVSE. This higher-level status is partly derived from the signaling protocol as communicated between the EVSE and the vehicle through the pilot signal. The State attribute must change when the EVSE detects change of condition of the EV (plugged in or unplugged, whether the vehicle is asking for demand or not, and if it is charging or discharging). SessionEnding is not really a state but a transition.
+
+| Property | Value |
+|---|---|
+| Type | StateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Values (`StateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NotPluggedIn` | The EV is not plugged in. |
+| 1 | `PluggedInNoDemand` | The EV is plugged in, but not demanding current. |
+| 2 | `PluggedInDemand` | The EV is plugged in and is demanding current, but EVSE is not allowing current to flow. |
+| 3 | `PluggedInCharging` | The EV is plugged in, charging is in progress, and current is flowing |
+| 4 | `PluggedInDischarging` | The EV is plugged in, discharging is in progress, and current is flowing |
+| 5 | `SessionEnding` | The EVSE is transitioning from any plugged-in state to NotPluggedIn |
+| 6 | `Fault` | There is a fault, further details in the FaultState attribute |
+
+Example:
+
+```json
+{
+  "1/153/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SupplyState`
+
+Path example:
+
+```text
+1/153/1
+```
+
+Indicates whether the EV is currently allowed to charge from or discharge to the EVSE.
+
+| Property | Value |
+|---|---|
+| Type | SupplyStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`SupplyStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Disabled` | The EV is not currently allowed to charge or discharge |
+| 1 | `ChargingEnabled` | The EV is currently allowed to charge |
+| 2 | `DischargingEnabled` | The EV is currently allowed to discharge |
+| 3 | `DisabledError` | The EV is not currently allowed to charge or discharge due to an error, the error must be cleared before operation can continue |
+| 4 | `DisabledDiagnostics` | The EV is not currently allowed to charge or discharge due to self-diagnostics mode. |
+| 5 | `Enabled` | The EV is currently allowed to charge and discharge |
+
+Example:
+
+```json
+{
+  "1/153/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `FaultState`
+
+Path example:
+
+```text
+1/153/2
+```
+
+Indicates the type of fault detected by the EVSE (internally or as detected in the pilot signal). When the SupplyState attribute is DisabledError, the FaultState attribute will be one of the values listed in FaultStateEnum, except NoError. For all values of SupplyState other than DisabledError, the FaultState attribute is NoError.
+
+| Property | Value |
+|---|---|
+| Type | FaultStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`FaultStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NoError` | The EVSE is not in an error state. |
+| 1 | `MeterFailure` | The EVSE is unable to obtain electrical measurements. |
+| 2 | `OverVoltage` | The EVSE input voltage level is too high. |
+| 3 | `UnderVoltage` | The EVSE input voltage level is too low. |
+| 4 | `OverCurrent` | The EVSE detected charging current higher than allowed by charger. |
+| 5 | `ContactWetFailure` | The EVSE detected voltage on charging pins when the contactor is open. |
+| 6 | `ContactDryFailure` | The EVSE detected absence of voltage after enabling contactor. |
+| 7 | `GroundFault` | The EVSE has an unbalanced current supply. |
+| 8 | `PowerLoss` | The EVSE has detected a loss in power. |
+| 9 | `PowerQuality` | The EVSE has detected another power quality issue (e.g. phase imbalance). |
+| 10 | `PilotShortCircuit` | The EVSE pilot signal amplitude short circuited to ground. |
+| 11 | `EmergencyStop` | The emergency stop button was pressed. |
+| 12 | `EVDisconnected` | The EVSE detected that the cable has been disconnected. |
+| 13 | `WrongPowerSupply` | The EVSE could not determine proper power supply level. |
+| 14 | `LiveNeutralSwap` | The EVSE detected Live and Neutral are swapped. |
+| 15 | `OverTemperature` | The EVSE internal temperature is too high. |
+| 255 | `Other` | Any other reason. |
+
+Example:
+
+```json
+{
+  "1/153/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `ChargingEnabledUntil`
+
+Path example:
+
+```text
+1/153/3
+```
+
+Indicates the time, in UTC, that the EVSE will automatically stop current flow to the EV. A null value indicates the EVSE is always enabled for charging. A value in the past or 0x0 indicates that EVSE charging is disabled. The attribute is only set via the payload of the EnableCharging command.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+
+Example:
+
+```json
+{
+  "1/153/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `DischargingEnabledUntil`
+
+Path example:
+
+```text
+1/153/4
+```
+
+Indicates the time, in UTC, that the EVSE will automatically stop current flow from the EV. A null value indicates the EVSE is always enabled for discharging. A value in the past or 0x0 indicates that EVSE discharging is disabled. The attribute is only set via the payload of the EnableDischarging command.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `V2X` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+
+Example:
+
+```json
+{
+  "1/153/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `CircuitCapacity`
+
+Path example:
+
+```text
+1/153/5
+```
+
+Indicates the capacity that the circuit that the EVSE is connected to can provide. It is intended to allow implementation of a self-managed network of EVSEs. It is assumed that the device will allow the setting of such values by an installer.
+
+| Property | Value |
+|---|---|
+| Type | amperage-mA |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `MinimumChargeCurrent`
+
+Path example:
+
+```text
+1/153/6
+```
+
+Indicates the minimum current that can be delivered by the EVSE to the EV. The attribute can be set using the EnableCharging command.
+
+| Property | Value |
+|---|---|
+| Type | amperage-mA |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `MaximumChargeCurrent`
+
+Path example:
+
+```text
+1/153/7
+```
+
+Indicates the maximum current that can be delivered by the EVSE to the EV. This represents the actual maximum current offered to the EV at any time. Note that the EV can draw less current than this value. For example, the EV may be limiting its power draw based on the operating conditions of the battery, such as temperature and state of charge.
+
+| Property | Value |
+|---|---|
+| Type | amperage-mA |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `MaximumDischargeCurrent`
+
+Path example:
+
+```text
+1/153/8
+```
+
+Indicates the maximum current that can be received by the EVSE from the EV. This attribute can be set using the EnableDischarging command. This attribute value is the minimum of: - CircuitCapacity - Electrician's installation setting - CableAssemblyCurrentLimit (detected by the EVSE when the cable is plugged in) - MaximumDischargeCurrent field in the EnableDischarging command
+
+| Property | Value |
+|---|---|
+| Type | amperage-mA |
+| Conformance | `V2X` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/8": 1
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `UserMaximumChargeCurrent`
+
+Path example:
+
+```text
+1/153/9
+```
+
+Indicates a maximum current that can set by the consumer (e.g. via an app) as a preference to further reduce the charging rate. This may be desirable if the home owner has a solar PV or battery storage system which may only be able to deliver a limited amount of power. The consumer can manually control how much they allow the EV to take. This attribute value is limited by the EVSE to be in the range of: where MinimumChargeCurrent and MaximumChargeCurrent are the values received in the EnableCharging command.
+
+| Property | Value |
+|---|---|
+| Type | amperage-mA |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/153/9": 1
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `RandomizationDelayWindow`
+
+Path example:
+
+```text
+1/153/10
+```
+
+Indicates the size of a random window over which the EVSE will randomize the start of a charging session. This value is in seconds. This is a feature that is mandated in some markets (such as UK) where the EVSE should by default randomize its start time within the randomization window. By default in the UK this should be 600s.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | max 86400 |
+| Default | `600` |
+
+Example:
+
+```json
+{
+  "1/153/10": 1
+}
+```
+
+---
+
+## Attribute `35` / `0x0023` — `NextChargeStartTime`
+
+Path example:
+
+```text
+1/153/35
+```
+
+Indicates the time, in UTC, when the EVSE plans to start the next scheduled charge based on the charging preferences. A null value indicates that there is no scheduled charging (for example, the EVSE Mode is set to use Manual mode tag), or that the vehicle is not plugged in with the SupplyState indicating that charging is enabled.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `PREF` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/153/35": 0
+}
+```
+
+---
+
+## Attribute `36` / `0x0024` — `NextChargeTargetTime`
+
+Path example:
+
+```text
+1/153/36
+```
+
+Indicates the time, in UTC, when the EVSE should complete the next scheduled charge based on the charging preferences. A null value indicates that there is no scheduled charging (for example, the EVSE Mode is set to use Manual mode tag), or that the vehicle is not plugged in with the SupplyState indicating that charging is enabled.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `PREF` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/153/36": 0
+}
+```
+
+---
+
+## Attribute `37` / `0x0025` — `NextChargeRequiredEnergy`
+
+Path example:
+
+```text
+1/153/37
+```
+
+Indicates the amount of energy that the EVSE is going to attempt to add to the vehicle in the next charging target. A null value indicates that there is no scheduled charging (for example, the EVSE Mode is set to use Manual mode tag), or that the vehicle is not plugged in with the SupplyState indicating that charging is enabled, or that the next ChargingTargetStruct is using the TargetSoC value to charge the vehicle.
+
+| Property | Value |
+|---|---|
+| Type | energy-mWh |
+| Conformance | `PREF` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/37": 1
+}
+```
+
+---
+
+## Attribute `38` / `0x0026` — `NextChargeTargetSoC`
+
+Path example:
+
+```text
+1/153/38
+```
+
+Indicates the target SoC the EVSE is going to attempt to reach when the vehicle is next charged. A null value indicates that there is no scheduled charging (for example, the EVSE Mode is set to use Manual mode tag), or that the vehicle is not plugged in with the SupplyState indicating that charging is enabled, or that the next ChargingTargetStruct is using the AddedEnergy value to charge the vehicle. If the SOC feature is not supported, only the values null and 100% are supported.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `PREF` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/153/38": 1
+}
+```
+
+---
+
+## Attribute `39` / `0x0027` — `ApproximateEVEfficiency`
+
+Path example:
+
+```text
+1/153/39
+```
+
+No condensed specification text is available for `ApproximateEVEfficiency`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[PREF]` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | nullable, persisted |
+| Constraint | desc |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/153/39": 1
+}
+```
+
+---
+
+## Attribute `48` / `0x0030` — `StateOfCharge`
+
+Path example:
+
+```text
+1/153/48
+```
+
+Indicates the state of charge of the EV battery in steps of 1%. The values are in the 0-100%. This attribute is only available on EVSEs which can read the state of charge from the vehicle and that support the SOC feature. If the StateOfCharge cannot be read from the vehicle it is returned with a null value.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `SOC` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/153/48": 1
+}
+```
+
+---
+
+## Attribute `49` / `0x0031` — `BatteryCapacity`
+
+Path example:
+
+```text
+1/153/49
+```
+
+Indicates the capacity of the EV battery in mWh. This value is always positive.
+
+| Property | Value |
+|---|---|
+| Type | energy-mWh |
+| Conformance | `SOC` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/49": 1
+}
+```
+
+---
+
+## Attribute `50` / `0x0032` — `VehicleID`
+
+Path example:
+
+```text
+1/153/50
+```
+
+No condensed specification text is available for `VehicleID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `PNC` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max length 32 |
+
+Example:
+
+```json
+{
+  "1/153/50": "example"
+}
+```
+
+---
+
+## Attribute `64` / `0x0040` — `SessionID`
+
+Path example:
+
+```text
+1/153/64
+```
+
+No condensed specification text is available for `SessionID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+
+Example:
+
+```json
+{
+  "1/153/64": 1
+}
+```
+
+---
+
+## Attribute `65` / `0x0041` — `SessionDuration`
+
+Path example:
+
+```text
+1/153/65
+```
+
+No condensed specification text is available for `SessionDuration`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted, quiet reporting |
+
+Example:
+
+```json
+{
+  "1/153/65": 1
+}
+```
+
+---
+
+## Attribute `66` / `0x0042` — `SessionEnergyCharged`
+
+Path example:
+
+```text
+1/153/66
+```
+
+No condensed specification text is available for `SessionEnergyCharged`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | energy-mWh |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted, quiet reporting |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/66": 1
+}
+```
+
+---
+
+## Attribute `67` / `0x0043` — `SessionEnergyDischarged`
+
+Path example:
+
+```text
+1/153/67
+```
+
+No condensed specification text is available for `SessionEnergyDischarged`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | energy-mWh |
+| Conformance | `V2X` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted, quiet reporting |
+| Constraint | min 0 |
+
+Example:
+
+```json
+{
+  "1/153/67": 1
+}
+```
+
+---
+
+# Cluster 153 Commands
+
+Cluster 153 has **7 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `GetTargetsResponse` | server → client | `PREF` | — | The GetTargetsResponse is sent in response to the GetTargets Command. |
+| 1 | `0x01` | `Disable` | client → server | `M` | status | Allows a client to disable the EVSE from charging and discharging. |
+| 2 | `0x02` | `EnableCharging` | client → server | `M` | status | This command allows a client to enable the EVSE to charge an EV, and to provide or update the maximum and minimum charge current. |
+| 3 | `0x03` | `EnableDischarging` | client → server | `V2X` | status | On receipt, this must allow a client to enable the discharge of an EV, and to provide or update the maximum discharge current. |
+| 4 | `0x04` | `StartDiagnostics` | client → server | `O` | status | Allows a client to put the EVSE into a self-diagnostics mode. |
+| 5 | `0x05` | `SetTargets` | client → server | `PREF` | status | Allows a client to set the user specified charging targets. |
+| 6 | `0x06` | `GetTargets` | client → server | `PREF` | GetTargetsResponse | Allows a client to retrieve the current set of charging targets. |
+| 7 | `0x07` | `ClearTargets` | client → server | `PREF` | status | Allows a client to clear all stored charging targets. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 153 / 65529
+```
+
+```json
+{
+  "1/153/65529": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 153 command, check that the command ID exists in <code>endpoint/153/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "Disable",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 153, always use `"cluster_id": 153`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `GetTargetsResponse`
+
+## Purpose
+
+The GetTargetsResponse is sent in response to the GetTargets Command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `GetTargetsResponse` |
+| Direction | server → client (response) |
+| Conformance | `PREF` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ChargingTargetSchedules` | `chargingTargetSchedules` | list of ChargingTargetScheduleStruct | `M` | max 7 entries | Indicates a list of up to 7 sets of daily charging targets together with their associated days of the week. |
+
+---
+
+# Command: `Disable`
+
+## Purpose
+
+Allows a client to disable the EVSE from charging and discharging.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `Disable` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "Disable",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `EnableCharging`
+
+## Purpose
+
+This command allows a client to enable the EVSE to charge an EV, and to provide or update the maximum and minimum charge current.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `EnableCharging` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ChargingEnabledUntil` | `chargingEnabledUntil` | epoch-s (nullable) | `M` | — | Indicates the expiry time, in UTC, when charging will be automatically disabled. A value in the past in this field must disable the EVSE charging whereas a null value must enable it permanently. |
+| 1 | `MinimumChargeCurrent` | `minimumChargeCurrent` | amperage-mA | `M` | min 0 | Indicates the minimum current that can be delivered by the EVSE to the EV in trickle mode. The EVSE current limit can be advertised to an EV in 0.6A steps. |
+| 2 | `MaximumChargeCurrent` | `maximumChargeCurrent` | amperage-mA | `M` | min 0 | Indicates the maximum current that can be delivered by the EVSE to the EV. The EVSE current limit can be advertised to an EV in 0.6A steps. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "EnableCharging",
+    "payload": {
+      "chargingEnabledUntil": 1,
+      "minimumChargeCurrent": 1,
+      "maximumChargeCurrent": 1
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `EnableDischarging`
+
+## Purpose
+
+On receipt, this must allow a client to enable the discharge of an EV, and to provide or update the maximum discharge current.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `EnableDischarging` |
+| Direction | client → server |
+| Conformance | `V2X` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DischargingEnabledUntil` | `dischargingEnabledUntil` | epoch-s (nullable) | `M` | — | Indicates the expiry time, in UTC, when discharging will be automatically disabled. A value in the past in this field must disable the EVSE discharging whereas a null value must enable EVSE discharging permanently. |
+| 1 | `MaximumDischargeCurrent` | `maximumDischargeCurrent` | amperage-mA | `M` | min 0 | Indicates the maximum current that can be received by the EVSE from the EV. The EVSE current limit can be advertised to an EV in 0.6A steps. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "EnableDischarging",
+    "payload": {
+      "dischargingEnabledUntil": 1,
+      "maximumDischargeCurrent": 1
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `StartDiagnostics`
+
+## Purpose
+
+Allows a client to put the EVSE into a self-diagnostics mode.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `StartDiagnostics` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "StartDiagnostics",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `SetTargets`
+
+## Purpose
+
+Allows a client to set the user specified charging targets.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `SetTargets` |
+| Direction | client → server |
+| Conformance | `PREF` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ChargingTargetSchedules` | `chargingTargetSchedules` | list of ChargingTargetScheduleStruct | `M` | max 7 entries | Indicates a list of up to 7 sets of daily charging targets together with their associated days of the week. Each of the days of the week may only be included in a single ChargingTargetSchedule within this list field. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "SetTargets",
+    "payload": {
+      "chargingTargetSchedules": []
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `GetTargets`
+
+## Purpose
+
+Allows a client to retrieve the current set of charging targets.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `GetTargets` |
+| Direction | client → server |
+| Conformance | `PREF` |
+| Response | GetTargetsResponse |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "GetTargets",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+The device answers with `GetTargetsResponse` (see below).
+
+---
+
+# Command: `ClearTargets`
+
+## Purpose
+
+Allows a client to clear all stored charging targets.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `ClearTargets` |
+| Direction | client → server |
+| Conformance | `PREF` |
+| Response | status |
+| Access | (invoke: operate, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 153,
+    "command_name": "ClearTargets",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Cluster 153 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `EVConnected` | info | `M` | — |
+| 1 | `0x01` | `EVNotDetected` | info | `M` | — |
+| 2 | `0x02` | `EnergyTransferStarted` | info | `M` | This event is generated whenever the EV starts charging or discharging, except when an EV has switched between charging and discharging under the control of the PowerAdjustment feature of the Device … |
+| 3 | `0x03` | `EnergyTransferStopped` | info | `M` | This event is generated whenever the EV stops charging or discharging, except when an EV has switched between charging and discharging under the control of the PowerAdjustment feature of the Device … |
+| 4 | `0x04` | `Fault` | critical | `M` | If the EVSE detects a fault it must generate a Fault Event. |
+| 5 | `0x05` | `RFID` | info | `[RFID]` | — |
+
+## Event `0` — `EVConnected`
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SessionID` | uint32 | `M` | — |
+
+## Event `1` — `EVNotDetected`
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SessionID` | uint32 | `M` | — |
+| 1 | `State` | StateEnum | `M` | — |
+| 2 | `SessionDuration` | elapsed-s | `M` | — |
+| 3 | `SessionEnergyCharged` | energy-mWh | `M` | — |
+| 4 | `SessionEnergyDischarged` | energy-mWh | `V2X` | — |
+
+## Event `2` — `EnergyTransferStarted`
+
+This event is generated whenever the EV starts charging or discharging, except when an EV has switched between charging and discharging under the control of the PowerAdjustment feature of the Device Energy Management cluster of the associated Device Energy Management device.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SessionID` | uint32 | `M` | — |
+| 1 | `State` | StateEnum | `M` | Indicates the value of the State attribute at the time the event was generated. |
+| 2 | `MaximumCurrent` | amperage-mA | `M` | Indicates the value of the maximum charging current at the time the event was generated. A non-zero value indicates that the EV has been enabled for charging and the value is taken directly from the MaximumChargeCurrent attribute. |
+| 3 | `MaximumDischargeCurrent` | amperage-mA | `V2X` | Indicates the value of the maximum discharging current at the time the event was generated. A non-zero value indicates that the EV has been enabled for discharging and the value is taken directly from the MaximumDischargeCurrent attribute. |
+
+## Event `3` — `EnergyTransferStopped`
+
+This event is generated whenever the EV stops charging or discharging, except when an EV has switched between charging and discharging under the control of the PowerAdjustment feature of the Device Energy Management cluster of the associated Device Energy Management device.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SessionID` | uint32 | `M` | — |
+| 1 | `State` | StateEnum | `M` | Indicates the value of the State attribute prior to the energy transfer stopping. |
+| 2 | `Reason` | EnergyTransferStoppedReasonEnum | `M` | Indicates the reason why the energy transferred stopped. |
+| 4 | `EnergyTransferred` | energy-mWh | `M` | Indicates the amount of energy transferred from the EVSE to the EV since the previous EnergyTransferStarted event, in mWh. |
+| 5 | `EnergyDischarged` | energy-mWh | `V2X` | Indicates the amount of energy transferred from the EV to the EVSE since the previous EnergyTransferStarted event, in mWh. |
+
+## Event `4` — `Fault`
+
+If the EVSE detects a fault it must generate a Fault Event. The SupplyState attribute is set to DisabledError and the type of fault detected by the EVSE is stored in the FaultState attribute. This event is generated when the FaultState changes from any error state. i.e. if it changes from NoError to any other state and if the error then clears, this would generate 2 events.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SessionID` | uint32 (nullable) | `M` | — |
+| 1 | `State` | StateEnum | `M` | Indicates the value of the State attribute prior to the Fault State being changed. |
+| 2 | `FaultStatePreviousState` | FaultStateEnum | `M` | Indicates the value of the FaultState attribute prior to the Fault State being changed. |
+| 4 | `FaultStateCurrentState` | FaultStateEnum | `M` | Indicates the current value of the FaultState attribute. |
+
+## Event `5` — `RFID`
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `UID` | octstr | `M` | — |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 153 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/153/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

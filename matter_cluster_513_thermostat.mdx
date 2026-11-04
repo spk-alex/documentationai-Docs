@@ -1,0 +1,2708 @@
+---
+title: "Matter Cluster 513 — Thermostat"
+description: "Matter Cluster 513 (0x0201) Thermostat: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 513
+clusterHex: "0x0201"
+clusterName: "Thermostat"
+---
+
+# Matter Cluster 513 — Thermostat Cluster
+
+<Callout type="info">
+Matter Cluster <code>513</code>, also written as <code>0x0201</code>, is the <strong>Thermostat Cluster</strong>.
+This cluster provides an interface to the functionality of a thermostat.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `513` |
+| Cluster ID hex | `0x0201` |
+| Cluster name | `Thermostat` |
+| Cluster revision (Matter 1.6.1) | `11` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `TSTAT` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added; fixed some defaults; CCB 1823, 1480 |
+| 2 | CCB 1981 2186 2249 2250 2251; NFR Thermostat Setback |
+| 3 | CCB 2477 2560 2773 2777 2815 2816 3029 |
+| 4 | All Hubs changes |
+| 5 | New data model format and notation, added FeatureMap, collapsed attribute sets, clarified edge cases around limits, default value of xxxSetpointLimit now respects AbsxxxSetpointLimit |
+| 6 | Introduced the LTNE feature and adapted text (spec issue #5778) |
+| 7 | Update constraints on local temperature calibration and minimum setpoint deadband and introduced Presets and MatterScheduleConfiguration features |
+| 8 | Added comment regarding writing to ControlSequenceOfOperation |
+| 9 | Removed AlarmMask attribute and AlarmCodeBitmap Type |
+| 10 | Removed Zigbee related elements and P quality, deprecated ThermostatProgrammingOperationMode and removed ProgrammingOperationModeBitmap. and deprecated Setback feature and related elements. |
+| 11 | Added support for Thermostat suggestions. Added events. |
+
+---
+
+## Shadow Path Format
+
+Cluster 513 values in the device shadow use this format:
+
+```text
+endpoint_id / 513 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/513/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `513` | Thermostat cluster |
+| `0` | `LocalTemperature` attribute |
+
+---
+
+## Cluster 513 Features
+
+The `FeatureMap` attribute (`1/513/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `HEAT` | Heating | `AUTO, O` | Thermostat is capable of managing a heating device |
+| 1 | `COOL` | Cooling | `AUTO, O` | Thermostat is capable of managing a cooling device |
+| 2 | `OCC` | Occupancy | `O` | Supports Occupied and Unoccupied setpoints |
+| 4 | `SB` | Setback | `D` |  |
+| 5 | `AUTO` | AutoMode | `O` | Supports a System Mode of Auto |
+| 6 | `LTNE` | LocalTemperatureNotExposed | `O` | Thermostat does not expose the LocalTemperature Value in the LocalTemperature attribute |
+| 7 | `MSCH` | MatterScheduleConfiguration | `O` | Supports enhanced schedules |
+| 8 | `PRES` | Presets | `O` | Thermostat supports setpoint presets |
+| 9 | `TEVT` | Events | `P, O` | Thermostat supports events |
+| 10 | `TSUGGEST` | ThermostatSuggestions | `[PRES]` | Thermostat supports suggestions |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `2039` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ACCapacityFormatEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `BTUh` | `O` | British Thermal Unit per Hour |
+
+### `ACCompressorTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `O` | Unknown compressor type |
+| 1 | `T1` | `O` | Max working ambient 43 °C |
+| 2 | `T2` | `O` | Max working ambient 35 °C |
+| 3 | `T3` | `O` | Max working ambient 52 °C |
+
+### `ACLouverPositionEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 1 | `Closed` | `O` | Fully Closed |
+| 2 | `Open` | `O` | Fully Open |
+| 3 | `Quarter` | `O` | Quarter Open |
+| 4 | `Half` | `O` | Half Open |
+| 5 | `ThreeQuarters` | `O` | Three Quarters Open |
+
+### `ACRefrigerantTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `O` | Unknown Refrigerant Type |
+| 1 | `R22` | `O` | R22 Refrigerant |
+| 2 | `R410a` | `O` | R410a Refrigerant |
+| 3 | `R407c` | `O` | R407c Refrigerant |
+
+### `ACTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `O` | Unknown AC Type |
+| 1 | `CoolingFixed` | `O` | Cooling and Fixed Speed |
+| 2 | `HeatPumpFixed` | `O` | Heat Pump and Fixed Speed |
+| 3 | `CoolingInverter` | `O` | Cooling and Inverter |
+| 4 | `HeatPumpInverter` | `O` | Heat Pump and Inverter |
+
+### `ControlSequenceOfOperationEnum`
+
+A thermostat indicating it supports CoolingAndHeating (or CoolingAndHeatingWithReheat) should be able to request heating or cooling on demand and will usually support the Auto SystemMode.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CoolingOnly` | `[COOL]` | Heat and Emergency are not possible |
+| 1 | `CoolingWithReheat` | `[COOL]` | Heat and Emergency are not possible |
+| 2 | `HeatingOnly` | `[HEAT]` | Cool and precooling (see Terms) are not possible |
+| 3 | `HeatingWithReheat` | `[HEAT]` | Cool and precooling are not possible |
+| 4 | `CoolingAndHeating` | `[HEAT & COOL]` | All modes are possible |
+| 5 | `CoolingAndHeatingWithReheat` | `[HEAT & COOL]` | All modes are possible |
+
+### `PresetScenarioEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 1 | `Occupied` | `M` | The thermostat-controlled area is occupied |
+| 2 | `Unoccupied` | `M` | The thermostat-controlled area is unoccupied |
+| 3 | `Sleep` | `M` | Users are likely to be sleeping |
+| 4 | `Wake` | `M` | Users are likely to be waking up |
+| 5 | `Vacation` | `M` | Users are on vacation |
+| 6 | `GoingToSleep` | `M` | Users are likely to be going to sleep |
+| 254 | `UserDefined` | `M` | Custom presets |
+
+### `SetpointChangeSourceEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Manual` | `O` | Manual, user-initiated setpoint change via the thermostat |
+| 1 | `Schedule` | `[MSCH]` | Schedule/internal programming-initiated setpoint change |
+| 2 | `External` | `O` | Externally-initiated setpoint change (e.g., DRLC cluster command, attribute write) |
+
+### `SetpointRaiseLowerModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Heat` | `HEAT` | Adjust Heat Setpoint |
+| 1 | `Cool` | `COOL` | Adjust Cool Setpoint |
+| 2 | `Both` | `HEAT \| COOL` | Adjust Heat Setpoint and Cool Setpoint |
+
+### `StartOfWeekEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Sunday` | `M` | — |
+| 1 | `Monday` | `M` | — |
+| 2 | `Tuesday` | `M` | — |
+| 3 | `Wednesday` | `M` | — |
+| 4 | `Thursday` | `M` | — |
+| 5 | `Friday` | `M` | — |
+| 6 | `Saturday` | `M` | — |
+
+### `SystemModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Off` | `O` | The Thermostat does not generate demand for Cooling or Heating |
+| 1 | `Auto` | `AUTO` | Demand is generated for either Cooling or Heating, as required |
+| 3 | `Cool` | `[COOL]` | Demand is only generated for Cooling |
+| 4 | `Heat` | `[HEAT]` | Demand is only generated for Heating |
+| 5 | `EmergencyHeat` | `[HEAT]` | 2nd stage heating is in use to achieve desired temperature |
+| 6 | `Precooling` | `[COOL]` | (see Terms) |
+| 7 | `FanOnly` | `O` | — |
+| 8 | `Dry` | `O` | — |
+| 9 | `Sleep` | `O` | — |
+
+### `TemperatureSetpointHoldEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `SetpointHoldOff` | `M` | Follow scheduling program |
+| 1 | `SetpointHoldOn` | `M` | Maintain current setpoint, regardless of schedule transitions |
+
+### `ThermostatRunningModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Off` | `O` | The Thermostat does not generate demand for Cooling or Heating |
+| 3 | `Cool` | `[COOL]` | Demand is only generated for Cooling |
+| 4 | `Heat` | `[HEAT]` | Demand is only generated for Heating |
+
+### `ACErrorCodeBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CompressorFail` | `M` | Compressor Failure or Refrigerant Leakage |
+| 1 | `RoomSensorFail` | `M` | Room Temperature Sensor Failure |
+| 2 | `OutdoorSensorFail` | `M` | Outdoor Temperature Sensor Failure |
+| 3 | `CoilSensorFail` | `M` | Indoor Coil Temperature Sensor Failure |
+| 4 | `FanFail` | `M` | Fan Failure |
+
+### `OccupancyBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Occupied` | `M` | Indicates the occupancy state |
+
+### `PresetTypeFeaturesBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Automatic` | `M` | Preset may be automatically activated by the thermostat |
+| 1 | `SupportsNames` | `M` | Preset supports user-provided names |
+
+### `RelayStateBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Heat` | `M` | Heat Stage On |
+| 1 | `Cool` | `M` | Cool Stage On |
+| 2 | `Fan` | `M` | Fan Stage On |
+| 3 | `HeatStage2` | `M` | Heat 2nd Stage On |
+| 4 | `CoolStage2` | `M` | Cool 2nd Stage On |
+| 5 | `FanStage2` | `M` | Fan 2nd Stage On |
+| 6 | `FanStage3` | `M` | Fan 3rd Stage On |
+
+### `RemoteSensingBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `LocalTemperature` | `M` | Calculated Local Temperature is derived from a remote node |
+| 1 | `OutdoorTemperature` | `OutdoorTemperature` | OutdoorTemperature is derived from a remote node |
+| 2 | `Occupancy` | `OCC` | Occupancy is derived from a remote node |
+
+### `ScheduleDayOfWeekBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Sunday` | `M` | Sunday |
+| 1 | `Monday` | `M` | Monday |
+| 2 | `Tuesday` | `M` | Tuesday |
+| 3 | `Wednesday` | `M` | Wednesday |
+| 4 | `Thursday` | `M` | Thursday |
+| 5 | `Friday` | `M` | Friday |
+| 6 | `Saturday` | `M` | Saturday |
+| 7 | `Away` | `M` | Away or Vacation |
+
+### `ScheduleModeBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `HeatSetpointPresent` | `M` | Adjust Heat Setpoint |
+| 1 | `CoolSetpointPresent` | `M` | Adjust Cool Setpoint |
+
+### `ScheduleTypeFeaturesBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `SupportsPresets` | `[PRES]` | Supports presets |
+| 1 | `SupportsSetpoints` | `O` | Supports setpoints |
+| 2 | `SupportsNames` | `O` | Supports user-provided names |
+| 3 | `SupportsOff` | `O` | Supports transitioning to SystemModeOff |
+
+### `ThermostatSuggestionNotFollowingReasonBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `DemandResponseEvent` | `M` | Thermostat is responding to a Demand Response event |
+| 1 | `OngoingHold` | `M` | Thermostat has an ongoing setpoint hold |
+| 2 | `Schedule` | `M` | Thermostat is following a schedule |
+| 3 | `Occupancy` | `M` | Thermostat is following the occupancy signal |
+| 4 | `VacationMode` | `M` | Thermostat is set to Vacation mode |
+| 5 | `TimeOfUseCostSavings` | `M` | Thermostat is following a Time Of Use based cost savings plan |
+| 6 | `PreCoolingOrPreHeating` | `M` | Thermostat is precooling or preheating based on an energy forecast signal |
+| 7 | `ConflictingSuggestions` | `M` | Thermostat has conflicting suggestions and is unable to choose one |
+
+### `PresetStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PresetHandle` | octstr (nullable) | `M` | max length 16 | Indicates a device generated identifier for this preset. |
+| 1 | `PresetScenario` | PresetScenarioEnum | `M` | — | Indicates the associated PresetScenarioEnum value for this preset. |
+| 2 | `Name` | string (nullable) | `O` | max length 64 | Indicates a name provided by a user. |
+| 3 | `CoolingSetpoint` | temperature | `COOL` | desc | Indicates the cooling setpoint for the preset. |
+| 4 | `HeatingSetpoint` | temperature | `HEAT` | desc | Indicates the heating setpoint for the preset. |
+| 5 | `BuiltIn` | bool (nullable) | `M` | — | Indicates whether the preset is marked as "built-in", meaning that it can be modified, but it cannot be deleted. |
+
+### `PresetTypeStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PresetScenario` | PresetScenarioEnum | `M` | — | This field specifies a PresetScenarioEnum value supported by this thermostat. |
+| 1 | `NumberOfPresets` | uint8 | `M` | — | This field specifies a limit for the number of presets for this PresetScenarioEnum. |
+| 2 | `PresetTypeFeatures` | PresetTypeFeaturesBitmap | `M` | — | This field specifies a bitmap of features for this PresetTypeStruct. |
+
+### `ScheduleStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ScheduleHandle` | octstr (nullable) | `M` | max length 16 | Indicates a device generated identifier for this schedule. |
+| 1 | `SystemMode` | SystemModeEnum | `M` | desc | This field specifies the default thermostat system mode for transitions in this schedule. |
+| 2 | `Name` | string | `O` | max length 64 | This field specifies a name for the ScheduleStruct. |
+| 3 | `PresetHandle` | octstr | `O` | max length 16 | Indicates the default PresetHandle value for transitions in this schedule. |
+| 4 | `Transitions` | list of ScheduleTransitionStruct | `M` | 1 to NumberOfScheduleTransitions entries | This field specifies a list of transitions for the schedule. |
+| 5 | `BuiltIn` | bool (nullable) | `M` | — | Indicates whether the schedule is marked as "built-in", meaning that it can be modified, but it cannot be deleted. |
+
+### `ScheduleTransitionStruct` (struct)
+
+This struct provides a time of day and a set of days of the week for a state transition within a schedule. The thermostat must use the following order of precedence for determining a new setpoint at the time of transition: 1.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `DayOfWeek` | ScheduleDayOfWeekBitmap | `M` | desc | This field specifies a bitmask of days of the week that the transition applies to. |
+| 1 | `TransitionTime` | uint16 | `M` | max 1439 | This specifies the time of day at which the transition becomes active, in terms of minutes within the day representing the wall clock, where 0 is 00:00:00, 1 is 00:01:00 and 1439 is 23:59:00. |
+| 2 | `PresetHandle` | octstr | `[PRES]` | max length 16 | This field specifies the preset used at the TransitionTime. |
+| 3 | `SystemMode` | SystemModeEnum | `O` | desc | This specifies the default mode to which the thermostat will switch for this transition, overriding the default for the schedule. |
+| 4 | `CoolingSetpoint` | temperature | `[COOL]` | desc | This field specifies the cooling setpoint for the transition. |
+| 5 | `HeatingSetpoint` | temperature | `[HEAT]` | desc | This field specifies the cooling setpoint for the transition. |
+
+### `ScheduleTypeStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `SystemMode` | SystemModeEnum | `M` | desc | This field specifies a SystemModeEnum supported by this thermostat for Schedules. |
+| 1 | `NumberOfSchedules` | uint8 | `M` | max NumberOfSchedules | This field specifies a limit for the number of Schedules for this SystemMode. |
+| 2 | `ScheduleTypeFeatures` | ScheduleTypeFeaturesBitmap | `M` | desc | This field specifies a bitmap of features for this schedule entry. |
+
+### `ThermostatSuggestionStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `UniqueID` | uint8 | `M` | — | — |
+| 1 | `PresetHandle` | octstr | `M` | max length 16 | Indicates the PresetHandle of the PresetStruct that represents the thermostat suggestion value. |
+| 2 | `EffectiveTime` | epoch-s | `M` | — | Indicates the UTC timestamp at which the suggestion must take effect. |
+| 3 | `ExpirationTime` | epoch-s | `M` | — | Indicates the UTC timestamp at which the suggestion must expire. |
+
+### `WeeklyScheduleTransitionStruct` (struct)
+
+This represents a single transition in a Thermostat schedule
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `TransitionTime` | uint16 | `M` | max 1439 | This field represents the start time of the schedule transition during the associated day. |
+| 1 | `HeatSetpoint` | temperature (nullable) | `M` | — | This field represents the heat setpoint to be applied at this associated transition start time. |
+| 2 | `CoolSetpoint` | temperature (nullable) | `M` | — | This field represents the cool setpoint to be applied at this associated transition start time. |
+
+---
+
+## Cluster 513 Attributes
+
+Cluster 513 defines **61 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `LocalTemperature` | temperature | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `OutdoorTemperature` | temperature | `O` | R (read: view) | nullable | `null` |
+| 2 | `0x0002` | `Occupancy` | OccupancyBitmap | `OCC` | R (read: view) | — | — |
+| 3 | `0x0003` | `AbsMinHeatSetpointLimit` | temperature | `[HEAT]` | R (read: view) | — | `700` |
+| 4 | `0x0004` | `AbsMaxHeatSetpointLimit` | temperature | `[HEAT]` | R (read: view) | — | `3000` |
+| 5 | `0x0005` | `AbsMinCoolSetpointLimit` | temperature | `[COOL]` | R (read: view) | — | `1600` |
+| 6 | `0x0006` | `AbsMaxCoolSetpointLimit` | temperature | `[COOL]` | R (read: view) | — | `3200` |
+| 7 | `0x0007` | `PICoolingDemand` |  | `D` | — | — | — |
+| 8 | `0x0008` | `PIHeatingDemand` |  | `D` | — | — | — |
+| 9 | `0x0009` | `HVACSystemTypeConfiguration` |  | `D` | — | — | — |
+| 16 | `0x0010` | `LocalTemperatureCalibration` | SignedTemperature | `[!LTNE]` | R/W (read: view, write: manage) | persisted | `0` |
+| 17 | `0x0011` | `OccupiedCoolingSetpoint` | temperature | `COOL` | R/W (read: view, write: operate) | persisted | `2600` |
+| 18 | `0x0012` | `OccupiedHeatingSetpoint` | temperature | `HEAT` | R/W (read: view, write: operate) | persisted | `2000` |
+| 19 | `0x0013` | `UnoccupiedCoolingSetpoint` | temperature | `COOL & OCC` | R/W (read: view, write: operate) | persisted | `2600` |
+| 20 | `0x0014` | `UnoccupiedHeatingSetpoint` | temperature | `HEAT & OCC` | R/W (read: view, write: operate) | persisted | `2000` |
+| 21 | `0x0015` | `MinHeatSetpointLimit` | temperature | `[HEAT]` | R/W (read: view, write: manage) | persisted | — |
+| 22 | `0x0016` | `MaxHeatSetpointLimit` | temperature | `[HEAT]` | R/W (read: view, write: manage) | persisted | — |
+| 23 | `0x0017` | `MinCoolSetpointLimit` | temperature | `[COOL]` | R/W (read: view, write: manage) | persisted | — |
+| 24 | `0x0018` | `MaxCoolSetpointLimit` | temperature | `[COOL]` | R/W (read: view, write: manage) | persisted | — |
+| 25 | `0x0019` | `MinSetpointDeadBand` | SignedTemperature | `AUTO` | R/W(opt) (read: view, write: manage) | persisted | `20` |
+| 26 | `0x001A` | `RemoteSensing` | RemoteSensingBitmap | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 27 | `0x001B` | `ControlSequenceOfOperation` | ControlSequenceOfOperationEnum | `M` | R/W (read: view, write: manage) | persisted | — |
+| 28 | `0x001C` | `SystemMode` | SystemModeEnum | `M` | R/W (read: view, write: manage) | persisted | — |
+| 30 | `0x001E` | `ThermostatRunningMode` | ThermostatRunningModeEnum | `TEVT & AUTO, [AUTO]` | R (read: view) | — | `0` |
+| 35 | `0x0023` | `TemperatureSetpointHold` | TemperatureSetpointHoldEnum | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 36 | `0x0024` | `TemperatureSetpointHoldDuration` | uint16 | `O` | R/W (read: view, write: manage) | nullable, persisted | `null` |
+| 37 | `0x0025` | `ThermostatProgrammingOperationMode` |  | `D` | — | — | — |
+| 41 | `0x0029` | `ThermostatRunningState` | RelayStateBitmap | `O` | R (read: view) | — | — |
+| 48 | `0x0030` | `SetpointChangeSource` | SetpointChangeSourceEnum | `O` | R (read: view) | — | `0` |
+| 49 | `0x0031` | `SetpointChangeAmount` | int16s | `O` | R (read: view) | nullable | `null` |
+| 50 | `0x0032` | `SetpointChangeSourceTimestamp` | epoch-s | `O` | R (read: view) | — | `MS` |
+| 52 | `0x0034` | `OccupiedSetback` |  | `D` | — | — | — |
+| 53 | `0x0035` | `OccupiedSetbackMin` |  | `D` | — | — | — |
+| 54 | `0x0036` | `OccupiedSetbackMax` |  | `D` | — | — | — |
+| 55 | `0x0037` | `UnoccupiedSetback` |  | `D` | — | — | — |
+| 56 | `0x0038` | `UnoccupiedSetbackMin` |  | `D` | — | — | — |
+| 57 | `0x0039` | `UnoccupiedSetbackMax` |  | `D` | — | — | — |
+| 58 | `0x003A` | `EmergencyHeatDelta` | UnsignedTemperature | `O` | R/W (read: view, write: manage) | persisted | `255` |
+| 64 | `0x0040` | `ACType` | ACTypeEnum | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 65 | `0x0041` | `ACCapacity` | uint16 | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 66 | `0x0042` | `ACRefrigerantType` | ACRefrigerantTypeEnum | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 67 | `0x0043` | `ACCompressorType` | ACCompressorTypeEnum | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 68 | `0x0044` | `ACErrorCode` | ACErrorCodeBitmap | `O` | R/W (read: view, write: manage) | — | `0` |
+| 69 | `0x0045` | `ACLouverPosition` | ACLouverPositionEnum | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 70 | `0x0046` | `ACCoilTemperature` | temperature | `O` | R (read: view) | nullable | `null` |
+| 71 | `0x0047` | `ACCapacityFormat` | ACCapacityFormatEnum | `O` | R/W (read: view, write: manage) | persisted | `0` |
+| 72 | `0x0048` | `PresetTypes` | list of PresetTypeStruct | `PRES` | R (read: view) | — | — |
+| 73 | `0x0049` | `ScheduleTypes` | list of ScheduleTypeStruct | `MSCH` | R (read: view) | — | — |
+| 74 | `0x004A` | `NumberOfPresets` | uint8 | `PRES` | R (read: view) | — | — |
+| 75 | `0x004B` | `NumberOfSchedules` | uint8 | `MSCH` | R (read: view) | — | — |
+| 76 | `0x004C` | `NumberOfScheduleTransitions` | uint8 | `MSCH` | R (read: view) | — | — |
+| 77 | `0x004D` | `NumberOfScheduleTransitionPerDay` | uint8 | `MSCH` | R (read: view) | nullable | — |
+| 78 | `0x004E` | `ActivePresetHandle` | octstr | `PRES` | R (read: view) | nullable, persisted | — |
+| 79 | `0x004F` | `ActiveScheduleHandle` | octstr | `MSCH` | R (read: view) | nullable, persisted | — |
+| 80 | `0x0050` | `Presets` | list of PresetStruct | `PRES` | R/W (read: view, write: manage) | persisted | — |
+| 81 | `0x0051` | `Schedules` | list of ScheduleStruct | `MSCH` | R/W (read: view, write: manage) | persisted | — |
+| 82 | `0x0052` | `SetpointHoldExpiryTimestamp` | epoch-s | `O` | R (read: view) | nullable, persisted | `null` |
+| 83 | `0x0053` | `MaxThermostatSuggestions` | uint8 | `TSUGGEST` | R (read: view) | — | — |
+| 84 | `0x0054` | `ThermostatSuggestions` | list of ThermostatSuggestionStruct | `TSUGGEST` | R (read: view) | persisted | — |
+| 85 | `0x0055` | `CurrentThermostatSuggestion` | ThermostatSuggestionStruct | `TSUGGEST` | R (read: view) | nullable | — |
+| 86 | `0x0056` | `ThermostatSuggestionNotFollowingReason` | ThermostatSuggestionNotFollowingReasonBitmap | `TSUGGEST` | R (read: view) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `11` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `LocalTemperature`
+
+Path example:
+
+```text
+1/513/0
+```
+
+Indicates the current Calculated Local Temperature, when available. - If the LTNE feature is not supported: - If the LocalTemperatureCalibration is invalid or currently unavailable, the attribute must report null. - If the LocalTemperatureCalibration is valid, the attribute must report that value. - Otherwise, if the LTNE feature is supported, there is no feedback externally available for the LocalTemperatureCalibration. In that case, the LocalTemperature attribute must always report null.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/513/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `OutdoorTemperature`
+
+Path example:
+
+```text
+1/513/1
+```
+
+Indicates the outdoor temperature, as measured locally or remotely (over the network).
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/513/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `Occupancy`
+
+Path example:
+
+```text
+1/513/2
+```
+
+Indicates whether the heated/cooled space is occupied or not, as measured locally or remotely (over the network).
+
+| Property | Value |
+|---|---|
+| Type | OccupancyBitmap |
+| Conformance | `OCC` |
+| Access | R (read: view) |
+
+Bits (`OccupancyBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Occupied` | Indicates the occupancy state |
+
+Example:
+
+```json
+{
+  "1/513/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `AbsMinHeatSetpointLimit`
+
+Path example:
+
+```text
+1/513/3
+```
+
+Indicates the absolute minimum level that the heating setpoint may be set to. This is a limitation imposed by the manufacturer. Refer to Setpoint Limits for constraints
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[HEAT]` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `700` |
+
+Example:
+
+```json
+{
+  "1/513/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `AbsMaxHeatSetpointLimit`
+
+Path example:
+
+```text
+1/513/4
+```
+
+Indicates the absolute maximum level that the heating setpoint may be set to. This is a limitation imposed by the manufacturer. Refer to Setpoint Limits for constraints
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[HEAT]` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `3000` |
+
+Example:
+
+```json
+{
+  "1/513/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `AbsMinCoolSetpointLimit`
+
+Path example:
+
+```text
+1/513/5
+```
+
+Indicates the absolute minimum level that the cooling setpoint may be set to. This is a limitation imposed by the manufacturer. Refer to Setpoint Limits for constraints
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[COOL]` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `1600` |
+
+Example:
+
+```json
+{
+  "1/513/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `AbsMaxCoolSetpointLimit`
+
+Path example:
+
+```text
+1/513/6
+```
+
+Indicates the absolute maximum level that the cooling setpoint may be set to. This is a limitation imposed by the manufacturer. Refer to Setpoint Limits for constraints
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[COOL]` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `3200` |
+
+Example:
+
+```json
+{
+  "1/513/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `PICoolingDemand`
+
+Path example:
+
+```text
+1/513/7
+```
+
+No condensed specification text is available for `PICoolingDemand`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/7": 0
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `PIHeatingDemand`
+
+Path example:
+
+```text
+1/513/8
+```
+
+No condensed specification text is available for `PIHeatingDemand`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/8": 0
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `HVACSystemTypeConfiguration`
+
+Path example:
+
+```text
+1/513/9
+```
+
+No condensed specification text is available for `HVACSystemTypeConfiguration`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/9": 0
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `LocalTemperatureCalibration`
+
+Path example:
+
+```text
+1/513/16
+```
+
+Indicates the offset the Thermostat server must make to the measured temperature (locally or remotely) to adjust the Calculated Local Temperature prior to using, displaying or reporting it. The purpose of this attribute is to adjust the calibration of the Thermostat server per the user's preferences (e.g., to match if there are multiple servers displaying different values for the same HVAC area) or compensate for variability amongst temperature sensors.
+
+| Property | Value |
+|---|---|
+| Type | SignedTemperature |
+| Conformance | `[!LTNE]` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/513/16": 0
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `OccupiedCoolingSetpoint`
+
+Path example:
+
+```text
+1/513/17
+```
+
+Indicates the cooling mode setpoint when the room is occupied. Refer to Setpoint Limits for constraints. If an attempt is made to set this attribute to a value greater than MaxCoolSetpointLimit or less than MinCoolSetpointLimit, a response with the status code CONSTRAINT_ERROR is returned. If this attribute is set to a value that is less than (OccupiedHeatingSetpoint + MinSetpointDeadBand), the value of OccupiedHeatingSetpoint is adjusted to (OccupiedCoolingSetpoint - MinSetpointDeadBand).
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `COOL` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `2600` |
+
+Example:
+
+```json
+{
+  "1/513/17": 1
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `OccupiedHeatingSetpoint`
+
+Path example:
+
+```text
+1/513/18
+```
+
+Indicates the heating mode setpoint when the room is occupied. Refer to Setpoint Limits for constraints. If an attempt is made to set this attribute to a value greater than MaxHeatSetpointLimit or less than MinHeatSetpointLimit, a response with the status code CONSTRAINT_ERROR is returned. If this attribute is set to a value that is greater than (OccupiedCoolingSetpoint - MinSetpointDeadBand), the value of OccupiedCoolingSetpoint is adjusted to (OccupiedHeatingSetpoint + MinSetpointDeadBand).
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `HEAT` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `2000` |
+
+Example:
+
+```json
+{
+  "1/513/18": 1
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `UnoccupiedCoolingSetpoint`
+
+Path example:
+
+```text
+1/513/19
+```
+
+Indicates the cooling mode setpoint when the room is unoccupied. Refer to Setpoint Limits for constraints. If an attempt is made to set this attribute to a value greater than MaxCoolSetpointLimit or less than MinCoolSetpointLimit, a response with the status code CONSTRAINT_ERROR is returned. If this attribute is set to a value that is less than (UnoccupiedHeatingSetpoint + MinSetpointDeadBand), the value of UnoccupiedHeatingSetpoint is adjusted to (UnoccupiedCoolingSetpoint - MinSetpointDeadBand).
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `COOL & OCC` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `2600` |
+
+Example:
+
+```json
+{
+  "1/513/19": 1
+}
+```
+
+---
+
+## Attribute `20` / `0x0014` — `UnoccupiedHeatingSetpoint`
+
+Path example:
+
+```text
+1/513/20
+```
+
+Indicates the heating mode setpoint when the room is unoccupied. Refer to Setpoint Limits for constraints. If an attempt is made to set this attribute to a value greater than MaxHeatSetpointLimit or less than MinHeatSetpointLimit, a response with the status code CONSTRAINT_ERROR is returned. If this attribute is set to a value that is greater than (UnoccupiedCoolingSetpoint - MinSetpointDeadBand), the value of UnoccupiedCoolingSetpoint is adjusted to (UnoccupiedHeatingSetpoint + MinSetpointDeadBand).
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `HEAT & OCC` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `2000` |
+
+Example:
+
+```json
+{
+  "1/513/20": 1
+}
+```
+
+---
+
+## Attribute `21` / `0x0015` — `MinHeatSetpointLimit`
+
+Path example:
+
+```text
+1/513/21
+```
+
+Indicates the minimum level that the heating setpoint may be set to. This attribute, and the following three attributes, allow the user to define setpoint limits more constrictive than the manufacturer imposed ones. Limiting users (e.g., in a commercial building) to such setpoint limits can help conserve power. Refer to Setpoint Limits for constraints.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[HEAT]` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/513/21": 1
+}
+```
+
+---
+
+## Attribute `22` / `0x0016` — `MaxHeatSetpointLimit`
+
+Path example:
+
+```text
+1/513/22
+```
+
+Indicates the maximum level that the heating setpoint may be set to. Refer to Setpoint Limits for constraints. If an attempt is made to set this attribute to a value which conflicts with setpoint values then those setpoints is adjusted by the minimum amount to permit this attribute to be set to the desired value. If an attempt is made to set this attribute to a value which is not consistent with the constraints and cannot be resolved by modifying setpoints then a response with the status code CONSTRAINT_ERROR is returned.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[HEAT]` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/513/22": 1
+}
+```
+
+---
+
+## Attribute `23` / `0x0017` — `MinCoolSetpointLimit`
+
+Path example:
+
+```text
+1/513/23
+```
+
+Indicates the minimum level that the cooling setpoint may be set to. Refer to Setpoint Limits for constraints. If an attempt is made to set this attribute to a value which conflicts with setpoint values then those setpoints is adjusted by the minimum amount to permit this attribute to be set to the desired value. If an attempt is made to set this attribute to a value which is not consistent with the constraints and cannot be resolved by modifying setpoints then a response with the status code CONSTRAINT_ERROR is returned.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[COOL]` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/513/23": 1
+}
+```
+
+---
+
+## Attribute `24` / `0x0018` — `MaxCoolSetpointLimit`
+
+Path example:
+
+```text
+1/513/24
+```
+
+Indicates the maximum level that the cooling setpoint may be set to. Refer to Setpoint Limits for constraints. If an attempt is made to set this attribute to a value which conflicts with setpoint values then those setpoints is adjusted by the minimum amount to permit this attribute to be set to the desired value. If an attempt is made to set this attribute to a value which is not consistent with the constraints and cannot be resolved by modifying setpoints then a response with the status code CONSTRAINT_ERROR is returned.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `[COOL]` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/513/24": 1
+}
+```
+
+---
+
+## Attribute `25` / `0x0019` — `MinSetpointDeadBand`
+
+Path example:
+
+```text
+1/513/25
+```
+
+On devices which support the AUTO feature, this attribute indicates the minimum difference between the Heat Setpoint and the Cool Setpoint. Refer to Setpoint Limits for constraints. Prior to revision 8 of this cluster specification the value of this attribute was constrained to a range of 0°C to 2.5°C. For backwards compatibility, this attribute is optionally writeable.
+
+| Property | Value |
+|---|---|
+| Type | SignedTemperature |
+| Conformance | `AUTO` |
+| Access | R/W(opt) (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | 0 to 127 |
+| Default | `20` |
+
+Example:
+
+```json
+{
+  "1/513/25": 0
+}
+```
+
+---
+
+## Attribute `26` / `0x001A` — `RemoteSensing`
+
+Path example:
+
+```text
+1/513/26
+```
+
+Indicates when the local temperature, outdoor temperature and occupancy are being sensed by remote networked sensors, rather than internal sensors. If the LTNE feature is present in the server, the LocalTemperature RemoteSensing bit value must always report a value of 0. If the LocalTemperature RemoteSensing bit is written with a value of 1 when the LTNE feature is present, the write must fail and the server must report a CONSTRAINT_ERROR.
+
+| Property | Value |
+|---|---|
+| Type | RemoteSensingBitmap |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Bits (`RemoteSensingBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `LocalTemperature` | Calculated Local Temperature is derived from a remote node |
+| 1 | `OutdoorTemperature` | OutdoorTemperature is derived from a remote node |
+| 2 | `Occupancy` | Occupancy is derived from a remote node |
+
+Example:
+
+```json
+{
+  "1/513/26": 0
+}
+```
+
+---
+
+## Attribute `27` / `0x001B` — `ControlSequenceOfOperation`
+
+Path example:
+
+```text
+1/513/27
+```
+
+Indicates the overall operating environment of the thermostat, and thus the possible system modes that the thermostat can operate in. If an attempt is made to write to this attribute, the server must silently ignore the write and the value of this attribute must remain unchanged. This behavior is in place for backwards compatibility with existing thermostats.
+
+| Property | Value |
+|---|---|
+| Type | ControlSequenceOfOperationEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Values (`ControlSequenceOfOperationEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `CoolingOnly` | Heat and Emergency are not possible |
+| 1 | `CoolingWithReheat` | Heat and Emergency are not possible |
+| 2 | `HeatingOnly` | Cool and precooling (see Terms) are not possible |
+| 3 | `HeatingWithReheat` | Cool and precooling are not possible |
+| 4 | `CoolingAndHeating` | All modes are possible |
+| 5 | `CoolingAndHeatingWithReheat` | All modes are possible |
+
+Example:
+
+```json
+{
+  "1/513/27": 0
+}
+```
+
+---
+
+## Attribute `28` / `0x001C` — `SystemMode`
+
+Path example:
+
+```text
+1/513/28
+```
+
+Indicates the current operating mode of the thermostat. Its value is limited by the ControlSequenceOfOperation attribute.
+
+| Property | Value |
+|---|---|
+| Type | SystemModeEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Values (`SystemModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Off` | The Thermostat does not generate demand for Cooling or Heating |
+| 1 | `Auto` | Demand is generated for either Cooling or Heating, as required |
+| 3 | `Cool` | Demand is only generated for Cooling |
+| 4 | `Heat` | Demand is only generated for Heating |
+| 5 | `EmergencyHeat` | 2nd stage heating is in use to achieve desired temperature |
+| 6 | `Precooling` | (see Terms) |
+| 7 | `FanOnly` | — |
+| 8 | `Dry` | — |
+| 9 | `Sleep` | — |
+
+Example:
+
+```json
+{
+  "1/513/28": 0
+}
+```
+
+---
+
+## Attribute `30` / `0x001E` — `ThermostatRunningMode`
+
+Path example:
+
+```text
+1/513/30
+```
+
+Indicates the running mode of the thermostat. This attribute uses the same values as SystemModeEnum but can only be Off, Cool or Heat. This attribute is intended to provide additional information when the thermostat's system mode is in auto mode.
+
+| Property | Value |
+|---|---|
+| Type | ThermostatRunningModeEnum |
+| Conformance | `TEVT & AUTO, [AUTO]` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`ThermostatRunningModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Off` | The Thermostat does not generate demand for Cooling or Heating |
+| 3 | `Cool` | Demand is only generated for Cooling |
+| 4 | `Heat` | Demand is only generated for Heating |
+
+Example:
+
+```json
+{
+  "1/513/30": 0
+}
+```
+
+---
+
+## Attribute `35` / `0x0023` — `TemperatureSetpointHold`
+
+Path example:
+
+```text
+1/513/35
+```
+
+Indicates the temperature hold status on the thermostat. If hold status is on, the thermostat should maintain the temperature setpoint for the current mode until a system mode change. If hold status is off, the thermostat should follow the setpoint transitions specified by its internal scheduling program. If the thermostat supports setpoint hold for a specific duration, it should also implement the TemperatureSetpointHoldDuration attribute.
+
+| Property | Value |
+|---|---|
+| Type | TemperatureSetpointHoldEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`TemperatureSetpointHoldEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `SetpointHoldOff` | Follow scheduling program |
+| 1 | `SetpointHoldOn` | Maintain current setpoint, regardless of schedule transitions |
+
+Example:
+
+```json
+{
+  "1/513/35": 0
+}
+```
+
+---
+
+## Attribute `36` / `0x0024` — `TemperatureSetpointHoldDuration`
+
+Path example:
+
+```text
+1/513/36
+```
+
+Indicates the period in minutes for which a setpoint hold is active. Thermostats that support hold for a specified duration should implement this attribute. The null value indicates the field is unused. All other values are reserved.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | nullable, persisted |
+| Constraint | max 1440 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/513/36": 1
+}
+```
+
+---
+
+## Attribute `37` / `0x0025` — `ThermostatProgrammingOperationMode`
+
+Path example:
+
+```text
+1/513/37
+```
+
+No condensed specification text is available for `ThermostatProgrammingOperationMode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/37": 0
+}
+```
+
+---
+
+## Attribute `41` / `0x0029` — `ThermostatRunningState`
+
+Path example:
+
+```text
+1/513/41
+```
+
+Indicates the current relay state of the heat, cool, and fan relays. Unimplemented outputs is treated as if they were Off.
+
+| Property | Value |
+|---|---|
+| Type | RelayStateBitmap |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Bits (`RelayStateBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Heat` | Heat Stage On |
+| 1 | `Cool` | Cool Stage On |
+| 2 | `Fan` | Fan Stage On |
+| 3 | `HeatStage2` | Heat 2nd Stage On |
+| 4 | `CoolStage2` | Cool 2nd Stage On |
+| 5 | `FanStage2` | Fan 2nd Stage On |
+| 6 | `FanStage3` | Fan 3rd Stage On |
+
+Example:
+
+```json
+{
+  "1/513/41": 0
+}
+```
+
+---
+
+## Attribute `48` / `0x0030` — `SetpointChangeSource`
+
+Path example:
+
+```text
+1/513/48
+```
+
+Indicates the source of the current active OccupiedCoolingSetpoint or OccupiedHeatingSetpoint (i.e., who or what determined the current setpoint). This attribute enables service providers to determine whether changes to setpoints were initiated due to occupant comfort, scheduled programming or some other source (e.g., electric utility or other service provider). Because automation services may initiate frequent setpoint changes, this attribute clearly differentiates the source of setpoint changes made at the thermostat.
+
+| Property | Value |
+|---|---|
+| Type | SetpointChangeSourceEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`SetpointChangeSourceEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Manual` | Manual, user-initiated setpoint change via the thermostat |
+| 1 | `Schedule` | Schedule/internal programming-initiated setpoint change |
+| 2 | `External` | Externally-initiated setpoint change (e.g., DRLC cluster command, attribute write) |
+
+Example:
+
+```json
+{
+  "1/513/48": 0
+}
+```
+
+---
+
+## Attribute `49` / `0x0031` — `SetpointChangeAmount`
+
+Path example:
+
+```text
+1/513/49
+```
+
+Indicates the delta between the current active OccupiedCoolingSetpoint or OccupiedHeatingSetpoint and the previous active setpoint. This attribute is meant to accompany the SetpointChangeSource attribute; devices implementing SetpointChangeAmount should also implement SetpointChangeSource. The null value indicates that the previous setpoint was unknown.
+
+| Property | Value |
+|---|---|
+| Type | int16s |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/513/49": 1
+}
+```
+
+---
+
+## Attribute `50` / `0x0032` — `SetpointChangeSourceTimestamp`
+
+Path example:
+
+```text
+1/513/50
+```
+
+Indicates the time in UTC at which the SetpointChangeAmount attribute change was recorded.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/513/50": 0
+}
+```
+
+---
+
+## Attribute `52` / `0x0034` — `OccupiedSetback`
+
+Path example:
+
+```text
+1/513/52
+```
+
+No condensed specification text is available for `OccupiedSetback`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/52": 0
+}
+```
+
+---
+
+## Attribute `53` / `0x0035` — `OccupiedSetbackMin`
+
+Path example:
+
+```text
+1/513/53
+```
+
+No condensed specification text is available for `OccupiedSetbackMin`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/53": 0
+}
+```
+
+---
+
+## Attribute `54` / `0x0036` — `OccupiedSetbackMax`
+
+Path example:
+
+```text
+1/513/54
+```
+
+No condensed specification text is available for `OccupiedSetbackMax`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/54": 0
+}
+```
+
+---
+
+## Attribute `55` / `0x0037` — `UnoccupiedSetback`
+
+Path example:
+
+```text
+1/513/55
+```
+
+No condensed specification text is available for `UnoccupiedSetback`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/55": 0
+}
+```
+
+---
+
+## Attribute `56` / `0x0038` — `UnoccupiedSetbackMin`
+
+Path example:
+
+```text
+1/513/56
+```
+
+No condensed specification text is available for `UnoccupiedSetbackMin`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/56": 0
+}
+```
+
+---
+
+## Attribute `57` / `0x0039` — `UnoccupiedSetbackMax`
+
+Path example:
+
+```text
+1/513/57
+```
+
+No condensed specification text is available for `UnoccupiedSetbackMax`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `D` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "1/513/57": 0
+}
+```
+
+---
+
+## Attribute `58` / `0x003A` — `EmergencyHeatDelta`
+
+Path example:
+
+```text
+1/513/58
+```
+
+Indicates the delta between the Calculated Local Temperature and the OccupiedHeatingSetpoint or UnoccupiedHeatingSetpoint attributes at which the Thermostat server will operate in emergency heat mode. If the difference between the Calculated Local Temperature and OccupiedCoolingSetpoint or UnoccupiedCoolingSetpoint is greater than or equal to the EmergencyHeatDelta and the Thermostat server's SystemMode attribute is in a heating-related mode, then the Thermostat server must immediately switch to the SystemMode attribute value that provides the highest stage of heating (e.g., emergency heat) and continue operating in that running state until the OccupiedHeatingSetpoint value is reached.
+
+| Property | Value |
+|---|---|
+| Type | UnsignedTemperature |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `255` |
+
+Example:
+
+```json
+{
+  "1/513/58": 0
+}
+```
+
+---
+
+## Attribute `64` / `0x0040` — `ACType`
+
+Path example:
+
+```text
+1/513/64
+```
+
+No condensed specification text is available for `ACType`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ACTypeEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`ACTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unknown` | Unknown AC Type |
+| 1 | `CoolingFixed` | Cooling and Fixed Speed |
+| 2 | `HeatPumpFixed` | Heat Pump and Fixed Speed |
+| 3 | `CoolingInverter` | Cooling and Inverter |
+| 4 | `HeatPumpInverter` | Heat Pump and Inverter |
+
+Example:
+
+```json
+{
+  "1/513/64": 1
+}
+```
+
+---
+
+## Attribute `65` / `0x0041` — `ACCapacity`
+
+Path example:
+
+```text
+1/513/65
+```
+
+No condensed specification text is available for `ACCapacity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/513/65": 1
+}
+```
+
+---
+
+## Attribute `66` / `0x0042` — `ACRefrigerantType`
+
+Path example:
+
+```text
+1/513/66
+```
+
+No condensed specification text is available for `ACRefrigerantType`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ACRefrigerantTypeEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`ACRefrigerantTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unknown` | Unknown Refrigerant Type |
+| 1 | `R22` | R22 Refrigerant |
+| 2 | `R410a` | R410a Refrigerant |
+| 3 | `R407c` | R407c Refrigerant |
+
+Example:
+
+```json
+{
+  "1/513/66": 1
+}
+```
+
+---
+
+## Attribute `67` / `0x0043` — `ACCompressorType`
+
+Path example:
+
+```text
+1/513/67
+```
+
+No condensed specification text is available for `ACCompressorType`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ACCompressorTypeEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`ACCompressorTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unknown` | Unknown compressor type |
+| 1 | `T1` | Max working ambient 43 °C |
+| 2 | `T2` | Max working ambient 35 °C |
+| 3 | `T3` | Max working ambient 52 °C |
+
+Example:
+
+```json
+{
+  "1/513/67": 1
+}
+```
+
+---
+
+## Attribute `68` / `0x0044` — `ACErrorCode`
+
+Path example:
+
+```text
+1/513/68
+```
+
+No condensed specification text is available for `ACErrorCode`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ACErrorCodeBitmap |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Default | `0` |
+
+Bits (`ACErrorCodeBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `CompressorFail` | Compressor Failure or Refrigerant Leakage |
+| 1 | `RoomSensorFail` | Room Temperature Sensor Failure |
+| 2 | `OutdoorSensorFail` | Outdoor Temperature Sensor Failure |
+| 3 | `CoilSensorFail` | Indoor Coil Temperature Sensor Failure |
+| 4 | `FanFail` | Fan Failure |
+
+Example:
+
+```json
+{
+  "1/513/68": 0
+}
+```
+
+---
+
+## Attribute `69` / `0x0045` — `ACLouverPosition`
+
+Path example:
+
+```text
+1/513/69
+```
+
+No condensed specification text is available for `ACLouverPosition`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ACLouverPositionEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`ACLouverPositionEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 1 | `Closed` | Fully Closed |
+| 2 | `Open` | Fully Open |
+| 3 | `Quarter` | Quarter Open |
+| 4 | `Half` | Half Open |
+| 5 | `ThreeQuarters` | Three Quarters Open |
+
+Example:
+
+```json
+{
+  "1/513/69": 1
+}
+```
+
+---
+
+## Attribute `70` / `0x0046` — `ACCoilTemperature`
+
+Path example:
+
+```text
+1/513/70
+```
+
+No condensed specification text is available for `ACCoilTemperature`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/513/70": 1
+}
+```
+
+---
+
+## Attribute `71` / `0x0047` — `ACCapacityFormat`
+
+Path example:
+
+```text
+1/513/71
+```
+
+No condensed specification text is available for `ACCapacityFormat`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | ACCapacityFormatEnum |
+| Conformance | `O` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`ACCapacityFormatEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `BTUh` | British Thermal Unit per Hour |
+
+Example:
+
+```json
+{
+  "1/513/71": 0
+}
+```
+
+---
+
+## Attribute `72` / `0x0048` — `PresetTypes`
+
+Path example:
+
+```text
+1/513/72
+```
+
+Indicates the supported PresetScenarioEnum values, limits on how many presets can be created for each PresetScenarioEnum, and whether or not a thermostat can transition automatically to a given scenario. The list contains at least one entry. The list must NOT be larger than the number of supported PresetScenarioEnum values (maximum 7). The list must NOT contain any PresetTypeStruct entries with duplicate PresetScenarioEnum values.
+
+| Property | Value |
+|---|---|
+| Type | list of PresetTypeStruct |
+| Conformance | `PRES` |
+| Access | R (read: view) |
+| Constraint | 1 to 7 entries |
+
+Each entry is a `PresetTypeStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/513/72": []
+}
+```
+
+---
+
+## Attribute `73` / `0x0049` — `ScheduleTypes`
+
+Path example:
+
+```text
+1/513/73
+```
+
+Indicates the supported SystemMode values for Schedules, limits on how many schedules can be created for each SystemMode value, and whether or not a given SystemMode value supports transitions to Presets, target setpoints, or both. The list contains at least one entry. The list must NOT be larger than the number of supported schedule SystemMode values (maximum 3, since the data type only allows Auto, Heat and Cool). The list must NOT contain any ScheduleTypeStruct entries with duplicate SystemModeEnum values.
+
+| Property | Value |
+|---|---|
+| Type | list of ScheduleTypeStruct |
+| Conformance | `MSCH` |
+| Access | R (read: view) |
+| Constraint | 1 to 3 entries |
+
+Each entry is a `ScheduleTypeStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/513/73": []
+}
+```
+
+---
+
+## Attribute `74` / `0x004A` — `NumberOfPresets`
+
+Path example:
+
+```text
+1/513/74
+```
+
+Indicates the maximum number of entries supported by the Presets attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PRES` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/513/74": 1
+}
+```
+
+---
+
+## Attribute `75` / `0x004B` — `NumberOfSchedules`
+
+Path example:
+
+```text
+1/513/75
+```
+
+Indicates the maximum number of entries supported by the Schedules attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `MSCH` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/513/75": 1
+}
+```
+
+---
+
+## Attribute `76` / `0x004C` — `NumberOfScheduleTransitions`
+
+Path example:
+
+```text
+1/513/76
+```
+
+Indicates the maximum number of transitions per Schedules attribute entry.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `MSCH` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/513/76": 1
+}
+```
+
+---
+
+## Attribute `77` / `0x004D` — `NumberOfScheduleTransitionPerDay`
+
+Path example:
+
+```text
+1/513/77
+```
+
+Indicates the maximum number of transitions per day of the week supported by each Schedules attribute entry. If this value is null, there is no limit on the number of transitions per day.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `MSCH` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/513/77": 1
+}
+```
+
+---
+
+## Attribute `78` / `0x004E` — `ActivePresetHandle`
+
+Path example:
+
+```text
+1/513/78
+```
+
+Indicates the PresetHandle of the active preset. If this attribute is null, then there is no active preset.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `PRES` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Constraint | max length 16 |
+
+Example:
+
+```json
+{
+  "1/513/78": "AQID"
+}
+```
+
+---
+
+## Attribute `79` / `0x004F` — `ActiveScheduleHandle`
+
+Path example:
+
+```text
+1/513/79
+```
+
+Indicates the ScheduleHandle of the active schedule. A null value in this attribute indicates that there is no active schedule.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `MSCH` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Constraint | max length 16 |
+
+Example:
+
+```json
+{
+  "1/513/79": "AQID"
+}
+```
+
+---
+
+## Attribute `80` / `0x0050` — `Presets`
+
+Path example:
+
+```text
+1/513/80
+```
+
+This attribute contains the current list of configured presets. On receipt of a write request: 1. If the PresetHandle field is null, the PresetStruct is treated as an added preset, and the device must create a new unique value for the PresetHandle field. 1. If the BuiltIn field is true, a response with the status code CONSTRAINT_ERROR is returned. 2.
+
+| Property | Value |
+|---|---|
+| Type | list of PresetStruct |
+| Conformance | `PRES` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | max NumberOfPresets entries |
+
+Each entry is a `PresetStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/513/80": []
+}
+```
+
+---
+
+## Attribute `81` / `0x0051` — `Schedules`
+
+Path example:
+
+```text
+1/513/81
+```
+
+This attribute contains a list of ScheduleStructs. On receipt of a write request: 1. For all schedules in the write request: 1. If the ScheduleHandle field is null, the ScheduleStruct is treated as an added schedule, and the device must create a new unique value for the ScheduleHandle field. 1.
+
+| Property | Value |
+|---|---|
+| Type | list of ScheduleStruct |
+| Conformance | `MSCH` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | max NumberOfSchedules entries |
+
+Each entry is a `ScheduleStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/513/81": []
+}
+```
+
+---
+
+## Attribute `82` / `0x0052` — `SetpointHoldExpiryTimestamp`
+
+Path example:
+
+```text
+1/513/82
+```
+
+If there is a known time when the TemperatureSetpointHold is cleared, this attribute contains the timestamp in UTC indicating when that will happen. If there is no such known time, this attribute is null. If the TemperatureSetpointHold is set to SetpointHoldOn and the TemperatureSetpointHoldDuration is set to null, this attribute is set to null indicating there is a hold on the Thermostat without a duration. If the TemperatureSetpointHold is set to SetpointHoldOff, this attribute is set to null indicating there is no hold on the Thermostat.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/513/82": 0
+}
+```
+
+---
+
+## Attribute `83` / `0x0053` — `MaxThermostatSuggestions`
+
+Path example:
+
+```text
+1/513/83
+```
+
+Indicates the maximum number of entries supported by the ThermostatSuggestions attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `TSUGGEST` |
+| Access | R (read: view) |
+| Constraint | min 5 |
+
+Example:
+
+```json
+{
+  "1/513/83": 5
+}
+```
+
+---
+
+## Attribute `84` / `0x0054` — `ThermostatSuggestions`
+
+Path example:
+
+```text
+1/513/84
+```
+
+Indicates an unordered set of thermostat suggestions. The suggested value is a PresetHandle that must match the PresetHandle of one of the entries in the Presets attribute. The Thermostat may use this information to ensure user comfort while also prioritizing other factors (e.g. energy savings, cost, and so on). Entries with effective times in the future may be used for pre-cool or pre-heat decisions. 3.7, "Re-evaluation of Current Thermostat Suggestion" for what to do if this attribute's value changes.
+
+| Property | Value |
+|---|---|
+| Type | list of ThermostatSuggestionStruct |
+| Conformance | `TSUGGEST` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | max MaxThermostatSuggestions entries |
+
+Each entry is a `ThermostatSuggestionStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/513/84": []
+}
+```
+
+---
+
+## Attribute `85` / `0x0055` — `CurrentThermostatSuggestion`
+
+Path example:
+
+```text
+1/513/85
+```
+
+Indicates an entry in the entries, which identifies the current thermostat suggestion. A value of null indicates that there is no current thermostat suggestion. When this attribute's value changes to a null value, the server may decide to set the ActivePresetHandle attribute to a value of its choice, based on schedules, occupancy sensors, etc. When the server is "following the suggestion" that means that the server must ensure that the value of the ActivePresetHandle attribute matches the value of this attribute.
+
+| Property | Value |
+|---|---|
+| Type | ThermostatSuggestionStruct |
+| Conformance | `TSUGGEST` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Value is a `ThermostatSuggestionStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/513/85": {
+    "uniqueID": 1,
+    "presetHandle": "AQID",
+    "effectiveTime": 0,
+    "expirationTime": 0
+  }
+}
+```
+
+---
+
+## Attribute `86` / `0x0056` — `ThermostatSuggestionNotFollowingReason`
+
+Path example:
+
+```text
+1/513/86
+```
+
+Indicates the reasons the Thermostat is unable to follow suggestions. When the server is unable to follow the suggestion, it must set the appropriate bits in the value of the ThermostatSuggestionNotFollowingReason attribute to indicate the reasons due to which the suggestion is not being followed. The value of the ThermostatSuggestionNotFollowingReason attribute is 0 (all bits cleared) if there are no bits defined in ThermostatSuggestionNotFollowingReasonBitmap that represent the reasons the suggestion is not being followed. If the CurrentThermostatSuggestion attribute is null, this attribute is set to null.
+
+| Property | Value |
+|---|---|
+| Type | ThermostatSuggestionNotFollowingReasonBitmap |
+| Conformance | `TSUGGEST` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Bits (`ThermostatSuggestionNotFollowingReasonBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `DemandResponseEvent` | Thermostat is responding to a Demand Response event |
+| 1 | `OngoingHold` | Thermostat has an ongoing setpoint hold |
+| 2 | `Schedule` | Thermostat is following a schedule |
+| 3 | `Occupancy` | Thermostat is following the occupancy signal |
+| 4 | `VacationMode` | Thermostat is set to Vacation mode |
+| 5 | `TimeOfUseCostSavings` | Thermostat is following a Time Of Use based cost savings plan |
+| 6 | `PreCoolingOrPreHeating` | Thermostat is precooling or preheating based on an energy forecast signal |
+| 7 | `ConflictingSuggestions` | Thermostat has conflicting suggestions and is unable to choose one |
+
+Example:
+
+```json
+{
+  "1/513/86": 0
+}
+```
+
+---
+
+# Cluster 513 Commands
+
+Cluster 513 has **5 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SetpointRaiseLower` | client → server | `M` | status | This command will raise or lower the setpoint based on the provided values. |
+| 2 | `0x02` | `AddThermostatSuggestionResponse` | server → client | `TSUGGEST` | — | This command is sent in response to the AddThermostatSuggestion command. |
+| 5 | `0x05` | `SetActiveScheduleRequest` | client → server | `MSCH` | status | This command will set the active schedule to the provided schedule handle. |
+| 6 | `0x06` | `SetActivePresetRequest` | client → server | `PRES` | status | This command will set the active preset to the provided preset handle. |
+| 7 | `0x07` | `AddThermostatSuggestion` | client → server | `TSUGGEST` | AddThermostatSuggestionResponse | This command will add a new suggestion based on the specified values. |
+| 8 | `0x08` | `RemoveThermostatSuggestion` | client → server | `TSUGGEST` | status | This command will remove the specified suggestion. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 513 / 65529
+```
+
+```json
+{
+  "1/513/65529": [
+    0,
+    5,
+    6,
+    7,
+    8
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 513 command, check that the command ID exists in <code>endpoint/513/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 513,
+    "command_name": "SetpointRaiseLower",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 513, always use `"cluster_id": 513`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SetpointRaiseLower`
+
+## Purpose
+
+This command will raise or lower the setpoint based on the provided values.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SetpointRaiseLower` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Mode` | `mode` | SetpointRaiseLowerModeEnum | `M` | desc | The field specifies which setpoints are to be adjusted. |
+| 1 | `Amount` | `amount` | int8 | `M` | — | Indicates the amount (possibly negative) that should be added to the setpoint(s), in steps of 0.1°C. |
+
+`Mode` values (`SetpointRaiseLowerModeEnum`): `0` = Heat, `1` = Cool, `2` = Both
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 513,
+    "command_name": "SetpointRaiseLower",
+    "payload": {
+      "mode": 0,
+      "amount": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddThermostatSuggestionResponse`
+
+## Purpose
+
+This command is sent in response to the AddThermostatSuggestion command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `AddThermostatSuggestionResponse` |
+| Direction | server → client (response) |
+| Conformance | `TSUGGEST` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UniqueID` | `uniqueID` | uint8 | `M` | — | — |
+
+---
+
+# Command: `SetActiveScheduleRequest`
+
+## Purpose
+
+This command will set the active schedule to the provided schedule handle.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `SetActiveScheduleRequest` |
+| Direction | client → server |
+| Conformance | `MSCH` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ScheduleHandle` | `scheduleHandle` | octstr | `M` | max length 16 | This field specifies the value of the ScheduleHandle field on the ScheduleStruct to be made active. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 513,
+    "command_name": "SetActiveScheduleRequest",
+    "payload": {
+      "scheduleHandle": "AQID"
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetActivePresetRequest`
+
+## Purpose
+
+This command will set the active preset to the provided preset handle.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `SetActivePresetRequest` |
+| Direction | client → server |
+| Conformance | `PRES` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PresetHandle` | `presetHandle` | octstr (nullable) | `M` | max length 16 | This field specifies the value of the PresetHandle field on the PresetStruct to be made active. If the field is set to null, that indicates there should be no active preset. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 513,
+    "command_name": "SetActivePresetRequest",
+    "payload": {
+      "presetHandle": "AQID"
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddThermostatSuggestion`
+
+## Purpose
+
+This command will add a new suggestion based on the specified values.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `AddThermostatSuggestion` |
+| Direction | client → server |
+| Conformance | `TSUGGEST` |
+| Response | AddThermostatSuggestionResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PresetHandle` | `presetHandle` | octstr | `M` | max length 16 | This field specifies the value of the thermostat suggestion. |
+| 1 | `EffectiveTime` | `effectiveTime` | epoch-s (nullable) | `M` | desc | Indicates the timestamp in UTC at which the thermostat suggestion must become available. If this field is set to null, that means the thermostat suggestion must become available immediately. |
+| 2 | `ExpirationInMinutes` | `expirationInMinutes` | uint16 | `M` | 30 to 1440 | Indicates the duration in minutes after which the thermostat suggestion provided by this command must expire. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 513,
+    "command_name": "AddThermostatSuggestion",
+    "payload": {
+      "presetHandle": "AQID",
+      "effectiveTime": 0,
+      "expirationInMinutes": 30
+    }
+  }
+}
+```
+
+The device answers with `AddThermostatSuggestionResponse` (see below).
+
+---
+
+# Command: `RemoveThermostatSuggestion`
+
+## Purpose
+
+This command will remove the specified suggestion.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `RemoveThermostatSuggestion` |
+| Direction | client → server |
+| Conformance | `TSUGGEST` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UniqueID` | `uniqueID` | uint8 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 513,
+    "command_name": "RemoveThermostatSuggestion",
+    "payload": {
+      "uniqueID": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 513 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `SystemModeChange` | info | `P, TEVT` | This event is generated when the SystemMode attribute changes. |
+| 1 | `0x01` | `LocalTemperatureChange` | info | `P, TEVT & !LTNE` | This event is generated when the LocalTemperature attribute changes significantly. |
+| 2 | `0x02` | `OccupancyChange` | info | `P, TEVT & OCC` | This event is generated when the Occupancy attribute changes. |
+| 3 | `0x03` | `SetpointChange` | info | `P, TEVT` | This event is generated when the value of any of the OccupiedHeatingSetpoint, UnoccupiedHeatingSetpoint, OccupiedCoolingSetpoint, or UnoccupiedCoolingSetpoint attributes is changed. |
+| 4 | `0x04` | `RunningStateChange` | info | `P, TEVT` | This event is generated when the ThermostatRunningState attribute changes. |
+| 5 | `0x05` | `RunningModeChange` | info | `P, TEVT & AUTO` | This event is generated when the ThermostatRunningMode attribute changes. |
+| 6 | `0x06` | `ActiveScheduleChange` | info | `P, TEVT & MSCH` | This event is generated when the ActiveScheduleHandle attribute changes. |
+| 7 | `0x07` | `ActivePresetChange` | info | `P, TEVT & PRES` | This event is generated when the ActivePresetHandle attribute changes. |
+
+## Event `0` — `SystemModeChange`
+
+This event is generated when the SystemMode attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousSystemMode` | SystemModeEnum | `O` | Indicates the previous value of the SystemMode attribute. If the previous value is unavailable, this field is omitted. |
+| 1 | `CurrentSystemMode` | SystemModeEnum | `M` | Indicates the current (after the change that caused the event to be generated) value of the SystemMode attribute. |
+
+## Event `1` — `LocalTemperatureChange`
+
+This event is generated when the LocalTemperature attribute changes significantly. Significant changes are: - Changes from null to not null, or from not null to null. - Changes from one not-null value to another not-null value that are sufficiently large, as determined by the server. LocalTemperatureChange events must NOT be generated more often than once every 60 seconds.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CurrentLocalTemperature` | temperature (nullable) | `M` | Indicates the current value of the LocalTemperature attribute. |
+
+## Event `2` — `OccupancyChange`
+
+This event is generated when the Occupancy attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousOccupancy` | OccupancyBitmap | `O` | Indicates the previous value of the Occupancy attribute. If the previous value is unavailable, this field is omitted. |
+| 1 | `CurrentOccupancy` | OccupancyBitmap | `M` | Indicates the current (after the change that caused the event to be generated) value of the Occupancy attribute. |
+
+## Event `3` — `SetpointChange`
+
+This event is generated when the value of any of the OccupiedHeatingSetpoint, UnoccupiedHeatingSetpoint, OccupiedCoolingSetpoint, or UnoccupiedCoolingSetpoint attributes is changed.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SystemMode` | SystemModeEnum | `M` | Indicates the system mode associated with the changed attribute. If the changed attribute is OccupiedHeatingSetpoint or UnoccupiedHeatingSetpoint, the value of this field is Heat. |
+| 1 | `Occupancy` | OccupancyBitmap | `OCC` | Indicates the occupancy associated with the changed attribute. If the changed attribute is OccupiedHeatingSetpoint or OccupiedCoolingSetpoint, the value of this field is 1. |
+| 2 | `PreviousSetpoint` | temperature | `O` | Indicates the previous value of the changed attribute. If the previous value is unavailable, this field is omitted. |
+| 3 | `CurrentSetpoint` | temperature | `M` | Indicates the current (after the change that caused the event to be generated) value of the changed attribute. |
+
+## Event `4` — `RunningStateChange`
+
+This event is generated when the ThermostatRunningState attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousRunningState` | RelayStateBitmap | `O` | Indicates the previous value of the ThermostatRunningState attribute. If the previous value is unavailable, this field is omitted. |
+| 1 | `CurrentRunningState` | RelayStateBitmap | `M` | Indicates the current (after the change that caused the event to be generated) value of the ThermostatRunningState attribute. |
+
+## Event `5` — `RunningModeChange`
+
+This event is generated when the ThermostatRunningMode attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousRunningMode` | ThermostatRunningModeEnum | `O` | Indicates the previous value of the ThermostatRunningMode attribute. If the previous value is unavailable, this field is omitted. |
+| 1 | `CurrentRunningMode` | ThermostatRunningModeEnum | `M` | Indicates the current (after the change that caused the event to be generated) value of the ThermostatRunningMode attribute. |
+
+## Event `6` — `ActiveScheduleChange`
+
+This event is generated when the ActiveScheduleHandle attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousScheduleHandle` | octstr (nullable) | `O` | Indicates the previous value of the ActiveScheduleHandle attribute. If the previous value is unavailable, this field is omitted. |
+| 1 | `CurrentScheduleHandle` | octstr (nullable) | `M` | Indicates the current (after the change that caused the event to be generated) value of the ActiveScheduleHandle attribute. |
+
+## Event `7` — `ActivePresetChange`
+
+This event is generated when the ActivePresetHandle attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousPresetHandle` | octstr (nullable) | `O` | Indicates the previous value of the ActivePresetHandle attribute. If the previous value is unavailable, this field is omitted. |
+| 1 | `CurrentPresetHandle` | octstr (nullable) | `M` | Indicates the current (after the change that caused the event to be generated) value of the ActivePresetHandle attribute. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 513 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/513/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

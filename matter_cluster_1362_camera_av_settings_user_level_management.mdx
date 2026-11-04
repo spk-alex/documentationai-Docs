@@ -1,0 +1,830 @@
+---
+title: "Matter Cluster 1362 — Camera AV Settings User Level Management"
+description: "Matter Cluster 1362 (0x0552) Camera AV Settings User Level Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1362
+clusterHex: "0x0552"
+clusterName: "Camera AV Settings User Level Management"
+---
+
+# Matter Cluster 1362 — Camera AV Settings User Level Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>1362</code>, also written as <code>0x0552</code>, is the <strong>Camera AV Settings User Level Management Cluster</strong>.
+This cluster provides an interface into controls associated with the operation of a camera that provides pan, tilt, and zoom functions, either mechanically, or against a digital image.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1362` |
+| Cluster ID hex | `0x0552` |
+| Cluster name | `Camera AV Settings User Level Management` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `AVSUM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial release |
+
+---
+
+## Shadow Path Format
+
+Cluster 1362 values in the device shadow use this format:
+
+```text
+endpoint_id / 1362 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1362/0": {
+    "pan": 1,
+    "tilt": 1,
+    "zoom": 1
+  }
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1362` | Camera AV Settings User Level Management cluster |
+| `0` | `MPTZPosition` attribute |
+
+---
+
+## Cluster 1362 Features
+
+The `FeatureMap` attribute (`1/1362/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `DPTZ` | DigitalPTZ | `O` | Digital PTZ support |
+| 1 | `MPAN` | MechanicalPan | `O` | Mechanical Pan support |
+| 2 | `MTILT` | MechanicalTilt | `O` | Mechanical Tilt support |
+| 3 | `MZOOM` | MechanicalZoom | `O` | Mechanical Zoom support |
+| 4 | `MPRESETS` | MechanicalPresets | `[MPAN \| MTILT \| MZOOM]` | Mechanical saved presets support |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `31` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `PhysicalMovementEnum`
+
+The PhysicalMovementEnum provides an enumeration of the possible physical movement states in which the camera could be.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Idle` | `M` | The camera is idle. |
+| 1 | `Moving` | `M` | The camera is moving to a new value of Pan, Tilt, and/or Zoom. |
+
+### `DPTZStruct` (struct)
+
+This type is used to indicate support for the per stream digital pan, tilt, and zoom values.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `VideoStreamID` | VideoStreamID | `M` | — | — |
+| 1 | `Viewport` | ViewportStruct | `M` | — | Indicates the per stream viewport applied to this video stream. |
+
+### `MPTZPresetStruct` (struct)
+
+This type is used to save a preset location for mechanical pan, tilt and zoom.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PresetID` | uint8 | `M` | 1 to MaxPresets | — |
+| 1 | `Name` | string | `M` | max length 32 | The is a string representing the name of the Preset. |
+| 2 | `Settings` | MPTZStruct | `M` | — | This holds the mechanical pan, tilt and zoom values. |
+
+### `MPTZStruct` (struct)
+
+This type is used to indicate the mechanical pan, tilt, and zoom values.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Pan` | int16 | `MPAN` | PanMin to PanMax | Indicates the mechanical pan value in angular degrees of angle. |
+| 1 | `Tilt` | int16 | `MTILT` | TiltMin to TiltMax | Indicates the mechanical tilt value in angular degrees of angle. |
+| 2 | `Zoom` | uint8 | `MZOOM` | 1 to ZoomMax | Indicates the zoom value to use. |
+
+---
+
+## Cluster 1362 Attributes
+
+Cluster 1362 defines **10 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MPTZPosition` | MPTZStruct | `MPAN \| MTILT \| MZOOM` | R (read: view) | persisted | — |
+| 1 | `0x0001` | `MaxPresets` | uint8 | `MPRESETS` | R (read: view) | — | — |
+| 2 | `0x0002` | `MPTZPresets` | list of MPTZPresetStruct | `MPRESETS` | R (read: view) | persisted | — |
+| 3 | `0x0003` | `DPTZStreams` | list of DPTZStruct | `DPTZ` | R (read: view) | persisted | — |
+| 4 | `0x0004` | `ZoomMax` | uint8 | `MZOOM` | R (read: view) | — | — |
+| 5 | `0x0005` | `TiltMin` | int16 | `MTILT` | R (read: view) | — | — |
+| 6 | `0x0006` | `TiltMax` | int16 | `MTILT` | R (read: view) | — | — |
+| 7 | `0x0007` | `PanMin` | int16 | `MPAN` | R (read: view) | — | — |
+| 8 | `0x0008` | `PanMax` | int16 | `MPAN` | R (read: view) | — | — |
+| 9 | `0x0009` | `MovementState` | PhysicalMovementEnum | `MPAN \| MTILT \| MZOOM` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MPTZPosition`
+
+Path example:
+
+```text
+1/1362/0
+```
+
+No condensed specification text is available for `MPTZPosition`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | MPTZStruct |
+| Conformance | `MPAN \| MTILT \| MZOOM` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Value is a `MPTZStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1362/0": {
+    "pan": 1,
+    "tilt": 1,
+    "zoom": 1
+  }
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MaxPresets`
+
+Path example:
+
+```text
+1/1362/1
+```
+
+This attribute indicates the maximum number of presets for the mechanical pan, tilt, zoom.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `MPRESETS` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1362/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MPTZPresets`
+
+Path example:
+
+```text
+1/1362/2
+```
+
+No condensed specification text is available for `MPTZPresets`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of MPTZPresetStruct |
+| Conformance | `MPRESETS` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | max MaxPresets entries |
+
+Each entry is a `MPTZPresetStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1362/2": []
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `DPTZStreams`
+
+Path example:
+
+```text
+1/1362/3
+```
+
+No condensed specification text is available for `DPTZStreams`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of DPTZStruct |
+| Conformance | `DPTZ` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Each entry is a `DPTZStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1362/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `ZoomMax`
+
+Path example:
+
+```text
+1/1362/4
+```
+
+Indicates the maximum value for the mechanical zoom specified by the camera manufacturer that allows for increments of 1 to be noticeable. The handling of this value is implementation specific.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `MZOOM` |
+| Access | R (read: view) |
+| Constraint | 2 to 100 |
+
+Example:
+
+```json
+{
+  "1/1362/4": 2
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `TiltMin`
+
+Path example:
+
+```text
+1/1362/5
+```
+
+Indicates the minimum value for the mechanical tilt specified by the camera manufacturer in angular degrees.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `MTILT` |
+| Access | R (read: view) |
+| Constraint | -180 to 0 |
+
+Example:
+
+```json
+{
+  "1/1362/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `TiltMax`
+
+Path example:
+
+```text
+1/1362/6
+```
+
+Indicates the maximum value for the mechanical tilt specified by the camera manufacturer in angular degrees.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `MTILT` |
+| Access | R (read: view) |
+| Constraint | 1 to 180 |
+
+Example:
+
+```json
+{
+  "1/1362/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `PanMin`
+
+Path example:
+
+```text
+1/1362/7
+```
+
+Indicates the minimum value for the mechanical pan specified by the camera manufacturer in angular degrees.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `MPAN` |
+| Access | R (read: view) |
+| Constraint | -180 to 0 |
+
+Example:
+
+```json
+{
+  "1/1362/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `PanMax`
+
+Path example:
+
+```text
+1/1362/8
+```
+
+Indicates the maximum value for the mechanical pan specified by the camera manufacturer in angular degrees.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `MPAN` |
+| Access | R (read: view) |
+| Constraint | 1 to 180 |
+
+Example:
+
+```json
+{
+  "1/1362/8": 1
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `MovementState`
+
+Path example:
+
+```text
+1/1362/9
+```
+
+Indicates the current movement state of the camera.
+
+| Property | Value |
+|---|---|
+| Type | PhysicalMovementEnum |
+| Conformance | `MPAN \| MTILT \| MZOOM` |
+| Access | R (read: view) |
+
+Values (`PhysicalMovementEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Idle` | The camera is idle. |
+| 1 | `Moving` | The camera is moving to a new value of Pan, Tilt, and/or Zoom. |
+
+Example:
+
+```json
+{
+  "1/1362/9": 0
+}
+```
+
+---
+
+# Cluster 1362 Commands
+
+Cluster 1362 has **7 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `MPTZSetPosition` | client → server | `MPAN \| MTILT \| MZOOM` | status | — |
+| 1 | `0x01` | `MPTZRelativeMove` | client → server | `MPAN \| MTILT \| MZOOM` | status | — |
+| 2 | `0x02` | `MPTZMoveToPreset` | client → server | `MPRESETS` | status | — |
+| 3 | `0x03` | `MPTZSavePreset` | client → server | `MPRESETS` | status | — |
+| 4 | `0x04` | `MPTZRemovePreset` | client → server | `MPRESETS` | status | — |
+| 5 | `0x05` | `DPTZSetViewport` | client → server | `DPTZ` | status | — |
+| 6 | `0x06` | `DPTZRelativeMove` | client → server | `[DPTZ]` | status | — |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1362 / 65529
+```
+
+```json
+{
+  "1/1362/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1362 command, check that the command ID exists in <code>endpoint/1362/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "MPTZSetPosition",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1362, always use `"cluster_id": 1362`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `MPTZSetPosition`
+
+## Purpose
+
+`MPTZSetPosition` is a client-to-server command of the Camera AV Settings User Level Management cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `MPTZSetPosition` |
+| Direction | client → server |
+| Conformance | `MPAN \| MTILT \| MZOOM` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Pan` | `pan` | int16 | `[MPAN]` | PanMin to PanMax | — |
+| 1 | `Tilt` | `tilt` | int16 | `[MTILT]` | TiltMin to TiltMax | — |
+| 2 | `Zoom` | `zoom` | uint8 | `[MZOOM]` | 1 to ZoomMax | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "MPTZSetPosition",
+    "payload": {
+      "pan": 1,
+      "tilt": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `MPTZRelativeMove`
+
+## Purpose
+
+`MPTZRelativeMove` is a client-to-server command of the Camera AV Settings User Level Management cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `MPTZRelativeMove` |
+| Direction | client → server |
+| Conformance | `MPAN \| MTILT \| MZOOM` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PanDelta` | `panDelta` | int16 | `[MPAN]` | compute to compute | — |
+| 1 | `TiltDelta` | `tiltDelta` | int16 | `[MTILT]` | compute to compute | — |
+| 2 | `ZoomDelta` | `zoomDelta` | int8 | `[MZOOM]` | compute to compute | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "MPTZRelativeMove",
+    "payload": {
+      "panDelta": 1,
+      "tiltDelta": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `MPTZMoveToPreset`
+
+## Purpose
+
+`MPTZMoveToPreset` is a client-to-server command of the Camera AV Settings User Level Management cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `MPTZMoveToPreset` |
+| Direction | client → server |
+| Conformance | `MPRESETS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PresetID` | `presetID` | uint8 | `M` | 1 to MaxPresets | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "MPTZMoveToPreset",
+    "payload": {
+      "presetID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `MPTZSavePreset`
+
+## Purpose
+
+`MPTZSavePreset` is a client-to-server command of the Camera AV Settings User Level Management cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `MPTZSavePreset` |
+| Direction | client → server |
+| Conformance | `MPRESETS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PresetID` | `presetID` | uint8 | `O` | 1 to MaxPresets | — |
+| 1 | `Name` | `name` | string | `M` | max length 32 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "MPTZSavePreset",
+    "payload": {
+      "name": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `MPTZRemovePreset`
+
+## Purpose
+
+`MPTZRemovePreset` is a client-to-server command of the Camera AV Settings User Level Management cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `MPTZRemovePreset` |
+| Direction | client → server |
+| Conformance | `MPRESETS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PresetID` | `presetID` | uint8 | `M` | 1 to MaxPresets | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "MPTZRemovePreset",
+    "payload": {
+      "presetID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `DPTZSetViewport`
+
+## Purpose
+
+`DPTZSetViewport` is a client-to-server command of the Camera AV Settings User Level Management cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `DPTZSetViewport` |
+| Direction | client → server |
+| Conformance | `DPTZ` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `VideoStreamID` | `videoStreamID` | VideoStreamID | `M` | — | — |
+| 1 | `Viewport` | `viewport` | ViewportStruct | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "DPTZSetViewport",
+    "payload": {
+      "videoStreamID": 0,
+      "viewport": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `DPTZRelativeMove`
+
+## Purpose
+
+`DPTZRelativeMove` is a client-to-server command of the Camera AV Settings User Level Management cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `DPTZRelativeMove` |
+| Direction | client → server |
+| Conformance | `[DPTZ]` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `VideoStreamID` | `videoStreamID` | VideoStreamID | `M` | — | — |
+| 1 | `DeltaX` | `deltaX` | int16 | `O` | — | — |
+| 2 | `DeltaY` | `deltaY` | int16 | `O` | — | — |
+| 3 | `ZoomDelta` | `zoomDelta` | int8 | `O` | -100 to 100 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1362,
+    "command_name": "DPTZRelativeMove",
+    "payload": {
+      "videoStreamID": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1362 Events
+
+Cluster 1362 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1362 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1362/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

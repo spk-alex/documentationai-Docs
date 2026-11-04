@@ -1,0 +1,145 @@
+---
+title: "Matter Cluster 64 — Fixed Label"
+description: "Matter Cluster 64 (0x0040) Fixed Label: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 64
+clusterHex: "0x0040"
+clusterName: "Fixed Label"
+---
+
+# Matter Cluster 64 — Fixed Label Cluster
+
+<Callout type="info">
+Matter Cluster <code>64</code>, also written as <code>0x0040</code>, is the <strong>Fixed Label Cluster</strong>.
+This cluster is derived from the Label cluster and provides a feature for the device to tag an endpoint with zero or more read-only labels. Examples: - A bridge can use this to indicate grouping of bridged devices. For example: All bridged devices whose endpoints have an entry in their LabelList "room":"bedroom 2" are in the same (bed)room. - A manufacturer can use this to identify a characteristic of an endpoint.
+</Callout>
+
+<Callout type="info">
+This cluster is <strong>derived from the Label cluster</strong>: it inherits the base attributes, commands and data types listed below and adds the cluster-specific values. Where the base definition applies, the base text is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `64` |
+| Cluster ID hex | `0x0040` |
+| Cluster name | `Fixed Label` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `FLABEL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 64 values in the device shadow use this format:
+
+```text
+endpoint_id / 64 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/64/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `64` | Fixed Label cluster |
+| `0` | `LabelList` attribute |
+
+---
+
+## Data Types
+
+### `LabelStruct` (struct)
+
+This is a string tuple with strings that are user defined.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Label` | string | `M` | max length 16 | The Label or Value semantic is not defined here. |
+| 1 | `Value` | string | `M` | max length 16 | The Label or Value semantic is not defined here. |
+
+---
+
+## Cluster 64 Attributes
+
+Cluster 64 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `LabelList` | list of LabelStruct | `M` | R (read: view) | persisted | `empty` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `LabelList`
+
+Path example:
+
+```text
+1/64/0
+```
+
+No condensed specification text is available for `LabelList`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of LabelStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Default | `empty` |
+
+Each entry is a `LabelStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/64/0": []
+}
+```
+
+---
+
+# Cluster 64 Commands
+
+Cluster 64 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 64 Events
+
+Cluster 64 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 64 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/64/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

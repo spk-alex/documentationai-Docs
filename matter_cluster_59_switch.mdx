@@ -1,0 +1,266 @@
+---
+title: "Matter Cluster 59 — Switch"
+description: "Matter Cluster 59 (0x003B) Switch: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 59
+clusterHex: "0x003B"
+clusterName: "Switch"
+---
+
+# Matter Cluster 59 — Switch Cluster
+
+<Callout type="info">
+Matter Cluster <code>59</code>, also written as <code>0x003B</code>, is the <strong>Switch Cluster</strong>.
+This cluster exposes interactions with a switch device, for the purpose of using those interactions by other devices. Two types of switch devices are supported: latching switch (e.g. rocker switch) and momentary switch (e.g. push button), distinguished with their feature flags. Interactions with the switch device are exposed as attributes (for the latching switch) and as events (for both types of switches).
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `59` |
+| Cluster ID hex | `0x003B` |
+| Cluster name | `Switch` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `SWTCH` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Behavior clarifications for ambiguous combinations of events; Introduction of TotalNumberOfPressesCounted == 0 when MultiPressMax is exceeded; Introduction of ActionSwitch feature flag. |
+
+---
+
+## Shadow Path Format
+
+Cluster 59 values in the device shadow use this format:
+
+```text
+endpoint_id / 59 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/59/0": 2
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `59` | Switch cluster |
+| `0` | `NumberOfPositions` attribute |
+
+---
+
+## Cluster 59 Features
+
+The `FeatureMap` attribute (`1/59/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `LS` | LatchingSwitch | `O` | Switch is latching |
+| 1 | `MS` | MomentarySwitch | `O` | Switch is momentary |
+| 2 | `MSR` | MomentarySwitchRelease | `[MS & !AS]` | Switch supports release events generation |
+| 3 | `MSL` | MomentarySwitchLongPress | `[MS & MSR \| AS]` | Switch supports long press detection |
+| 4 | `MSM` | MomentarySwitchMultiPress | `AS, [MS & MSR]` | Switch supports multi-press detection |
+| 5 | `AS` | ActionSwitch | `[MS]` | Switch is momentary, targeted at specific user actions (focus on multi-press and optionally long press) with a reduced event generation scheme |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `63` means every feature listed above is enabled.
+
+---
+
+## Cluster 59 Attributes
+
+Cluster 59 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `NumberOfPositions` | uint8 | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `CurrentPosition` | uint8 | `M` | R (read: view) | persisted | — |
+| 2 | `0x0002` | `MultiPressMax` | uint8 | `MSM` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `NumberOfPositions`
+
+Path example:
+
+```text
+1/59/0
+```
+
+Indicates the maximum number of positions the switch has. Any kind of switch has a minimum of 2 positions.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | min 2 |
+
+Example:
+
+```json
+{
+  "1/59/0": 2
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentPosition`
+
+Path example:
+
+```text
+1/59/1
+```
+
+Indicates the position of the switch. The valid range is zero to NumberOfPositions - 1. CurrentPosition value 0 is assigned to the default position of the switch: for example the "open" state of a rocker switch, or the "idle" state of a push button switch.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | max compute |
+
+Example:
+
+```json
+{
+  "1/59/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MultiPressMax`
+
+Path example:
+
+```text
+1/59/2
+```
+
+Indicates how many consecutive presses can be detected and reported by a momentary switch which supports multi-press (MSM feature flag set). For example, a momentary switch supporting single press, double press and triple press, but not quad press and beyond, would return the value 3.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `MSM` |
+| Access | R (read: view) |
+| Constraint | min 2 |
+
+Example:
+
+```json
+{
+  "1/59/2": 2
+}
+```
+
+---
+
+# Cluster 59 Commands
+
+Cluster 59 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 59 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `SwitchLatched` | info | `LS` | This event is generated, when the latching switch is moved to a new position. |
+| 1 | `0x01` | `InitialPress` | info | `MS` | This event is generated, when the momentary switch starts to be pressed (after debouncing). |
+| 2 | `0x02` | `LongPress` | info | `MSL` | This event is generated when the momentary switch has been pressed for a "long" time. |
+| 3 | `0x03` | `ShortRelease` | info | `MSR` | If the server has the Action Switch (AS) feature flag set, this event must NOT be generated at all, since setting the Action Switch feature flag forbids the Momentary Switch ShortRelease (MSR) … |
+| 4 | `0x04` | `LongRelease` | info | `MSL` | This event is generated, when the momentary switch has been released (after debouncing) and after having been pressed for a long time, i.e. this event is generated when the switch is released if a … |
+| 5 | `0x05` | `MultiPressOngoing` | info | `MSM & !AS` | If the server has the Action Switch (AS) feature flag set, this event must NOT be generated at all. |
+| 6 | `0x06` | `MultiPressComplete` | info | `MSM` | This event is generated to indicate how many times the momentary switch has been pressed in a multi-press sequence, after it has been detected that the sequence has ended. 13.8, "Sequence of events … |
+
+## Event `0` — `SwitchLatched`
+
+This event is generated, when the latching switch is moved to a new position. It may have been delayed by debouncing within the switch.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `NewPosition` | uint8 | `M` | Indicates the new value of the CurrentPosition attribute, i.e. after the move. |
+
+## Event `1` — `InitialPress`
+
+This event is generated, when the momentary switch starts to be pressed (after debouncing).
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `NewPosition` | uint8 | `M` | Indicates the new value of the CurrentPosition attribute, i.e. while pressed. |
+
+## Event `2` — `LongPress`
+
+This event is generated when the momentary switch has been pressed for a "long" time.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `NewPosition` | uint8 | `M` | Indicates the new value of the CurrentPosition attribute, i.e. while pressed. |
+
+## Event `3` — `ShortRelease`
+
+If the server has the Action Switch (AS) feature flag set, this event must NOT be generated at all, since setting the Action Switch feature flag forbids the Momentary Switch ShortRelease (MSR) feature flag from being set. Otherwise, the following paragraphs describe the situations where this event is generated.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousPosition` | uint8 | `M` | Indicates the previous value of the CurrentPosition attribute, i.e. just prior to release. |
+
+## Event `4` — `LongRelease`
+
+This event is generated, when the momentary switch has been released (after debouncing) and after having been pressed for a long time, i.e. this event is generated when the switch is released if a LongPress event has been generated since the previous InitialPress event.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousPosition` | uint8 | `M` | Indicates the previous value of the CurrentPosition attribute, i.e. just prior to release. |
+
+## Event `5` — `MultiPressOngoing`
+
+If the server has the Action Switch (AS) feature flag set, this event must NOT be generated at all. Otherwise, the following paragraphs describe the situations where this event is generated. This event is generated to indicate how many times the momentary switch has been pressed in a multi-press sequence, during that sequence. 13.8, "Sequence of events for MultiPress".
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `NewPosition` | uint8 | `M` | Indicates the new value of the CurrentPosition attribute, i.e. while pressed. |
+| 1 | `CurrentNumberOfPressesCounted` | uint8 | `M` | This field contains: - a value of 2 when the second press of a multi-press sequence has been detected, - a value of 3 when the third press of a multi-press sequence has been detected, - a value of N when the N^th press of a multi-press sequence has been … |
+
+## Event `6` — `MultiPressComplete`
+
+This event is generated to indicate how many times the momentary switch has been pressed in a multi-press sequence, after it has been detected that the sequence has ended. 13.8, "Sequence of events for MultiPress". The PreviousPosition field indicates the previous value of the CurrentPosition attribute, i.e. just prior to release.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PreviousPosition` | uint8 | `M` | — |
+| 1 | `TotalNumberOfPressesCounted` | uint8 | `M` | — |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 59 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/59/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

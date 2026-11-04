@@ -1,0 +1,490 @@
+---
+title: "Matter Cluster 1290 — Content Launcher"
+description: "Matter Cluster 1290 (0x050A) Content Launcher: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1290
+clusterHex: "0x050A"
+clusterName: "Content Launcher"
+---
+
+# Matter Cluster 1290 — Content Launcher Cluster
+
+<Callout type="info">
+Matter Cluster <code>1290</code>, also written as <code>0x050A</code>, is the <strong>Content Launcher Cluster</strong>.
+This cluster provides an interface for launching content on a Video Player device such as a Streaming Media Player, Smart TV or Smart Screen. This cluster would be supported on a Video Player device or devices that can playback content, such as a Streaming Media Player, Smart TV or Smart Screen. This cluster supports playing back content referenced by URL.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1290` |
+| Cluster ID hex | `0x050A` |
+| Cluster name | `Content Launcher` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `CONTENTLAUNCHER` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Add Seasons, Episode, Any and CurrentContext to search, Added Text/Audio tracks support with PlaybackPreferences field |
+
+---
+
+## Shadow Path Format
+
+Cluster 1290 values in the device shadow use this format:
+
+```text
+endpoint_id / 1290 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1290/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1290` | Content Launcher cluster |
+| `0` | `AcceptHeader` attribute |
+
+---
+
+## Cluster 1290 Features
+
+The `FeatureMap` attribute (`1/1290/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CS` | ContentSearch | `O` | Device supports content search (non-app specific) |
+| 1 | `UP` | URLPlayback | `O` | Device supports basic URL-based file playback |
+| 2 | `AS` | AdvancedSeek | `O` | Enables clients to implement more advanced media seeking behavior in their user interface, such as for example a "seek bar" |
+| 3 | `TT` | TextTracks | `O` | Device or app supports Text Tracks |
+| 4 | `AT` | AudioTracks | `O` | Device or app supports Audio Tracks |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `31` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `MetricTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Pixels` | `M` | Dimensions defined in a number of Pixels |
+| 1 | `Percentage` | `M` | Dimensions defined as a percentage |
+
+### `ParameterEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Actor` | `M` | Actor represents an actor credited in video media content; for example, “Gaby Hoffman” |
+| 1 | `Channel` | `M` | Channel represents the identifying data for a television channel; for example, "PBS" |
+| 2 | `Character` | `M` | A character represented in video media content; for example, “Snow White” |
+| 3 | `Director` | `M` | A director of the video media content; for example, “Spike Lee” |
+| 4 | `Event` | `M` | An event is a reference to a type of event; examples would include sports, music, or other types of events; for example, searching for "Football games" would search for a 'game' event entity and a 'football' sport entity |
+| 5 | `Franchise` | `M` | A franchise is a video entity which can represent a number of video entities, like movies or TV shows; for example, take the fictional franchise "Intergalactic Wars" which represents a collection of movie trilogies, as well as animated and live action TV shows |
+| 6 | `Genre` | `M` | Genre represents the genre of video media content such as action, drama or comedy |
+| 7 | `League` | `M` | League represents the categorical information for a sporting league; for example, "NCAA" |
+| 8 | `Popularity` | `M` | Popularity indicates whether the user asks for popular content |
+| 9 | `Provider` | `M` | The provider (MSP) the user wants this media to be played on; for example, "Netflix" |
+| 10 | `Sport` | `M` | Sport represents the categorical information of a sport; for example, football |
+| 11 | `SportsTeam` | `M` | SportsTeam represents the categorical information of a professional sports team; for example, "University of Washington Huskies" |
+| 12 | `Type` | `M` | The type of content requested. Supported types are "Movie", "MovieSeries", "TVSeries", "TVSeason", "TVEpisode", "Trailer", "SportsEvent", "LiveEvent", and "Video" |
+| 13 | `Video` | `M` | Video represents the identifying data for a specific piece of video content; for example, "Manchester by the Sea" |
+| 14 | `Season` | `O` | Season represents the specific season number within a TV series |
+| 15 | `Episode` | `O` | Episode represents a specific episode number within a Season in a TV series |
+| 16 | `Any` | `O` | Represents a search text input across many parameter types or even outside of the defined param types |
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Command succeeded |
+| 1 | `URLNotAvailable` | `M` | Requested URL could not be reached by device |
+| 2 | `AuthFailed` | `M` | Requested URL returned 401 error code. |
+| 3 | `TextTrackNotAvailable` | `TT` | Requested Text Track (in PlaybackPreferences) not available |
+| 4 | `AudioTrackNotAvailable` | `AT` | Requested Audio Track (in PlaybackPreferences) not available |
+
+### `SupportedProtocolsBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `DASH` | `M` | Device supports Dynamic Adaptive Streaming over HTTP (DASH) |
+| 1 | `HLS` | `M` | Device supports HTTP Live Streaming (HLS) |
+
+### `AdditionalInfoStruct` (struct)
+
+This object defines additional name=value pairs that can be used for identifying content.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Name` | string | `M` | max length 256 | Indicates the name of external id, ex. |
+| 1 | `Value` | string | `M` | max length 8192 | Indicates the value for external id, ex. |
+
+### `BrandingInformationStruct` (struct)
+
+This object defines Branding Information which can be provided by the client in order to customize the skin of the Video Player during playback.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ProviderName` | string | `M` | max length 256 | Indicates name of the provider for the given content. |
+| 1 | `Background` | StyleInformationStruct | `O` | — | Indicates background of the Video Player while content launch request is being processed by it. |
+| 2 | `Logo` | StyleInformationStruct | `O` | — | Indicates the logo shown when the Video Player is launching. |
+| 3 | `ProgressBar` | StyleInformationStruct | `O` | — | Indicates the style of progress bar for media playback. |
+| 4 | `Splash` | StyleInformationStruct | `O` | — | Indicates the screen shown when the Video Player is in an idle state. |
+| 5 | `WaterMark` | StyleInformationStruct | `O` | — | — |
+
+### `ContentSearchStruct` (struct)
+
+This object defines inputs to a search for content for display or playback.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ParameterList` | list of ParameterStruct | `M` | — | Indicates the list of parameters comprising the search. |
+
+### `DimensionStruct` (struct)
+
+This object defines dimension which can be used for defining Size of background images.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Width` | double | `M` | — | Indicates the width using the metric defined in Metric |
+| 1 | `Height` | double | `M` | — | Indicates the height using the metric defined in Metric |
+| 2 | `Metric` | MetricTypeEnum | `M` | — | Indicates metric used for defining Height/Width. |
+
+### `ParameterStruct` (struct)
+
+This object defines inputs to a search for content for display or playback.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Type` | ParameterEnum | `M` | — | Indicates the entity type. |
+| 1 | `Value` | string | `M` | max length 1024 | Indicates the entity value, which is a search string, ex. “Manchester by the Sea”. |
+| 2 | `ExternalIDList` | list of AdditionalInfoStruct | `O` | — | — |
+
+### `PlaybackPreferencesStruct` (struct)
+
+PlaybackPreferencesStruct defines the preferences sent by the client to the receiver in the ContentLauncher LaunchURL or LaunchContent commands.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PlaybackPosition` | uint64 (nullable) | `AS` | — | Indicates the preferred position (in milliseconds) in the media to launch playback from. |
+| 1 | `TextTrack` | TrackPreferenceStruct (nullable) | `TT` | — | Indicates the user's preferred Text Track. |
+| 2 | `AudioTracks` | list of TrackPreferenceStruct (nullable) | `AT` | — | Indicates the list of the user's preferred Audio Tracks. |
+
+### `StyleInformationStruct` (struct)
+
+This object defines style information which can be used by content providers to change the Media Player's style related properties.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ImageURL` | string | `O` | max length 8192 | — |
+| 1 | `Color` | string | `O` | allowed: 7, 9 | Indicates the color, in RGB or RGBA, used for styling different Video Player sections like Logo, Watermark, etc. |
+| 2 | `Size` | DimensionStruct | `O` | — | Indicates the size of the image used for Styling different Video Player sections like Logo, Watermark etc. |
+
+### `TrackPreferenceStruct` (struct)
+
+This structure defines Text/Audio Track preferences.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `LanguageCode` | string | `M` | max length 32 | This field contains one of the standard Tags for Identifying Languages RFC5646, which identifies the primary language used in the Track. |
+| 1 | `Characteristics` | list of CharacteristicEnum (nullable) | `O` | — | This field contains a list of enumerated CharacteristicEnum values that indicate a purpose, trait or feature associated with the Track. |
+| 2 | `AudioOutputIndex` | uint8 (nullable) | `AT` | — | This field if present indicates the index of the OutputInfoStruct from the OutputList attribute (from the AudioOutput cluster) and indicates which audio output the Audio Track should be played on. |
+
+---
+
+## Cluster 1290 Attributes
+
+Cluster 1290 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `AcceptHeader` | list of string | `UP` | R (read: view) | persisted | `empty` |
+| 1 | `0x0001` | `SupportedStreamingProtocols` | SupportedProtocolsBitmap | `UP` | R (read: view) | persisted | `0` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `AcceptHeader`
+
+Path example:
+
+```text
+1/1290/0
+```
+
+This attribute provides a list of content types supported by the Video Player or Content App in the form of entries in the HTTP "Accept" request header.
+
+| Property | Value |
+|---|---|
+| Type | list of string |
+| Conformance | `UP` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | max 100 entries |
+| Default | `empty` |
+
+Example:
+
+```json
+{
+  "1/1290/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SupportedStreamingProtocols`
+
+Path example:
+
+```text
+1/1290/1
+```
+
+This attribute provides information about supported streaming protocols.
+
+| Property | Value |
+|---|---|
+| Type | SupportedProtocolsBitmap |
+| Conformance | `UP` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Default | `0` |
+
+Bits (`SupportedProtocolsBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `DASH` | Device supports Dynamic Adaptive Streaming over HTTP (DASH) |
+| 1 | `HLS` | Device supports HTTP Live Streaming (HLS) |
+
+Example:
+
+```json
+{
+  "1/1290/1": 0
+}
+```
+
+---
+
+# Cluster 1290 Commands
+
+Cluster 1290 has **2 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `LaunchContent` | client → server | `CS` | LauncherResponse | On receipt, this must launch the specified content with optional search criteria. |
+| 1 | `0x01` | `LaunchURL` | client → server | `UP` | LauncherResponse | — |
+| 2 | `0x02` | `LauncherResponse` | server → client | `CS \| UP` | — | This command is generated in response to LaunchContent and LaunchURL commands. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1290 / 65529
+```
+
+```json
+{
+  "1/1290/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1290 command, check that the command ID exists in <code>endpoint/1290/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1290,
+    "command_name": "LaunchContent",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1290, always use `"cluster_id": 1290`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `LaunchContent`
+
+## Purpose
+
+On receipt, this must launch the specified content with optional search criteria. This command returns a Launch Response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `LaunchContent` |
+| Direction | client → server |
+| Conformance | `CS` |
+| Response | LauncherResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Search` | `search` | ContentSearchStruct | `M` | desc | Indicates the content to launch. |
+| 1 | `AutoPlay` | `autoPlay` | bool | `M` | desc | Indicates whether to automatically start playing content, where: - TRUE means best match should start playing automatically. - FALSE means matches should be displayed on screen for user selection. |
+| 2 | `Data` | `data` | string | `O` | — | This field, if present, indicates app-specific data. |
+| 3 | `PlaybackPreferences` | `playbackPreferences` | PlaybackPreferencesStruct | `O` | — | This field, if present, indicates the user's preferred Text/AudioTracks and playbackPosition for the media, sent from the client to the server. |
+| 4 | `UseCurrentContext` | `useCurrentContext` | bool | `O` | desc | This field, if present, indicates whether to consider the context of current ongoing activity on the receiver to fulfill the request. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1290,
+    "command_name": "LaunchContent",
+    "payload": {
+      "search": {
+        "parameterList": []
+      },
+      "autoPlay": true
+    }
+  }
+}
+```
+
+The device answers with `LauncherResponse` (see below).
+
+---
+
+# Command: `LaunchURL`
+
+## Purpose
+
+`LaunchURL` is a client-to-server command of the Content Launcher cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `LaunchURL` |
+| Direction | client → server |
+| Conformance | `UP` |
+| Response | LauncherResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ContentURL` | `contentURL` | string | `M` | max length 8192 | — |
+| 1 | `DisplayString` | `displayString` | string | `O` | max length 256 | — |
+| 2 | `BrandingInformation` | `brandingInformation` | BrandingInformationStruct | `O` | — | — |
+| 3 | `PlaybackPreferences` | `playbackPreferences` | PlaybackPreferencesStruct | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1290,
+    "command_name": "LaunchURL",
+    "payload": {
+      "contentURL": "example"
+    }
+  }
+}
+```
+
+The device answers with `LauncherResponse` (see below).
+
+---
+
+# Command: `LauncherResponse`
+
+## Purpose
+
+This command is generated in response to LaunchContent and LaunchURL commands.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `LauncherResponse` |
+| Direction | server → client (response) |
+| Conformance | `CS \| UP` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | — | Indicates the status of the command which resulted in this response. |
+| 1 | `Data` | `data` | string | `O` | — | Indicates Optional app-specific data. |
+
+`Status` values (`StatusEnum`): `0` = Success, `1` = URLNotAvailable, `2` = AuthFailed, `3` = TextTrackNotAvailable, `4` = AudioTrackNotAvailable
+
+---
+
+# Cluster 1290 Events
+
+Cluster 1290 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1290 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1290/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,272 @@
+---
+title: "Matter Cluster 2822 — Meter Identification"
+description: "Matter Cluster 2822 (0x0B06) Meter Identification: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 2822
+clusterHex: "0x0B06"
+clusterName: "Meter Identification"
+---
+
+# Matter Cluster 2822 — Meter Identification Cluster
+
+<Callout type="info">
+Matter Cluster <code>2822</code>, also written as <code>0x0B06</code>, is the <strong>Meter Identification Cluster</strong>.
+This Meter Identification Cluster provides attributes for determining advanced information about utility metering device.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `2822` |
+| Cluster ID hex | `0x0B06` |
+| Cluster name | `Meter Identification` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `MTRID` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial version |
+
+---
+
+## Shadow Path Format
+
+Cluster 2822 values in the device shadow use this format:
+
+```text
+endpoint_id / 2822 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/2822/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `2822` | Meter Identification cluster |
+| `0` | `MeterType` attribute |
+
+---
+
+## Cluster 2822 Features
+
+The `FeatureMap` attribute (`1/2822/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PWRTHLD` | PowerThreshold | `O` | Supports information about power threshold |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `MeterTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Utility` | `M` | Utility Meter |
+| 1 | `Private` | `M` | Private Meter |
+| 2 | `Generic` | `M` | Generic Meter |
+
+---
+
+## Cluster 2822 Attributes
+
+Cluster 2822 defines **5 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MeterType` | MeterTypeEnum | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `PointOfDelivery` | string | `M` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `MeterSerialNumber` | string | `M` | R (read: view) | nullable | — |
+| 3 | `0x0003` | `ProtocolVersion` | string | `O` | R (read: view) | nullable | — |
+| 4 | `0x0004` | `PowerThreshold` | PowerThresholdStruct | `PWRTHLD` | R (read: view) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MeterType`
+
+Path example:
+
+```text
+1/2822/0
+```
+
+Indicates the Meter type features, decided by manufacturer. If the type is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | MeterTypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Values (`MeterTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Utility` | Utility Meter |
+| 1 | `Private` | Private Meter |
+| 2 | `Generic` | Generic Meter |
+
+Example:
+
+```json
+{
+  "1/2822/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `PointOfDelivery`
+
+Path example:
+
+```text
+1/2822/1
+```
+
+Indicates the unique identification of the connection point for the premises for billing purposes. If the point of delivery is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max length 64 |
+
+Example:
+
+```json
+{
+  "1/2822/1": "example"
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MeterSerialNumber`
+
+Path example:
+
+```text
+1/2822/2
+```
+
+Indicates the serial number of the meter. If the serial number is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max length 64 |
+
+Example:
+
+```json
+{
+  "1/2822/2": "example"
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `ProtocolVersion`
+
+Path example:
+
+```text
+1/2822/3
+```
+
+Indicates the underlying protocol version to express local market features. If the protocol version is unavailable, this attribute is null.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max length 64 |
+
+Example:
+
+```json
+{
+  "1/2822/3": "example"
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `PowerThreshold`
+
+Path example:
+
+```text
+1/2822/4
+```
+
+No condensed specification text is available for `PowerThreshold`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | PowerThresholdStruct |
+| Conformance | `PWRTHLD` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/2822/4": 0
+}
+```
+
+---
+
+# Cluster 2822 Commands
+
+Cluster 2822 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 2822 Events
+
+Cluster 2822 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 2822 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/2822/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

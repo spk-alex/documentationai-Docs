@@ -1,0 +1,339 @@
+---
+title: "Matter Cluster 52 — Software Diagnostics"
+description: "Matter Cluster 52 (0x0034) Software Diagnostics: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 52
+clusterHex: "0x0034"
+clusterName: "Software Diagnostics"
+---
+
+# Matter Cluster 52 — Software Diagnostics Cluster
+
+<Callout type="info">
+Matter Cluster <code>52</code>, also written as <code>0x0034</code>, is the <strong>Software Diagnostics Cluster</strong>.
+The Software Diagnostics Cluster provides a means to acquire standardized diagnostics metrics that may be used by a Node to assist a user or Administrator in diagnosing potential problems. The Software Diagnostics Cluster attempts to centralize all metrics that are relevant to the software that may be running on a Node.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `52` |
+| Cluster ID hex | `0x0034` |
+| Cluster name | `Software Diagnostics` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `DGSW` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 52 values in the device shadow use this format:
+
+```text
+endpoint_id / 52 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/52/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `52` | Software Diagnostics cluster |
+| `0` | `ThreadMetrics` attribute |
+
+---
+
+## Cluster 52 Features
+
+The `FeatureMap` attribute (`0/52/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `WTRMRK` | Watermarks | `O` | Node makes available the metrics for high watermark related to memory consumption |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ThreadMetricsStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ID` | uint64 | `M` | — | — |
+| 1 | `Name` | string | `O` | max length 8 | The Name field is set to a vendor defined name or prefix of the software thread that is static for the duration of the thread. |
+| 2 | `StackFreeCurrent` | uint32 | `O` | — | The StackFreeCurrent field indicates the current amount of stack memory, in bytes, that are not being utilized on the respective thread. |
+| 3 | `StackFreeMinimum` | uint32 | `O` | — | The StackFreeMinimum field indicates the minimum amount of stack memory, in bytes, that has been available at any point between the current time and this attribute being reset or initialized on the respective thread. |
+| 4 | `StackSize` | uint32 | `O` | — | The StackSize field indicates the amount of stack memory, in bytes, that has been allocated for use by the respective thread. |
+
+---
+
+## Cluster 52 Attributes
+
+Cluster 52 defines **4 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `ThreadMetrics` | list of ThreadMetricsStruct | `O` | R (read: view) | change omitted | — |
+| 1 | `0x0001` | `CurrentHeapFree` | uint64 | `O` | R (read: view) | change omitted | — |
+| 2 | `0x0002` | `CurrentHeapUsed` | uint64 | `O` | R (read: view) | change omitted | — |
+| 3 | `0x0003` | `CurrentHeapHighWatermark` | uint64 | `WTRMRK` | R (read: view) | change omitted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `ThreadMetrics`
+
+Path example:
+
+```text
+0/52/0
+```
+
+This attribute is a list of ThreadMetricsStruct structs. Each active thread on the Node is represented by a single entry within the ThreadMetrics attribute.
+
+| Property | Value |
+|---|---|
+| Type | list of ThreadMetricsStruct |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+| Constraint | max 64 entries |
+
+Each entry is a `ThreadMetricsStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/52/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentHeapFree`
+
+Path example:
+
+```text
+0/52/1
+```
+
+Indicates the current amount of heap memory, in bytes, that are free for allocation. The effective amount may be smaller due to heap fragmentation or other reasons.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+
+Example:
+
+```json
+{
+  "0/52/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `CurrentHeapUsed`
+
+Path example:
+
+```text
+0/52/2
+```
+
+Indicates the current amount of heap memory, in bytes, that is being used.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+
+Example:
+
+```json
+{
+  "0/52/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `CurrentHeapHighWatermark`
+
+Path example:
+
+```text
+0/52/3
+```
+
+Indicates the maximum amount of heap memory, in bytes, that has been used by the Node. This value only be reset upon a Node reboot or upon receiving of the ResetWatermarks command.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `WTRMRK` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+
+Example:
+
+```json
+{
+  "0/52/3": 1
+}
+```
+
+---
+
+# Cluster 52 Commands
+
+Cluster 52 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ResetWatermarks` | client → server | `WTRMRK` | status | This command is used to reset the high watermarks for heap and stack memory. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 52 / 65529
+```
+
+```json
+{
+  "0/52/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 52 command, check that the command ID exists in <code>endpoint/52/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 52,
+    "command_name": "ResetWatermarks",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 52, always use `"cluster_id": 52`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ResetWatermarks`
+
+## Purpose
+
+This command is used to reset the high watermarks for heap and stack memory. Receipt of this command must reset the following values which track high and lower watermarks: - The StackFreeMinimum field of the ThreadMetrics attribute - The CurrentHeapHighWatermark attribute
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ResetWatermarks` |
+| Direction | client → server |
+| Conformance | `WTRMRK` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 52,
+    "command_name": "ResetWatermarks",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Cluster 52 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `SoftwareFault` | info | `O` | This Event is generated when a software fault occurs on the Node. |
+
+## Event `0` — `SoftwareFault`
+
+This Event is generated when a software fault occurs on the Node.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ID` | uint64 | `M` | — |
+| 1 | `Name` | string | `O` | This field is set to a manufacturer-specified name or prefix of the software thread in which the last software fault occurred. |
+| 2 | `FaultRecording` | octstr | `O` | This field is a manufacturer-specified payload intended to convey information to assist in further diagnosing or debugging a software fault. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 52 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/52/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

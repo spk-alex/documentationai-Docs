@@ -69,26 +69,741 @@
                     "title": "Matter Device Attributes & Commands",
                     "path": "matter-clusters",
                     "icon": "database"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Matter Clusters",
+            "icon": "microchip",
+            "groups": [
+              {
+                "group": "General and node management",
+                "icon": "gear",
+                "pages": [
+                  {
+                    "title": "3 — Identify",
+                    "path": "matter_cluster_3_identify",
+                    "icon": "gear"
                   },
                   {
-                    "title": "Cluster 6 — On/Off",
-                    "path": "matter_cluster_6_onoff",
-                    "icon": "toggle-right"
+                    "title": "4 — Groups",
+                    "path": "matter_cluster_4_groups",
+                    "icon": "gear"
                   },
                   {
-                    "title": "Cluster 8 — Level Control",
-                    "path": "matter_cluster_8_level_control",
-                    "icon": "sliders"
+                    "title": "29 — Descriptor",
+                    "path": "matter_cluster_29_descriptor",
+                    "icon": "gear"
                   },
                   {
-                    "title": "Cluster 53 — Thread Network Diagnostics",
+                    "title": "30 — Binding",
+                    "path": "matter_cluster_30_binding",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "31 — Access Control",
+                    "path": "matter_cluster_31_access_control",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "37 — Actions",
+                    "path": "matter_cluster_37_actions",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "40 — Basic Information",
+                    "path": "matter_cluster_40_basic_information",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "41 — OTA Software Update Provider",
+                    "path": "matter_cluster_41_ota_software_update_provider",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "42 — OTA Software Update Requestor",
+                    "path": "matter_cluster_42_ota_software_update_requestor",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "43 — Localization Configuration",
+                    "path": "matter_cluster_43_localization_configuration",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "44 — Time Format Localization",
+                    "path": "matter_cluster_44_time_format_localization",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "45 — Unit Localization",
+                    "path": "matter_cluster_45_unit_localization",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "46 — Power Source Configuration",
+                    "path": "matter_cluster_46_power_source_configuration",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "47 — Power Source",
+                    "path": "matter_cluster_47_power_source",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "48 — General Commissioning",
+                    "path": "matter_cluster_48_general_commissioning",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "60 — Administrator Commissioning",
+                    "path": "matter_cluster_60_administrator_commissioning",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "62 — Operational Credentials",
+                    "path": "matter_cluster_62_operational_credentials",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "63 — Group Key Management",
+                    "path": "matter_cluster_63_group_key_management",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "64 — Fixed Label",
+                    "path": "matter_cluster_64_fixed_label",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "65 — User Label",
+                    "path": "matter_cluster_65_user_label",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "98 — Scenes Management",
+                    "path": "matter_cluster_98_scenes_management",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "101 — Groupcast",
+                    "path": "matter_cluster_101_groupcast",
+                    "icon": "gear"
+                  }
+                ]
+              },
+              {
+                "group": "Networking and diagnostics",
+                "icon": "network-wired",
+                "pages": [
+                  {
+                    "title": "49 — Network Commissioning",
+                    "path": "matter_cluster_49_network_commissioning",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "50 — Diagnostic Logs",
+                    "path": "matter_cluster_50_diagnostic_logs",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "51 — General Diagnostics",
+                    "path": "matter_cluster_51_general_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "52 — Software Diagnostics",
+                    "path": "matter_cluster_52_software_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "53 — Thread Network Diagnostics",
                     "path": "matter_cluster_53_thread_network_diagnostics",
                     "icon": "network-wired"
                   },
                   {
-                    "title": "Cluster 54 — Wi-Fi Network Diagnostics",
+                    "title": "54 — Wi-Fi Network Diagnostics",
                     "path": "matter_cluster_54_wifi_network_diagnostics",
-                    "icon": "wifi"
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "55 — Ethernet Network Diagnostics",
+                    "path": "matter_cluster_55_ethernet_network_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "56 — Time Synchronization",
+                    "path": "matter_cluster_56_time_synchronization",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "70 — ICD Management",
+                    "path": "matter_cluster_70_icd_management",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "1105 — Wi-Fi Network Management",
+                    "path": "matter_cluster_1105_wi_fi_network_management",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "1106 — Thread Border Router Management",
+                    "path": "matter_cluster_1106_thread_border_router_management",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "1107 — Thread Network Directory",
+                    "path": "matter_cluster_1107_thread_network_directory",
+                    "icon": "network-wired"
+                  }
+                ]
+              },
+              {
+                "group": "Bridges and fabric administration",
+                "icon": "diagram-project",
+                "pages": [
+                  {
+                    "title": "57 — Bridged Device Basic Information",
+                    "path": "matter_cluster_57_bridged_device_basic_information",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1872 — Ecosystem Information",
+                    "path": "matter_cluster_1872_ecosystem_information",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1873 — Commissioner Control",
+                    "path": "matter_cluster_1873_commissioner_control",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1874 — Joint Fabric Datastore",
+                    "path": "matter_cluster_1874_joint_fabric_datastore",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1875 — Joint Fabric Administrator",
+                    "path": "matter_cluster_1875_joint_fabric_administrator",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "2049 — TLS Certificate Management",
+                    "path": "matter_cluster_2049_tls_certificate_management",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "2050 — TLS Client Management",
+                    "path": "matter_cluster_2050_tls_client_management",
+                    "icon": "diagram-project"
+                  }
+                ]
+              },
+              {
+                "group": "Locks, closures, HVAC and lighting",
+                "icon": "lock",
+                "pages": [
+                  {
+                    "title": "6 — On/Off",
+                    "path": "matter_cluster_6_onoff",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "8 — Level Control",
+                    "path": "matter_cluster_8_level_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "59 — Switch",
+                    "path": "matter_cluster_59_switch",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "257 — Door Lock",
+                    "path": "matter_cluster_257_door_lock",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "258 — Window Covering",
+                    "path": "matter_cluster_258_window_covering",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "260 — Closure Control",
+                    "path": "matter_cluster_260_closure_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "261 — Closure Dimension",
+                    "path": "matter_cluster_261_closure_dimension",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "512 — Pump Configuration and Control",
+                    "path": "matter_cluster_512_pump_configuration_and_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "513 — Thermostat",
+                    "path": "matter_cluster_513_thermostat",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "514 — Fan Control",
+                    "path": "matter_cluster_514_fan_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "516 — Thermostat User Interface Configuration",
+                    "path": "matter_cluster_516_thermostat_user_interface_configuration",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "768 — Color Control",
+                    "path": "matter_cluster_768_color_control",
+                    "icon": "lock"
+                  }
+                ]
+              },
+              {
+                "group": "Sensing and measurement",
+                "icon": "gauge",
+                "pages": [
+                  {
+                    "title": "69 — Boolean State",
+                    "path": "matter_cluster_69_boolean_state",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "91 — Air Quality",
+                    "path": "matter_cluster_91_air_quality",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "92 — Smoke CO Alarm",
+                    "path": "matter_cluster_92_smoke_co_alarm",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "128 — Boolean State Configuration",
+                    "path": "matter_cluster_128_boolean_state_configuration",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "129 — Valve Configuration and Control",
+                    "path": "matter_cluster_129_valve_configuration_and_control",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1024 — Illuminance Measurement",
+                    "path": "matter_cluster_1024_illuminance_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1026 — Temperature Measurement",
+                    "path": "matter_cluster_1026_temperature_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1027 — Pressure Measurement",
+                    "path": "matter_cluster_1027_pressure_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1028 — Flow Measurement",
+                    "path": "matter_cluster_1028_flow_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1029 — Relative Humidity Measurement",
+                    "path": "matter_cluster_1029_relative_humidity_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1030 — Occupancy Sensing",
+                    "path": "matter_cluster_1030_occupancy_sensing",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1036 — Carbon Monoxide Concentration Measurement",
+                    "path": "matter_cluster_1036_carbon_monoxide_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1037 — Carbon Dioxide Concentration Measurement",
+                    "path": "matter_cluster_1037_carbon_dioxide_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1043 — Nitrogen Dioxide Concentration Measurement",
+                    "path": "matter_cluster_1043_nitrogen_dioxide_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1045 — Ozone Concentration Measurement",
+                    "path": "matter_cluster_1045_ozone_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1066 — PM2.5 Concentration Measurement",
+                    "path": "matter_cluster_1066_pm2_5_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1067 — Formaldehyde Concentration Measurement",
+                    "path": "matter_cluster_1067_formaldehyde_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1068 — PM1 Concentration Measurement",
+                    "path": "matter_cluster_1068_pm1_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1069 — PM10 Concentration Measurement",
+                    "path": "matter_cluster_1069_pm10_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1070 — Total Volatile Organic Compounds Concentration Measurement",
+                    "path": "matter_cluster_1070_total_volatile_organic_compounds_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1071 — Radon Concentration Measurement",
+                    "path": "matter_cluster_1071_radon_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1072 — Soil Measurement",
+                    "path": "matter_cluster_1072_soil_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1073 — Ambient Context Sensing",
+                    "path": "matter_cluster_1073_ambient_context_sensing",
+                    "icon": "gauge"
+                  }
+                ]
+              },
+              {
+                "group": "Appliances",
+                "icon": "plug",
+                "pages": [
+                  {
+                    "title": "72 — Oven Cavity Operational State",
+                    "path": "matter_cluster_72_oven_cavity_operational_state",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "73 — Oven Mode",
+                    "path": "matter_cluster_73_oven_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "74 — Laundry Dryer Controls",
+                    "path": "matter_cluster_74_laundry_dryer_controls",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "80 — Mode Select",
+                    "path": "matter_cluster_80_mode_select",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "81 — Laundry Washer Mode",
+                    "path": "matter_cluster_81_laundry_washer_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "82 — Refrigerator And Temperature Controlled Cabinet Mode",
+                    "path": "matter_cluster_82_refrigerator_and_temperature_controlled_cabinet_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "83 — Laundry Washer Controls",
+                    "path": "matter_cluster_83_laundry_washer_controls",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "84 — RVC Run Mode",
+                    "path": "matter_cluster_84_rvc_run_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "85 — RVC Clean Mode",
+                    "path": "matter_cluster_85_rvc_clean_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "86 — Temperature Control",
+                    "path": "matter_cluster_86_temperature_control",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "87 — Refrigerator Alarm",
+                    "path": "matter_cluster_87_refrigerator_alarm",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "89 — Dishwasher Mode",
+                    "path": "matter_cluster_89_dishwasher_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "93 — Dishwasher Alarm",
+                    "path": "matter_cluster_93_dishwasher_alarm",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "94 — Microwave Oven Mode",
+                    "path": "matter_cluster_94_microwave_oven_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "95 — Microwave Oven Control",
+                    "path": "matter_cluster_95_microwave_oven_control",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "96 — Operational State",
+                    "path": "matter_cluster_96_operational_state",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "97 — RVC Operational State",
+                    "path": "matter_cluster_97_rvc_operational_state",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "100 — Temperature Alarm",
+                    "path": "matter_cluster_100_temperature_alarm",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "113 — HEPA Filter Monitoring",
+                    "path": "matter_cluster_113_hepa_filter_monitoring",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "114 — Activated Carbon Filter Monitoring",
+                    "path": "matter_cluster_114_activated_carbon_filter_monitoring",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "121 — Water Tank Level Monitoring",
+                    "path": "matter_cluster_121_water_tank_level_monitoring",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "336 — Service Area",
+                    "path": "matter_cluster_336_service_area",
+                    "icon": "plug"
+                  }
+                ]
+              },
+              {
+                "group": "Energy and metering",
+                "icon": "bolt",
+                "pages": [
+                  {
+                    "title": "144 — Electrical Power Measurement",
+                    "path": "matter_cluster_144_electrical_power_measurement",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "145 — Electrical Energy Measurement",
+                    "path": "matter_cluster_145_electrical_energy_measurement",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "148 — Water Heater Management",
+                    "path": "matter_cluster_148_water_heater_management",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "149 — Commodity Price",
+                    "path": "matter_cluster_149_commodity_price",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "151 — Messages",
+                    "path": "matter_cluster_151_messages",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "152 — Device Energy Management",
+                    "path": "matter_cluster_152_device_energy_management",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "153 — Energy EVSE",
+                    "path": "matter_cluster_153_energy_evse",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "155 — Energy Preference",
+                    "path": "matter_cluster_155_energy_preference",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "156 — Power Topology",
+                    "path": "matter_cluster_156_power_topology",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "157 — Energy EVSE Mode",
+                    "path": "matter_cluster_157_energy_evse_mode",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "158 — Water Heater Mode",
+                    "path": "matter_cluster_158_water_heater_mode",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "159 — Device Energy Management Mode",
+                    "path": "matter_cluster_159_device_energy_management_mode",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "160 — Electrical Grid Conditions",
+                    "path": "matter_cluster_160_electrical_grid_conditions",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "1792 — Commodity Tariff",
+                    "path": "matter_cluster_1792_commodity_tariff",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "2822 — Meter Identification",
+                    "path": "matter_cluster_2822_meter_identification",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "2823 — Commodity Metering",
+                    "path": "matter_cluster_2823_commodity_metering",
+                    "icon": "bolt"
+                  }
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "tv",
+                "pages": [
+                  {
+                    "title": "1283 — Wake On LAN",
+                    "path": "matter_cluster_1283_wake_on_lan",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1284 — Channel",
+                    "path": "matter_cluster_1284_channel",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1285 — Target Navigator",
+                    "path": "matter_cluster_1285_target_navigator",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1286 — Media Playback",
+                    "path": "matter_cluster_1286_media_playback",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1287 — Media Input",
+                    "path": "matter_cluster_1287_media_input",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1288 — Low Power",
+                    "path": "matter_cluster_1288_low_power",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1289 — Keypad Input",
+                    "path": "matter_cluster_1289_keypad_input",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1290 — Content Launcher",
+                    "path": "matter_cluster_1290_content_launcher",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1291 — Audio Output",
+                    "path": "matter_cluster_1291_audio_output",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1292 — Application Launcher",
+                    "path": "matter_cluster_1292_application_launcher",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1293 — Application Basic",
+                    "path": "matter_cluster_1293_application_basic",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1294 — Account Login",
+                    "path": "matter_cluster_1294_account_login",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1295 — Content Control",
+                    "path": "matter_cluster_1295_content_control",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1296 — Content App Observer",
+                    "path": "matter_cluster_1296_content_app_observer",
+                    "icon": "tv"
+                  }
+                ]
+              },
+              {
+                "group": "Cameras",
+                "icon": "video",
+                "pages": [
+                  {
+                    "title": "1360 — Zone Management",
+                    "path": "matter_cluster_1360_zone_management",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1361 — Camera AV Stream Management",
+                    "path": "matter_cluster_1361_camera_av_stream_management",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1362 — Camera AV Settings User Level Management",
+                    "path": "matter_cluster_1362_camera_av_settings_user_level_management",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1363 — WebRTC Transport Provider",
+                    "path": "matter_cluster_1363_webrtc_transport_provider",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1364 — WebRTC Transport Requestor",
+                    "path": "matter_cluster_1364_webrtc_transport_requestor",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1365 — Push AV Stream Transport",
+                    "path": "matter_cluster_1365_push_av_stream_transport",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1366 — Chime",
+                    "path": "matter_cluster_1366_chime",
+                    "icon": "video"
                   }
                 ]
               }
@@ -192,26 +907,741 @@
                     "title": "Matter Device Attributes & Commands",
                     "path": "el/matter-clusters",
                     "icon": "database"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Matter Clusters",
+            "icon": "microchip",
+            "groups": [
+              {
+                "group": "General and node management",
+                "icon": "gear",
+                "pages": [
+                  {
+                    "title": "3 — Identify",
+                    "path": "matter_cluster_3_identify",
+                    "icon": "gear"
                   },
                   {
-                    "title": "Cluster 6 — On/Off",
-                    "path": "matter_cluster_6_onoff",
-                    "icon": "toggle-right"
+                    "title": "4 — Groups",
+                    "path": "matter_cluster_4_groups",
+                    "icon": "gear"
                   },
                   {
-                    "title": "Cluster 8 — Level Control",
-                    "path": "matter_cluster_8_level_control",
-                    "icon": "sliders"
+                    "title": "29 — Descriptor",
+                    "path": "matter_cluster_29_descriptor",
+                    "icon": "gear"
                   },
                   {
-                    "title": "Cluster 53 — Thread Network Diagnostics",
+                    "title": "30 — Binding",
+                    "path": "matter_cluster_30_binding",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "31 — Access Control",
+                    "path": "matter_cluster_31_access_control",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "37 — Actions",
+                    "path": "matter_cluster_37_actions",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "40 — Basic Information",
+                    "path": "matter_cluster_40_basic_information",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "41 — OTA Software Update Provider",
+                    "path": "matter_cluster_41_ota_software_update_provider",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "42 — OTA Software Update Requestor",
+                    "path": "matter_cluster_42_ota_software_update_requestor",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "43 — Localization Configuration",
+                    "path": "matter_cluster_43_localization_configuration",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "44 — Time Format Localization",
+                    "path": "matter_cluster_44_time_format_localization",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "45 — Unit Localization",
+                    "path": "matter_cluster_45_unit_localization",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "46 — Power Source Configuration",
+                    "path": "matter_cluster_46_power_source_configuration",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "47 — Power Source",
+                    "path": "matter_cluster_47_power_source",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "48 — General Commissioning",
+                    "path": "matter_cluster_48_general_commissioning",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "60 — Administrator Commissioning",
+                    "path": "matter_cluster_60_administrator_commissioning",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "62 — Operational Credentials",
+                    "path": "matter_cluster_62_operational_credentials",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "63 — Group Key Management",
+                    "path": "matter_cluster_63_group_key_management",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "64 — Fixed Label",
+                    "path": "matter_cluster_64_fixed_label",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "65 — User Label",
+                    "path": "matter_cluster_65_user_label",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "98 — Scenes Management",
+                    "path": "matter_cluster_98_scenes_management",
+                    "icon": "gear"
+                  },
+                  {
+                    "title": "101 — Groupcast",
+                    "path": "matter_cluster_101_groupcast",
+                    "icon": "gear"
+                  }
+                ]
+              },
+              {
+                "group": "Networking and diagnostics",
+                "icon": "network-wired",
+                "pages": [
+                  {
+                    "title": "49 — Network Commissioning",
+                    "path": "matter_cluster_49_network_commissioning",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "50 — Diagnostic Logs",
+                    "path": "matter_cluster_50_diagnostic_logs",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "51 — General Diagnostics",
+                    "path": "matter_cluster_51_general_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "52 — Software Diagnostics",
+                    "path": "matter_cluster_52_software_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "53 — Thread Network Diagnostics",
                     "path": "matter_cluster_53_thread_network_diagnostics",
                     "icon": "network-wired"
                   },
                   {
-                    "title": "Cluster 54 — Wi-Fi Network Diagnostics",
+                    "title": "54 — Wi-Fi Network Diagnostics",
                     "path": "matter_cluster_54_wifi_network_diagnostics",
-                    "icon": "wifi"
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "55 — Ethernet Network Diagnostics",
+                    "path": "matter_cluster_55_ethernet_network_diagnostics",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "56 — Time Synchronization",
+                    "path": "matter_cluster_56_time_synchronization",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "70 — ICD Management",
+                    "path": "matter_cluster_70_icd_management",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "1105 — Wi-Fi Network Management",
+                    "path": "matter_cluster_1105_wi_fi_network_management",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "1106 — Thread Border Router Management",
+                    "path": "matter_cluster_1106_thread_border_router_management",
+                    "icon": "network-wired"
+                  },
+                  {
+                    "title": "1107 — Thread Network Directory",
+                    "path": "matter_cluster_1107_thread_network_directory",
+                    "icon": "network-wired"
+                  }
+                ]
+              },
+              {
+                "group": "Bridges and fabric administration",
+                "icon": "diagram-project",
+                "pages": [
+                  {
+                    "title": "57 — Bridged Device Basic Information",
+                    "path": "matter_cluster_57_bridged_device_basic_information",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1872 — Ecosystem Information",
+                    "path": "matter_cluster_1872_ecosystem_information",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1873 — Commissioner Control",
+                    "path": "matter_cluster_1873_commissioner_control",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1874 — Joint Fabric Datastore",
+                    "path": "matter_cluster_1874_joint_fabric_datastore",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "1875 — Joint Fabric Administrator",
+                    "path": "matter_cluster_1875_joint_fabric_administrator",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "2049 — TLS Certificate Management",
+                    "path": "matter_cluster_2049_tls_certificate_management",
+                    "icon": "diagram-project"
+                  },
+                  {
+                    "title": "2050 — TLS Client Management",
+                    "path": "matter_cluster_2050_tls_client_management",
+                    "icon": "diagram-project"
+                  }
+                ]
+              },
+              {
+                "group": "Locks, closures, HVAC and lighting",
+                "icon": "lock",
+                "pages": [
+                  {
+                    "title": "6 — On/Off",
+                    "path": "matter_cluster_6_onoff",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "8 — Level Control",
+                    "path": "matter_cluster_8_level_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "59 — Switch",
+                    "path": "matter_cluster_59_switch",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "257 — Door Lock",
+                    "path": "matter_cluster_257_door_lock",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "258 — Window Covering",
+                    "path": "matter_cluster_258_window_covering",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "260 — Closure Control",
+                    "path": "matter_cluster_260_closure_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "261 — Closure Dimension",
+                    "path": "matter_cluster_261_closure_dimension",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "512 — Pump Configuration and Control",
+                    "path": "matter_cluster_512_pump_configuration_and_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "513 — Thermostat",
+                    "path": "matter_cluster_513_thermostat",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "514 — Fan Control",
+                    "path": "matter_cluster_514_fan_control",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "516 — Thermostat User Interface Configuration",
+                    "path": "matter_cluster_516_thermostat_user_interface_configuration",
+                    "icon": "lock"
+                  },
+                  {
+                    "title": "768 — Color Control",
+                    "path": "matter_cluster_768_color_control",
+                    "icon": "lock"
+                  }
+                ]
+              },
+              {
+                "group": "Sensing and measurement",
+                "icon": "gauge",
+                "pages": [
+                  {
+                    "title": "69 — Boolean State",
+                    "path": "matter_cluster_69_boolean_state",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "91 — Air Quality",
+                    "path": "matter_cluster_91_air_quality",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "92 — Smoke CO Alarm",
+                    "path": "matter_cluster_92_smoke_co_alarm",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "128 — Boolean State Configuration",
+                    "path": "matter_cluster_128_boolean_state_configuration",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "129 — Valve Configuration and Control",
+                    "path": "matter_cluster_129_valve_configuration_and_control",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1024 — Illuminance Measurement",
+                    "path": "matter_cluster_1024_illuminance_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1026 — Temperature Measurement",
+                    "path": "matter_cluster_1026_temperature_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1027 — Pressure Measurement",
+                    "path": "matter_cluster_1027_pressure_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1028 — Flow Measurement",
+                    "path": "matter_cluster_1028_flow_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1029 — Relative Humidity Measurement",
+                    "path": "matter_cluster_1029_relative_humidity_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1030 — Occupancy Sensing",
+                    "path": "matter_cluster_1030_occupancy_sensing",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1036 — Carbon Monoxide Concentration Measurement",
+                    "path": "matter_cluster_1036_carbon_monoxide_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1037 — Carbon Dioxide Concentration Measurement",
+                    "path": "matter_cluster_1037_carbon_dioxide_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1043 — Nitrogen Dioxide Concentration Measurement",
+                    "path": "matter_cluster_1043_nitrogen_dioxide_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1045 — Ozone Concentration Measurement",
+                    "path": "matter_cluster_1045_ozone_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1066 — PM2.5 Concentration Measurement",
+                    "path": "matter_cluster_1066_pm2_5_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1067 — Formaldehyde Concentration Measurement",
+                    "path": "matter_cluster_1067_formaldehyde_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1068 — PM1 Concentration Measurement",
+                    "path": "matter_cluster_1068_pm1_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1069 — PM10 Concentration Measurement",
+                    "path": "matter_cluster_1069_pm10_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1070 — Total Volatile Organic Compounds Concentration Measurement",
+                    "path": "matter_cluster_1070_total_volatile_organic_compounds_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1071 — Radon Concentration Measurement",
+                    "path": "matter_cluster_1071_radon_concentration_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1072 — Soil Measurement",
+                    "path": "matter_cluster_1072_soil_measurement",
+                    "icon": "gauge"
+                  },
+                  {
+                    "title": "1073 — Ambient Context Sensing",
+                    "path": "matter_cluster_1073_ambient_context_sensing",
+                    "icon": "gauge"
+                  }
+                ]
+              },
+              {
+                "group": "Appliances",
+                "icon": "plug",
+                "pages": [
+                  {
+                    "title": "72 — Oven Cavity Operational State",
+                    "path": "matter_cluster_72_oven_cavity_operational_state",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "73 — Oven Mode",
+                    "path": "matter_cluster_73_oven_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "74 — Laundry Dryer Controls",
+                    "path": "matter_cluster_74_laundry_dryer_controls",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "80 — Mode Select",
+                    "path": "matter_cluster_80_mode_select",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "81 — Laundry Washer Mode",
+                    "path": "matter_cluster_81_laundry_washer_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "82 — Refrigerator And Temperature Controlled Cabinet Mode",
+                    "path": "matter_cluster_82_refrigerator_and_temperature_controlled_cabinet_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "83 — Laundry Washer Controls",
+                    "path": "matter_cluster_83_laundry_washer_controls",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "84 — RVC Run Mode",
+                    "path": "matter_cluster_84_rvc_run_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "85 — RVC Clean Mode",
+                    "path": "matter_cluster_85_rvc_clean_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "86 — Temperature Control",
+                    "path": "matter_cluster_86_temperature_control",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "87 — Refrigerator Alarm",
+                    "path": "matter_cluster_87_refrigerator_alarm",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "89 — Dishwasher Mode",
+                    "path": "matter_cluster_89_dishwasher_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "93 — Dishwasher Alarm",
+                    "path": "matter_cluster_93_dishwasher_alarm",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "94 — Microwave Oven Mode",
+                    "path": "matter_cluster_94_microwave_oven_mode",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "95 — Microwave Oven Control",
+                    "path": "matter_cluster_95_microwave_oven_control",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "96 — Operational State",
+                    "path": "matter_cluster_96_operational_state",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "97 — RVC Operational State",
+                    "path": "matter_cluster_97_rvc_operational_state",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "100 — Temperature Alarm",
+                    "path": "matter_cluster_100_temperature_alarm",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "113 — HEPA Filter Monitoring",
+                    "path": "matter_cluster_113_hepa_filter_monitoring",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "114 — Activated Carbon Filter Monitoring",
+                    "path": "matter_cluster_114_activated_carbon_filter_monitoring",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "121 — Water Tank Level Monitoring",
+                    "path": "matter_cluster_121_water_tank_level_monitoring",
+                    "icon": "plug"
+                  },
+                  {
+                    "title": "336 — Service Area",
+                    "path": "matter_cluster_336_service_area",
+                    "icon": "plug"
+                  }
+                ]
+              },
+              {
+                "group": "Energy and metering",
+                "icon": "bolt",
+                "pages": [
+                  {
+                    "title": "144 — Electrical Power Measurement",
+                    "path": "matter_cluster_144_electrical_power_measurement",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "145 — Electrical Energy Measurement",
+                    "path": "matter_cluster_145_electrical_energy_measurement",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "148 — Water Heater Management",
+                    "path": "matter_cluster_148_water_heater_management",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "149 — Commodity Price",
+                    "path": "matter_cluster_149_commodity_price",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "151 — Messages",
+                    "path": "matter_cluster_151_messages",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "152 — Device Energy Management",
+                    "path": "matter_cluster_152_device_energy_management",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "153 — Energy EVSE",
+                    "path": "matter_cluster_153_energy_evse",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "155 — Energy Preference",
+                    "path": "matter_cluster_155_energy_preference",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "156 — Power Topology",
+                    "path": "matter_cluster_156_power_topology",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "157 — Energy EVSE Mode",
+                    "path": "matter_cluster_157_energy_evse_mode",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "158 — Water Heater Mode",
+                    "path": "matter_cluster_158_water_heater_mode",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "159 — Device Energy Management Mode",
+                    "path": "matter_cluster_159_device_energy_management_mode",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "160 — Electrical Grid Conditions",
+                    "path": "matter_cluster_160_electrical_grid_conditions",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "1792 — Commodity Tariff",
+                    "path": "matter_cluster_1792_commodity_tariff",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "2822 — Meter Identification",
+                    "path": "matter_cluster_2822_meter_identification",
+                    "icon": "bolt"
+                  },
+                  {
+                    "title": "2823 — Commodity Metering",
+                    "path": "matter_cluster_2823_commodity_metering",
+                    "icon": "bolt"
+                  }
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "tv",
+                "pages": [
+                  {
+                    "title": "1283 — Wake On LAN",
+                    "path": "matter_cluster_1283_wake_on_lan",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1284 — Channel",
+                    "path": "matter_cluster_1284_channel",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1285 — Target Navigator",
+                    "path": "matter_cluster_1285_target_navigator",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1286 — Media Playback",
+                    "path": "matter_cluster_1286_media_playback",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1287 — Media Input",
+                    "path": "matter_cluster_1287_media_input",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1288 — Low Power",
+                    "path": "matter_cluster_1288_low_power",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1289 — Keypad Input",
+                    "path": "matter_cluster_1289_keypad_input",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1290 — Content Launcher",
+                    "path": "matter_cluster_1290_content_launcher",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1291 — Audio Output",
+                    "path": "matter_cluster_1291_audio_output",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1292 — Application Launcher",
+                    "path": "matter_cluster_1292_application_launcher",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1293 — Application Basic",
+                    "path": "matter_cluster_1293_application_basic",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1294 — Account Login",
+                    "path": "matter_cluster_1294_account_login",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1295 — Content Control",
+                    "path": "matter_cluster_1295_content_control",
+                    "icon": "tv"
+                  },
+                  {
+                    "title": "1296 — Content App Observer",
+                    "path": "matter_cluster_1296_content_app_observer",
+                    "icon": "tv"
+                  }
+                ]
+              },
+              {
+                "group": "Cameras",
+                "icon": "video",
+                "pages": [
+                  {
+                    "title": "1360 — Zone Management",
+                    "path": "matter_cluster_1360_zone_management",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1361 — Camera AV Stream Management",
+                    "path": "matter_cluster_1361_camera_av_stream_management",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1362 — Camera AV Settings User Level Management",
+                    "path": "matter_cluster_1362_camera_av_settings_user_level_management",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1363 — WebRTC Transport Provider",
+                    "path": "matter_cluster_1363_webrtc_transport_provider",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1364 — WebRTC Transport Requestor",
+                    "path": "matter_cluster_1364_webrtc_transport_requestor",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1365 — Push AV Stream Transport",
+                    "path": "matter_cluster_1365_push_av_stream_transport",
+                    "icon": "video"
+                  },
+                  {
+                    "title": "1366 — Chime",
+                    "path": "matter_cluster_1366_chime",
+                    "icon": "video"
                   }
                 ]
               }

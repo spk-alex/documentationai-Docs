@@ -1,0 +1,2802 @@
+---
+title: "Matter Cluster 768 — Color Control"
+description: "Matter Cluster 768 (0x0300) Color Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 768
+clusterHex: "0x0300"
+clusterName: "Color Control"
+---
+
+# Matter Cluster 768 — Color Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>768</code>, also written as <code>0x0300</code>, is the <strong>Color Control Cluster</strong>.
+This cluster provides an interface for changing the color of a light. Color is specified according to the CIE 1931 Color space. Color control is carried out in terms of x,y values, as defined by this specification.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `768` |
+| Cluster ID hex | `0x0300` |
+| Cluster name | `Color Control` |
+| Cluster revision (Matter 1.6.1) | `9` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `CC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added; CCB 2028 |
+| 2 | Added Options attribute, CCB 2085 2104 2124 2230; ZLO 1.0 |
+| 3 | CCB 2501 2814 2839 2840 2843 2861 |
+| 4 | All Hubs changes |
+| 5 | New data model format and notation, FeatureMap support |
+| 6 | Added clarifications to Scenes support for Matter |
+| 7 | Added Q quality for CurrentHue, CurrentSaturation, CurrentX, CurrentY, ColorTemperatureMireds, EnhancedCurrentHue and RemainingTime attributes. Added clarifications for behavior related to Step values. Added constraints on minimum acceptable color temperature values in mireds. |
+| 8 | Change WhitePoint&#42; and ColorPoint&#42; attributes from RW to R (CCB 2490, TCR 11893) |
+| 9 | Removed P quality |
+
+---
+
+## Shadow Path Format
+
+Cluster 768 values in the device shadow use this format:
+
+```text
+endpoint_id / 768 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/768/8": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `768` | Color Control cluster |
+| `8` | `ColorMode` attribute |
+
+---
+
+## Cluster 768 Features
+
+The `FeatureMap` attribute (`1/768/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `HS` | HueSaturation | `EHUE, O` | Supports color specification via hue/saturation. |
+| 1 | `EHUE` | EnhancedHue | `CL, O` | Enhanced hue is supported. |
+| 2 | `CL` | ColorLoop | `O` | Color loop is supported. |
+| 3 | `XY` | XY | `O` | Supports color specification via XY. |
+| 4 | `CT` | ColorTemperature | `O` | Supports specification of color temperature. |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `31` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ColorLoopActionEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Deactivate` | `M` | De-activate the color loop. |
+| 1 | `ActivateFromColorLoopStartEnhancedHue` | `M` | Activate the color loop from the value in the ColorLoopStartEnhancedHue field. |
+| 2 | `ActivateFromEnhancedCurrentHue` | `M` | Activate the color loop from the value of the EnhancedCurrentHue attribute. |
+
+### `ColorLoopDirectionEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Decrement` | `M` | Decrement the hue in the color loop. |
+| 1 | `Increment` | `M` | Increment the hue in the color loop. |
+
+### `ColorModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CurrentHueAndCurrentSaturation` | `M` | The current hue and saturation attributes determine the color. |
+| 1 | `CurrentXAndCurrentY` | `M` | The current X and Y attributes determine the color. |
+| 2 | `ColorTemperatureMireds` | `M` | The color temperature attribute determines the color. |
+
+### `DirectionEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Shortest` | `M` | Shortest distance |
+| 1 | `Longest` | `M` | Longest distance |
+| 2 | `Up` | `M` | Up |
+| 3 | `Down` | `M` | Down |
+
+### `DriftCompensationEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `None` | `M` | There is no compensation. |
+| 1 | `OtherOrUnknown` | `M` | The compensation is based on other or unknown mechanism. |
+| 2 | `TemperatureMonitoring` | `M` | The compensation is based on temperature monitoring. |
+| 3 | `OpticalLuminanceMonitoringAndFeedback` | `M` | The compensation is based on optical luminance monitoring and feedback. |
+| 4 | `OpticalColorMonitoringAndFeedback` | `M` | The compensation is based on optical color monitoring and feedback. |
+
+### `EnhancedColorModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CurrentHueAndCurrentSaturation` | `M` | The current hue and saturation attributes determine the color. |
+| 1 | `CurrentXAndCurrentY` | `M` | The current X and Y attributes determine the color. |
+| 2 | `ColorTemperatureMireds` | `M` | The color temperature attribute determines the color. |
+| 3 | `EnhancedCurrentHueAndCurrentSaturation` | `M` | The enhanced current hue and saturation attributes determine the color. |
+
+### `MoveModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Stop` | `M` | Stop the movement |
+| 1 | `Up` | `M` | Move in an upwards direction |
+| 3 | `Down` | `M` | Move in a downwards direction |
+
+### `StepModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 1 | `Up` | `M` | Step in an upwards direction |
+| 3 | `Down` | `M` | Step in a downwards direction |
+
+### `ColorCapabilitiesBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `HueSaturation` | `HS` | Supports color specification via hue/saturation. |
+| 1 | `EnhancedHue` | `EHUE` | Enhanced hue is supported. |
+| 2 | `ColorLoop` | `CL` | Color loop is supported. |
+| 3 | `XY` | `XY` | Supports color specification via XY. |
+| 4 | `ColorTemperature` | `CT` | Supports color specification via color temperature. |
+
+### `OptionsBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ExecuteIfOff` | `M` | Dependency on On/Off cluster |
+
+### `UpdateFlagsBitmap` (bitmap)
+
+This data type is derived from map8 and is used in the ColorLoopSet command.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `UpdateAction` | `M` | Device adheres to the associated action field. |
+| 1 | `UpdateDirection` | `M` | Device updates the associated direction attribute. |
+| 2 | `UpdateTime` | `M` | Device updates the associated time attribute. |
+| 3 | `UpdateStartHue` | `M` | Device updates the associated start hue attribute. |
+
+---
+
+## Cluster 768 Attributes
+
+Cluster 768 defines **52 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `CurrentHue` | uint8 | `HS` | R (read: view) | persisted, quiet reporting | — |
+| 1 | `0x0001` | `CurrentSaturation` | uint8 | `HS` | R (read: view) | persisted, scene, quiet reporting | — |
+| 2 | `0x0002` | `RemainingTime` | uint16 | `O` | R (read: view) | quiet reporting | `0` |
+| 3 | `0x0003` | `CurrentX` | uint16 | `XY` | R (read: view) | persisted, scene, quiet reporting | — |
+| 4 | `0x0004` | `CurrentY` | uint16 | `XY` | R (read: view) | persisted, scene, quiet reporting | — |
+| 5 | `0x0005` | `DriftCompensation` | DriftCompensationEnum | `O` | R (read: view) | — | — |
+| 6 | `0x0006` | `CompensationText` | string | `O` | R (read: view) | — | — |
+| 7 | `0x0007` | `ColorTemperatureMireds` | uint16 | `CT` | R (read: view) | persisted, scene, quiet reporting | — |
+| 8 | `0x0008` | `ColorMode` | ColorModeEnum | `M` | R (read: view) | persisted | — |
+| 15 | `0x000F` | `Options` | OptionsBitmap | `M` | R/W (read: view, write: operate) | — | — |
+| 16 | `0x0010` | `NumberOfPrimaries` | uint8 | `M` | R (read: view) | nullable | — |
+| 17 | `0x0011` | `Primary1X` | uint16 | `NumberOfPrimaries > 0, O` | R (read: view) | — | — |
+| 18 | `0x0012` | `Primary1Y` | uint16 | `NumberOfPrimaries > 0, O` | R (read: view) | — | — |
+| 19 | `0x0013` | `Primary1Intensity` | uint8 | `NumberOfPrimaries > 0, O` | R (read: view) | nullable | — |
+| 21 | `0x0015` | `Primary2X` | uint16 | `NumberOfPrimaries > 1, O` | R (read: view) | — | — |
+| 22 | `0x0016` | `Primary2Y` | uint16 | `NumberOfPrimaries > 1, O` | R (read: view) | — | — |
+| 23 | `0x0017` | `Primary2Intensity` | uint8 | `NumberOfPrimaries > 1, O` | R (read: view) | nullable | — |
+| 25 | `0x0019` | `Primary3X` | uint16 | `NumberOfPrimaries > 2, O` | R (read: view) | — | — |
+| 26 | `0x001A` | `Primary3Y` | uint16 | `NumberOfPrimaries > 2, O` | R (read: view) | — | — |
+| 27 | `0x001B` | `Primary3Intensity` | uint8 | `NumberOfPrimaries > 2, O` | R (read: view) | nullable | — |
+| 32 | `0x0020` | `Primary4X` | uint16 | `NumberOfPrimaries > 3, O` | R (read: view) | — | — |
+| 33 | `0x0021` | `Primary4Y` | uint16 | `NumberOfPrimaries > 3, O` | R (read: view) | — | — |
+| 34 | `0x0022` | `Primary4Intensity` | uint8 | `NumberOfPrimaries > 3, O` | R (read: view) | nullable | — |
+| 36 | `0x0024` | `Primary5X` | uint16 | `NumberOfPrimaries > 4, O` | R (read: view) | — | — |
+| 37 | `0x0025` | `Primary5Y` | uint16 | `NumberOfPrimaries > 4, O` | R (read: view) | — | — |
+| 38 | `0x0026` | `Primary5Intensity` | uint8 | `NumberOfPrimaries > 4, O` | R (read: view) | nullable | — |
+| 40 | `0x0028` | `Primary6X` | uint16 | `NumberOfPrimaries > 5, O` | R (read: view) | — | — |
+| 41 | `0x0029` | `Primary6Y` | uint16 | `NumberOfPrimaries > 5, O` | R (read: view) | — | — |
+| 42 | `0x002A` | `Primary6Intensity` | uint8 | `NumberOfPrimaries > 5, O` | R (read: view) | nullable | — |
+| 48 | `0x0030` | `WhitePointX` | uint16 | `O` | R (read: view) | — | — |
+| 49 | `0x0031` | `WhitePointY` | uint16 | `O` | R (read: view) | — | — |
+| 50 | `0x0032` | `ColorPointRX` | uint16 | `O` | R (read: view) | — | — |
+| 51 | `0x0033` | `ColorPointRY` | uint16 | `O` | R (read: view) | — | — |
+| 52 | `0x0034` | `ColorPointRIntensity` | uint8 | `O` | R (read: view) | nullable | — |
+| 54 | `0x0036` | `ColorPointGX` | uint16 | `O` | R (read: view) | — | — |
+| 55 | `0x0037` | `ColorPointGY` | uint16 | `O` | R (read: view) | — | — |
+| 56 | `0x0038` | `ColorPointGIntensity` | uint8 | `O` | R (read: view) | nullable | — |
+| 58 | `0x003A` | `ColorPointBX` | uint16 | `O` | R (read: view) | — | — |
+| 59 | `0x003B` | `ColorPointBY` | uint16 | `O` | R (read: view) | — | — |
+| 60 | `0x003C` | `ColorPointBIntensity` | uint8 | `O` | R (read: view) | nullable | — |
+| 16384 | `0x4000` | `EnhancedCurrentHue` | uint16 | `EHUE` | R (read: view) | persisted, scene, quiet reporting | — |
+| 16385 | `0x4001` | `EnhancedColorMode` | EnhancedColorModeEnum | `M` | R (read: view) | persisted, scene | — |
+| 16386 | `0x4002` | `ColorLoopActive` | uint8 | `CL` | R (read: view) | persisted, scene | — |
+| 16387 | `0x4003` | `ColorLoopDirection` | ColorLoopDirectionEnum | `CL` | R (read: view) | persisted, scene | — |
+| 16388 | `0x4004` | `ColorLoopTime` | uint16 | `CL` | R (read: view) | persisted, scene | — |
+| 16389 | `0x4005` | `ColorLoopStartEnhancedHue` | uint16 | `CL` | R (read: view) | — | — |
+| 16390 | `0x4006` | `ColorLoopStoredEnhancedHue` | uint16 | `CL` | R (read: view) | — | — |
+| 16394 | `0x400A` | `ColorCapabilities` | ColorCapabilitiesBitmap | `M` | R (read: view) | — | — |
+| 16395 | `0x400B` | `ColorTempPhysicalMinMireds` | uint16 | `CT` | R (read: view) | — | — |
+| 16396 | `0x400C` | `ColorTempPhysicalMaxMireds` | uint16 | `CT` | R (read: view) | — | — |
+| 16397 | `0x400D` | `CoupleColorTempToLevelMinMireds` | uint16 | `CT` | R (read: view) | — | — |
+| 16400 | `0x4010` | `StartUpColorTemperatureMireds` | uint16 | `CT` | R/W (read: view, write: manage) | nullable, persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `9` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `CurrentHue`
+
+Path example:
+
+```text
+1/768/0
+```
+
+The CurrentHue attribute contains the current hue value of the light. It is updated as fast as practical during commands that change the hue. The hue in degrees is related to the CurrentHue attribute by the relationship: where CurrentHue is in the range from 0 to 254 inclusive. Changes to this attribute only be marked as reportable in the following cases: - At most once per second or - At the end of the movement/transition.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `HS` |
+| Access | R (read: view) |
+| Qualities | persisted, quiet reporting |
+| Constraint | max 254 |
+
+Example:
+
+```json
+{
+  "1/768/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentSaturation`
+
+Path example:
+
+```text
+1/768/1
+```
+
+Indicates the current saturation value of the light. It is updated as fast as practical during commands that change the saturation. The saturation (on a scale from 0.0 to 1.0) is related to the CurrentSaturation attribute by the relationship: where CurrentSaturation is in the range from 0 to 254 inclusive. Changes to this attribute only be marked as reportable in the following cases: - At most once per second or - At the end of the movement/transition.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `HS` |
+| Access | R (read: view) |
+| Qualities | persisted, scene, quiet reporting |
+| Constraint | max 254 |
+
+Example:
+
+```json
+{
+  "1/768/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `RemainingTime`
+
+Path example:
+
+```text
+1/768/2
+```
+
+Indicates the time remaining, in 1/10ths of a second, until transitions due to the currently active command will be complete. Changes to this attribute only be marked as reportable in the following cases: - When it changes from 0 to any value higher than 10, or - When it changes, with a delta larger than 10, caused by the invoke of a command, or - When it changes to 0. For commands with a transition time or changes to the transition time less than 1 second, changes to this attribute must NOT be reported. As this attribute is not being reported during a regular countdown, clients should NOT rely on the reporting of this attribute in order to keep track of the remaining duration.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | quiet reporting |
+| Constraint | max 65534 |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/768/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `CurrentX`
+
+Path example:
+
+```text
+1/768/3
+```
+
+Indicates the current value of the normalized chromaticity value x, as defined in the CIE xyY Color Space. It is updated as fast as practical during commands that change the color. The value of x is related to the CurrentX attribute by the relationship where CurrentX is in the range from 0 to 65279 inclusive. Changes to this attribute only be marked as reportable in the following cases: - At most once per second or - At the end of the movement/transition.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `XY` |
+| Access | R (read: view) |
+| Qualities | persisted, scene, quiet reporting |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `CurrentY`
+
+Path example:
+
+```text
+1/768/4
+```
+
+Indicates the current value of the normalized chromaticity value y, as defined in the CIE xyY Color Space. It is updated as fast as practical during commands that change the color. The value of y is related to the CurrentY attribute by the relationship where CurrentY is in the range from 0 to 65279 inclusive. Changes to this attribute only be marked as reportable in the following cases: - At most once per second or - At the end of the movement/transition.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `XY` |
+| Access | R (read: view) |
+| Qualities | persisted, scene, quiet reporting |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `DriftCompensation`
+
+Path example:
+
+```text
+1/768/5
+```
+
+Indicates what mechanism, if any, is in use for compensation for color/intensity drift over time.
+
+| Property | Value |
+|---|---|
+| Type | DriftCompensationEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+
+Values (`DriftCompensationEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `None` | There is no compensation. |
+| 1 | `OtherOrUnknown` | The compensation is based on other or unknown mechanism. |
+| 2 | `TemperatureMonitoring` | The compensation is based on temperature monitoring. |
+| 3 | `OpticalLuminanceMonitoringAndFeedback` | The compensation is based on optical luminance monitoring and feedback. |
+| 4 | `OpticalColorMonitoringAndFeedback` | The compensation is based on optical color monitoring and feedback. |
+
+Example:
+
+```json
+{
+  "1/768/5": 0
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `CompensationText`
+
+Path example:
+
+```text
+1/768/6
+```
+
+This attribute contains a textual indication of what mechanism, if any, is in use to compensate for color/intensity drift over time.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 254 |
+
+Example:
+
+```json
+{
+  "1/768/6": "example"
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `ColorTemperatureMireds`
+
+Path example:
+
+```text
+1/768/7
+```
+
+Indicates a scaled inverse of the current value of the color temperature. The unit of ColorTemperatureMireds is the mired (micro reciprocal degree), a.k.a. mirek (micro reciprocal kelvin). It is updated as fast as practical during commands that change the color. Changes to this attribute only be marked as reportable in the following cases: - At most once per second or - At the end of the movement/transition.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CT` |
+| Access | R (read: view) |
+| Qualities | persisted, scene, quiet reporting |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `ColorMode`
+
+Path example:
+
+```text
+1/768/8
+```
+
+Indicates which attributes are currently determining the color of the device. The value of the ColorMode attribute cannot be written directly - it is set upon reception of any command in section Commands to the appropriate mode for that command.
+
+| Property | Value |
+|---|---|
+| Type | ColorModeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Values (`ColorModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `CurrentHueAndCurrentSaturation` | The current hue and saturation attributes determine the color. |
+| 1 | `CurrentXAndCurrentY` | The current X and Y attributes determine the color. |
+| 2 | `ColorTemperatureMireds` | The color temperature attribute determines the color. |
+
+Example:
+
+```json
+{
+  "1/768/8": 0
+}
+```
+
+---
+
+## Attribute `15` / `0x000F` — `Options`
+
+Path example:
+
+```text
+1/768/15
+```
+
+Indicates a bitmap that determines the default behavior of some cluster commands. Each command that is dependent on the Options attribute must first construct a temporary Options bitmap that is in effect during the command processing. The temporary Options bitmap has the same format and meaning as the Options attribute, but includes any bits that may be overridden by command fields. This attribute is meant to be changed only during commissioning.
+
+| Property | Value |
+|---|---|
+| Type | OptionsBitmap |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+| Constraint | desc |
+
+Bits (`OptionsBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `ExecuteIfOff` | Dependency on On/Off cluster |
+
+Example:
+
+```json
+{
+  "1/768/15": 0
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `NumberOfPrimaries`
+
+Path example:
+
+```text
+1/768/16
+```
+
+Indicates the number of color primaries implemented on this device. A value of null indicates that the number of primaries is unknown. Where this attribute is implemented, the attributes below for indicating the “x” and “y” color values of the primaries must also be implemented for each of the primaries from 1 to NumberOfPrimaries, without leaving gaps. Implementation of the Primary1Intensity attribute and subsequent intensity attributes is optional.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 6 |
+
+Example:
+
+```json
+{
+  "1/768/16": 1
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `Primary1X`
+
+Path example:
+
+```text
+1/768/17
+```
+
+Indicates the normalized chromaticity value x for this primary, as defined in the CIE xyY Color Space. The value of x is related to the Primary1X attribute by the relationship x = Primary1X / 65536 (Primary1X in the range 0 to 65279 inclusive)
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 0, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/17": 1
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `Primary1Y`
+
+Path example:
+
+```text
+1/768/18
+```
+
+Indicates the normalized chromaticity value y for this primary, as defined in the CIE xyY Color Space. The value of y is related to the Primary1Y attribute by the relationship y = Primary1Y / 65536 (Primary1Y in the range 0 to 65279 inclusive)
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 0, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/18": 1
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `Primary1Intensity`
+
+Path example:
+
+```text
+1/768/19
+```
+
+Indicates a representation of the maximum intensity of this primary, normalized such that the primary with the highest maximum intensity contains the value 254. A value of null indicates that this primary is not available.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `NumberOfPrimaries > 0, O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/19": 1
+}
+```
+
+---
+
+## Attribute `21` / `0x0015` — `Primary2X`
+
+Path example:
+
+```text
+1/768/21
+```
+
+No condensed specification text is available for `Primary2X`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 1, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/21": 1
+}
+```
+
+---
+
+## Attribute `22` / `0x0016` — `Primary2Y`
+
+Path example:
+
+```text
+1/768/22
+```
+
+No condensed specification text is available for `Primary2Y`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 1, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/22": 1
+}
+```
+
+---
+
+## Attribute `23` / `0x0017` — `Primary2Intensity`
+
+Path example:
+
+```text
+1/768/23
+```
+
+No condensed specification text is available for `Primary2Intensity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `NumberOfPrimaries > 1, O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/23": 1
+}
+```
+
+---
+
+## Attribute `25` / `0x0019` — `Primary3X`
+
+Path example:
+
+```text
+1/768/25
+```
+
+No condensed specification text is available for `Primary3X`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 2, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/25": 1
+}
+```
+
+---
+
+## Attribute `26` / `0x001A` — `Primary3Y`
+
+Path example:
+
+```text
+1/768/26
+```
+
+No condensed specification text is available for `Primary3Y`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 2, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/26": 1
+}
+```
+
+---
+
+## Attribute `27` / `0x001B` — `Primary3Intensity`
+
+Path example:
+
+```text
+1/768/27
+```
+
+No condensed specification text is available for `Primary3Intensity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `NumberOfPrimaries > 2, O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/27": 1
+}
+```
+
+---
+
+## Attribute `32` / `0x0020` — `Primary4X`
+
+Path example:
+
+```text
+1/768/32
+```
+
+No condensed specification text is available for `Primary4X`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 3, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/32": 1
+}
+```
+
+---
+
+## Attribute `33` / `0x0021` — `Primary4Y`
+
+Path example:
+
+```text
+1/768/33
+```
+
+No condensed specification text is available for `Primary4Y`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 3, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/33": 1
+}
+```
+
+---
+
+## Attribute `34` / `0x0022` — `Primary4Intensity`
+
+Path example:
+
+```text
+1/768/34
+```
+
+No condensed specification text is available for `Primary4Intensity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `NumberOfPrimaries > 3, O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/34": 1
+}
+```
+
+---
+
+## Attribute `36` / `0x0024` — `Primary5X`
+
+Path example:
+
+```text
+1/768/36
+```
+
+No condensed specification text is available for `Primary5X`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 4, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/36": 1
+}
+```
+
+---
+
+## Attribute `37` / `0x0025` — `Primary5Y`
+
+Path example:
+
+```text
+1/768/37
+```
+
+No condensed specification text is available for `Primary5Y`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 4, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/37": 1
+}
+```
+
+---
+
+## Attribute `38` / `0x0026` — `Primary5Intensity`
+
+Path example:
+
+```text
+1/768/38
+```
+
+No condensed specification text is available for `Primary5Intensity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `NumberOfPrimaries > 4, O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/38": 1
+}
+```
+
+---
+
+## Attribute `40` / `0x0028` — `Primary6X`
+
+Path example:
+
+```text
+1/768/40
+```
+
+No condensed specification text is available for `Primary6X`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 5, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/40": 1
+}
+```
+
+---
+
+## Attribute `41` / `0x0029` — `Primary6Y`
+
+Path example:
+
+```text
+1/768/41
+```
+
+No condensed specification text is available for `Primary6Y`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `NumberOfPrimaries > 5, O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/41": 1
+}
+```
+
+---
+
+## Attribute `42` / `0x002A` — `Primary6Intensity`
+
+Path example:
+
+```text
+1/768/42
+```
+
+No condensed specification text is available for `Primary6Intensity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `NumberOfPrimaries > 5, O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/42": 1
+}
+```
+
+---
+
+## Attribute `48` / `0x0030` — `WhitePointX`
+
+Path example:
+
+```text
+1/768/48
+```
+
+Indicates the normalized chromaticity value x, as defined in the CIE xyY Color Space, of the current white point of the device. The value of x is related to the WhitePointX attribute by the relationship x = WhitePointX / 65536 (WhitePointX in the range 0 to 65279 inclusive)
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/48": 1
+}
+```
+
+---
+
+## Attribute `49` / `0x0031` — `WhitePointY`
+
+Path example:
+
+```text
+1/768/49
+```
+
+Indicates the normalized chromaticity value y, as defined in the CIE xyY Color Space, of the current white point of the device. The value of y is related to the WhitePointY attribute by the relationship y = WhitePointY / 65536 (WhitePointY in the range 0 to 65279 inclusive)
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/49": 1
+}
+```
+
+---
+
+## Attribute `50` / `0x0032` — `ColorPointRX`
+
+Path example:
+
+```text
+1/768/50
+```
+
+No condensed specification text is available for `ColorPointRX`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/50": 1
+}
+```
+
+---
+
+## Attribute `51` / `0x0033` — `ColorPointRY`
+
+Path example:
+
+```text
+1/768/51
+```
+
+No condensed specification text is available for `ColorPointRY`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/51": 1
+}
+```
+
+---
+
+## Attribute `52` / `0x0034` — `ColorPointRIntensity`
+
+Path example:
+
+```text
+1/768/52
+```
+
+Indicates a representation of the relative intensity of the red color point, normalized such that the color point with the highest relative intensity contains the value 254. A value of null indicates an invalid value.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/52": 1
+}
+```
+
+---
+
+## Attribute `54` / `0x0036` — `ColorPointGX`
+
+Path example:
+
+```text
+1/768/54
+```
+
+No condensed specification text is available for `ColorPointGX`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/54": 1
+}
+```
+
+---
+
+## Attribute `55` / `0x0037` — `ColorPointGY`
+
+Path example:
+
+```text
+1/768/55
+```
+
+No condensed specification text is available for `ColorPointGY`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/55": 1
+}
+```
+
+---
+
+## Attribute `56` / `0x0038` — `ColorPointGIntensity`
+
+Path example:
+
+```text
+1/768/56
+```
+
+No condensed specification text is available for `ColorPointGIntensity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/56": 1
+}
+```
+
+---
+
+## Attribute `58` / `0x003A` — `ColorPointBX`
+
+Path example:
+
+```text
+1/768/58
+```
+
+No condensed specification text is available for `ColorPointBX`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/58": 1
+}
+```
+
+---
+
+## Attribute `59` / `0x003B` — `ColorPointBY`
+
+Path example:
+
+```text
+1/768/59
+```
+
+No condensed specification text is available for `ColorPointBY`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/59": 1
+}
+```
+
+---
+
+## Attribute `60` / `0x003C` — `ColorPointBIntensity`
+
+Path example:
+
+```text
+1/768/60
+```
+
+No condensed specification text is available for `ColorPointBIntensity`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/768/60": 1
+}
+```
+
+---
+
+## Attribute `16384` / `0x4000` — `EnhancedCurrentHue`
+
+Path example:
+
+```text
+1/768/16384
+```
+
+Indicates the non-equidistant steps along the CIE 1931 color triangle, and it provides 16-bits precision. The upper 8 bits of this attribute is used as an index in the implementation specific XY lookup table to provide the non-equidistant steps. The lower 8 bits is used to interpolate between these steps in a linear way in order to provide color zoom for the user. To provide compatibility with clients not supporting EHUE, the CurrentHue attribute contains a hue value in the range 0 to 254, calculated from the EnhancedCurrentHue attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `EHUE` |
+| Access | R (read: view) |
+| Qualities | persisted, scene, quiet reporting |
+
+Example:
+
+```json
+{
+  "1/768/16384": 1
+}
+```
+
+---
+
+## Attribute `16385` / `0x4001` — `EnhancedColorMode`
+
+Path example:
+
+```text
+1/768/16385
+```
+
+Indicates which attributes are currently determining the color of the device. To provide compatibility with clients not supporting EHUE, the ColorMode attribute indicates CurrentHueAndCurrentSaturation when the EnhancedCurrentHue attribute indicates EnhancedCurrentHueAndCurrentSaturation. For other values of the EnhancedCurrentHue attribute, the value of the ColorMode attribute is the same as the value of the EnhancedCurrentHue attribute. If the ColorMode attribute is changed, its new value is copied to the EnhancedColorMode attribute.
+
+| Property | Value |
+|---|---|
+| Type | EnhancedColorModeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted, scene |
+
+Values (`EnhancedColorModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `CurrentHueAndCurrentSaturation` | The current hue and saturation attributes determine the color. |
+| 1 | `CurrentXAndCurrentY` | The current X and Y attributes determine the color. |
+| 2 | `ColorTemperatureMireds` | The color temperature attribute determines the color. |
+| 3 | `EnhancedCurrentHueAndCurrentSaturation` | The enhanced current hue and saturation attributes determine the color. |
+
+Example:
+
+```json
+{
+  "1/768/16385": 0
+}
+```
+
+---
+
+## Attribute `16386` / `0x4002` — `ColorLoopActive`
+
+Path example:
+
+```text
+1/768/16386
+```
+
+Indicates the current active status of the color loop. If this attribute has the value 0, the color loop must NOT be active. If this attribute has the value 1, the color loop is active.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `CL` |
+| Access | R (read: view) |
+| Qualities | persisted, scene |
+| Constraint | max 1 |
+
+Example:
+
+```json
+{
+  "1/768/16386": 1
+}
+```
+
+---
+
+## Attribute `16387` / `0x4003` — `ColorLoopDirection`
+
+Path example:
+
+```text
+1/768/16387
+```
+
+Indicates the current direction of the color loop. If this attribute has the value Decrement, the EnhancedCurrentHue attribute is decremented. If this attribute has the value Increment, the EnhancedCurrentHue attribute is incremented.
+
+| Property | Value |
+|---|---|
+| Type | ColorLoopDirectionEnum |
+| Conformance | `CL` |
+| Access | R (read: view) |
+| Qualities | persisted, scene |
+
+Values (`ColorLoopDirectionEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Decrement` | Decrement the hue in the color loop. |
+| 1 | `Increment` | Increment the hue in the color loop. |
+
+Example:
+
+```json
+{
+  "1/768/16387": 0
+}
+```
+
+---
+
+## Attribute `16388` / `0x4004` — `ColorLoopTime`
+
+Path example:
+
+```text
+1/768/16388
+```
+
+Indicates the number of seconds it must take to perform a full color loop, i.e., to cycle all values of the EnhancedCurrentHue attribute (between 0 and 65534).
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CL` |
+| Access | R (read: view) |
+| Qualities | persisted, scene |
+
+Example:
+
+```json
+{
+  "1/768/16388": 0
+}
+```
+
+---
+
+## Attribute `16389` / `0x4005` — `ColorLoopStartEnhancedHue`
+
+Path example:
+
+```text
+1/768/16389
+```
+
+Indicates the value of the EnhancedCurrentHue attribute from which the color loop is started.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CL` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/768/16389": 1
+}
+```
+
+---
+
+## Attribute `16390` / `0x4006` — `ColorLoopStoredEnhancedHue`
+
+Path example:
+
+```text
+1/768/16390
+```
+
+Indicates the value of the EnhancedCurrentHue attribute before the color loop was started. Once the color loop is complete, the EnhancedCurrentHue attribute is restored to this value.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CL` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/768/16390": 1
+}
+```
+
+---
+
+## Attribute `16394` / `0x400A` — `ColorCapabilities`
+
+Path example:
+
+```text
+1/768/16394
+```
+
+Indicates the color control capabilities of the device. Bits 0-4 of the ColorCapabilities attribute has the same values as the corresponding bits of the FeatureMap attribute. All other bits in ColorCapabilities is 0.
+
+| Property | Value |
+|---|---|
+| Type | ColorCapabilitiesBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 0x001F |
+
+Bits (`ColorCapabilitiesBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `HueSaturation` | Supports color specification via hue/saturation. |
+| 1 | `EnhancedHue` | Enhanced hue is supported. |
+| 2 | `ColorLoop` | Color loop is supported. |
+| 3 | `XY` | Supports color specification via XY. |
+| 4 | `ColorTemperature` | Supports color specification via color temperature. |
+
+Example:
+
+```json
+{
+  "1/768/16394": 0
+}
+```
+
+---
+
+## Attribute `16395` / `0x400B` — `ColorTempPhysicalMinMireds`
+
+Path example:
+
+```text
+1/768/16395
+```
+
+Indicates the minimum mired value supported by the hardware. ColorTempPhysicalMinMireds corresponds to the maximum color temperature in kelvins supported by the hardware. ColorTempPhysicalMinMireds $&lt;=$ ColorTemperatureMireds.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CT` |
+| Access | R (read: view) |
+| Constraint | 1 to 65279 |
+
+Example:
+
+```json
+{
+  "1/768/16395": 1
+}
+```
+
+---
+
+## Attribute `16396` / `0x400C` — `ColorTempPhysicalMaxMireds`
+
+Path example:
+
+```text
+1/768/16396
+```
+
+Indicates the maximum mired value supported by the hardware. ColorTempPhysicalMaxMireds corresponds to the minimum color temperature in kelvins supported by the hardware. ColorTemperatureMireds $&lt;=$ ColorTempPhysicalMaxMireds.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CT` |
+| Access | R (read: view) |
+| Constraint | max 65279 |
+
+Example:
+
+```json
+{
+  "1/768/16396": 1
+}
+```
+
+---
+
+## Attribute `16397` / `0x400D` — `CoupleColorTempToLevelMinMireds`
+
+Path example:
+
+```text
+1/768/16397
+```
+
+Indicates a lower bound on the value of the ColorTemperatureMireds attribute for the purposes of coupling the ColorTemperatureMireds attribute to the CurrentLevel attribute when the CoupleColorTempToLevel bit of the Options attribute of the Level Control cluster is equal to 1. When coupling the ColorTemperatureMireds attribute to the CurrentLevel attribute, this value must correspond to a CurrentLevel value of 254 (100%).
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CT` |
+| Access | R (read: view) |
+| Constraint | ColorTempPhysicalMinMireds to ColorTemperatureMireds |
+
+Example:
+
+```json
+{
+  "1/768/16397": 100
+}
+```
+
+---
+
+## Attribute `16400` / `0x4010` — `StartUpColorTemperatureMireds`
+
+Path example:
+
+```text
+1/768/16400
+```
+
+Indicates the desired startup color temperature value the light must use when it is supplied with power and this value is reflected in the ColorTemperatureMireds attribute. In addition, the ColorMode and EnhancedColorMode attributes is set to 2 (ColorTemperatureMireds). The values of the StartUpColorTemperatureMireds attribute are listed in the table below,
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CT` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | nullable, persisted |
+| Constraint | 1 to 65279 |
+
+Example:
+
+```json
+{
+  "1/768/16400": 1
+}
+```
+
+---
+
+# Cluster 768 Commands
+
+Cluster 768 has **19 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `MoveToHue` | client → server | `HS` | status | This command will move the device to the requested hue using a transition. |
+| 1 | `0x01` | `MoveHue` | client → server | `HS` | status | This command will change the hue of the device with a requested rate. |
+| 2 | `0x02` | `StepHue` | client → server | `HS` | status | This command will change the hue of the device using a step and transition. |
+| 3 | `0x03` | `MoveToSaturation` | client → server | `HS` | status | This command will move the device to the requested saturation using a transition. |
+| 4 | `0x04` | `MoveSaturation` | client → server | `HS` | status | This command will change the saturation of the device with a requested rate. |
+| 5 | `0x05` | `StepSaturation` | client → server | `HS` | status | This command will change the saturation of the device using a step and transition. |
+| 6 | `0x06` | `MoveToHueAndSaturation` | client → server | `HS` | status | This command will move the device to the requested hue and saturation using a transition. |
+| 7 | `0x07` | `MoveToColor` | client → server | `XY` | status | This command will move the device to the requested color using a transition. |
+| 8 | `0x08` | `MoveColor` | client → server | `XY` | status | This command will change the color of the device with a requested rate. |
+| 9 | `0x09` | `StepColor` | client → server | `XY` | status | This command will change the color of the device using a step and transition. |
+| 10 | `0x0A` | `MoveToColorTemperature` | client → server | `CT` | status | This command will move the device to the requested color temperature using a transition. |
+| 64 | `0x40` | `EnhancedMoveToHue` | client → server | `EHUE` | status | This command allows the light to be moved in a smooth continuous transition from their current hue to a target hue. |
+| 65 | `0x41` | `EnhancedMoveHue` | client → server | `EHUE` | status | This command allows the light to start a continuous transition starting from their current hue. |
+| 66 | `0x42` | `EnhancedStepHue` | client → server | `EHUE` | status | This command allows the device to be moved in a stepped transition from their current hue. |
+| 67 | `0x43` | `EnhancedMoveToHueAndSaturation` | client → server | `EHUE` | status | This command allows the light to be moved in a smooth continuous transition from their current hue to a target hue and from their current saturation to a target saturation. |
+| 68 | `0x44` | `ColorLoopSet` | client → server | `CL` | status | This command allows a color loop to be activated such that the color light cycles through its range of hues. |
+| 71 | `0x47` | `StopMoveStep` | client → server | `HS \| XY \| CT` | status | This command is provided to allow MoveTo and Step commands to be stopped. |
+| 75 | `0x4B` | `MoveColorTemperature` | client → server | `CT` | status | This command allows the color temperature of the light to be moved at a specified rate. |
+| 76 | `0x4C` | `StepColorTemperature` | client → server | `CT` | status | This command allows the color temperature of the light to be stepped with a specified step size. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 768 / 65529
+```
+
+```json
+{
+  "1/768/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    64,
+    65,
+    66,
+    67,
+    68,
+    71,
+    75,
+    76
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 768 command, check that the command ID exists in <code>endpoint/768/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveToHue",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 768, always use `"cluster_id": 768`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `MoveToHue`
+
+## Purpose
+
+This command will move the device to the requested hue using a transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `MoveToHue` |
+| Direction | client → server |
+| Conformance | `HS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Hue` | `hue` | uint8 | `M` | max 254 | Indicates the hue to be moved to. |
+| 1 | `Direction` | `direction` | DirectionEnum | `M` | — | Indicates the movement direction. |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | Indicates, in 1/10ths of a second, the time that is taken to move to the new hue. |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`Direction` values (`DirectionEnum`): `0` = Shortest, `1` = Longest, `2` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveToHue",
+    "payload": {
+      "hue": 1,
+      "direction": 0,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveHue`
+
+## Purpose
+
+This command will change the hue of the device with a requested rate.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `MoveHue` |
+| Direction | client → server |
+| Conformance | `HS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `MoveMode` | `moveMode` | MoveModeEnum | `M` | — | Indicates the mode of movement. |
+| 1 | `Rate` | `rate` | uint8 | `M` | — | Indicates the rate of movement in steps per second. A step is a change in the device’s hue of one unit. |
+| 2 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 3 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`MoveMode` values (`MoveModeEnum`): `0` = Stop, `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveHue",
+    "payload": {
+      "moveMode": 0,
+      "rate": 1,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `StepHue`
+
+## Purpose
+
+This command will change the hue of the device using a step and transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `StepHue` |
+| Direction | client → server |
+| Conformance | `HS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StepMode` | `stepMode` | StepModeEnum | `M` | — | Indicates the mode of the step to be performed. |
+| 1 | `StepSize` | `stepSize` | uint8 | `M` | — | Indicates the change to be added to (or subtracted from) the current value of the device’s hue. |
+| 2 | `TransitionTime` | `transitionTime` | uint8 | `M` | — | Indicates, in 1/10ths of a second, the time that is taken to perform the step. A step is a change in the device’s hue of Step size units. |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`StepMode` values (`StepModeEnum`): `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "StepHue",
+    "payload": {
+      "stepMode": 1,
+      "stepSize": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveToSaturation`
+
+## Purpose
+
+This command will move the device to the requested saturation using a transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `MoveToSaturation` |
+| Direction | client → server |
+| Conformance | `HS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Saturation` | `saturation` | uint8 | `M` | max 254 | — |
+| 1 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | — |
+| 2 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 3 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveToSaturation",
+    "payload": {
+      "saturation": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveSaturation`
+
+## Purpose
+
+This command will change the saturation of the device with a requested rate.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `MoveSaturation` |
+| Direction | client → server |
+| Conformance | `HS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `MoveMode` | `moveMode` | MoveModeEnum | `M` | — | Indicates the mode of movement, as described in the MoveHue command. |
+| 1 | `Rate` | `rate` | uint8 | `M` | — | Indicates the rate of movement in steps per second. A step is a change in the device’s saturation of one unit. |
+| 2 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 3 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`MoveMode` values (`MoveModeEnum`): `0` = Stop, `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveSaturation",
+    "payload": {
+      "moveMode": 0,
+      "rate": 1,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `StepSaturation`
+
+## Purpose
+
+This command will change the saturation of the device using a step and transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `StepSaturation` |
+| Direction | client → server |
+| Conformance | `HS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StepMode` | `stepMode` | StepModeEnum | `M` | — | Indicates the mode of the step to be performed, as described in the StepHue command. |
+| 1 | `StepSize` | `stepSize` | uint8 | `M` | — | Indicates the change to be added to (or subtracted from) the current value of the device’s saturation. |
+| 2 | `TransitionTime` | `transitionTime` | uint8 | `M` | — | Indicates, in 1/10ths of a second, the time that is taken to perform the step. A step is a change in the device’s saturation of Step size units. |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`StepMode` values (`StepModeEnum`): `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "StepSaturation",
+    "payload": {
+      "stepMode": 1,
+      "stepSize": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveToHueAndSaturation`
+
+## Purpose
+
+This command will move the device to the requested hue and saturation using a transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `MoveToHueAndSaturation` |
+| Direction | client → server |
+| Conformance | `HS` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Hue` | `hue` | uint8 | `M` | max 254 | — |
+| 1 | `Saturation` | `saturation` | uint8 | `M` | max 254 | — |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | — |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveToHueAndSaturation",
+    "payload": {
+      "hue": 1,
+      "saturation": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveToColor`
+
+## Purpose
+
+This command will move the device to the requested color using a transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `MoveToColor` |
+| Direction | client → server |
+| Conformance | `XY` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ColorX` | `colorX` | uint16 | `M` | max 65279 | — |
+| 1 | `ColorY` | `colorY` | uint16 | `M` | max 65279 | — |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | — |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveToColor",
+    "payload": {
+      "colorX": 1,
+      "colorY": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveColor`
+
+## Purpose
+
+This command will change the color of the device with a requested rate.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `MoveColor` |
+| Direction | client → server |
+| Conformance | `XY` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `RateX` | `rateX` | int16 | `M` | — | Indicates the rate of movement in steps per second. A step is a change in the device’s CurrentX attribute of one unit. |
+| 1 | `RateY` | `rateY` | int16 | `M` | — | Indicates the rate of movement in steps per second. A step is a change in the device’s CurrentY attribute of one unit. |
+| 2 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 3 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveColor",
+    "payload": {
+      "rateX": 1,
+      "rateY": 1,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `StepColor`
+
+## Purpose
+
+This command will change the color of the device using a step and transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `9` |
+| Command hex | `0x09` |
+| Command name | `StepColor` |
+| Direction | client → server |
+| Conformance | `XY` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StepX` | `stepX` | int16 | `M` | — | — |
+| 1 | `StepY` | `stepY` | int16 | `M` | — | — |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | The field indicates, in 1/10ths of a second, the time that is taken to perform the color change. |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "StepColor",
+    "payload": {
+      "stepX": 1,
+      "stepY": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveToColorTemperature`
+
+## Purpose
+
+This command will move the device to the requested color temperature using a transition.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `10` |
+| Command hex | `0x0A` |
+| Command name | `MoveToColorTemperature` |
+| Direction | client → server |
+| Conformance | `CT` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ColorTemperatureMireds` | `colorTemperatureMireds` | uint16 | `M` | max 65279 | — |
+| 1 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | — |
+| 2 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 3 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveToColorTemperature",
+    "payload": {
+      "colorTemperatureMireds": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `EnhancedMoveToHue`
+
+## Purpose
+
+This command allows the light to be moved in a smooth continuous transition from their current hue to a target hue.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `64` |
+| Command hex | `0x40` |
+| Command name | `EnhancedMoveToHue` |
+| Direction | client → server |
+| Conformance | `EHUE` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EnhancedHue` | `enhancedHue` | uint16 | `M` | — | Indicates the target enhanced hue for the light. |
+| 1 | `Direction` | `direction` | DirectionEnum | `M` | — | Indicates the movement direction. |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | Indicates the transition time, as described in the MoveToHue command. |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`Direction` values (`DirectionEnum`): `0` = Shortest, `1` = Longest, `2` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "EnhancedMoveToHue",
+    "payload": {
+      "enhancedHue": 1,
+      "direction": 0,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `EnhancedMoveHue`
+
+## Purpose
+
+This command allows the light to start a continuous transition starting from their current hue.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `65` |
+| Command hex | `0x41` |
+| Command name | `EnhancedMoveHue` |
+| Direction | client → server |
+| Conformance | `EHUE` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `MoveMode` | `moveMode` | MoveModeEnum | `M` | desc | Indicates the mode of movement, as described in the MoveHue command. |
+| 1 | `Rate` | `rate` | uint16 | `M` | — | Indicates the rate of movement in steps per second. A step is a change in the enhanced hue of a device by one unit. |
+| 2 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 3 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`MoveMode` values (`MoveModeEnum`): `0` = Stop, `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "EnhancedMoveHue",
+    "payload": {
+      "moveMode": 0,
+      "rate": 1,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `EnhancedStepHue`
+
+## Purpose
+
+This command allows the device to be moved in a stepped transition from their current hue.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `66` |
+| Command hex | `0x42` |
+| Command name | `EnhancedStepHue` |
+| Direction | client → server |
+| Conformance | `EHUE` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StepMode` | `stepMode` | StepModeEnum | `M` | desc | Indicates the mode of the step to be performed, as described in the StepHue command. |
+| 1 | `StepSize` | `stepSize` | uint16 | `M` | — | Indicates the change to be added to (or subtracted from) the current value of the device’s enhanced hue. |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | The field indicates, in units of 1/10ths of a second, the time that is taken to perform the step. A step is a change to the device’s enhanced hue of a magnitude corresponding to the StepSize field. |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`StepMode` values (`StepModeEnum`): `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "EnhancedStepHue",
+    "payload": {
+      "stepMode": 1,
+      "stepSize": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `EnhancedMoveToHueAndSaturation`
+
+## Purpose
+
+This command allows the light to be moved in a smooth continuous transition from their current hue to a target hue and from their current saturation to a target saturation.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `67` |
+| Command hex | `0x43` |
+| Command name | `EnhancedMoveToHueAndSaturation` |
+| Direction | client → server |
+| Conformance | `EHUE` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EnhancedHue` | `enhancedHue` | uint16 | `M` | — | Indicates the target enhanced hue for the light. |
+| 1 | `Saturation` | `saturation` | uint8 | `M` | max 254 | Indicates the saturation, as described in the MoveToHueAndSaturation command. |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | Indicates the transition time, as described in the MoveToHue command. |
+| 3 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 4 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "EnhancedMoveToHueAndSaturation",
+    "payload": {
+      "enhancedHue": 1,
+      "saturation": 1,
+      "transitionTime": 0,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `ColorLoopSet`
+
+## Purpose
+
+This command allows a color loop to be activated such that the color light cycles through its range of hues.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `68` |
+| Command hex | `0x44` |
+| Command name | `ColorLoopSet` |
+| Direction | client → server |
+| Conformance | `CL` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UpdateFlags` | `updateFlags` | UpdateFlagsBitmap | `M` | — | Indicates which color loop attributes to update (from the values supplied in the other fields, see field descriptions below) before the color loop is started. |
+| 1 | `Action` | `action` | ColorLoopActionEnum | `M` | — | Indicates the action to take for the color loop. |
+| 2 | `Direction` | `direction` | ColorLoopDirectionEnum | `M` | — | Indicates the direction for the color loop. |
+| 3 | `Time` | `time` | uint16 | `M` | — | Indicates the number of seconds over which to perform a full color loop. |
+| 4 | `StartHue` | `startHue` | uint16 | `M` | — | — |
+| 5 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 6 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`Action` values (`ColorLoopActionEnum`): `0` = Deactivate, `1` = ActivateFromColorLoopStartEnhancedHue, `2` = ActivateFromEnhancedCurrentHue
+
+`Direction` values (`ColorLoopDirectionEnum`): `0` = Decrement, `1` = Increment
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "ColorLoopSet",
+    "payload": {
+      "updateFlags": 0,
+      "action": 0,
+      "direction": 0,
+      "time": 0,
+      "startHue": 1,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `StopMoveStep`
+
+## Purpose
+
+This command is provided to allow MoveTo and Step commands to be stopped. This automatically provides symmetry to the Level Control cluster. The StopMoveStep command has no effect on an active color loop.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `71` |
+| Command hex | `0x47` |
+| Command name | `StopMoveStep` |
+| Direction | client → server |
+| Conformance | `HS \| XY \| CT` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 1 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "StopMoveStep",
+    "payload": {
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `MoveColorTemperature`
+
+## Purpose
+
+This command allows the color temperature of the light to be moved at a specified rate.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `75` |
+| Command hex | `0x4B` |
+| Command name | `MoveColorTemperature` |
+| Direction | client → server |
+| Conformance | `CT` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `MoveMode` | `moveMode` | MoveModeEnum | `M` | — | Indicates the mode of movement, as described in the MoveHue command. |
+| 1 | `Rate` | `rate` | uint16 | `M` | — | Indicates the rate of movement in steps per second. A step is a change in the color temperature of a device by one unit. |
+| 2 | `ColorTemperatureMinimumMireds` | `colorTemperatureMinimumMireds` | uint16 | `M` | max 65279 | Indicates a lower bound on the ColorTemperatureMireds attribute (≡ an upper bound on the color temperature in kelvins) for the current move operation ColorTempPhysicalMinMireds $&lt;=$ ColorTemperatureMinimumMireds field $&lt;=$ ColorTemperatureMireds As such if … |
+| 3 | `ColorTemperatureMaximumMireds` | `colorTemperatureMaximumMireds` | uint16 | `M` | max 65279 | Indicates an upper bound on the ColorTemperatureMireds attribute (≡ a lower bound on the color temperature in kelvins) for the current move operation ColorTemperatureMireds $&lt;=$ ColorTemperatureMaximumMireds field $&lt;=$ ColorTempPhysicalMaxMireds As such if … |
+| 4 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 5 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`MoveMode` values (`MoveModeEnum`): `0` = Stop, `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "MoveColorTemperature",
+    "payload": {
+      "moveMode": 0,
+      "rate": 1,
+      "colorTemperatureMinimumMireds": 1,
+      "colorTemperatureMaximumMireds": 1,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `StepColorTemperature`
+
+## Purpose
+
+This command allows the color temperature of the light to be stepped with a specified step size.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `76` |
+| Command hex | `0x4C` |
+| Command name | `StepColorTemperature` |
+| Direction | client → server |
+| Conformance | `CT` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StepMode` | `stepMode` | StepModeEnum | `M` | — | Indicates the mode of the step to be performed, as described in the StepHue command. |
+| 1 | `StepSize` | `stepSize` | uint16 | `M` | — | Indicates the change to be added to (or subtracted from) the current value of the device’s color temperature. |
+| 2 | `TransitionTime` | `transitionTime` | uint16 | `M` | max 65534 | Indicates, in units of 1/10ths of a second, the time that is taken to perform the step. A step is a change to the device’s color temperature of a magnitude corresponding to the StepSize field. |
+| 3 | `ColorTemperatureMinimumMireds` | `colorTemperatureMinimumMireds` | uint16 | `M` | max 65279 | Indicates a lower bound on the ColorTemperatureMireds attribute (≡ an upper bound on the color temperature in kelvins) for the current step operation ColorTempPhysicalMinMireds $&lt;=$ ColorTemperatureMinimumMireds field $&lt;=$ ColorTemperatureMireds As such if … |
+| 4 | `ColorTemperatureMaximumMireds` | `colorTemperatureMaximumMireds` | uint16 | `M` | max 65279 | Indicates an upper bound on the ColorTemperatureMireds attribute (≡ a lower bound on the color temperature in kelvins) for the current step operation ColorTemperatureMireds ≤ ColorTemperatureMaximumMireds field ≤ ColorTempPhysicalMaxMireds As such if the step … |
+| 5 | `OptionsMask` | `optionsMask` | OptionsBitmap | `M` | desc | — |
+| 6 | `OptionsOverride` | `optionsOverride` | OptionsBitmap | `M` | desc | — |
+
+`StepMode` values (`StepModeEnum`): `1` = Up, `3` = Down
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 768,
+    "command_name": "StepColorTemperature",
+    "payload": {
+      "stepMode": 1,
+      "stepSize": 1,
+      "transitionTime": 0,
+      "colorTemperatureMinimumMireds": 1,
+      "colorTemperatureMaximumMireds": 1,
+      "optionsMask": 0,
+      "optionsOverride": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 768 Events
+
+Cluster 768 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 768 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/768/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

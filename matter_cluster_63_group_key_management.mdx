@@ -1,0 +1,604 @@
+---
+title: "Matter Cluster 63 — Group Key Management"
+description: "Matter Cluster 63 (0x003F) Group Key Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 63
+clusterHex: "0x003F"
+clusterName: "Group Key Management"
+---
+
+# Matter Cluster 63 — Group Key Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>63</code>, also written as <code>0x003F</code>, is the <strong>Group Key Management Cluster</strong>.
+The Group Key Management cluster manages shared symmetric keys for the node. The cluster is scoped to the node and is a singleton for the node. This cluster maintains a list of groups supported by the node.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `63` |
+| Cluster ID hex | `0x003F` |
+| Cluster name | `Group Key Management` |
+| Cluster revision (Matter 1.6.1) | `4` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `GRPKEY` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Clarify KeySetWrite validation and behavior on invalid epoch key lengths |
+| 3 | Refocus on pure key management; introduce Groupcast feature associated with Groupcast cluster |
+| 4 | Add "C" quality to GroupKeyMap attribute |
+
+---
+
+## Shadow Path Format
+
+Cluster 63 values in the device shadow use this format:
+
+```text
+endpoint_id / 63 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/63/2": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `63` | Group Key Management cluster |
+| `2` | `MaxGroupsPerFabric` attribute |
+
+---
+
+## Cluster 63 Features
+
+The `FeatureMap` attribute (`0/63/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CS` | CacheAndSync | `P` | The ability to support CacheAndSync security policy and MCSP |
+| 1 | `GCAST` | Groupcast | `P, O` | The device supports groups using the Groupcast cluster |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `GroupKeyMulticastPolicyEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `PerGroupID` | `M` | Indicates filtering of multicast messages for a specific Group ID |
+| 1 | `AllNodes` | `M` | Indicates not filtering of multicast messages |
+
+### `GroupKeySecurityPolicyEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `TrustFirst` | `M` | Message counter synchronization using trust-first |
+| 1 | `CacheAndSync` | `P, CS` | Message counter synchronization using cache-and-sync |
+
+### `GroupInfoMapStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 1 | `GroupId` | group-id | `M` | — | This field uniquely identifies the group within the scope of the given Fabric. |
+| 2 | `Endpoints` | list of endpoint-no | `M` | min 1 entries | This field provides the list of Endpoint IDs on the Node to which messages to this group is forwarded. |
+| 3 | `GroupName` | string | `O` | max length 16 | This field provides a name for the group. |
+
+### `GroupKeyMapStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 1 | `GroupId` | group-id | `M` | — | This field uniquely identifies the group within the scope of the given Fabric. |
+| 2 | `GroupKeySetID` | uint16 | `M` | 1 to 65535 | — |
+
+### `GroupKeySetStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `GroupKeySetID` | uint16 | `M` | — | — |
+| 1 | `GroupKeySecurityPolicy` | GroupKeySecurityPolicyEnum | `M` | — | This field provides the security policy for an operational group key set. |
+| 2 | `EpochKey0` | octstr (nullable) | `M` | allowed: 16 | This field, if not null, is the InputKey used in the derivation of an OperationalGroupKey for epoch slot 0 of the given group key set. |
+| 3 | `EpochStartTime0` | epoch-us (nullable) | `M` | — | Units are absolute UTC time in microseconds encoded using the epoch-us representation. |
+| 4 | `EpochKey1` | octstr (nullable) | `M` | allowed: 16 | This field, if not null, is the InputKey used in the derivation of an OperationalGroupKey for epoch slot 1 of the given group key set. |
+| 5 | `EpochStartTime1` | epoch-us (nullable) | `M` | — | Units are absolute UTC time in microseconds encoded using the epoch-us representation. |
+| 6 | `EpochKey2` | octstr (nullable) | `M` | allowed: 16 | If the GCAST feature bit is set in the FeatureMap, this field is null, unless the GroupKeySetId is 0 (the Identity Protection Key). |
+| 7 | `EpochStartTime2` | epoch-us (nullable) | `M` | — | If the GCAST feature bit is set in the FeatureMap, this field is null, unless the GroupKeySetId is 0 (the Identity Protection Key). |
+| 8 | `GroupKeyMulticastPolicy` | GroupKeyMulticastPolicyEnum | `D` | — | — |
+
+### `GroupcastAdoptionStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `GroupcastAdopted` | bool | `M` | — | Indicates whether Groupcast was adopted by the associated Fabric's administrators. |
+
+---
+
+## Cluster 63 Attributes
+
+Cluster 63 defines **5 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `GroupKeyMap` | list of GroupKeyMapStruct | `M` | R/W (read: view, write: manage, fabric-scoped) | persisted, change omitted | `empty` |
+| 1 | `0x0001` | `GroupTable` | list of GroupInfoMapStruct | `M` | R (read: view, fabric-scoped) | — | `empty` |
+| 2 | `0x0002` | `MaxGroupsPerFabric` | uint16 | `M` | R (read: view) | — | `0` |
+| 3 | `0x0003` | `MaxGroupKeysPerFabric` | uint16 | `M` | R (read: view) | — | `1` |
+| 4 | `0x0004` | `GroupcastAdoption` | list of GroupcastAdoptionStruct | `P, GCAST` | R/W (read: admin, write: admin, fabric-scoped) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `4` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `GroupKeyMap`
+
+Path example:
+
+```text
+0/63/0
+```
+
+If the GCAST feature bit is set in the FeatureMap attribute, the following rules apply to the accessing Fabric: - When Groupcast is adopted (the GroupcastAdoption entry has GroupcastAdopted set to true): - This attribute is empty. - Any attempt to write to this attribute must fail with an INVALID_IN_STATE status code. - Otherwise (Groupcast is not adopted or the entry is missing): - This attribute contains the Group Key Set mappings derived from the Groupcast cluster's Membership attribute (one mapping per group per fabric). - GroupKeyMapStruct entry updates must cause the associated Groupcast cluster's Membership attribute (by GroupID) to be updated with the provided GroupKeySetID.
+
+| Property | Value |
+|---|---|
+| Type | list of GroupKeyMapStruct |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage, fabric-scoped) |
+| Qualities | persisted, change omitted |
+| Constraint | desc |
+| Default | `empty` |
+
+Each entry is a `GroupKeyMapStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/63/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `GroupTable`
+
+Path example:
+
+```text
+0/63/1
+```
+
+If the GCAST feature is set in the FeatureMap: - If the GroupcastAdoption attribute has an entry for the accessing Fabric and that entry has the GroupcastAdopted field set to true, then this field is empty. - Else this attribute contains the Group mappings computed in equivalence to the Groupcast cluster's Membership attribute (one mapping per group per fabric). This attribute is a list of GroupInfoMapStruct entries. Each entry provides read-only information about how a given logical Group ID maps to a particular set of endpoints, and a name for the group.
+
+| Property | Value |
+|---|---|
+| Type | list of GroupInfoMapStruct |
+| Conformance | `M` |
+| Access | R (read: view, fabric-scoped) |
+| Constraint | desc |
+| Default | `empty` |
+
+Each entry is a `GroupInfoMapStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/63/1": []
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MaxGroupsPerFabric`
+
+Path example:
+
+```text
+0/63/2
+```
+
+If the Groupcast support is enabled (GCAST feature is set), this is set to 0 indicating group management is done using the Groupcast cluster and not the legacy Groups cluster. Indicates the maximum number of legacy groups that this node supports per fabric. For legacy usage, the value of this attribute is set to be no less than the required minimum supported groups. The length of the GroupKeyMap and GroupTable list attributes must NOT exceed the value of the MaxGroupsPerFabric attribute multiplied by the number of supported fabrics.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/63/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `MaxGroupKeysPerFabric`
+
+Path example:
+
+```text
+0/63/3
+```
+
+Indicates the maximum number of group key sets this node supports per fabric. The value of this attribute is set according to the minimum number of group key sets to support.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 1 to 65535 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "0/63/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `GroupcastAdoption`
+
+Path example:
+
+```text
+0/63/4
+```
+
+Indicates whether the accessing fabric claims to have migrated to Groupcast. When a Fabric's entry has the GroupcastAdopted field set to true, the behavior of the GroupKeyMap and GroupTable attributes will change. There must NOT be more than 1 entry per fabric in this attribute. If a Fabric has not yet written an entry for themselves, the server must act as if that Fabric had written an entry with GroupcastAdopted set to false, even if not present in the list.
+
+| Property | Value |
+|---|---|
+| Type | list of GroupcastAdoptionStruct |
+| Conformance | `P, GCAST` |
+| Access | R/W (read: admin, write: admin, fabric-scoped) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Each entry is a `GroupcastAdoptionStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/63/4": []
+}
+```
+
+---
+
+# Cluster 63 Commands
+
+Cluster 63 has **4 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `KeySetWrite` | client → server | `M` | status | This command is used by Administrators to set the state of a given Group Key Set, including atomically updating the state of all epoch keys. |
+| 1 | `0x01` | `KeySetRead` | client → server | `M` | KeySetReadResponse | This command is used by Administrators to read the state of a given Group Key Set. |
+| 2 | `0x02` | `KeySetReadResponse` | server → client | `M` | — | This command is generated in response to the KeySetRead command, if a valid Group Key Set was found. |
+| 3 | `0x03` | `KeySetRemove` | client → server | `M` | status | This command is used by Administrators to remove all state of a given Group Key Set. |
+| 4 | `0x04` | `KeySetReadAllIndices` | client → server | `M` | KeySetReadAllIndicesResponse | This command is used by Administrators to query a list of all Group Key Sets associated with the accessing fabric. |
+| 5 | `0x05` | `KeySetReadAllIndicesResponse` | server → client | `M` | — | This command is generated in response to KeySetReadAllIndices and it contains the list of GroupKeySetID for all Group Key Sets associated with the scoped Fabric. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 63 / 65529
+```
+
+```json
+{
+  "0/63/65529": [
+    0,
+    1,
+    3,
+    4
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 63 command, check that the command ID exists in <code>endpoint/63/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 63,
+    "command_name": "KeySetWrite",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 63, always use `"cluster_id": 63`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `KeySetWrite`
+
+## Purpose
+
+This command is used by Administrators to set the state of a given Group Key Set, including atomically updating the state of all epoch keys.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `KeySetWrite` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySet` | `groupKeySet` | GroupKeySetStruct | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 63,
+    "command_name": "KeySetWrite",
+    "payload": {
+      "groupKeySet": {
+        "groupKeySetID": 1,
+        "groupKeySecurityPolicy": 0,
+        "epochKey0": "AQID",
+        "epochStartTime0": 0
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `KeySetRead`
+
+## Purpose
+
+This command is used by Administrators to read the state of a given Group Key Set.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `KeySetRead` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | KeySetReadResponse |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySetID` | `groupKeySetID` | uint16 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 63,
+    "command_name": "KeySetRead",
+    "payload": {
+      "groupKeySetID": 1
+    }
+  }
+}
+```
+
+The device answers with `KeySetReadResponse` (see below).
+
+---
+
+# Command: `KeySetReadResponse`
+
+## Purpose
+
+This command is generated in response to the KeySetRead command, if a valid Group Key Set was found. It contains the configuration of the requested Group Key Set, with the EpochKey0, EpochKey1 and EpochKey2 key contents replaced by null.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `KeySetReadResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySet` | `groupKeySet` | GroupKeySetStruct | `M` | — | — |
+
+---
+
+# Command: `KeySetRemove`
+
+## Purpose
+
+This command is used by Administrators to remove all state of a given Group Key Set.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `KeySetRemove` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySetID` | `groupKeySetID` | uint16 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 63,
+    "command_name": "KeySetRemove",
+    "payload": {
+      "groupKeySetID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `KeySetReadAllIndices`
+
+## Purpose
+
+This command is used by Administrators to query a list of all Group Key Sets associated with the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `KeySetReadAllIndices` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | KeySetReadAllIndicesResponse |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DoNotUse` | `doNotUse` |  | `X` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 63,
+    "command_name": "KeySetReadAllIndices",
+    "payload": {
+      "doNotUse": 0
+    }
+  }
+}
+```
+
+The device answers with `KeySetReadAllIndicesResponse` (see below).
+
+---
+
+# Command: `KeySetReadAllIndicesResponse`
+
+## Purpose
+
+This command is generated in response to KeySetReadAllIndices and it contains the list of GroupKeySetID for all Group Key Sets associated with the scoped Fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `KeySetReadAllIndicesResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySetIDs` | `groupKeySetIDs` | list of uint16 | `M` | — | — |
+
+---
+
+# Cluster 63 Events
+
+Cluster 63 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 63 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/63/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

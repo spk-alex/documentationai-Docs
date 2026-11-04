@@ -1,0 +1,329 @@
+---
+title: "Matter Cluster 1873 — Commissioner Control"
+description: "Matter Cluster 1873 (0x0751) Commissioner Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1873
+clusterHex: "0x0751"
+clusterName: "Commissioner Control"
+---
+
+# Matter Cluster 1873 — Commissioner Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>1873</code>, also written as <code>0x0751</code>, is the <strong>Commissioner Control Cluster</strong>.
+The Commissioner Control Cluster supports the ability for clients to request the commissioning of themselves or other nodes onto a fabric which the cluster server can commission onto. An example use case is ecosystem to ecosystem Fabric Synchronization setup. The generalized flow supported by the Commissioner Control Cluster can be seen in the following diagram.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1873` |
+| Cluster ID hex | `0x0751` |
+| Cluster name | `Commissioner Control` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `CCTRL` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1873 values in the device shadow use this format:
+
+```text
+endpoint_id / 1873 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/1873/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `1873` | Commissioner Control cluster |
+| `0` | `SupportedDeviceCategories` attribute |
+
+---
+
+## Data Types
+
+### `SupportedDeviceCategoryBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `FabricSynchronization` | `O` | Aggregators which support Fabric Synchronization may be commissioned. |
+
+---
+
+## Cluster 1873 Attributes
+
+Cluster 1873 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SupportedDeviceCategories` | SupportedDeviceCategoryBitmap | `M` | R (read: manage) | — | `0` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SupportedDeviceCategories`
+
+Path example:
+
+```text
+0/1873/0
+```
+
+Indicates the device categories specified in SupportedDeviceCategoryBitmap that are supported by this Commissioner Control Cluster server. A client must NOT send the RequestCommissioningApproval command if the intended node to be commissioned does not conform to any of the values specified in SupportedDeviceCategories.
+
+| Property | Value |
+|---|---|
+| Type | SupportedDeviceCategoryBitmap |
+| Conformance | `M` |
+| Access | R (read: manage) |
+| Default | `0` |
+
+Bits (`SupportedDeviceCategoryBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `FabricSynchronization` | Aggregators which support Fabric Synchronization may be commissioned. |
+
+Example:
+
+```json
+{
+  "0/1873/0": 0
+}
+```
+
+---
+
+# Cluster 1873 Commands
+
+Cluster 1873 has **2 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `RequestCommissioningApproval` | client → server | `M` | status | This command is sent by a client to request approval for a future CommissionNode call. |
+| 1 | `0x01` | `CommissionNode` | client → server | `M` | ReverseOpenCommissioningWindow | This command is sent by a client to request that the server begins commissioning a previously approved request. |
+| 2 | `0x02` | `ReverseOpenCommissioningWindow` | server → client | `M` | — | When received within the timeout specified by ResponseTimeoutSeconds in the CommissionNode command, the client must open a commissioning window on a node which matches the … |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1873 / 65529
+```
+
+```json
+{
+  "0/1873/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1873 command, check that the command ID exists in <code>endpoint/1873/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1873,
+    "command_name": "RequestCommissioningApproval",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1873, always use `"cluster_id": 1873`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `RequestCommissioningApproval`
+
+## Purpose
+
+This command is sent by a client to request approval for a future CommissionNode call. This is required to be a separate step in order to provide the server time for interacting with a user before informing the client that the CommissionNode operation may be successful. If the command is not executed via a CASE session, the command must fail with a status code of UNSUPPORTED_ACCESS. The server may request approval from the user, but it is not required.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `RequestCommissioningApproval` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `RequestID` | `requestID` | uint64 | `M` | — | — |
+| 1 | `VendorID` | `vendorID` | vendor-id | `M` | — | — |
+| 2 | `ProductID` | `productID` | uint16 | `M` | — | — |
+| 3 | `Label` | `label` | string | `O` | max length 64 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1873,
+    "command_name": "RequestCommissioningApproval",
+    "payload": {
+      "requestID": 1,
+      "vendorID": 1,
+      "productID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `CommissionNode`
+
+## Purpose
+
+This command is sent by a client to request that the server begins commissioning a previously approved request. The server returns FAILURE if the CommissionNode command is not sent from the same NodeID and on the same fabric as the RequestCommissioningApproval or if the provided RequestID to CommissionNode does not match the value provided to RequestCommissioningApproval. If the command is not executed via a CASE session, the command must fail with a status code of UNSUPPORTED_ACCESS. Upon receipt, the server must respond with ReverseOpenCommissioningWindow if CommissioningRequestResult was generated with StatusCode of SUCCESS for the matching RequestID field and NodeID of the client.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `CommissionNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ReverseOpenCommissioningWindow |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `RequestID` | `requestID` | uint64 | `M` | — | — |
+| 1 | `ResponseTimeoutSeconds` | `responseTimeoutSeconds` | uint16 | `M` | 30 to 120 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1873,
+    "command_name": "CommissionNode",
+    "payload": {
+      "requestID": 1,
+      "responseTimeoutSeconds": 30
+    }
+  }
+}
+```
+
+The device answers with `ReverseOpenCommissioningWindow` (see below).
+
+---
+
+# Command: `ReverseOpenCommissioningWindow`
+
+## Purpose
+
+When received within the timeout specified by ResponseTimeoutSeconds in the CommissionNode command, the client must open a commissioning window on a node which matches the VendorID and ProductID provided in the associated RequestCommissioningApproval command. When commissioning this node, the server must check that the VendorID and ProductID fields provided in the RequestCommissioningApproval command match the VendorID and ProductID attributes of the Basic Information Cluster which have already been verified during the Device Attestation Procedure. If they do not match, the server must NOT complete commissioning and should indicate an error to the user.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `ReverseOpenCommissioningWindow` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CommissioningTimeout` | `commissioningTimeout` | uint16 | `M` | desc | — |
+| 1 | `PAKEPasscodeVerifier` | `pakePasscodeVerifier` | octstr | `M` | allowed: 97 | — |
+| 2 | `Discriminator` | `discriminator` | uint16 | `M` | max 4095 | — |
+| 3 | `Iterations` | `iterations` | uint32 | `M` | 1000 to 100000 | — |
+| 4 | `Salt` | `salt` | octstr | `M` | length 16 to 32 | — |
+
+---
+
+# Cluster 1873 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `CommissioningRequestResult` | info | `M` | This event is generated by the server following a RequestCommissioningApproval command which the server responded to with SUCCESS. |
+
+## Event `0` — `CommissioningRequestResult`
+
+This event is generated by the server following a RequestCommissioningApproval command which the server responded to with SUCCESS. The approval is valid for a period determined by the manufacturer and characteristics of the node presenting the Commissioner Control Cluster. Clients should send the CommissionNode command immediately upon receiving a CommissioningRequestResult event.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `RequestID` | uint64 | `M` | — |
+| 1 | `ClientNodeID` | node-id | `M` | — |
+| 2 | `StatusCode` | status | `M` | — |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1873 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1873/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

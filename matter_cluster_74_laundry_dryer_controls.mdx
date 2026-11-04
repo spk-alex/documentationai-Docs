@@ -1,0 +1,178 @@
+---
+title: "Matter Cluster 74 — Laundry Dryer Controls"
+description: "Matter Cluster 74 (0x004A) Laundry Dryer Controls: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 74
+clusterHex: "0x004A"
+clusterName: "Laundry Dryer Controls"
+---
+
+# Matter Cluster 74 — Laundry Dryer Controls Cluster
+
+<Callout type="info">
+Matter Cluster <code>74</code>, also written as <code>0x004A</code>, is the <strong>Laundry Dryer Controls Cluster</strong>.
+This cluster provides a way to access options associated with the operation of a laundry dryer device type.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `74` |
+| Cluster ID hex | `0x004A` |
+| Cluster name | `Laundry Dryer Controls` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `DRYERCTRL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 74 values in the device shadow use this format:
+
+```text
+endpoint_id / 74 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/74/1": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `74` | Laundry Dryer Controls cluster |
+| `1` | `SelectedDrynessLevel` attribute |
+
+---
+
+## Data Types
+
+### `DrynessLevelEnum`
+
+This enum provides a representation of the level of dryness that will be used while drying in a selected mode. It is up to the device manufacturer to determine the mapping between the enum values and the corresponding temperature level.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Low` | `M` | Provides a low dryness level for the selected mode |
+| 1 | `Normal` | `M` | Provides the normal level of dryness for the selected mode |
+| 2 | `Extra` | `M` | Provides an extra dryness level for the selected mode |
+| 3 | `Max` | `M` | Provides the max dryness level for the selected mode |
+
+---
+
+## Cluster 74 Attributes
+
+Cluster 74 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `SupportedDrynessLevels` | list of DrynessLevelEnum | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `SelectedDrynessLevel` | DrynessLevelEnum | `M` | R/W (read: view, write: operate) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `SupportedDrynessLevels`
+
+Path example:
+
+```text
+1/74/0
+```
+
+Indicates the list of supported dryness levels available to the appliance in the currently selected mode. The dryness level values are determined by the manufacturer. At least one dryness level value is provided in the SupportedDrynessLevels list. The list of dryness levels may change depending on the currently-selected Laundry Dryer mode.
+
+| Property | Value |
+|---|---|
+| Type | list of DrynessLevelEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 1 to 4 entries |
+
+Example:
+
+```json
+{
+  "1/74/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SelectedDrynessLevel`
+
+Path example:
+
+```text
+1/74/1
+```
+
+Indicates the currently-selected dryness level and it is the index into the SupportedDrynessLevels list of the selected dryness level. If an attempt is made to write this attribute with a value other than null or a value contained in SupportedDrynessLevels, a CONSTRAINT_ERROR response is sent as the response. If an attempt is made to write this attribute while the device is not in a state that supports modifying the dryness level, an INVALID_IN_STATE error is sent as the response. A value of null indicates that there will be no dryness level setting for the current mode.
+
+| Property | Value |
+|---|---|
+| Type | DrynessLevelEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable |
+| Constraint | desc |
+
+Values (`DrynessLevelEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Low` | Provides a low dryness level for the selected mode |
+| 1 | `Normal` | Provides the normal level of dryness for the selected mode |
+| 2 | `Extra` | Provides an extra dryness level for the selected mode |
+| 3 | `Max` | Provides the max dryness level for the selected mode |
+
+Example:
+
+```json
+{
+  "1/74/1": 0
+}
+```
+
+---
+
+# Cluster 74 Commands
+
+Cluster 74 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 74 Events
+
+Cluster 74 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 74 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/74/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

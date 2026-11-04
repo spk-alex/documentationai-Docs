@@ -1,0 +1,587 @@
+---
+title: "Matter Cluster 4 — Groups"
+description: "Matter Cluster 4 (0x0004) Groups: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 4
+clusterHex: "0x0004"
+clusterName: "Groups"
+---
+
+# Matter Cluster 4 — Groups Cluster
+
+<Callout type="info">
+Matter Cluster <code>4</code>, also written as <code>0x0004</code>, is the <strong>Groups Cluster</strong>.
+Starting with the release of Matter when the Groupcast Cluster becomes certifiable, that cluster supersedes this Groups Cluster. Groups created on devices prior to that Matter release remain operational via the PerGroup feature in the Groupcast Cluster. All new group management operations should be performed through the Groupcast Cluster.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `4` |
+| Cluster ID hex | `0x0004` |
+| Cluster name | `Groups` |
+| Cluster revision (Matter 1.6.1) | `4` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `G` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added; CCB 1745 2100 |
+| 2 | CCB 2289 |
+| 3 | CCB 2310 2704 |
+| 4 | New data model format and notation |
+
+---
+
+## Shadow Path Format
+
+Cluster 4 values in the device shadow use this format:
+
+```text
+endpoint_id / 4 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/4/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `4` | Groups cluster |
+| `0` | `NameSupport` attribute |
+
+---
+
+## Cluster 4 Features
+
+The `FeatureMap` attribute (`1/4/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `GN` | GroupNames | `O` | The ability to store a name for a group |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `NameSupportBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 7 | `GroupNames` | `M` | The ability to store a name for a group. |
+
+---
+
+## Cluster 4 Attributes
+
+Cluster 4 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `NameSupport` | NameSupportBitmap | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `4` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `NameSupport`
+
+Path example:
+
+```text
+1/4/0
+```
+
+This attribute provides legacy, read-only access to whether the Group Names feature is supported. The most significant bit, bit 7 (GroupNames), is equal to bit 0 of the FeatureMap attribute (GN Feature). All other bits is 0.
+
+| Property | Value |
+|---|---|
+| Type | NameSupportBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Bits (`NameSupportBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 7 | `GroupNames` | The ability to store a name for a group. |
+
+Example:
+
+```json
+{
+  "1/4/0": 0
+}
+```
+
+---
+
+# Cluster 4 Commands
+
+Cluster 4 has **6 client-to-server commands** and **4 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `AddGroup` | client → server | `M` | AddGroupResponse | The AddGroup command allows a client to add group membership in a particular group for the server endpoint. |
+| 0 | `0x00` | `AddGroupResponse` | server → client | `M` | — | The AddGroupResponse is sent by the Groups cluster server in response to an AddGroup command. |
+| 1 | `0x01` | `ViewGroup` | client → server | `M` | ViewGroupResponse | The ViewGroup command allows a client to request that the server responds with a ViewGroupResponse command containing the name string for a particular group. |
+| 1 | `0x01` | `ViewGroupResponse` | server → client | `M` | — | The ViewGroupResponse command is sent by the Groups cluster server in response to a ViewGroup command. |
+| 2 | `0x02` | `GetGroupMembership` | client → server | `M` | GetGroupMembershipResponse | The GetGroupMembership command allows a client to inquire about the group membership of the server endpoint, in a number of ways. |
+| 2 | `0x02` | `GetGroupMembershipResponse` | server → client | `M` | — | The GetGroupMembershipResponse command is sent by the Groups cluster server in response to a GetGroupMembership command. |
+| 3 | `0x03` | `RemoveGroup` | client → server | `M` | RemoveGroupResponse | The RemoveGroup command allows a client to request that the server removes the membership for the server endpoint, if any, in a particular group. |
+| 3 | `0x03` | `RemoveGroupResponse` | server → client | `M` | — | The RemoveGroupResponse command is generated by the server in response to the receipt of a RemoveGroup command. |
+| 4 | `0x04` | `RemoveAllGroups` | client → server | `M` | status | The RemoveAllGroups command allows a client to direct the server to remove all group associations for the server endpoint. |
+| 5 | `0x05` | `AddGroupIfIdentifying` | client → server | `M` | status | The AddGroupIfIdentifying command allows a client to add group membership in a particular group for the server endpoint, on condition that the endpoint is identifying itself. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 4 / 65529
+```
+
+```json
+{
+  "1/4/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 4 command, check that the command ID exists in <code>endpoint/4/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 4,
+    "command_name": "AddGroup",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 4, always use `"cluster_id": 4`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `AddGroup`
+
+## Purpose
+
+The AddGroup command allows a client to add group membership in a particular group for the server endpoint.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AddGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | AddGroupResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+| 1 | `GroupName` | `groupName` | string | `M` | max length 16 | This field may be set to a human-readable name for the group. If the client has no name for the group, the GroupName field is set to the empty string. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 4,
+    "command_name": "AddGroup",
+    "payload": {
+      "groupID": 1,
+      "groupName": "example"
+    }
+  }
+}
+```
+
+The device answers with `AddGroupResponse` (see below).
+
+---
+
+# Command: `AddGroupResponse`
+
+## Purpose
+
+The AddGroupResponse is sent by the Groups cluster server in response to an AddGroup command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AddGroupResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | enum8 | `M` | desc | This field is set according to the Effect on Receipt section of the AddGroup command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+
+---
+
+# Command: `ViewGroup`
+
+## Purpose
+
+The ViewGroup command allows a client to request that the server responds with a ViewGroupResponse command containing the name string for a particular group.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ViewGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ViewGroupResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 4,
+    "command_name": "ViewGroup",
+    "payload": {
+      "groupID": 1
+    }
+  }
+}
+```
+
+The device answers with `ViewGroupResponse` (see below).
+
+---
+
+# Command: `ViewGroupResponse`
+
+## Purpose
+
+The ViewGroupResponse command is sent by the Groups cluster server in response to a ViewGroup command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ViewGroupResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | enum8 | `M` | desc | This field is according to the Effect on Receipt section of the ViewGroup command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+| 2 | `GroupName` | `groupName` | string | `M` | max length 16 | If the status is SUCCESS, and group names are supported, this field is set to the group name associated with that group in the Group Table; otherwise it is set to the empty string. |
+
+---
+
+# Command: `GetGroupMembership`
+
+## Purpose
+
+The GetGroupMembership command allows a client to inquire about the group membership of the server endpoint, in a number of ways.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `GetGroupMembership` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | GetGroupMembershipResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupList` | `groupList` | list of group-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 4,
+    "command_name": "GetGroupMembership",
+    "payload": {
+      "groupList": []
+    }
+  }
+}
+```
+
+The device answers with `GetGroupMembershipResponse` (see below).
+
+---
+
+# Command: `GetGroupMembershipResponse`
+
+## Purpose
+
+The GetGroupMembershipResponse command is sent by the Groups cluster server in response to a GetGroupMembership command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `GetGroupMembershipResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Capacity` | `capacity` | uint8 (nullable) | `M` | — | This field contains the remaining capacity of the Group Table of the node. |
+| 1 | `GroupList` | `groupList` | list of group-id | `M` | — | The GroupList field contains either the group IDs of all the groups in the Group Table for which the server endpoint is a member of the group (in the case where the GroupList field of the received GetGroupMembership command was empty), or the group IDs of all … |
+
+---
+
+# Command: `RemoveGroup`
+
+## Purpose
+
+The RemoveGroup command allows a client to request that the server removes the membership for the server endpoint, if any, in a particular group.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `RemoveGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | RemoveGroupResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 4,
+    "command_name": "RemoveGroup",
+    "payload": {
+      "groupID": 1
+    }
+  }
+}
+```
+
+The device answers with `RemoveGroupResponse` (see below).
+
+---
+
+# Command: `RemoveGroupResponse`
+
+## Purpose
+
+The RemoveGroupResponse command is generated by the server in response to the receipt of a RemoveGroup command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `RemoveGroupResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | enum8 | `M` | desc | This field is according to the Effect on Receipt section of the RemoveGroup command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+
+---
+
+# Command: `RemoveAllGroups`
+
+## Purpose
+
+The RemoveAllGroups command allows a client to direct the server to remove all group associations for the server endpoint.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `RemoveAllGroups` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 4,
+    "command_name": "RemoveAllGroups",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `AddGroupIfIdentifying`
+
+## Purpose
+
+The AddGroupIfIdentifying command allows a client to add group membership in a particular group for the server endpoint, on condition that the endpoint is identifying itself. Identifying functionality is controlled using the Identify cluster,. For correct operation of the AddGroupIfIdentifying command, any endpoint that supports the Groups server cluster must also support the Identify server cluster. This command might be used to assist configuring group membership in the absence of a commissioning tool.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `AddGroupIfIdentifying` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+| 1 | `GroupName` | `groupName` | string | `M` | max length 16 | This field may be set to a human-readable name for the group. If the client has no name for the group, the GroupName field is set to the empty string. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 4,
+    "command_name": "AddGroupIfIdentifying",
+    "payload": {
+      "groupID": 1,
+      "groupName": "example"
+    }
+  }
+}
+```
+
+---
+
+# Cluster 4 Events
+
+Cluster 4 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 4 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/4/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

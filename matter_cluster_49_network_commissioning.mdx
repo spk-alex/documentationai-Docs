@@ -1,0 +1,982 @@
+---
+title: "Matter Cluster 49 — Network Commissioning"
+description: "Matter Cluster 49 (0x0031) Network Commissioning: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 49
+clusterHex: "0x0031"
+clusterName: "Network Commissioning"
+---
+
+# Matter Cluster 49 — Network Commissioning Cluster
+
+<Callout type="info">
+Matter Cluster <code>49</code>, also written as <code>0x0031</code>, is the <strong>Network Commissioning Cluster</strong>.
+Network commissioning is part of the overall Node commissioning. The main goal of Network Commissioning Cluster is to associate a Node with or manage a Node's one or more network interfaces. An interface, in this context, is a unique entity that can have an IPv6 address assigned to it and ingress and egress IP packets.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `49` |
+| Cluster ID hex | `0x0031` |
+| Cluster name | `Network Commissioning` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `CNET` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Support determining capabilities for Wi-Fi and Thread interfaces. Additional Wi-Fi directed scanning requirements. |
+
+---
+
+## Shadow Path Format
+
+Cluster 49 values in the device shadow use this format:
+
+```text
+endpoint_id / 49 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/49/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `49` | Network Commissioning cluster |
+| `0` | `MaxNetworks` attribute |
+
+---
+
+## Cluster 49 Features
+
+The `FeatureMap` attribute (`0/49/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `WI` | WiFiNetworkInterface | `O` | Wi-Fi related features |
+| 1 | `TH` | ThreadNetworkInterface | `O` | Thread related features |
+| 2 | `ET` | EthernetNetworkInterface | `O` | Ethernet related features |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `7` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `NetworkCommissioningStatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | OK, no error |
+| 1 | `OutOfRange` | `M` | Value Outside Range |
+| 2 | `BoundsExceeded` | `M` | A collection would exceed its size limit |
+| 3 | `NetworkIDNotFound` | `M` | The NetworkID is not among the collection of added networks |
+| 4 | `DuplicateNetworkID` | `M` | The NetworkID is already among the collection of added networks |
+| 5 | `NetworkNotFound` | `M` | Cannot find AP: SSID Not found |
+| 6 | `RegulatoryError` | `M` | Cannot find AP: Mismatch on band/channels/regulatory domain / 2.4GHz vs 5GHz |
+| 7 | `AuthFailure` | `M` | Cannot associate due to authentication failure |
+| 8 | `UnsupportedSecurity` | `M` | Cannot associate due to unsupported security mode |
+| 9 | `OtherConnectionFailure` | `M` | Other association failure |
+| 10 | `IPV6Failed` | `M` | Failure to generate an IPv6 address |
+| 11 | `IPBindFailed` | `M` | Failure to bind Wi-Fi +&lt;-&gt;+ IP interfaces |
+| 12 | `UnknownError` | `M` | Unknown error |
+
+### `WiFiBandEnum`
+
+WiFiBandEnum encodes a supported Wi-Fi frequency band present in the WiFiBand field of the WiFiInterfaceScanResultStruct.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `2G4` | `O` | 2.4GHz - 2.401GHz to 2.495GHz (802.11b/g/n/ax) |
+| 1 | `3G65` | `O` | 3.65GHz - 3.655GHz to 3.695GHz (802.11y) |
+| 2 | `5G` | `O` | 5GHz - 5.150GHz to 5.895GHz (802.11a/n/ac/ax) |
+| 3 | `6G` | `O` | 6GHz - 5.925GHz to 7.125GHz (802.11ax / Wi-Fi 6E) |
+| 4 | `60G` | `O` | 60GHz - 57.24GHz to 70.20GHz (802.11ad/ay) |
+| 5 | `1G` | `O` | Sub-1GHz - 755MHz to 931MHz (802.11ah) |
+
+### `ThreadCapabilitiesBitmap` (bitmap)
+
+The ThreadCapabilitiesBitmap encodes the supported Thread features and capabilities of a Thread-enabled network interface. The valid combinations of capabilities are restricted and dependent on Thread version.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `IsBorderRouterCapable` | `O` | Thread Border Router functionality is present |
+| 1 | `IsRouterCapable` | `O` | Router mode is supported (interface could be in router or REED mode) |
+| 2 | `IsSleepyEndDeviceCapable` | `O` | Sleepy end-device mode is supported |
+| 3 | `IsFullThreadDevice` | `O` | Device is a full Thread device (opposite of Minimal Thread Device) |
+| 4 | `IsSynchronizedSleepyEndDeviceCapable` | `O` | Synchronized sleepy end-device mode is supported |
+
+### `WiFiSecurityBitmap` (bitmap)
+
+WiFiSecurityBitmap encodes the supported Wi-Fi security types present in the Security field of the WiFiInterfaceScanResultStruct.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unencrypted` | `M` | Supports unencrypted Wi-Fi |
+| 1 | `WEP` | `M` | Supports Wi-Fi using WEP security |
+| 2 | `WPA-PERSONAL` | `M` | Supports Wi-Fi using WPA-Personal security |
+| 3 | `WPA2-PERSONAL` | `M` | Supports Wi-Fi using WPA2-Personal security |
+| 4 | `WPA3-PERSONAL` | `M` | Supports Wi-Fi using WPA3-Personal security |
+
+### `NetworkInfoStruct` (struct)
+
+NetworkInfoStruct struct describes an existing network configuration, as provided in the Networks attribute.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NetworkID` | octstr | `M` | length 1 to 32 | — |
+| 1 | `Connected` | bool | `M` | — | Indicates the connected status of the associated network, where "connected" means currently linked to the network technology (e.g. |
+
+### `ThreadInterfaceScanResultStruct` (struct)
+
+ThreadInterfaceScanResultStruct represents a single Thread network scan result.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PanId` | uint16 | `M` | max 65534 | — |
+| 1 | `ExtendedPanId` | uint64 | `M` | — | — |
+| 2 | `NetworkName` | string | `M` | length 1 to 16 | — |
+| 3 | `Channel` | uint16 | `M` | — | — |
+| 4 | `Version` | uint8 | `M` | — | — |
+| 5 | `ExtendedAddress` | hwadr | `M` | allowed: 6, 8 | — |
+| 6 | `RSSI` | int8 | `M` | — | — |
+| 7 | `LQI` | uint8 | `M` | — | — |
+
+### `WiFiInterfaceScanResultStruct` (struct)
+
+WiFiInterfaceScanResultStruct represents a single Wi-Fi network scan result.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Security` | WiFiSecurityBitmap | `M` | — | — |
+| 1 | `SSID` | octstr | `M` | max length 32 | — |
+| 2 | `BSSID` | octstr | `M` | allowed: 6 | — |
+| 3 | `Channel` | uint16 | `M` | — | — |
+| 4 | `WiFiBand` | WiFiBandEnum | `O` | — | This field, if present, may be used to differentiate overlapping channel number values across different Wi-Fi frequency bands. |
+| 5 | `RSSI` | int8 | `O` | — | — |
+
+---
+
+## Cluster 49 Attributes
+
+Cluster 49 defines **11 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MaxNetworks` | uint8 | `M` | R (read: admin) | — | — |
+| 1 | `0x0001` | `Networks` | list of NetworkInfoStruct | `M` | R (read: admin) | — | `empty` |
+| 2 | `0x0002` | `ScanMaxTimeSeconds` | uint8 | `WI \| TH` | R (read: view) | — | — |
+| 3 | `0x0003` | `ConnectMaxTimeSeconds` | uint8 | `WI \| TH` | R (read: view) | — | — |
+| 4 | `0x0004` | `InterfaceEnabled` | bool | `M` | R/W (read: view, write: admin) | persisted | `true` |
+| 5 | `0x0005` | `LastNetworkingStatus` | NetworkCommissioningStatusEnum | `M` | R (read: admin) | nullable | `null` |
+| 6 | `0x0006` | `LastNetworkID` | octstr | `M` | R (read: admin) | nullable | `null` |
+| 7 | `0x0007` | `LastConnectErrorValue` | int32 | `M` | R (read: admin) | nullable | `null` |
+| 8 | `0x0008` | `SupportedWiFiBands` | list of WiFiBandEnum | `WI` | R (read: view) | — | `MS` |
+| 9 | `0x0009` | `SupportedThreadFeatures` | ThreadCapabilitiesBitmap | `TH` | R (read: view) | — | `MS` |
+| 10 | `0x000A` | `ThreadVersion` | uint16 | `TH` | R (read: view) | — | `MS` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MaxNetworks`
+
+Path example:
+
+```text
+0/49/0
+```
+
+This indicates the maximum number of network configuration entries that can be added, based on available device resources. The length of the Networks attribute is less than or equal to this value.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "0/49/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `Networks`
+
+Path example:
+
+```text
+0/49/1
+```
+
+Indicates the network configurations that are usable on the network interface represented by this cluster server instance. The order of configurations in the list reflects precedence. That is, any time the Node attempts to connect to the network it must attempt to do so using the configurations in Networks Attribute in the order as they appear in the list. The order of list items only be modified by the AddOrUpdateThreadNetwork, AddOrUpdateWiFiNetwork and ReorderNetwork commands.
+
+| Property | Value |
+|---|---|
+| Type | list of NetworkInfoStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Constraint | max MaxNetworks entries |
+| Default | `empty` |
+
+Each entry is a `NetworkInfoStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/49/1": []
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ScanMaxTimeSeconds`
+
+Path example:
+
+```text
+0/49/2
+```
+
+No condensed specification text is available for `ScanMaxTimeSeconds`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `WI \| TH` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "0/49/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `ConnectMaxTimeSeconds`
+
+Path example:
+
+```text
+0/49/3
+```
+
+Indicates the maximum duration taken, in seconds, by the network interface on this cluster server instance to report a successful or failed network connection indication. This maximum time must account for all operations needed until a successful network connection is deemed to have occurred, including, for example, obtaining IP addresses, or the execution of necessary internal retries.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `WI \| TH` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "0/49/3": 0
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `InterfaceEnabled`
+
+Path example:
+
+```text
+0/49/4
+```
+
+Indicates whether the associated network interface is enabled or not. By default all network interfaces should be enabled during initial commissioning (InterfaceEnabled set to true). It is undefined what happens if InterfaceEnabled is written to false on the same interface as that which is used to write the value. In that case, it is possible that the Administrator would have to await expiry of the fail-safe, and associated recovery of network configuration to prior safe values, before being able to communicate with the node again.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R/W (read: view, write: admin) |
+| Qualities | persisted |
+| Default | `true` |
+
+Example:
+
+```json
+{
+  "0/49/4": true
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `LastNetworkingStatus`
+
+Path example:
+
+```text
+0/49/5
+```
+
+Indicates the status of the last attempt either scan or connect to an operational network, using this interface, whether by invocation of the ConnectNetwork command or by autonomous connection after loss of connectivity or during initial establishment. If no such attempt was made, or no network configurations exist in the Networks attribute, then this attribute is set to null. This attribute is present to assist with error recovery during Network commissioning and to assist in non-concurrent networking commissioning flows.
+
+| Property | Value |
+|---|---|
+| Type | NetworkCommissioningStatusEnum |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | nullable |
+| Default | `null` |
+
+Values (`NetworkCommissioningStatusEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Success` | OK, no error |
+| 1 | `OutOfRange` | Value Outside Range |
+| 2 | `BoundsExceeded` | A collection would exceed its size limit |
+| 3 | `NetworkIDNotFound` | The NetworkID is not among the collection of added networks |
+| 4 | `DuplicateNetworkID` | The NetworkID is already among the collection of added networks |
+| 5 | `NetworkNotFound` | Cannot find AP: SSID Not found |
+| 6 | `RegulatoryError` | Cannot find AP: Mismatch on band/channels/regulatory domain / 2.4GHz vs 5GHz |
+| 7 | `AuthFailure` | Cannot associate due to authentication failure |
+| 8 | `UnsupportedSecurity` | Cannot associate due to unsupported security mode |
+| 9 | `OtherConnectionFailure` | Other association failure |
+| 10 | `IPV6Failed` | Failure to generate an IPv6 address |
+| 11 | `IPBindFailed` | Failure to bind Wi-Fi +&lt;-&gt;+ IP interfaces |
+| 12 | `UnknownError` | Unknown error |
+
+Example:
+
+```json
+{
+  "0/49/5": 0
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `LastNetworkID`
+
+Path example:
+
+```text
+0/49/6
+```
+
+No condensed specification text is available for `LastNetworkID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | nullable |
+| Constraint | length 1 to 32 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/49/6": "AQID"
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `LastConnectErrorValue`
+
+Path example:
+
+```text
+0/49/7
+```
+
+Indicates the ErrorValue used in the last failed attempt to connect to an operational network, using this interface, whether by invocation of the ConnectNetwork command or by autonomous connection after loss of connectivity or during initial establishment. If no such attempt was made, or no network configurations exist in the Networks attribute, then this attribute is set to null. If the last connection succeeded, as indicated by a value of Success in the LastNetworkingStatus attribute, then this field is set to null. This attribute is present to assist with error recovery during Network commissioning and to assist in non-concurrent networking commissioning flows.
+
+| Property | Value |
+|---|---|
+| Type | int32 |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/49/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `SupportedWiFiBands`
+
+Path example:
+
+```text
+0/49/8
+```
+
+Indicates all the frequency bands supported by the Wi-Fi interface configured by the cluster instance.
+
+| Property | Value |
+|---|---|
+| Type | list of WiFiBandEnum |
+| Conformance | `WI` |
+| Access | R (read: view) |
+| Constraint | min 1 entries |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/49/8": []
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `SupportedThreadFeatures`
+
+Path example:
+
+```text
+0/49/9
+```
+
+Indicates all of the Thread features supported by the Thread interface configured by the cluster instance. This attribute is primarily used to determine the most important general capabilities of the Thread interface associated with the cluster instance, as opposed to the current runtime dynamic configuration. Most run-time details of the actual Thread interface are found in the Thread Network Diagnostics cluster, if supported.
+
+| Property | Value |
+|---|---|
+| Type | ThreadCapabilitiesBitmap |
+| Conformance | `TH` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Bits (`ThreadCapabilitiesBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `IsBorderRouterCapable` | Thread Border Router functionality is present |
+| 1 | `IsRouterCapable` | Router mode is supported (interface could be in router or REED mode) |
+| 2 | `IsSleepyEndDeviceCapable` | Sleepy end-device mode is supported |
+| 3 | `IsFullThreadDevice` | Device is a full Thread device (opposite of Minimal Thread Device) |
+| 4 | `IsSynchronizedSleepyEndDeviceCapable` | Synchronized sleepy end-device mode is supported |
+
+Example:
+
+```json
+{
+  "0/49/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `ThreadVersion`
+
+Path example:
+
+```text
+0/49/10
+```
+
+Indicates the Thread version supported by the Thread interface configured by the cluster instance. The format must match the value mapping found in the "Version TLV" section of Thread specification.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `TH` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "0/49/10": 1
+}
+```
+
+---
+
+# Cluster 49 Commands
+
+Cluster 49 has **6 client-to-server commands** and **3 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ScanNetworks` | client → server | `WI \| TH` | ScanNetworksResponse | This command is used to scan for available networks on the network interface associated with the cluster instance. |
+| 1 | `0x01` | `ScanNetworksResponse` | server → client | `WI \| TH` | — | This command is used to report the results of a ScanNetworks command. |
+| 2 | `0x02` | `AddOrUpdateWiFiNetwork` | client → server | `WI` | NetworkConfigResponse | This command is used to add or update a Wi-Fi network configuration. |
+| 3 | `0x03` | `AddOrUpdateThreadNetwork` | client → server | `TH` | NetworkConfigResponse | This command is used to add or update a Thread network configuration. |
+| 4 | `0x04` | `RemoveNetwork` | client → server | `WI \| TH` | NetworkConfigResponse | This command is used to remove a network configuration on the network interface associated with the cluster instance. |
+| 5 | `0x05` | `NetworkConfigResponse` | server → client | `WI \| TH` | — | This command is used to report the results of a network configuration command (AddOrUpdateWiFiNetwork, AddOrUpdateThreadNetwork, or RemoveNetwork). |
+| 6 | `0x06` | `ConnectNetwork` | client → server | `WI \| TH` | ConnectNetworkResponse | This command is used to connect to a network on the network interface associated with the cluster instance. |
+| 7 | `0x07` | `ConnectNetworkResponse` | server → client | `WI \| TH` | — | This command is used to report the results of a ConnectNetwork command. |
+| 8 | `0x08` | `ReorderNetwork` | client → server | `WI \| TH` | NetworkConfigResponse | This command is used to re-order the network configuration list. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 49 / 65529
+```
+
+```json
+{
+  "0/49/65529": [
+    0,
+    2,
+    3,
+    4,
+    6,
+    8
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 49 command, check that the command ID exists in <code>endpoint/49/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 49,
+    "command_name": "ScanNetworks",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 49, always use `"cluster_id": 49`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ScanNetworks`
+
+## Purpose
+
+This command is used to scan for available networks on the network interface associated with the cluster instance. This command must scan on the Cluster instance's associated network interface for either of: - All available networks (non-directed scanning) - Specific networks (directed scanning) Scanning for available networks detects all networks of the type corresponding to the cluster server instance's associated network interface that are possible to join, such as all visible Wi-Fi access points for Wi-Fi cluster server instances, all Thread PANs for Thread cluster server instances, within bounds of the maximum response size.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ScanNetworks` |
+| Direction | client → server |
+| Conformance | `WI \| TH` |
+| Response | ScanNetworksResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `SSID` | `ssid` | octstr (nullable) | `[WI]` | length 1 to 32 | — |
+| 1 | `Breadcrumb` | `breadcrumb` | uint64 | `O` | — | The Breadcrumb field, if present, is used to atomically set the Breadcrumb attribute in the General Commissioning cluster on success of the associated command. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 49,
+    "command_name": "ScanNetworks",
+    "payload": {
+      "ssid": "AQID",
+      "breadcrumb": 1
+    }
+  }
+}
+```
+
+The device answers with `ScanNetworksResponse` (see below).
+
+---
+
+# Command: `ScanNetworksResponse`
+
+## Purpose
+
+This command is used to report the results of a ScanNetworks command. This command contains the status of the last ScanNetworks command, and the associated scan results if the operation was successful. Results are valid only if NetworkingStatus is Success. Before generating a ScanNetworksResponse, the server must set the LastNetworkingStatus attribute value to the NetworkingStatus matching the response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ScanNetworksResponse` |
+| Direction | server → client (response) |
+| Conformance | `WI \| TH` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NetworkingStatus` | `networkingStatus` | NetworkCommissioningStatusEnum | `M` | desc | The NetworkingStatus field indicates the status of the last scan operation, taking one of these values: - Success: Scanning succeeded. - NetworkNotFound: No instance of an explicitly-provided network identifier was found during the scan. |
+| 1 | `DebugText` | `debugText` | string | `O` | max length 512 | This field, if present and non-empty, may contain error information which may be communicated to the user in case the NetworkingStatus was not Success. Its purpose is to help developers in troubleshooting errors and may go into logs or crash reports. |
+| 2 | `WiFiScanResults` | `wiFiScanResults` | list of WiFiInterfaceScanResultStruct | `WI` | desc | If NetworkingStatus was Success, this field contains the Wi-Fi network scan results. The list may be empty if none were found in range on the bands supported by the interface, or if directed scanning had been used and the desired SSID was not found in range. |
+| 3 | `ThreadScanResults` | `threadScanResults` | list of ThreadInterfaceScanResultStruct | `TH` | desc | If NetworkingStatus was Success, this field contains the Thread network scan results. The list may be empty if none were found in range on the bands supported by the interface. |
+
+`NetworkingStatus` values (`NetworkCommissioningStatusEnum`): `0` = Success, `1` = OutOfRange, `2` = BoundsExceeded, `3` = NetworkIDNotFound, `4` = DuplicateNetworkID, `5` = NetworkNotFound, `6` = RegulatoryError, `7` = AuthFailure, `8` = UnsupportedSecurity, `9` = OtherConnectionFailure, `10` = IPV6Failed, `11` = IPBindFailed, `12` = UnknownError
+
+---
+
+# Command: `AddOrUpdateWiFiNetwork`
+
+## Purpose
+
+This command is used to add or update a Wi-Fi network configuration. This command is used to add or modify Wi-Fi network configurations. If this command is received without an armed fail-safe context, then this command must fail with a FAILSAFE_REQUIRED status code sent back to the initiator.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `AddOrUpdateWiFiNetwork` |
+| Direction | client → server |
+| Conformance | `WI` |
+| Response | NetworkConfigResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `SSID` | `ssid` | octstr | `M` | max length 32 | — |
+| 1 | `Credentials` | `credentials` | octstr | `M` | max length 64 | Credentials is the passphrase or PSK for the network (if any is needed). |
+| 2 | `Breadcrumb` | `breadcrumb` | uint64 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 49,
+    "command_name": "AddOrUpdateWiFiNetwork",
+    "payload": {
+      "ssid": "AQID",
+      "credentials": "AQID"
+    }
+  }
+}
+```
+
+The device answers with `NetworkConfigResponse` (see below).
+
+---
+
+# Command: `AddOrUpdateThreadNetwork`
+
+## Purpose
+
+This command is used to add or update a Thread network configuration. This command is used to add or modify Thread network configurations. The XPAN ID in the OperationalDataset serves as the NetworkID for the network configuration to be added or updated. If the Networks attribute does not contain an entry with the same NetworkID as the one provided in the OperationalDataset, the operation is considered an addition, otherwise, it is considered an update.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `AddOrUpdateThreadNetwork` |
+| Direction | client → server |
+| Conformance | `TH` |
+| Response | NetworkConfigResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OperationalDataset` | `operationalDataset` | octstr | `M` | max length 254 | Indicates the Thread Network Parameters, including channel, PAN ID, and Extended PAN ID. The encoding for the OperationalDataset field is defined in the Thread specification. |
+| 1 | `Breadcrumb` | `breadcrumb` | uint64 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 49,
+    "command_name": "AddOrUpdateThreadNetwork",
+    "payload": {
+      "operationalDataset": "AQID"
+    }
+  }
+}
+```
+
+The device answers with `NetworkConfigResponse` (see below).
+
+---
+
+# Command: `RemoveNetwork`
+
+## Purpose
+
+This command is used to remove a network configuration on the network interface associated with the cluster instance. This command must remove the network configuration from the Cluster if there was already a network configuration with the same NetworkID. The relative order of the entries in the Networks attribute must remain unchanged, except for the removal of the requested network configuration. If this command is received without an armed fail-safe context, then this command must fail with a FAILSAFE_REQUIRED status code sent back to the initiator.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `RemoveNetwork` |
+| Direction | client → server |
+| Conformance | `WI \| TH` |
+| Response | NetworkConfigResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NetworkID` | `networkID` | octstr | `M` | length 1 to 32 | — |
+| 1 | `Breadcrumb` | `breadcrumb` | uint64 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 49,
+    "command_name": "RemoveNetwork",
+    "payload": {
+      "networkID": "AQID"
+    }
+  }
+}
+```
+
+The device answers with `NetworkConfigResponse` (see below).
+
+---
+
+# Command: `NetworkConfigResponse`
+
+## Purpose
+
+This command is used to report the results of a network configuration command (AddOrUpdateWiFiNetwork, AddOrUpdateThreadNetwork, or RemoveNetwork). This response command relates status information for some commands which require it as their response command. See each individual cluster server command for the situations that may cause a NetworkingStatus different than Success. Before generating a NetworkConfigResponse, the server must set the LastNetworkingStatus attribute value to the NetworkingStatus matching the response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `NetworkConfigResponse` |
+| Direction | server → client (response) |
+| Conformance | `WI \| TH` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NetworkingStatus` | `networkingStatus` | NetworkCommissioningStatusEnum | `M` | desc | Indicates the status of the last operation attempting to modify the Networks attribute configuration, taking one of these values: - Success: Operation succeeded. - OutOfRange: Network identifier was invalid (e.g. empty, too long, etc). - BoundsExceeded: … |
+| 1 | `DebugText` | `debugText` | string | `O` | max length 512 | — |
+| 2 | `NetworkIndex` | `networkIndex` | uint8 | `NetworkingStatus = status` | max compute | Indicates the 0-based index of the entry in the Networks attribute that was last added, updated or removed successfully by the associated request command. |
+
+`NetworkingStatus` values (`NetworkCommissioningStatusEnum`): `0` = Success, `1` = OutOfRange, `2` = BoundsExceeded, `3` = NetworkIDNotFound, `4` = DuplicateNetworkID, `5` = NetworkNotFound, `6` = RegulatoryError, `7` = AuthFailure, `8` = UnsupportedSecurity, `9` = OtherConnectionFailure, `10` = IPV6Failed, `11` = IPBindFailed, `12` = UnknownError
+
+---
+
+# Command: `ConnectNetwork`
+
+## Purpose
+
+This command is used to connect to a network on the network interface associated with the cluster instance. This command must attempt to connect to a network whose configuration was previously added by either the AddOrUpdateWiFiNetwork or AddOrUpdateThreadNetwork commands. Network is identified by its NetworkID. This command must fail with a BUSY status code returned to the initiator if the server is currently unable to proceed with such an operation, such as if it is currently attempting to connect in the background, or is already proceeding with a prior ConnectNetwork.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `ConnectNetwork` |
+| Direction | client → server |
+| Conformance | `WI \| TH` |
+| Response | ConnectNetworkResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NetworkID` | `networkID` | octstr | `M` | length 1 to 32 | — |
+| 1 | `Breadcrumb` | `breadcrumb` | uint64 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 49,
+    "command_name": "ConnectNetwork",
+    "payload": {
+      "networkID": "AQID"
+    }
+  }
+}
+```
+
+The device answers with `ConnectNetworkResponse` (see below).
+
+---
+
+# Command: `ConnectNetworkResponse`
+
+## Purpose
+
+This command is used to report the results of a ConnectNetwork command. Before generating a ConnectNetworkResponse, the server must: - Set the LastNetworkingStatus attribute value to the NetworkingStatus matching the response. - Set the LastNetworkID attribute value to the NetworkID that was used in the ConnectNetwork command which caused the response to be generated. - Set the LastConnectErrorValue attribute value to the ErrorValue matching the response, including setting it to null if the ErrorValue is not applicable.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `ConnectNetworkResponse` |
+| Direction | server → client (response) |
+| Conformance | `WI \| TH` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NetworkingStatus` | `networkingStatus` | NetworkCommissioningStatusEnum | `M` | — | Indicates the status of the last connection attempt, taking one of these values: - Success: Connection succeeded. - NetworkNotFound: No instance of an explicitly-provided network identifier was found during the attempt to join the network. - OutOfRange: … |
+| 1 | `DebugText` | `debugText` | string | `O` | — | — |
+| 2 | `ErrorValue` | `errorValue` | int32 (nullable) | `M` | — | Indicates the status of the associated request command. - ErrorValue interpretation for Wi-Fi association errors: - On any association failure during enabling of a network, the ErrorValue field is set to the Status Code value that was present in the last … |
+
+`NetworkingStatus` values (`NetworkCommissioningStatusEnum`): `0` = Success, `1` = OutOfRange, `2` = BoundsExceeded, `3` = NetworkIDNotFound, `4` = DuplicateNetworkID, `5` = NetworkNotFound, `6` = RegulatoryError, `7` = AuthFailure, `8` = UnsupportedSecurity, `9` = OtherConnectionFailure, `10` = IPV6Failed, `11` = IPBindFailed, `12` = UnknownError
+
+---
+
+# Command: `ReorderNetwork`
+
+## Purpose
+
+This command is used to re-order the network configuration list. This command must set the specific order of the network configuration selected by its NetworkID in the Networks attribute to match the position given by NetworkIndex.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `ReorderNetwork` |
+| Direction | client → server |
+| Conformance | `WI \| TH` |
+| Response | NetworkConfigResponse |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NetworkID` | `networkID` | octstr | `M` | length 1 to 32 | — |
+| 1 | `NetworkIndex` | `networkIndex` | uint8 | `M` | desc | Indicates the 0-based index of the new desired position of the entry in the Networks attribute. |
+| 2 | `Breadcrumb` | `breadcrumb` | uint64 | `O` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 49,
+    "command_name": "ReorderNetwork",
+    "payload": {
+      "networkID": "AQID",
+      "networkIndex": 1
+    }
+  }
+}
+```
+
+The device answers with `NetworkConfigResponse` (see below).
+
+---
+
+# Cluster 49 Events
+
+Cluster 49 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Used during commissioning only. `AcceptedCommandList` tells you whether a device is a Thread (`AddOrUpdateThreadNetwork`, id 3) or Wi-Fi (`AddOrUpdateWiFiNetwork`, id 2) device.
+- Shadow paths follow `endpoint/49/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

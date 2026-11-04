@@ -1,0 +1,373 @@
+---
+title: "Matter Cluster 1027 — Pressure Measurement"
+description: "Matter Cluster 1027 (0x0403) Pressure Measurement: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1027
+clusterHex: "0x0403"
+clusterName: "Pressure Measurement"
+---
+
+# Matter Cluster 1027 — Pressure Measurement Cluster
+
+<Callout type="info">
+Matter Cluster <code>1027</code>, also written as <code>0x0403</code>, is the <strong>Pressure Measurement Cluster</strong>.
+This cluster provides an interface to pressure measurement functionality, including configuration and provision of notifications of pressure measurements.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1027` |
+| Cluster ID hex | `0x0403` |
+| Cluster name | `Pressure Measurement` |
+| Cluster revision (Matter 1.6.1) | `5` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `PRS` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | CCB 2241 2370 |
+| 3 | New data model format and notation |
+| 4 | Removed P quality |
+| 5 | Added F quality to MinMeasuredValue, MaxMeasuredValue, Tolerance and Scaled attributes |
+
+---
+
+## Shadow Path Format
+
+Cluster 1027 values in the device shadow use this format:
+
+```text
+endpoint_id / 1027 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1027/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1027` | Pressure Measurement cluster |
+| `0` | `MeasuredValue` attribute |
+
+---
+
+## Cluster 1027 Features
+
+The `FeatureMap` attribute (`1/1027/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `EXT` | Extended | `O` | Extended range and resolution |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Cluster 1027 Attributes
+
+Cluster 1027 defines **9 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MeasuredValue` | int16 | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `MinMeasuredValue` | int16 | `M` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `MaxMeasuredValue` | int16 | `M` | R (read: view) | nullable | — |
+| 3 | `0x0003` | `Tolerance` | uint16 | `O` | R (read: view) | — | `0` |
+| 16 | `0x0010` | `ScaledValue` | int16 | `EXT` | R (read: view) | nullable | — |
+| 17 | `0x0011` | `MinScaledValue` | int16 | `EXT` | R (read: view) | nullable | — |
+| 18 | `0x0012` | `MaxScaledValue` | int16 | `EXT` | R (read: view) | nullable | — |
+| 19 | `0x0013` | `ScaledTolerance` | uint16 | `[EXT]` | R (read: view) | — | `0` |
+| 20 | `0x0014` | `Scale` | int8 | `EXT` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `5` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MeasuredValue`
+
+Path example:
+
+```text
+1/1027/0
+```
+
+Indicates the pressure in kPa as follows: MeasuredValue = 10 x Pressure &#91;kPa&#93; The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | MinMeasuredValue to MaxMeasuredValue |
+
+Example:
+
+```json
+{
+  "1/1027/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MinMeasuredValue`
+
+Path example:
+
+```text
+1/1027/1
+```
+
+Indicates the minimum value of MeasuredValue that can be measured. See Measured Value for more details. The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 32766 |
+
+Example:
+
+```json
+{
+  "1/1027/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MaxMeasuredValue`
+
+Path example:
+
+```text
+1/1027/2
+```
+
+Indicates the maximum value of MeasuredValue that can be measured. See Measured Value for more details. The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | compute to 32767 |
+
+Example:
+
+```json
+{
+  "1/1027/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `Tolerance`
+
+Path example:
+
+```text
+1/1027/3
+```
+
+See Measured Value.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 2048 |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1027/3": 1
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `ScaledValue`
+
+Path example:
+
+```text
+1/1027/16
+```
+
+Indicates the pressure in Pascals as follows: ScaledValue = 10^Scale x Pressure &#91;Pa&#93; The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `EXT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | MinScaledValue to MaxScaledValue |
+
+Example:
+
+```json
+{
+  "1/1027/16": 1
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `MinScaledValue`
+
+Path example:
+
+```text
+1/1027/17
+```
+
+Indicates the minimum value of ScaledValue that can be measured. The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `EXT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 32766 |
+
+Example:
+
+```json
+{
+  "1/1027/17": 1
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `MaxScaledValue`
+
+Path example:
+
+```text
+1/1027/18
+```
+
+Indicates the maximum value of ScaledValue that can be measured. The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | int16 |
+| Conformance | `EXT` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | compute to 32767 |
+
+Example:
+
+```json
+{
+  "1/1027/18": 1
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `ScaledTolerance`
+
+Path example:
+
+```text
+1/1027/19
+```
+
+Indicates the magnitude of the possible error that is associated with ScaledValue. The true value is located in the range (ScaledValue – ScaledTolerance) to (ScaledValue + ScaledTolerance).
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[EXT]` |
+| Access | R (read: view) |
+| Constraint | max 2048 |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1027/19": 1
+}
+```
+
+---
+
+## Attribute `20` / `0x0014` — `Scale`
+
+Path example:
+
+```text
+1/1027/20
+```
+
+Indicates the base 10 exponent used to obtain ScaledValue.
+
+| Property | Value |
+|---|---|
+| Type | int8 |
+| Conformance | `EXT` |
+| Access | R (read: view) |
+| Constraint | min -127 |
+
+Example:
+
+```json
+{
+  "1/1027/20": 1
+}
+```
+
+---
+
+# Cluster 1027 Commands
+
+Cluster 1027 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1027 Events
+
+Cluster 1027 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1027 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1027/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

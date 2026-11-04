@@ -1,0 +1,532 @@
+---
+title: "Matter Cluster 1106 — Thread Border Router Management"
+description: "Matter Cluster 1106 (0x0452) Thread Border Router Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1106
+clusterHex: "0x0452"
+clusterName: "Thread Border Router Management"
+---
+
+# Matter Cluster 1106 — Thread Border Router Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>1106</code>, also written as <code>0x0452</code>, is the <strong>Thread Border Router Management Cluster</strong>.
+This cluster provides an interface for managing a Thread Border Router and the Thread network that it belongs to. Privileged nodes within the same fabric as a Thread Border Router can use these interfaces to request and set credentials information to the Thread network.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1106` |
+| Cluster ID hex | `0x0452` |
+| Cluster name | `Thread Border Router Management` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `TBRM` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1106 values in the device shadow use this format:
+
+```text
+endpoint_id / 1106 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1106/0": "example"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1106` | Thread Border Router Management cluster |
+| `0` | `BorderRouterName` attribute |
+
+---
+
+## Cluster 1106 Features
+
+The `FeatureMap` attribute (`1/1106/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PC` | PANChange | `O` | The ability to change PAN configuration with pending dataset setting request. |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Cluster 1106 Attributes
+
+Cluster 1106 defines **6 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `BorderRouterName` | string | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `BorderAgentID` | octstr | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `ThreadVersion` | uint16 | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `InterfaceEnabled` | bool | `M` | R (read: view) | persisted | — |
+| 4 | `0x0004` | `ActiveDatasetTimestamp` | uint64 | `M` | R (read: view) | nullable, persisted | — |
+| 5 | `0x0005` | `PendingDatasetTimestamp` | uint64 | `M` | R (read: view) | nullable, persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `BorderRouterName`
+
+Path example:
+
+```text
+1/1106/0
+```
+
+Indicates a user-friendly name identifying the device model or product of the Border Router in MeshCOP (DNS-SD service name) as defined in the Thread specification, and has the following recommended format: &lt;VendorName&gt; &lt;ProductName&gt;.&#95;meshcop.&#95;udp. An example name would be ACME Border Router (74be).&#95;meshcop.&#95;udp.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | length 1 to 63 |
+
+Example:
+
+```json
+{
+  "1/1106/0": "example"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `BorderAgentID`
+
+Path example:
+
+```text
+1/1106/1
+```
+
+No condensed specification text is available for `BorderAgentID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | allowed: 16 |
+
+Example:
+
+```json
+{
+  "1/1106/1": "AQID"
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ThreadVersion`
+
+Path example:
+
+```text
+1/1106/2
+```
+
+Indicates the Thread version supported by the Thread interface configured by the cluster instance. The format must match the value mapping defined in the "Version TLV" section of the Thread specification.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1106/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `InterfaceEnabled`
+
+Path example:
+
+```text
+1/1106/3
+```
+
+No condensed specification text is available for `InterfaceEnabled`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "1/1106/3": true
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `ActiveDatasetTimestamp`
+
+Path example:
+
+```text
+1/1106/4
+```
+
+Null if the Thread Border Router has no dataset configured, otherwise it is the timestamp value extracted from the Active Dataset value configured by the Thread Node to which the border router is connected. This attribute is updated when a new Active dataset is configured on the Thread network to which the border router is connected.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+
+Example:
+
+```json
+{
+  "1/1106/4": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `PendingDatasetTimestamp`
+
+Path example:
+
+```text
+1/1106/5
+```
+
+Null if the Thread Border Router has no Pending dataset configured, otherwise it is the timestamp value extracted from the Pending Dataset value configured by the Thread Node to which the border router is connected. This attribute is updated when a new Pending dataset is configured on the Thread network to which the border router is connected.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+
+Example:
+
+```json
+{
+  "1/1106/5": 0
+}
+```
+
+---
+
+# Cluster 1106 Commands
+
+Cluster 1106 has **4 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `GetActiveDatasetRequest` | client → server | `M` | DatasetResponse | This command is used to request the active operational dataset of the Thread network to which the border router is connected. |
+| 1 | `0x01` | `GetPendingDatasetRequest` | client → server | `M` | DatasetResponse | This command is used to request the pending dataset of the Thread network to which the border router is connected. |
+| 2 | `0x02` | `DatasetResponse` | server → client | `M` | — | This command is sent in response to GetActiveDatasetRequest or GetPendingDatasetRequest command. |
+| 3 | `0x03` | `SetActiveDatasetRequest` | client → server | `M` | status | This command is used to set the active Dataset of the Thread network to which the Border Router is connected, when there is no active dataset already. |
+| 4 | `0x04` | `SetPendingDatasetRequest` | client → server | `PC` | status | This command is used to set or update the pending Dataset of the Thread network to which the Border Router is connected, if the Border Router supports PAN Change. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1106 / 65529
+```
+
+```json
+{
+  "1/1106/65529": [
+    0,
+    1,
+    3,
+    4
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1106 command, check that the command ID exists in <code>endpoint/1106/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1106,
+    "command_name": "GetActiveDatasetRequest",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1106, always use `"cluster_id": 1106`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `GetActiveDatasetRequest`
+
+## Purpose
+
+This command is used to request the active operational dataset of the Thread network to which the border router is connected. If the command is not executed via a CASE session, the command must fail with a status code of UNSUPPORTED_ACCESS. If an internal error occurs, then this command must fail with a FAILURE status code sent back to the initiator. Otherwise, this must generate a DatasetResponse command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `GetActiveDatasetRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | DatasetResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1106,
+    "command_name": "GetActiveDatasetRequest",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `DatasetResponse` (see below).
+
+---
+
+# Command: `GetPendingDatasetRequest`
+
+## Purpose
+
+This command is used to request the pending dataset of the Thread network to which the border router is connected. If the command is not executed via a CASE session, the command must fail with a status code of UNSUPPORTED_ACCESS. If an internal error occurs, then this command must fail with a FAILURE status code sent back to the initiator. Otherwise, this must generate a DatasetResponse command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `GetPendingDatasetRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | DatasetResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1106,
+    "command_name": "GetPendingDatasetRequest",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `DatasetResponse` (see below).
+
+---
+
+# Command: `DatasetResponse`
+
+## Purpose
+
+This command is sent in response to GetActiveDatasetRequest or GetPendingDatasetRequest command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `DatasetResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Dataset` | `dataset` | octstr | `M` | max length 254 | If no dataset (active or pending as requested) is configured, this field is set to empty. |
+
+---
+
+# Command: `SetActiveDatasetRequest`
+
+## Purpose
+
+This command is used to set the active Dataset of the Thread network to which the Border Router is connected, when there is no active dataset already.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `SetActiveDatasetRequest` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ActiveDataset` | `activeDataset` | octstr | `M` | max length 254 | This field contains the active dataset to set of the Thread network to configure in the Border Router as an octet string containing the raw Thread TLV value of the dataset, as defined in the Thread specification. |
+| 1 | `Breadcrumb` | `breadcrumb` | uint64 | `O` | — | See Breadcrumb Attribute section of General Commissioning Cluster in MatterCore for usage. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1106,
+    "command_name": "SetActiveDatasetRequest",
+    "payload": {
+      "activeDataset": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `SetPendingDatasetRequest`
+
+## Purpose
+
+This command is used to set or update the pending Dataset of the Thread network to which the Border Router is connected, if the Border Router supports PAN Change. If the command is not executed via a CASE session, the command must fail with a status code of UNSUPPORTED_ACCESS. This PendingDataset field contains the pending dataset to which the Thread network should be updated. The format of the data is an octet string containing the raw Thread TLV value of the pending dataset, as defined in the Thread specification.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `SetPendingDatasetRequest` |
+| Direction | client → server |
+| Conformance | `PC` |
+| Response | status |
+| Access | (invoke: manage, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PendingDataset` | `pendingDataset` | octstr | `M` | max length 254 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1106,
+    "command_name": "SetPendingDatasetRequest",
+    "payload": {
+      "pendingDataset": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Cluster 1106 Events
+
+Cluster 1106 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1106 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1106/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

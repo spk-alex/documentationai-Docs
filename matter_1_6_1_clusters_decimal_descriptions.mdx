@@ -44,188 +44,189 @@ The previous version of this page (Matter 1.5) contained incorrect decimal IDs f
 
 ## How the table is organised
 
-- **Decimal**: the cluster ID as it appears in shadow paths. Hex IDs and cluster revisions are omitted; see the specification data model if you need them.
+- **Decimal**: the cluster ID as it appears in shadow paths. Hex IDs and cluster revisions are on each cluster's own page.
+- **Cluster**: links to the detailed page for that cluster (attributes, commands, events, data types, bridge payload examples).
 - **New** marks clusters that did not exist in Matter 1.5.
 
 ## General and node management
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 3 | Identify | Lets a device or endpoint identify itself visually or audibly (blink, beep) for pairing, setup, or troubleshooting. |
-| 4 | Groups | Manages group membership so one multicast command can control multiple endpoints together. |
-| 29 | Descriptor | Describes an endpoint: device types, server/client clusters, parts list, and endpoint composition (tag list). |
-| 30 | Binding | Local bindings between endpoints so one device can send commands directly to another without a controller. |
-| 31 | Access Control | Access Control List: which fabrics, nodes, CATs, or groups hold which privileges. Revision 3 adds auxiliary ACL support. |
-| 37 | Actions | Predefined actions and action lists (scenes-like automations) that can be triggered on a device. |
-| 40 | Basic Information | Core node information: vendor, product, serial number, software version, node label, location, capability minima. |
-| 41 | OTA Software Update Provider | Serves OTA software update images to other Matter nodes. |
-| 42 | OTA Software Update Requestor | Lets a node query for, download, and apply OTA software updates. |
-| 43 | Localization Configuration | Active locale and supported locales for user-facing text. |
-| 44 | Time Format Localization | Localized time display preferences such as 12-hour or 24-hour format and calendar type. |
-| 45 | Unit Localization | Preferred temperature unit (Celsius / Fahrenheit / Kelvin). |
-| 46 | Power Source Configuration | Lists the Power Source endpoints that feed this endpoint, in priority order. |
-| 47 | Power Source | Status of one power source: battery level, charge state, voltage, wired supply, faults, replacement info. |
-| 48 | General Commissioning | General commissioning steps: arm fail-safe, regulatory configuration, commissioning complete, terms and conditions. |
-| 60 | Administrator Commissioning | Opens or revokes commissioning windows so additional administrators/fabrics can be added. |
-| 62 | Operational Credentials | Operational credentials: fabrics, NOCs, trusted root certificates, fabric add/update/remove. |
-| 63 | Group Key Management | Group keys and key sets used for secured multicast (group) communication. |
-| 64 | Fixed Label | Manufacturer-defined static labels for an endpoint. |
-| 65 | User Label | User-editable labels for an endpoint. |
-| 98 | Scenes Management | Stores, recalls, copies, and manages scenes across clusters (replaces the legacy Scenes cluster). |
-| 101 | Groupcast **(New)** | Groupcast: group messaging configuration that consolidates Groups + Group Key Management use cases. New in 1.6. |
+| 3 | [Identify](/matter_cluster_3_identify) | Lets a device or endpoint identify itself visually or audibly (blink, beep) for pairing, setup, or troubleshooting. |
+| 4 | [Groups](/matter_cluster_4_groups) | Manages group membership so one multicast command can control multiple endpoints together. |
+| 29 | [Descriptor](/matter_cluster_29_descriptor) | Describes an endpoint: device types, server/client clusters, parts list, and endpoint composition (tag list). |
+| 30 | [Binding](/matter_cluster_30_binding) | Local bindings between endpoints so one device can send commands directly to another without a controller. |
+| 31 | [Access Control](/matter_cluster_31_access_control) | Access Control List: which fabrics, nodes, CATs, or groups hold which privileges. Revision 3 adds auxiliary ACL support. |
+| 37 | [Actions](/matter_cluster_37_actions) | Predefined actions and action lists (scenes-like automations) that can be triggered on a device. |
+| 40 | [Basic Information](/matter_cluster_40_basic_information) | Core node information: vendor, product, serial number, software version, node label, location, capability minima. |
+| 41 | [OTA Software Update Provider](/matter_cluster_41_ota_software_update_provider) | Serves OTA software update images to other Matter nodes. |
+| 42 | [OTA Software Update Requestor](/matter_cluster_42_ota_software_update_requestor) | Lets a node query for, download, and apply OTA software updates. |
+| 43 | [Localization Configuration](/matter_cluster_43_localization_configuration) | Active locale and supported locales for user-facing text. |
+| 44 | [Time Format Localization](/matter_cluster_44_time_format_localization) | Localized time display preferences such as 12-hour or 24-hour format and calendar type. |
+| 45 | [Unit Localization](/matter_cluster_45_unit_localization) | Preferred temperature unit (Celsius / Fahrenheit / Kelvin). |
+| 46 | [Power Source Configuration](/matter_cluster_46_power_source_configuration) | Lists the Power Source endpoints that feed this endpoint, in priority order. |
+| 47 | [Power Source](/matter_cluster_47_power_source) | Status of one power source: battery level, charge state, voltage, wired supply, faults, replacement info. |
+| 48 | [General Commissioning](/matter_cluster_48_general_commissioning) | General commissioning steps: arm fail-safe, regulatory configuration, commissioning complete, terms and conditions. |
+| 60 | [Administrator Commissioning](/matter_cluster_60_administrator_commissioning) | Opens or revokes commissioning windows so additional administrators/fabrics can be added. |
+| 62 | [Operational Credentials](/matter_cluster_62_operational_credentials) | Operational credentials: fabrics, NOCs, trusted root certificates, fabric add/update/remove. |
+| 63 | [Group Key Management](/matter_cluster_63_group_key_management) | Group keys and key sets used for secured multicast (group) communication. |
+| 64 | [Fixed Label](/matter_cluster_64_fixed_label) | Manufacturer-defined static labels for an endpoint. |
+| 65 | [User Label](/matter_cluster_65_user_label) | User-editable labels for an endpoint. |
+| 98 | [Scenes Management](/matter_cluster_98_scenes_management) | Stores, recalls, copies, and manages scenes across clusters (replaces the legacy Scenes cluster). |
+| 101 | [Groupcast](/matter_cluster_101_groupcast) **(New)** | Groupcast: group messaging configuration that consolidates Groups + Group Key Management use cases. New in 1.6. |
 
 ## Networking and diagnostics
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 49 | Network Commissioning | Adds, removes, scans, orders, and connects Wi-Fi, Thread, or Ethernet networks on the node. |
-| 50 | Diagnostic Logs | Retrieves device diagnostic logs (end-user, network, crash) for support and troubleshooting. |
-| 51 | General Diagnostics | General diagnostics: network interfaces, reboot count, uptime, boot reason, hardware/radio/network faults, test event triggers. |
-| 52 | Software Diagnostics | Software diagnostics such as thread/task metrics, heap usage, and software faults. |
-| 53 | Thread Network Diagnostics | Thread radio diagnostics: role, channel, PAN, neighbor and route tables, MLE/MAC counters, dataset components. See the Cluster 53 page. |
-| 54 | Wi-Fi Network Diagnostics | Wi-Fi radio diagnostics: BSSID, security type, PHY version, channel, RSSI, beacon and packet counters. See the Cluster 54 page. |
-| 55 | Ethernet Network Diagnostics | Ethernet diagnostics: PHY rate, duplex, packet/collision/error counters, carrier detect, time since reset. |
-| 56 | Time Synchronization | Time synchronization: UTC time, granularity, trusted time source, time zone, DST offsets, NTP settings. |
-| 70 | ICD Management | Intermittently Connected Device management: idle/active mode durations, registered clients, check-in protocol, LIT/SIT. |
-| 1105 | Wi-Fi Network Management | Wi-Fi network management on a Wi-Fi router/hub: SSID and passphrase provisioning for home-router devices. |
-| 1106 | Thread Border Router Management | Thread Border Router management: active/pending dataset, border router name, Thread interface state. |
-| 1107 | Thread Network Directory | Thread network directory: list of Thread networks known to a hub, with their PAN IDs and names. |
+| 49 | [Network Commissioning](/matter_cluster_49_network_commissioning) | Adds, removes, scans, orders, and connects Wi-Fi, Thread, or Ethernet networks on the node. |
+| 50 | [Diagnostic Logs](/matter_cluster_50_diagnostic_logs) | Retrieves device diagnostic logs (end-user, network, crash) for support and troubleshooting. |
+| 51 | [General Diagnostics](/matter_cluster_51_general_diagnostics) | General diagnostics: network interfaces, reboot count, uptime, boot reason, hardware/radio/network faults, test event triggers. |
+| 52 | [Software Diagnostics](/matter_cluster_52_software_diagnostics) | Software diagnostics such as thread/task metrics, heap usage, and software faults. |
+| 53 | [Thread Network Diagnostics](/matter_cluster_53_thread_network_diagnostics) | Thread radio diagnostics: role, channel, PAN, neighbor and route tables, MLE/MAC counters, dataset components. See the Cluster 53 page. |
+| 54 | [Wi-Fi Network Diagnostics](/matter_cluster_54_wifi_network_diagnostics) | Wi-Fi radio diagnostics: BSSID, security type, PHY version, channel, RSSI, beacon and packet counters. See the Cluster 54 page. |
+| 55 | [Ethernet Network Diagnostics](/matter_cluster_55_ethernet_network_diagnostics) | Ethernet diagnostics: PHY rate, duplex, packet/collision/error counters, carrier detect, time since reset. |
+| 56 | [Time Synchronization](/matter_cluster_56_time_synchronization) | Time synchronization: UTC time, granularity, trusted time source, time zone, DST offsets, NTP settings. |
+| 70 | [ICD Management](/matter_cluster_70_icd_management) | Intermittently Connected Device management: idle/active mode durations, registered clients, check-in protocol, LIT/SIT. |
+| 1105 | [Wi-Fi Network Management](/matter_cluster_1105_wi_fi_network_management) | Wi-Fi network management on a Wi-Fi router/hub: SSID and passphrase provisioning for home-router devices. |
+| 1106 | [Thread Border Router Management](/matter_cluster_1106_thread_border_router_management) | Thread Border Router management: active/pending dataset, border router name, Thread interface state. |
+| 1107 | [Thread Network Directory](/matter_cluster_1107_thread_network_directory) | Thread network directory: list of Thread networks known to a hub, with their PAN IDs and names. |
 
 ## Bridges and fabric administration
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 57 | Bridged Device Basic Information | Basic information for a non-Matter device represented behind a Matter bridge (vendor, product, reachable, serial, unique ID). |
-| 1872 | Ecosystem Information | Ecosystem information: device directory and location descriptors shared across ecosystems for bridged devices. |
-| 1873 | Commissioner Control | Commissioner control: lets a device ask a commissioner to commission another device (reverse commissioning). |
-| 1874 | Joint Fabric Datastore | Joint Fabric datastore: shared data (groups, nodes, ACLs) for a fabric jointly administered by several ecosystems. |
-| 1875 | Joint Fabric Administrator | Joint Fabric administrator: manages joint-fabric relationships and ICAC/NOC issuance. |
-| 2049 | TLS Certificate Management | TLS certificate management: provisioning of root and client certificates for TLS-based features (cameras, push A/V). |
-| 2050 | TLS Client Management | TLS client management: TLS endpoints a node may connect to. |
+| 57 | [Bridged Device Basic Information](/matter_cluster_57_bridged_device_basic_information) | Basic information for a non-Matter device represented behind a Matter bridge (vendor, product, reachable, serial, unique ID). |
+| 1872 | [Ecosystem Information](/matter_cluster_1872_ecosystem_information) | Ecosystem information: device directory and location descriptors shared across ecosystems for bridged devices. |
+| 1873 | [Commissioner Control](/matter_cluster_1873_commissioner_control) | Commissioner control: lets a device ask a commissioner to commission another device (reverse commissioning). |
+| 1874 | [Joint Fabric Datastore](/matter_cluster_1874_joint_fabric_datastore) | Joint Fabric datastore: shared data (groups, nodes, ACLs) for a fabric jointly administered by several ecosystems. |
+| 1875 | [Joint Fabric Administrator](/matter_cluster_1875_joint_fabric_administrator) | Joint Fabric administrator: manages joint-fabric relationships and ICAC/NOC issuance. |
+| 2049 | [TLS Certificate Management](/matter_cluster_2049_tls_certificate_management) | TLS certificate management: provisioning of root and client certificates for TLS-based features (cameras, push A/V). |
+| 2050 | [TLS Client Management](/matter_cluster_2050_tls_client_management) | TLS client management: TLS endpoints a node may connect to. |
 
 ## Locks, closures, HVAC and lighting
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 6 | On/Off | Basic binary control for turning a device or feature on or off. See the Cluster 6 page. |
-| 8 | Level Control | Controls a numeric level such as brightness, fan level, or any stepped/continuous output. See the Cluster 8 page. |
-| 59 | Switch | Switch input events: initial press, release, long press, multi-press, latching switch position. |
-| 257 | Door Lock | Door lock: lock state, lock type, users, PIN/RFID credentials, schedules, auto-relock, lock events. |
-| 258 | Window Covering | Window covering: blinds, shades, curtains; lift and tilt position, operational status, limits. |
-| 260 | Closure Control | Closure control: generic open/close/stop motion for doors, gates, and other closures. |
-| 261 | Closure Dimension | One controlled dimension of a closure (position, latch, speed) used by Closure Control. |
-| 512 | Pump Configuration and Control | Pump control: operation mode, control mode, setpoints, pressure/flow/speed, pump status and alarms. |
-| 513 | Thermostat | Thermostat: heating/cooling setpoints, system mode, schedules, occupancy, presets, running state. Revision 11 in 1.6.1. |
-| 514 | Fan Control | Fan control: fan mode, percent/speed setting, rock, wind, airflow direction, step. |
-| 516 | Thermostat User Interface Configuration | Thermostat UI configuration: display units and keypad lockout. |
-| 768 | Color Control | Color control for lighting: hue, saturation, XY, color temperature, color loops, enhanced hue. |
+| 6 | [On/Off](/matter_cluster_6_onoff) | Basic binary control for turning a device or feature on or off. See the Cluster 6 page. |
+| 8 | [Level Control](/matter_cluster_8_level_control) | Controls a numeric level such as brightness, fan level, or any stepped/continuous output. See the Cluster 8 page. |
+| 59 | [Switch](/matter_cluster_59_switch) | Switch input events: initial press, release, long press, multi-press, latching switch position. |
+| 257 | [Door Lock](/matter_cluster_257_door_lock) | Door lock: lock state, lock type, users, PIN/RFID credentials, schedules, auto-relock, lock events. |
+| 258 | [Window Covering](/matter_cluster_258_window_covering) | Window covering: blinds, shades, curtains; lift and tilt position, operational status, limits. |
+| 260 | [Closure Control](/matter_cluster_260_closure_control) | Closure control: generic open/close/stop motion for doors, gates, and other closures. |
+| 261 | [Closure Dimension](/matter_cluster_261_closure_dimension) | One controlled dimension of a closure (position, latch, speed) used by Closure Control. |
+| 512 | [Pump Configuration and Control](/matter_cluster_512_pump_configuration_and_control) | Pump control: operation mode, control mode, setpoints, pressure/flow/speed, pump status and alarms. |
+| 513 | [Thermostat](/matter_cluster_513_thermostat) | Thermostat: heating/cooling setpoints, system mode, schedules, occupancy, presets, running state. Revision 11 in 1.6.1. |
+| 514 | [Fan Control](/matter_cluster_514_fan_control) | Fan control: fan mode, percent/speed setting, rock, wind, airflow direction, step. |
+| 516 | [Thermostat User Interface Configuration](/matter_cluster_516_thermostat_user_interface_configuration) | Thermostat UI configuration: display units and keypad lockout. |
+| 768 | [Color Control](/matter_cluster_768_color_control) | Color control for lighting: hue, saturation, XY, color temperature, color loops, enhanced hue. |
 
 ## Sensing and measurement
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 69 | Boolean State | Single boolean sensor state (open/closed, wet/dry, detected/clear). Meaning depends on the endpoint device type. |
-| 91 | Air Quality | Summarized air quality level (good, fair, moderate, poor, ...) derived from concentration measurements. |
-| 92 | Smoke CO Alarm | Smoke and carbon monoxide alarm: alarm states, hush, self-test, interconnect, end-of-service, contamination. |
-| 128 | Boolean State Configuration | Configuration for boolean-state sensors: sensitivity level, alarm enable/suppress, sensor fault. |
-| 129 | Valve Configuration and Control | Valve control: open/close, target level, open duration, auto-close, valve fault. |
-| 1024 | Illuminance Measurement | Measured illuminance (light level). |
-| 1026 | Temperature Measurement | Measured temperature. |
-| 1027 | Pressure Measurement | Measured pressure. |
-| 1028 | Flow Measurement | Measured flow rate. |
-| 1029 | Relative Humidity Measurement | Measured relative humidity. |
-| 1030 | Occupancy Sensing | Occupancy / presence detection, sensor type, hold time and sensitivity. |
-| 1036 | Carbon Monoxide Concentration Measurement | Carbon monoxide concentration and measurement level. |
-| 1037 | Carbon Dioxide Concentration Measurement | Carbon dioxide concentration and measurement level. |
-| 1043 | Nitrogen Dioxide Concentration Measurement | Nitrogen dioxide concentration and measurement level. |
-| 1045 | Ozone Concentration Measurement | Ozone concentration and measurement level. |
-| 1066 | PM2.5 Concentration Measurement | PM2.5 fine particulate matter concentration. |
-| 1067 | Formaldehyde Concentration Measurement | Formaldehyde concentration and measurement level. |
-| 1068 | PM1 Concentration Measurement | PM1 particulate matter concentration. |
-| 1069 | PM10 Concentration Measurement | PM10 particulate matter concentration. |
-| 1070 | Total Volatile Organic Compounds Concentration Measurement | Total volatile organic compounds (TVOC) concentration. |
-| 1071 | Radon Concentration Measurement | Radon concentration and measurement level. |
-| 1072 | Soil Measurement | Soil moisture measurement for irrigation and garden devices. |
-| 1073 | Ambient Context Sensing **(New)** | Ambient context sensing: higher-level room context (people present, activity, ambient conditions). New in 1.6. |
+| 69 | [Boolean State](/matter_cluster_69_boolean_state) | Single boolean sensor state (open/closed, wet/dry, detected/clear). Meaning depends on the endpoint device type. |
+| 91 | [Air Quality](/matter_cluster_91_air_quality) | Summarized air quality level (good, fair, moderate, poor, ...) derived from concentration measurements. |
+| 92 | [Smoke CO Alarm](/matter_cluster_92_smoke_co_alarm) | Smoke and carbon monoxide alarm: alarm states, hush, self-test, interconnect, end-of-service, contamination. |
+| 128 | [Boolean State Configuration](/matter_cluster_128_boolean_state_configuration) | Configuration for boolean-state sensors: sensitivity level, alarm enable/suppress, sensor fault. |
+| 129 | [Valve Configuration and Control](/matter_cluster_129_valve_configuration_and_control) | Valve control: open/close, target level, open duration, auto-close, valve fault. |
+| 1024 | [Illuminance Measurement](/matter_cluster_1024_illuminance_measurement) | Measured illuminance (light level). |
+| 1026 | [Temperature Measurement](/matter_cluster_1026_temperature_measurement) | Measured temperature. |
+| 1027 | [Pressure Measurement](/matter_cluster_1027_pressure_measurement) | Measured pressure. |
+| 1028 | [Flow Measurement](/matter_cluster_1028_flow_measurement) | Measured flow rate. |
+| 1029 | [Relative Humidity Measurement](/matter_cluster_1029_relative_humidity_measurement) | Measured relative humidity. |
+| 1030 | [Occupancy Sensing](/matter_cluster_1030_occupancy_sensing) | Occupancy / presence detection, sensor type, hold time and sensitivity. |
+| 1036 | [Carbon Monoxide Concentration Measurement](/matter_cluster_1036_carbon_monoxide_concentration_measurement) | Carbon monoxide concentration and measurement level. |
+| 1037 | [Carbon Dioxide Concentration Measurement](/matter_cluster_1037_carbon_dioxide_concentration_measurement) | Carbon dioxide concentration and measurement level. |
+| 1043 | [Nitrogen Dioxide Concentration Measurement](/matter_cluster_1043_nitrogen_dioxide_concentration_measurement) | Nitrogen dioxide concentration and measurement level. |
+| 1045 | [Ozone Concentration Measurement](/matter_cluster_1045_ozone_concentration_measurement) | Ozone concentration and measurement level. |
+| 1066 | [PM2.5 Concentration Measurement](/matter_cluster_1066_pm2_5_concentration_measurement) | PM2.5 fine particulate matter concentration. |
+| 1067 | [Formaldehyde Concentration Measurement](/matter_cluster_1067_formaldehyde_concentration_measurement) | Formaldehyde concentration and measurement level. |
+| 1068 | [PM1 Concentration Measurement](/matter_cluster_1068_pm1_concentration_measurement) | PM1 particulate matter concentration. |
+| 1069 | [PM10 Concentration Measurement](/matter_cluster_1069_pm10_concentration_measurement) | PM10 particulate matter concentration. |
+| 1070 | [Total Volatile Organic Compounds Concentration Measurement](/matter_cluster_1070_total_volatile_organic_compounds_concentration_measurement) | Total volatile organic compounds (TVOC) concentration. |
+| 1071 | [Radon Concentration Measurement](/matter_cluster_1071_radon_concentration_measurement) | Radon concentration and measurement level. |
+| 1072 | [Soil Measurement](/matter_cluster_1072_soil_measurement) | Soil moisture measurement for irrigation and garden devices. |
+| 1073 | [Ambient Context Sensing](/matter_cluster_1073_ambient_context_sensing) **(New)** | Ambient context sensing: higher-level room context (people present, activity, ambient conditions). New in 1.6. |
 
 ## Appliances
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 72 | Oven Cavity Operational State | Operational state (running, paused, error) for one oven cavity. |
-| 73 | Oven Mode | Selects and reports oven operating modes (bake, convection, grill, ...). |
-| 74 | Laundry Dryer Controls | Dryer-specific controls such as dryness level. |
-| 80 | Mode Select | Generic selectable operating modes for devices without a more specific mode cluster. |
-| 81 | Laundry Washer Mode | Washing machine operating modes. |
-| 82 | Refrigerator And Temperature Controlled Cabinet Mode | Refrigerator or temperature-controlled cabinet modes (rapid cool, rapid freeze, ...). |
-| 83 | Laundry Washer Controls | Washer-specific controls: spin speed, number of rinses. |
-| 84 | RVC Run Mode | Robotic vacuum cleaner run modes (idle, cleaning, mapping). |
-| 85 | RVC Clean Mode | Robotic vacuum cleaner cleaning modes (vacuum, mop, deep clean). |
-| 86 | Temperature Control | Target temperature or temperature level setpoints for appliances. |
-| 87 | Refrigerator Alarm | Refrigerator and cabinet alarms such as door open. |
-| 89 | Dishwasher Mode | Dishwasher operating modes. |
-| 93 | Dishwasher Alarm | Dishwasher-specific alarms and faults (inflow, drain, door, temperature, water level). |
-| 94 | Microwave Oven Mode | Microwave oven operating modes. |
-| 95 | Microwave Oven Control | Microwave cooking parameters: cook time, power setting, wattage. |
-| 96 | Operational State | Generic operational state (stopped, running, paused, error) for devices that run a process. |
-| 97 | RVC Operational State | Robotic vacuum cleaner operational state, errors, and phase. |
-| 100 | Temperature Alarm **(New)** | Temperature alarm states (too hot / too cold) for appliances and cabinets. New in 1.6. |
-| 113 | HEPA Filter Monitoring | HEPA filter condition, change indication, replacement product list, and reset. |
-| 114 | Activated Carbon Filter Monitoring | Activated carbon filter condition, change indication, replacement product list, and reset. |
-| 121 | Water Tank Level Monitoring | Water tank level condition and change indication. |
-| 336 | Service Area | Service areas and maps a device (for example a robot vacuum) can operate in; select areas and report progress. |
+| 72 | [Oven Cavity Operational State](/matter_cluster_72_oven_cavity_operational_state) | Operational state (running, paused, error) for one oven cavity. |
+| 73 | [Oven Mode](/matter_cluster_73_oven_mode) | Selects and reports oven operating modes (bake, convection, grill, ...). |
+| 74 | [Laundry Dryer Controls](/matter_cluster_74_laundry_dryer_controls) | Dryer-specific controls such as dryness level. |
+| 80 | [Mode Select](/matter_cluster_80_mode_select) | Generic selectable operating modes for devices without a more specific mode cluster. |
+| 81 | [Laundry Washer Mode](/matter_cluster_81_laundry_washer_mode) | Washing machine operating modes. |
+| 82 | [Refrigerator And Temperature Controlled Cabinet Mode](/matter_cluster_82_refrigerator_and_temperature_controlled_cabinet_mode) | Refrigerator or temperature-controlled cabinet modes (rapid cool, rapid freeze, ...). |
+| 83 | [Laundry Washer Controls](/matter_cluster_83_laundry_washer_controls) | Washer-specific controls: spin speed, number of rinses. |
+| 84 | [RVC Run Mode](/matter_cluster_84_rvc_run_mode) | Robotic vacuum cleaner run modes (idle, cleaning, mapping). |
+| 85 | [RVC Clean Mode](/matter_cluster_85_rvc_clean_mode) | Robotic vacuum cleaner cleaning modes (vacuum, mop, deep clean). |
+| 86 | [Temperature Control](/matter_cluster_86_temperature_control) | Target temperature or temperature level setpoints for appliances. |
+| 87 | [Refrigerator Alarm](/matter_cluster_87_refrigerator_alarm) | Refrigerator and cabinet alarms such as door open. |
+| 89 | [Dishwasher Mode](/matter_cluster_89_dishwasher_mode) | Dishwasher operating modes. |
+| 93 | [Dishwasher Alarm](/matter_cluster_93_dishwasher_alarm) | Dishwasher-specific alarms and faults (inflow, drain, door, temperature, water level). |
+| 94 | [Microwave Oven Mode](/matter_cluster_94_microwave_oven_mode) | Microwave oven operating modes. |
+| 95 | [Microwave Oven Control](/matter_cluster_95_microwave_oven_control) | Microwave cooking parameters: cook time, power setting, wattage. |
+| 96 | [Operational State](/matter_cluster_96_operational_state) | Generic operational state (stopped, running, paused, error) for devices that run a process. |
+| 97 | [RVC Operational State](/matter_cluster_97_rvc_operational_state) | Robotic vacuum cleaner operational state, errors, and phase. |
+| 100 | [Temperature Alarm](/matter_cluster_100_temperature_alarm) **(New)** | Temperature alarm states (too hot / too cold) for appliances and cabinets. New in 1.6. |
+| 113 | [HEPA Filter Monitoring](/matter_cluster_113_hepa_filter_monitoring) | HEPA filter condition, change indication, replacement product list, and reset. |
+| 114 | [Activated Carbon Filter Monitoring](/matter_cluster_114_activated_carbon_filter_monitoring) | Activated carbon filter condition, change indication, replacement product list, and reset. |
+| 121 | [Water Tank Level Monitoring](/matter_cluster_121_water_tank_level_monitoring) | Water tank level condition and change indication. |
+| 336 | [Service Area](/matter_cluster_336_service_area) | Service areas and maps a device (for example a robot vacuum) can operate in; select areas and report progress. |
 
 ## Energy and metering
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 144 | Electrical Power Measurement | Electrical power measurement: voltage, current, active/reactive/apparent power, frequency, harmonics, power factor. |
-| 145 | Electrical Energy Measurement | Electrical energy measurement: cumulative and periodic imported/exported energy. |
-| 148 | Water Heater Management | Water heater management: heater types, heat demand, tank volume, estimated hot water, boost. |
-| 149 | Commodity Price | Commodity (energy) price information and forecast from the supplier. |
-| 151 | Messages | Device-to-user messages with optional responses and acknowledgement. |
-| 152 | Device Energy Management | Device energy management: ESA type/state, power adjustment, forecast, start-time adjustment, pause/resume. |
-| 153 | Energy EVSE | Electric vehicle supply equipment: charging state, enable charging/discharging, limits, session info. |
-| 155 | Energy Preference | Energy preferences: balance between comfort and efficiency, low-power mode sensitivity. |
-| 156 | Power Topology | Power topology: which endpoints a power measurement covers (tree/node/set topology). |
-| 157 | Energy EVSE Mode | EVSE charging modes (manual, time of use, solar). |
-| 158 | Water Heater Mode | Water heater modes (off, manual, timed). |
-| 159 | Device Energy Management Mode | Device energy management modes (no optimization, device/local/grid optimization). |
-| 160 | Electrical Grid Conditions | Electrical grid conditions (carbon intensity, grid stress) for energy management decisions. |
-| 1792 | Commodity Tariff | Commodity tariff information: tariff periods, prices, components, calendar. |
-| 2822 | Meter Identification | Meter identification: meter type, point of delivery, utility name and power threshold. |
-| 2823 | Commodity Metering | Commodity metering: metered quantity, tariff unit, and max measured value for the commodity. |
+| 144 | [Electrical Power Measurement](/matter_cluster_144_electrical_power_measurement) | Electrical power measurement: voltage, current, active/reactive/apparent power, frequency, harmonics, power factor. |
+| 145 | [Electrical Energy Measurement](/matter_cluster_145_electrical_energy_measurement) | Electrical energy measurement: cumulative and periodic imported/exported energy. |
+| 148 | [Water Heater Management](/matter_cluster_148_water_heater_management) | Water heater management: heater types, heat demand, tank volume, estimated hot water, boost. |
+| 149 | [Commodity Price](/matter_cluster_149_commodity_price) | Commodity (energy) price information and forecast from the supplier. |
+| 151 | [Messages](/matter_cluster_151_messages) | Device-to-user messages with optional responses and acknowledgement. |
+| 152 | [Device Energy Management](/matter_cluster_152_device_energy_management) | Device energy management: ESA type/state, power adjustment, forecast, start-time adjustment, pause/resume. |
+| 153 | [Energy EVSE](/matter_cluster_153_energy_evse) | Electric vehicle supply equipment: charging state, enable charging/discharging, limits, session info. |
+| 155 | [Energy Preference](/matter_cluster_155_energy_preference) | Energy preferences: balance between comfort and efficiency, low-power mode sensitivity. |
+| 156 | [Power Topology](/matter_cluster_156_power_topology) | Power topology: which endpoints a power measurement covers (tree/node/set topology). |
+| 157 | [Energy EVSE Mode](/matter_cluster_157_energy_evse_mode) | EVSE charging modes (manual, time of use, solar). |
+| 158 | [Water Heater Mode](/matter_cluster_158_water_heater_mode) | Water heater modes (off, manual, timed). |
+| 159 | [Device Energy Management Mode](/matter_cluster_159_device_energy_management_mode) | Device energy management modes (no optimization, device/local/grid optimization). |
+| 160 | [Electrical Grid Conditions](/matter_cluster_160_electrical_grid_conditions) | Electrical grid conditions (carbon intensity, grid stress) for energy management decisions. |
+| 1792 | [Commodity Tariff](/matter_cluster_1792_commodity_tariff) | Commodity tariff information: tariff periods, prices, components, calendar. |
+| 2822 | [Meter Identification](/matter_cluster_2822_meter_identification) | Meter identification: meter type, point of delivery, utility name and power threshold. |
+| 2823 | [Commodity Metering](/matter_cluster_2823_commodity_metering) | Commodity metering: metered quantity, tariff unit, and max measured value for the commodity. |
 
 ## Media
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 1283 | Wake On LAN | Wake on LAN: MAC address for waking a media device over the network. |
-| 1284 | Channel | Media channel list, current channel, channel change and program guide. |
-| 1285 | Target Navigator | Navigates media targets such as inputs, apps, or menu destinations. |
-| 1286 | Media Playback | Playback control: play, pause, stop, seek, next/previous, playback speed and state. |
-| 1287 | Media Input | Media input selection (HDMI, AV, ...). |
-| 1288 | Low Power | Requests a media device to enter low-power/standby mode. |
-| 1289 | Keypad Input | Remote-control keypad input: arrows, select, back, numbers. |
-| 1290 | Content Launcher | Launches or searches content on a media device or app. |
-| 1291 | Audio Output | Audio output selection (speakers, HDMI, Bluetooth). |
-| 1292 | Application Launcher | Launches applications on a media device. |
-| 1293 | Application Basic | Basic information about an application running on a media device. |
-| 1294 | Account Login | Account login/logout flows for content applications. |
-| 1295 | Content Control | Content control: parental ratings, screen time, block lists. |
-| 1296 | Content App Observer | Content app observer: status and messages from a content application. |
+| 1283 | [Wake On LAN](/matter_cluster_1283_wake_on_lan) | Wake on LAN: MAC address for waking a media device over the network. |
+| 1284 | [Channel](/matter_cluster_1284_channel) | Media channel list, current channel, channel change and program guide. |
+| 1285 | [Target Navigator](/matter_cluster_1285_target_navigator) | Navigates media targets such as inputs, apps, or menu destinations. |
+| 1286 | [Media Playback](/matter_cluster_1286_media_playback) | Playback control: play, pause, stop, seek, next/previous, playback speed and state. |
+| 1287 | [Media Input](/matter_cluster_1287_media_input) | Media input selection (HDMI, AV, ...). |
+| 1288 | [Low Power](/matter_cluster_1288_low_power) | Requests a media device to enter low-power/standby mode. |
+| 1289 | [Keypad Input](/matter_cluster_1289_keypad_input) | Remote-control keypad input: arrows, select, back, numbers. |
+| 1290 | [Content Launcher](/matter_cluster_1290_content_launcher) | Launches or searches content on a media device or app. |
+| 1291 | [Audio Output](/matter_cluster_1291_audio_output) | Audio output selection (speakers, HDMI, Bluetooth). |
+| 1292 | [Application Launcher](/matter_cluster_1292_application_launcher) | Launches applications on a media device. |
+| 1293 | [Application Basic](/matter_cluster_1293_application_basic) | Basic information about an application running on a media device. |
+| 1294 | [Account Login](/matter_cluster_1294_account_login) | Account login/logout flows for content applications. |
+| 1295 | [Content Control](/matter_cluster_1295_content_control) | Content control: parental ratings, screen time, block lists. |
+| 1296 | [Content App Observer](/matter_cluster_1296_content_app_observer) | Content app observer: status and messages from a content application. |
 
 ## Cameras
 
 | Decimal | Cluster | Description |
 |---:|---|---|
-| 1360 | Zone Management | Zone management for cameras and sensors: detection zones, triggers, sensitivity. |
-| 1361 | Camera AV Stream Management | Camera audio/video stream management: stream allocation, codecs, resolution, snapshots. |
-| 1362 | Camera AV Settings User Level Management | User-level camera settings: pan/tilt/zoom position and presets. |
-| 1363 | WebRTC Transport Provider | WebRTC transport provider: offer/answer/ICE handling to stream camera video to a peer. |
-| 1364 | WebRTC Transport Requestor | WebRTC transport requestor: peer side of the WebRTC session setup. |
-| 1365 | Push AV Stream Transport | Push A/V stream transport: pushes recorded clips/streams to a destination (for example cloud storage). |
-| 1366 | Chime | Chime: selectable chime sounds and play-chime command for doorbells. |
+| 1360 | [Zone Management](/matter_cluster_1360_zone_management) | Zone management for cameras and sensors: detection zones, triggers, sensitivity. |
+| 1361 | [Camera AV Stream Management](/matter_cluster_1361_camera_av_stream_management) | Camera audio/video stream management: stream allocation, codecs, resolution, snapshots. |
+| 1362 | [Camera AV Settings User Level Management](/matter_cluster_1362_camera_av_settings_user_level_management) | User-level camera settings: pan/tilt/zoom position and presets. |
+| 1363 | [WebRTC Transport Provider](/matter_cluster_1363_webrtc_transport_provider) | WebRTC transport provider: offer/answer/ICE handling to stream camera video to a peer. |
+| 1364 | [WebRTC Transport Requestor](/matter_cluster_1364_webrtc_transport_requestor) | WebRTC transport requestor: peer side of the WebRTC session setup. |
+| 1365 | [Push AV Stream Transport](/matter_cluster_1365_push_av_stream_transport) | Push A/V stream transport: pushes recorded clips/streams to a destination (for example cloud storage). |
+| 1366 | [Chime](/matter_cluster_1366_chime) | Chime: selectable chime sounds and play-chime command for doorbells. |
 
 ## Global attributes (every cluster)
 
@@ -241,8 +242,5 @@ These attribute IDs exist in every cluster and are the last segment of many shad
 
 ## Related pages
 
-- [Matter Bridge Clusters — Detailed Reference](matter_bridge_clusters_detailed_updated)
-- [Cluster 6 — On/Off](matter_cluster_6_onoff)
-- [Cluster 8 — Level Control](matter_cluster_8_level_control)
-- [Cluster 53 — Thread Network Diagnostics](matter_cluster_53_thread_network_diagnostics)
-- [Cluster 54 — Wi-Fi Network Diagnostics](matter_cluster_54_wifi_network_diagnostics)
+- [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated)
+- Every cluster in the tables above links to its own page under the **Matter Clusters** tab.

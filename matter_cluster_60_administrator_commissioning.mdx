@@ -1,0 +1,416 @@
+---
+title: "Matter Cluster 60 — Administrator Commissioning"
+description: "Matter Cluster 60 (0x003C) Administrator Commissioning: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 60
+clusterHex: "0x003C"
+clusterName: "Administrator Commissioning"
+---
+
+# Matter Cluster 60 — Administrator Commissioning Cluster
+
+<Callout type="info">
+Matter Cluster <code>60</code>, also written as <code>0x003C</code>, is the <strong>Administrator Commissioning Cluster</strong>.
+This cluster is used to trigger a Node to allow a new Administrator to commission it. It defines Attributes, Commands and Responses needed for this purpose. For the management of Operational Credentials and Trusted Root Certificates, the Operational Credentials cluster is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `60` |
+| Cluster ID hex | `0x003C` |
+| Cluster name | `Administrator Commissioning` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `CADMIN` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 60 values in the device shadow use this format:
+
+```text
+endpoint_id / 60 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/60/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `60` | Administrator Commissioning cluster |
+| `0` | `WindowStatus` attribute |
+
+---
+
+## Cluster 60 Features
+
+The `FeatureMap` attribute (`0/60/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `BC` | Basic | `O` | Node supports Basic Commissioning Method |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `CommissioningWindowStatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `WindowNotOpen` | `M` | Commissioning window not open |
+| 1 | `EnhancedWindowOpen` | `M` | An Enhanced Commissioning Method window is open |
+| 2 | `BasicWindowOpen` | `BC` | A Basic Commissioning Method window is open |
+
+### `StatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 2 | `Busy` | `M` | Could not be completed because another commissioning is in progress |
+| 3 | `PAKEParameterError` | `M` | Provided PAKE parameters were incorrectly formatted or otherwise invalid |
+| 4 | `WindowNotOpen` | `M` | No commissioning window was currently open |
+
+---
+
+## Cluster 60 Attributes
+
+Cluster 60 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `WindowStatus` | CommissioningWindowStatusEnum | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `AdminFabricIndex` | fabric-idx | `M` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `AdminVendorId` | vendor-id | `M` | R (read: view) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `WindowStatus`
+
+Path example:
+
+```text
+0/60/0
+```
+
+Indicates whether a new Commissioning window has been opened by an Administrator, using either the OpenCommissioningWindow command or the OpenBasicCommissioningWindow command. This attribute must revert to WindowNotOpen upon expiry of a commissioning window. An initial commissioning window is not opened using either the OpenCommissioningWindow command or the OpenBasicCommissioningWindow command, and therefore this attribute is set to WindowNotOpen on initial commissioning.
+
+| Property | Value |
+|---|---|
+| Type | CommissioningWindowStatusEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`CommissioningWindowStatusEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `WindowNotOpen` | Commissioning window not open |
+| 1 | `EnhancedWindowOpen` | An Enhanced Commissioning Method window is open |
+| 2 | `BasicWindowOpen` | A Basic Commissioning Method window is open |
+
+Example:
+
+```json
+{
+  "0/60/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `AdminFabricIndex`
+
+Path example:
+
+```text
+0/60/1
+```
+
+When the WindowStatus attribute is not set to WindowNotOpen, this attribute indicates the FabricIndex associated with the Fabric scoping of the Administrator that opened the window. This may be used to cross-reference in the Fabrics attribute of the Operational Credentials cluster. If, during an open commissioning window, the fabric for the Administrator that opened the window is removed, then this attribute is set to null. When the WindowStatus attribute is set to WindowNotOpen, this attribute is set to null.
+
+| Property | Value |
+|---|---|
+| Type | fabric-idx |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "0/60/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `AdminVendorId`
+
+Path example:
+
+```text
+0/60/2
+```
+
+When the WindowStatus attribute is not set to WindowNotOpen, this attribute indicates the Vendor ID associated with the Fabric scoping of the Administrator that opened the window. This field must match the VendorID field of the Fabrics attribute list entry associated with the Administrator having opened the window, at the time of window opening. If the fabric for the Administrator that opened the window is removed from the node while the commissioning window is still open, this attribute must NOT be updated. When the WindowStatus attribute is set to WindowNotOpen, this attribute is set to null.
+
+| Property | Value |
+|---|---|
+| Type | vendor-id |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "0/60/2": 1
+}
+```
+
+---
+
+# Cluster 60 Commands
+
+Cluster 60 has **3 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `OpenCommissioningWindow` | client → server | `M` | status | This command is used by a current Administrator to instruct a Node to go into commissioning mode. |
+| 1 | `0x01` | `OpenBasicCommissioningWindow` | client → server | `BC` | status | This command may be used by a current Administrator to instruct a Node to go into commissioning mode, if the node supports the Basic Commissioning Method. |
+| 2 | `0x02` | `RevokeCommissioning` | client → server | `M` | status | This is an idempotent command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 60 / 65529
+```
+
+```json
+{
+  "0/60/65529": [
+    0,
+    1,
+    2
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 60 command, check that the command ID exists in <code>endpoint/60/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 60,
+    "command_name": "OpenCommissioningWindow",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 60, always use `"cluster_id": 60`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `OpenCommissioningWindow`
+
+## Purpose
+
+This command is used by a current Administrator to instruct a Node to go into commissioning mode. The Enhanced Commissioning Method specifies a window of time during which an already commissioned Node accepts PASE sessions. The current Administrator specifies a timeout value for the duration of the OpenCommissioningWindow command. When the OpenCommissioningWindow command expires or commissioning completes, the Node must remove the Passcode by deleting the PAKE passcode verifier as well as stop publishing the DNS-SD record corresponding to this command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `OpenCommissioningWindow` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CommissioningTimeout` | `commissioningTimeout` | uint16 | `M` | desc | This field specifies the time in seconds during which commissioning session establishment is allowed by the Node. |
+| 1 | `PAKEPasscodeVerifier` | `pakePasscodeVerifier` | octstr | `M` | allowed: 97 | — |
+| 2 | `Discriminator` | `discriminator` | uint16 | `M` | 0 to 4095 | This field is used by the Node as the long discriminator for DNS-SD advertisement") for discovery by the new Administrator. |
+| 3 | `Iterations` | `iterations` | uint32 | `M` | 1000 to 100000 | — |
+| 4 | `Salt` | `salt` | octstr | `M` | length 16 to 32 | When the command is received by a ICD, it must enter into active mode. The ICD must remain in Active Mode as long as one of these conditions is met: - A commissioning window is open. - There is an armed fail-safe timer. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 60,
+    "command_name": "OpenCommissioningWindow",
+    "payload": {
+      "commissioningTimeout": 0,
+      "pakePasscodeVerifier": "AQID",
+      "discriminator": 0,
+      "iterations": 1000,
+      "salt": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `OpenBasicCommissioningWindow`
+
+## Purpose
+
+This command may be used by a current Administrator to instruct a Node to go into commissioning mode, if the node supports the Basic Commissioning Method. The Basic Commissioning Method specifies a window of time during which an already commissioned Node accepts PASE sessions. The current Administrator specifies a timeout value for the duration of the OpenBasicCommissioningWindow command. If a commissioning window is already currently open, this command must fail with a cluster specific status code of Busy.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `OpenBasicCommissioningWindow` |
+| Direction | client → server |
+| Conformance | `BC` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CommissioningTimeout` | `commissioningTimeout` | uint16 | `M` | desc | This field specifies the time in seconds during which commissioning session establishment is allowed by the Node. When the command is received by a ICD, it must enter into active mode. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 60,
+    "command_name": "OpenBasicCommissioningWindow",
+    "payload": {
+      "commissioningTimeout": 0
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `RevokeCommissioning`
+
+## Purpose
+
+This is an idempotent command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `RevokeCommissioning` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 60,
+    "command_name": "RevokeCommissioning",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Cluster 60 Events
+
+Cluster 60 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 60 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/60/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

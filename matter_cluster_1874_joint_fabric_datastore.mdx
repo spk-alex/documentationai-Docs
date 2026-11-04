@@ -1,0 +1,1723 @@
+---
+title: "Matter Cluster 1874 — Joint Fabric Datastore"
+description: "Matter Cluster 1874 (0x0752) Joint Fabric Datastore: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1874
+clusterHex: "0x0752"
+clusterName: "Joint Fabric Datastore"
+---
+
+# Matter Cluster 1874 — Joint Fabric Datastore Cluster
+
+<Callout type="info">
+Matter Cluster <code>1874</code>, also written as <code>0x0752</code>, is the <strong>Joint Fabric Datastore Cluster</strong>.
+The Joint Fabric Datastore Cluster is a cluster that provides a mechanism for the Joint Fabric Administrators to manage the set of Nodes, Groups, and Group membership among Nodes in the Joint Fabric. When an Ecosystem Administrator Node is commissioned onto the Joint Fabric, the Ecosystem Administrator Node has no knowledge of what Nodes and Groups are present, or what set-up information related to the Joint Fabric is provided by the user.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1874` |
+| Cluster ID hex | `0x0752` |
+| Cluster name | `Joint Fabric Datastore` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `JFDS` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1874 values in the device shadow use this format:
+
+```text
+endpoint_id / 1874 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/1874/0": "AQID"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `1874` | Joint Fabric Datastore cluster |
+| `0` | `AnchorRootCA` attribute |
+
+---
+
+## Data Types
+
+### `DatastoreAccessControlEntryAuthModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 1 | `PASE` | `M` | Passcode authenticated session |
+| 2 | `CASE` | `M` | Certificate authenticated session |
+| 3 | `Group` | `M` | Group authenticated session |
+
+### `DatastoreAccessControlEntryPrivilegeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 1 | `View` | `M` | Can read and observe all (except Access Control Cluster) |
+| 3 | `Operate` | `M` | View privileges, and can perform the primary function of this Node (except Access Control Cluster) |
+| 4 | `Manage` | `M` | Operate privileges, and can modify persistent configuration of this Node (except Access Control Cluster) |
+| 5 | `Administer` | `M` | Manage privileges, and can observe and modify the Access Control Cluster |
+
+### `DatastoreGroupKeyMulticastPolicyEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `PerGroupID` | `M` | Indicates filtering of multicast messages for a specific Group ID |
+| 1 | `AllNodes` | `M` | Indicates not filtering of multicast messages |
+
+### `DatastoreGroupKeySecurityPolicyEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `TrustFirst` | `M` | Message counter synchronization using trust-first |
+
+### `DatastoreStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Pending` | `M` | Target device operation is pending |
+| 1 | `Committed` | `M` | Target device operation has been committed |
+| 2 | `DeletePending` | `M` | Target device delete operation is pending |
+| 3 | `CommitFailed` | `M` | Target device operation has failed |
+
+### `DatastoreACLEntryStruct` (struct)
+
+The DatastoreACLEntryStruct is a holder for an ACL (DatastoreAccessControlEntryStruct) on a specific Node which is managed by the Datastore. Only ACLs on a specific Node that are fabric-scoped to the Joint Fabric are managed by the Datastore.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NodeID` | node-id | `M` | — | — |
+| 1 | `ListID` | uint16 | `M` | — | — |
+| 2 | `ACLEntry` | DatastoreAccessControlEntryStruct | `M` | — | — |
+| 3 | `StatusEntry` | DatastoreStatusEntryStruct | `M` | — | Indicates whether entry in this list is pending, committed, delete-pending, or commit-failed. |
+
+### `DatastoreAccessControlEntryStruct` (struct)
+
+The DatastoreAccessControlEntryStruct represents an ACL on a specific Node (identified by the DatastoreACLEntryStruct) which is managed by the Datastore. Only ACLs on a specific Node that are fabric-scoped to the Joint Fabric are managed by the Datastore.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 1 | `Privilege` | DatastoreAccessControlEntryPrivilegeEnum | `M` | — | — |
+| 2 | `AuthMode` | DatastoreAccessControlEntryAuthModeEnum | `M` | — | — |
+| 3 | `Subjects` | list of subject-id (nullable) | `M` | max SubjectsPerAccessControlEntry entries | — |
+| 4 | `Targets` | list of DatastoreAccessControlTargetStruct (nullable) | `M` | max TargetsPerAccessControlEntry entries | — |
+
+### `DatastoreAccessControlTargetStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Cluster` | cluster-id (nullable) | `M` | — | — |
+| 1 | `Endpoint` | endpoint-no (nullable) | `M` | — | — |
+| 2 | `DeviceType` | devtype-id (nullable) | `M` | — | — |
+
+### `DatastoreAdministratorInformationEntryStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NodeID` | node-id | `M` | — | — |
+| 1 | `FriendlyName` | string | `M` | max length 32 | Friendly name for this node which is not propagated to nodes. |
+| 2 | `VendorID` | vendor-id | `M` | — | — |
+| 3 | `ICAC` | octstr | `M` | max length 400 | — |
+
+### `DatastoreBindingTargetStruct` (struct)
+
+The DatastoreBindingTargetStruct represents a Binding on a specific Node (identified by the DatastoreEndpointBindingEntryStruct) which is managed by the Datastore. Only bindings on a specific Node that are fabric-scoped to the Joint Fabric are managed by the Datastore.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 1 | `Node` | node-id | `Endpoint` | — | This field is the binding's remote target node ID. |
+| 2 | `Group` | group-id | `!Endpoint` | min 1 | This field is the binding's target group ID that represents remote endpoints. |
+| 3 | `Endpoint` | endpoint-no | `!Group` | — | This field is the binding's remote endpoint that the local endpoint is bound to. |
+| 4 | `Cluster` | cluster-id | `O` | — | This field is the binding's cluster ID (client & server) on the local and target endpoint(s). |
+
+### `DatastoreEndpointBindingEntryStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NodeID` | node-id | `M` | — | — |
+| 1 | `EndpointID` | endpoint-no | `M` | — | — |
+| 2 | `ListID` | uint16 | `M` | — | — |
+| 3 | `Binding` | DatastoreBindingTargetStruct | `M` | — | The binding target structure. |
+| 4 | `StatusEntry` | DatastoreStatusEntryStruct | `M` | — | Indicates whether entry in this list is pending, committed, delete-pending, or commit-failed. |
+
+### `DatastoreEndpointEntryStruct` (struct)
+
+The DatastoreEndpointEntryStruct represents an Endpoint on a specific Node which is managed by the Datastore. Only Nodes on the Joint Fabric are managed by the Datastore.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `EndpointID` | endpoint-no | `M` | — | — |
+| 1 | `NodeID` | node-id | `M` | — | — |
+| 2 | `FriendlyName` | string | `M` | max length 32 | Indicates a user-assigned label for this endpoint, as captured by a Joint Fabric Administrator's user interface. |
+
+### `DatastoreEndpointGroupIDEntryStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NodeID` | node-id | `M` | — | — |
+| 1 | `EndpointID` | endpoint-no | `M` | — | — |
+| 2 | `GroupID` | group-id | `M` | — | — |
+| 3 | `StatusEntry` | DatastoreStatusEntryStruct | `M` | — | Indicates whether entry in this list is pending, committed, delete-pending, or commit-failed. |
+
+### `DatastoreGroupInformationEntryStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `GroupID` | uint64 | `M` | — | — |
+| 1 | `FriendlyName` | string | `M` | max length 32 | The friendly name for the group. |
+| 2 | `GroupKeySetID` | uint16 (nullable) | `M` | 1 to 65534 | — |
+| 3 | `GroupCAT` | uint16 (nullable) | `M` | desc | — |
+| 4 | `GroupCATVersion` | uint16 (nullable) | `M` | 1 to 65534 | — |
+| 5 | `GroupPermission` | DatastoreAccessControlEntryPrivilegeEnum | `M` | — | The permission level associated with ACL entries for this group. |
+
+### `DatastoreGroupKeySetStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `GroupKeySetID` | uint16 | `M` | — | — |
+| 1 | `GroupKeySecurityPolicy` | DatastoreGroupKeySecurityPolicyEnum | `M` | — | — |
+| 2 | `EpochKey0` | octstr (nullable) | `M` | allowed: 16 | — |
+| 3 | `EpochStartTime0` | epoch-us (nullable) | `M` | — | — |
+| 4 | `EpochKey1` | octstr (nullable) | `M` | allowed: 16 | — |
+| 5 | `EpochStartTime1` | epoch-us (nullable) | `M` | — | — |
+| 6 | `EpochKey2` | octstr (nullable) | `M` | allowed: 16 | — |
+| 7 | `EpochStartTime2` | epoch-us (nullable) | `M` | — | — |
+| 8 | `GroupKeyMulticastPolicy` | DatastoreGroupKeyMulticastPolicyEnum | `D` | — | — |
+
+### `DatastoreNodeInformationEntryStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NodeID` | node-id | `M` | — | — |
+| 1 | `FriendlyName` | string | `M` | max length 32 | This field contains a user-assigned label for this node, as captured by a Joint Fabric Administrator's user interface. |
+| 2 | `CommissioningStatusEntry` | DatastoreStatusEntryStruct | `M` | — | Set to Pending prior to completing commissioning, set to Committed after commissioning complete is successful, or set to CommitFailed if commissioning failed with the FailureCode Field set to the error. |
+
+### `DatastoreNodeKeySetEntryStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NodeID` | node-id | `M` | — | — |
+| 1 | `GroupKeySetID` | uint16 | `M` | — | — |
+| 2 | `StatusEntry` | DatastoreStatusEntryStruct | `M` | — | Indicates whether entry in this list is pending, committed, delete-pending, or commit-failed. |
+
+### `DatastoreStatusEntryStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `State` | DatastoreStateEnum | `M` | — | This field contains the current state of the target device operation. |
+| 1 | `UpdateTimestamp` | epoch-s | `M` | — | This field contains the timestamp of the last update. |
+| 2 | `FailureCode` | status | `M` | — | This field contains the Status Code of the last failed operation where the State field is set to CommitFailure. |
+
+---
+
+## Cluster 1874 Attributes
+
+Cluster 1874 defines **14 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `AnchorRootCA` | octstr | `M` | R (read: admin) | persisted | — |
+| 1 | `0x0001` | `AnchorNodeID` | node-id | `M` | R (read: admin) | persisted | — |
+| 2 | `0x0002` | `AnchorVendorID` | vendor-id | `M` | R (read: admin) | persisted | — |
+| 3 | `0x0003` | `FriendlyName` | string | `M` | R (read: admin) | persisted | — |
+| 4 | `0x0004` | `GroupKeySetList` | list of DatastoreGroupKeySetStruct | `M` | R (read: admin) | persisted | — |
+| 5 | `0x0005` | `GroupList` | list of DatastoreGroupInformationEntryStruct | `M` | R (read: admin) | persisted | — |
+| 6 | `0x0006` | `NodeList` | list of DatastoreNodeInformationEntryStruct | `M` | R (read: admin) | persisted | — |
+| 7 | `0x0007` | `AdminList` | list of DatastoreAdministratorInformationEntryStruct | `M` | R (read: admin) | persisted | — |
+| 8 | `0x0008` | `Status` | DatastoreStatusEntryStruct | `M` | R (read: admin) | persisted | — |
+| 9 | `0x0009` | `EndpointGroupIDList` | list of DatastoreEndpointGroupIDEntryStruct | `M` | R (read: admin) | persisted | — |
+| 10 | `0x000A` | `EndpointBindingList` | list of DatastoreEndpointBindingEntryStruct | `M` | R (read: admin) | persisted | — |
+| 11 | `0x000B` | `NodeKeySetList` | list of DatastoreNodeKeySetEntryStruct | `M` | R (read: admin) | persisted | — |
+| 12 | `0x000C` | `NodeACLList` | list of DatastoreACLEntryStruct | `M` | R (read: admin) | persisted | — |
+| 13 | `0x000D` | `NodeEndpointList` | list of DatastoreEndpointEntryStruct | `M` | R (read: admin) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `AnchorRootCA`
+
+Path example:
+
+```text
+0/1874/0
+```
+
+No condensed specification text is available for `AnchorRootCA`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max length 400 |
+
+Example:
+
+```json
+{
+  "0/1874/0": "AQID"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `AnchorNodeID`
+
+Path example:
+
+```text
+0/1874/1
+```
+
+No condensed specification text is available for `AnchorNodeID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | node-id |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "0/1874/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `AnchorVendorID`
+
+Path example:
+
+```text
+0/1874/2
+```
+
+No condensed specification text is available for `AnchorVendorID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | vendor-id |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "0/1874/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `FriendlyName`
+
+Path example:
+
+```text
+0/1874/3
+```
+
+Friendly name for the accessing fabric.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max length 32 |
+
+Example:
+
+```json
+{
+  "0/1874/3": "example"
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `GroupKeySetList`
+
+Path example:
+
+```text
+0/1874/4
+```
+
+This indicates the list of DatastoreGroupKeySetStruct used in the Joint Fabric for the accessing fabric. This attribute contains at least one entry, the IPK, which has GroupKeySetID of 0.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreGroupKeySetStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | 1 to 254 entries |
+
+Each entry is a `DatastoreGroupKeySetStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/4": []
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `GroupList`
+
+Path example:
+
+```text
+0/1874/5
+```
+
+This indicates the list of groups in the Joint Fabric for the accessing fabric. This list includes, at a minimum, one group with GroupCAT value set to Administrator CAT and one group with GroupCAT value set to Anchor CAT.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreGroupInformationEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | 1 to 254 entries |
+
+Each entry is a `DatastoreGroupInformationEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/5": []
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `NodeList`
+
+Path example:
+
+```text
+0/1874/6
+```
+
+This indicates the list of nodes in the Joint Fabric for the accessing fabric.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreNodeInformationEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max 1024 entries |
+
+Each entry is a `DatastoreNodeInformationEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/6": []
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `AdminList`
+
+Path example:
+
+```text
+0/1874/7
+```
+
+This indicates the list of administrators in the Joint Fabric for the accessing fabric. Only one Administrator may serve as the Anchor Root CA and Anchor Fabric Administrator and has index value 0. All other Joint Fabric Administrators is referenced at index 1 or greater. An empty list indicates that the Joint Fabric is not yet formed.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreAdministratorInformationEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | 1 to 32 entries |
+
+Each entry is a `DatastoreAdministratorInformationEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/7": []
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `Status`
+
+Path example:
+
+```text
+0/1874/8
+```
+
+This indicates the current state of the Joint Fabric Datastore Cluster for the accessing fabric. The value is one of the following states: - Committed - indicates the DataStore is ready for use. - Pending - indicates that the DataStore is not yet ready for use. - DeletePending - indicates that the DataStore is in the process of being transferred to another Joint Fabric Anchor Administrator.
+
+| Property | Value |
+|---|---|
+| Type | DatastoreStatusEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+
+Value is a `DatastoreStatusEntryStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/8": {
+    "state": 0,
+    "updateTimestamp": 0,
+    "failureCode": 0
+  }
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `EndpointGroupIDList`
+
+Path example:
+
+```text
+0/1874/9
+```
+
+No condensed specification text is available for `EndpointGroupIDList`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreEndpointGroupIDEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max 8192 entries |
+
+Each entry is a `DatastoreEndpointGroupIDEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/9": []
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `EndpointBindingList`
+
+Path example:
+
+```text
+0/1874/10
+```
+
+This indicates the binding list for endpoints in the accessing fabric.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreEndpointBindingEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max 8192 entries |
+
+Each entry is a `DatastoreEndpointBindingEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/10": []
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `NodeKeySetList`
+
+Path example:
+
+```text
+0/1874/11
+```
+
+This indicates the KeySet entries for nodes in the accessing fabric.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreNodeKeySetEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max 8192 entries |
+
+Each entry is a `DatastoreNodeKeySetEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/11": []
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `NodeACLList`
+
+Path example:
+
+```text
+0/1874/12
+```
+
+No condensed specification text is available for `NodeACLList`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreACLEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max 8192 entries |
+
+Each entry is a `DatastoreACLEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/12": []
+}
+```
+
+---
+
+## Attribute `13` / `0x000D` — `NodeEndpointList`
+
+Path example:
+
+```text
+0/1874/13
+```
+
+This indicates the Endpoint entries for nodes in the accessing fabric.
+
+| Property | Value |
+|---|---|
+| Type | list of DatastoreEndpointEntryStruct |
+| Conformance | `M` |
+| Access | R (read: admin) |
+| Qualities | persisted |
+| Constraint | max 8192 entries |
+
+Each entry is a `DatastoreEndpointEntryStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/1874/13": []
+}
+```
+
+---
+
+# Cluster 1874 Commands
+
+Cluster 1874 has **20 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `AddKeySet` | client → server | `M` | status | On receipt, this must add a KeySet to the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 1 | `0x01` | `UpdateKeySet` | client → server | `M` | status | On receipt, this must update a KeySet in the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 2 | `0x02` | `RemoveKeySet` | client → server | `M` | status | On receipt, this must remove a KeySet from the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 3 | `0x03` | `AddGroup` | client → server | `M` | status | On receipt, this must add a group to the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 4 | `0x04` | `UpdateGroup` | client → server | `M` | status | On receipt, this must update a group in the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 5 | `0x05` | `RemoveGroup` | client → server | `M` | status | On receipt, this must remove a group from the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 6 | `0x06` | `AddAdmin` | client → server | `M` | status | On receipt, this must add an admin to the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 7 | `0x07` | `UpdateAdmin` | client → server | `M` | status | On receipt, this must update an admin entry in the AdminList attribute. |
+| 8 | `0x08` | `RemoveAdmin` | client → server | `M` | status | On receipt, this must remove an admin from the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 9 | `0x09` | `AddPendingNode` | client → server | `M` | status | On receipt, this must add a node to the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 10 | `0x0A` | `RefreshNode` | client → server | `M` | status | On receipt, this must request that Datastore information relating to a Node of the accessing fabric is refreshed. |
+| 11 | `0x0B` | `UpdateNode` | client → server | `M` | status | On receipt, this must update the friendly name for a node in the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 12 | `0x0C` | `RemoveNode` | client → server | `M` | status | On receipt, this must remove a node from the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 13 | `0x0D` | `UpdateEndpointForNode` | client → server | `M` | status | On receipt, this must update the state of an endpoint for a node in the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 14 | `0x0E` | `AddGroupIDToEndpointForNode` | client → server | `M` | status | — |
+| 15 | `0x0F` | `RemoveGroupIDFromEndpointForNode` | client → server | `M` | status | — |
+| 16 | `0x10` | `AddBindingToEndpointForNode` | client → server | `M` | status | On receipt, this must add a binding to an endpoint for a node in the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 17 | `0x11` | `RemoveBindingFromEndpointForNode` | client → server | `M` | status | On receipt, this must remove a binding from an endpoint for a node in the Joint Fabric Datastore Cluster of the accessing fabric. |
+| 18 | `0x12` | `AddACLToNode` | client → server | `M` | status | — |
+| 19 | `0x13` | `RemoveACLFromNode` | client → server | `M` | status | — |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1874 / 65529
+```
+
+```json
+{
+  "0/1874/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1874 command, check that the command ID exists in <code>endpoint/1874/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddKeySet",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1874, always use `"cluster_id": 1874`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `AddKeySet`
+
+## Purpose
+
+On receipt, this must add a KeySet to the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AddKeySet` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySet` | `groupKeySet` | DatastoreGroupKeySetStruct | `M` | — | Indicates the KeySet to be added to the Joint Fabric Datastore Cluster. The Datastore must: 1. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddKeySet",
+    "payload": {
+      "groupKeySet": {
+        "groupKeySetID": 1,
+        "groupKeySecurityPolicy": 0,
+        "epochKey0": "AQID",
+        "epochStartTime0": 0
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `UpdateKeySet`
+
+## Purpose
+
+On receipt, this must update a KeySet in the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `UpdateKeySet` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySet` | `groupKeySet` | DatastoreGroupKeySetStruct | `M` | — | Indicates the KeySet to be updated in the Joint Fabric Datastore Cluster. The Datastore must: 1. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "UpdateKeySet",
+    "payload": {
+      "groupKeySet": {
+        "groupKeySetID": 1,
+        "groupKeySecurityPolicy": 0,
+        "epochKey0": "AQID",
+        "epochStartTime0": 0
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveKeySet`
+
+## Purpose
+
+On receipt, this must remove a KeySet from the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `RemoveKeySet` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupKeySetID` | `groupKeySetID` | uint16 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RemoveKeySet",
+    "payload": {
+      "groupKeySetID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddGroup`
+
+## Purpose
+
+On receipt, this must add a group to the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `AddGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `FriendlyName` | `friendlyName` | string | `M` | max length 32 | Indicates the friendly name for the group. |
+| 2 | `GroupKeySetID` | `groupKeySetID` | uint16 (nullable) | `M` | 1 to 65534 | — |
+| 3 | `GroupCAT` | `groupCAT` | uint16 (nullable) | `M` | desc | — |
+| 4 | `GroupCATVersion` | `groupCATVersion` | uint16 (nullable) | `M` | 1 to 65534 | — |
+| 5 | `GroupPermission` | `groupPermission` | DatastoreAccessControlEntryPrivilegeEnum | `M` | — | Indicates the permission level associated with ACL entries for this group. The Datastore must: 1. |
+
+`GroupPermission` values (`DatastoreAccessControlEntryPrivilegeEnum`): `1` = View, `3` = Operate, `4` = Manage, `5` = Administer
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddGroup",
+    "payload": {
+      "groupID": 1,
+      "friendlyName": "example",
+      "groupKeySetID": 1,
+      "groupCAT": 1,
+      "groupCATVersion": 1,
+      "groupPermission": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `UpdateGroup`
+
+## Purpose
+
+On receipt, this must update a group in the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `UpdateGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `FriendlyName` | `friendlyName` | string (nullable) | `M` | max length 32 | Indicates the friendly name for the group. null values will be ignored (not updated). |
+| 2 | `GroupKeySetID` | `groupKeySetID` | uint16 (nullable) | `M` | 1 to 65535 | — |
+| 3 | `GroupCAT` | `groupCAT` | uint16 (nullable) | `M` | desc | — |
+| 4 | `GroupCATVersion` | `groupCATVersion` | uint16 (nullable) | `M` | 1 to 65535 | — |
+| 5 | `GroupPermission` | `groupPermission` | DatastoreAccessControlEntryPrivilegeEnum (nullable) | `M` | — | Indicates the permission level associated with ACL entries for this group. null values will be ignored (not updated). The Datastore must: 1. |
+
+`GroupPermission` values (`DatastoreAccessControlEntryPrivilegeEnum`): `1` = View, `3` = Operate, `4` = Manage, `5` = Administer
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "UpdateGroup",
+    "payload": {
+      "groupID": 1,
+      "friendlyName": "example",
+      "groupKeySetID": 1,
+      "groupCAT": 1,
+      "groupCATVersion": 1,
+      "groupPermission": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveGroup`
+
+## Purpose
+
+On receipt, this must remove a group from the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `RemoveGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RemoveGroup",
+    "payload": {
+      "groupID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddAdmin`
+
+## Purpose
+
+On receipt, this must add an admin to the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `AddAdmin` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `FriendlyName` | `friendlyName` | string | `M` | max length 32 | Indicates the friendly name for the admin node. |
+| 2 | `VendorID` | `vendorID` | vendor-id | `M` | — | — |
+| 3 | `ICAC` | `icac` | octstr | `M` | max length 400 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddAdmin",
+    "payload": {
+      "nodeID": 1,
+      "friendlyName": "example",
+      "vendorID": 1,
+      "icac": "AQID"
+    }
+  }
+}
+```
+
+---
+
+# Command: `UpdateAdmin`
+
+## Purpose
+
+On receipt, this must update an admin entry in the AdminList attribute.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `UpdateAdmin` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `FriendlyName` | `friendlyName` | string | `O` | max length 32 | Indicates the friendly name for the admin node. |
+| 2 | `ICAC` | `icac` | octstr | `O` | max length 400 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "UpdateAdmin",
+    "payload": {
+      "nodeID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveAdmin`
+
+## Purpose
+
+On receipt, this must remove an admin from the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `RemoveAdmin` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RemoveAdmin",
+    "payload": {
+      "nodeID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddPendingNode`
+
+## Purpose
+
+On receipt, this must add a node to the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `9` |
+| Command hex | `0x09` |
+| Command name | `AddPendingNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `FriendlyName` | `friendlyName` | string | `M` | max length 32 | Indicates the friendly name for the node. If a DatastoreNodeInformationEntryStruct exists for the given NodeID, then this command must fail with a INVALID_CONSTRAINT status code. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddPendingNode",
+    "payload": {
+      "nodeID": 1,
+      "friendlyName": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `RefreshNode`
+
+## Purpose
+
+On receipt, this must request that Datastore information relating to a Node of the accessing fabric is refreshed.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `10` |
+| Command hex | `0x0A` |
+| Command name | `RefreshNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RefreshNode",
+    "payload": {
+      "nodeID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `UpdateNode`
+
+## Purpose
+
+On receipt, this must update the friendly name for a node in the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `11` |
+| Command hex | `0x0B` |
+| Command name | `UpdateNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `FriendlyName` | `friendlyName` | string | `M` | max length 32 | Indicates the friendly name for the node. The Datastore must: 1. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "UpdateNode",
+    "payload": {
+      "nodeID": 1,
+      "friendlyName": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveNode`
+
+## Purpose
+
+On receipt, this must remove a node from the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `12` |
+| Command hex | `0x0C` |
+| Command name | `RemoveNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RemoveNode",
+    "payload": {
+      "nodeID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `UpdateEndpointForNode`
+
+## Purpose
+
+On receipt, this must update the state of an endpoint for a node in the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `13` |
+| Command hex | `0x0D` |
+| Command name | `UpdateEndpointForNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EndpointID` | `endpointID` | endpoint-no | `M` | — | — |
+| 1 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 2 | `FriendlyName` | `friendlyName` | string | `M` | max length 32 | Indicates the friendly name for the endpoint. The Datastore must: 1. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "UpdateEndpointForNode",
+    "payload": {
+      "endpointID": 1,
+      "nodeID": 1,
+      "friendlyName": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddGroupIDToEndpointForNode`
+
+## Purpose
+
+`AddGroupIDToEndpointForNode` is a client-to-server command of the Joint Fabric Datastore cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `14` |
+| Command hex | `0x0E` |
+| Command name | `AddGroupIDToEndpointForNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `EndpointID` | `endpointID` | endpoint-no | `M` | — | — |
+| 2 | `GroupID` | `groupID` | group-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddGroupIDToEndpointForNode",
+    "payload": {
+      "nodeID": 1,
+      "endpointID": 1,
+      "groupID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveGroupIDFromEndpointForNode`
+
+## Purpose
+
+`RemoveGroupIDFromEndpointForNode` is a client-to-server command of the Joint Fabric Datastore cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `15` |
+| Command hex | `0x0F` |
+| Command name | `RemoveGroupIDFromEndpointForNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `EndpointID` | `endpointID` | endpoint-no | `M` | — | — |
+| 2 | `GroupID` | `groupID` | group-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RemoveGroupIDFromEndpointForNode",
+    "payload": {
+      "nodeID": 1,
+      "endpointID": 1,
+      "groupID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddBindingToEndpointForNode`
+
+## Purpose
+
+On receipt, this must add a binding to an endpoint for a node in the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `16` |
+| Command hex | `0x10` |
+| Command name | `AddBindingToEndpointForNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `EndpointID` | `endpointID` | endpoint-no | `M` | — | — |
+| 2 | `Binding` | `binding` | DatastoreBindingTargetStruct | `M` | — | Indicates the binding to be added to the endpoint. The Datastore must: 1. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddBindingToEndpointForNode",
+    "payload": {
+      "nodeID": 1,
+      "endpointID": 1,
+      "binding": {
+        "node": 1,
+        "group": 1,
+        "endpoint": 1,
+        "cluster": 1
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveBindingFromEndpointForNode`
+
+## Purpose
+
+On receipt, this must remove a binding from an endpoint for a node in the Joint Fabric Datastore Cluster of the accessing fabric.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `17` |
+| Command hex | `0x11` |
+| Command name | `RemoveBindingFromEndpointForNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ListID` | `listID` | uint16 | `M` | — | — |
+| 1 | `EndpointID` | `endpointID` | endpoint-no | `M` | — | — |
+| 2 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RemoveBindingFromEndpointForNode",
+    "payload": {
+      "listID": 1,
+      "endpointID": 1,
+      "nodeID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddACLToNode`
+
+## Purpose
+
+`AddACLToNode` is a client-to-server command of the Joint Fabric Datastore cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `18` |
+| Command hex | `0x12` |
+| Command name | `AddACLToNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+| 1 | `ACLEntry` | `aclEntry` | DatastoreAccessControlEntryStruct | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "AddACLToNode",
+    "payload": {
+      "nodeID": 1,
+      "aclEntry": {
+        "privilege": 1,
+        "authMode": 1,
+        "subjects": [],
+        "targets": []
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveACLFromNode`
+
+## Purpose
+
+`RemoveACLFromNode` is a client-to-server command of the Joint Fabric Datastore cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `19` |
+| Command hex | `0x13` |
+| Command name | `RemoveACLFromNode` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ListID` | `listID` | uint16 | `M` | — | — |
+| 1 | `NodeID` | `nodeID` | node-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 1874,
+    "command_name": "RemoveACLFromNode",
+    "payload": {
+      "listID": 1,
+      "nodeID": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1874 Events
+
+Cluster 1874 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1874 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1874/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

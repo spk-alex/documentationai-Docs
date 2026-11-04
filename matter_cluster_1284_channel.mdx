@@ -1,0 +1,742 @@
+---
+title: "Matter Cluster 1284 — Channel"
+description: "Matter Cluster 1284 (0x0504) Channel: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1284
+clusterHex: "0x0504"
+clusterName: "Channel"
+---
+
+# Matter Cluster 1284 — Channel Cluster
+
+<Callout type="info">
+Matter Cluster <code>1284</code>, also written as <code>0x0504</code>, is the <strong>Channel Cluster</strong>.
+This cluster provides an interface for controlling the current Channel on a device or endpoint. This cluster server would be supported on Video Player devices or endpoints that allow Channel control such as a Content App. This cluster provides a list of available channels and provides commands for absolute and relative channel changes.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1284` |
+| Cluster ID hex | `0x0504` |
+| Cluster name | `Channel` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `CHANNEL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Add EG and RP features, Identifier and Type to Channel Info for Over-the-Top (OTT) channel support |
+
+---
+
+## Shadow Path Format
+
+Cluster 1284 values in the device shadow use this format:
+
+```text
+endpoint_id / 1284 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1284/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1284` | Channel cluster |
+| `0` | `ChannelList` attribute |
+
+---
+
+## Cluster 1284 Features
+
+The `FeatureMap` attribute (`1/1284/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CL` | ChannelList | `O` | Provides list of available channels |
+| 1 | `LI` | LineupInfo | `O` | Provides lineup info, which is a reference to an external source of lineup information |
+| 2 | `EG` | ElectronicGuide | `O` | Provides electronic program guide information |
+| 3 | `RP` | RecordProgram | `O` | Provides ability to record program |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `15` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ChannelTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Satellite` | `M` | The channel is sourced from a satellite provider. |
+| 1 | `Cable` | `M` | The channel is sourced from a cable provider. |
+| 2 | `Terrestrial` | `M` | The channel is sourced from a terrestrial provider. |
+| 3 | `OTT` | `M` | The channel is sourced from an OTT provider. |
+
+### `LineupInfoTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `MSO` | `M` | Multi System Operator |
+
+### `StatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | Command succeeded |
+| 1 | `MultipleMatches` | `M` | More than one equal match for the ChannelInfoStruct passed in. |
+| 2 | `NoMatches` | `M` | No matches for the ChannelInfoStruct passed in. |
+
+### `RecordingFlagBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Scheduled` | `M` | The program is scheduled for recording. |
+| 1 | `RecordSeries` | `M` | The program series is scheduled for recording. |
+| 2 | `Recorded` | `M` | The program is recorded and available to be played. |
+
+### `ChannelInfoStruct` (struct)
+
+This indicates a channel in a channel lineup. While the major and minor numbers in the ChannelInfoStruct support use of ATSC channel format, a lineup may use other formats which can map into these numeric values.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `MajorNumber` | uint16 | `M` | — | Indicates the channel major number value (for example, using ATSC format). |
+| 1 | `MinorNumber` | uint16 | `M` | — | Indicates the channel minor number value (for example, using ATSC format). |
+| 2 | `Name` | string | `O` | — | Indicates the marketing name for the channel, such as “The CW" or "Comedy Central". |
+| 3 | `CallSign` | string | `O` | — | Indicates the call sign of the channel, such as "PBS". |
+| 4 | `AffiliateCallSign` | string | `O` | — | Indicates the local affiliate call sign, such as "KCTS". |
+| 5 | `Identifier` | string | `O` | — | This indicates the unique identifier for a specific channel. |
+| 6 | `Type` | ChannelTypeEnum | `O` | — | This indicates the type or grouping of a specific channel. |
+
+### `ChannelPagingStruct` (struct)
+
+This object defines the paging structure that includes the previous and next pagination tokens.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PreviousToken` | PageTokenStruct (nullable) | `O` | — | Indicates the token to retrieve the preceding page. |
+| 1 | `NextToken` | PageTokenStruct (nullable) | `O` | — | Indicates the token to retrieve the next page. |
+
+### `LineupInfoStruct` (struct)
+
+The Lineup Info allows references to external lineup sources like Gracenote. The combination of OperatorName, LineupName, and PostalCode must uniquely identify a lineup.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `OperatorName` | string | `M` | — | Indicates the name of the operator, for example “Comcast”. |
+| 1 | `LineupName` | string | `O` | — | Indicates the name of the provider lineup, for example "Comcast King County". |
+| 2 | `PostalCode` | string | `O` | — | Indicates the postal code (zip code) for the location of the device, such as "98052". |
+| 3 | `LineupInfoType` | LineupInfoTypeEnum | `M` | desc | Indicates the type of lineup. |
+
+### `PageTokenStruct` (struct)
+
+This object defines the pagination structure.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Limit` | uint16 | `O` | — | Indicates the maximum number of entries that should be retrieved from the program guide in a single response. |
+| 1 | `After` | string | `O` | max length 8192 | Indicates the cursor that pinpoints the start of the upcoming data page. |
+| 2 | `Before` | string | `O` | max length 8192 | Indicates the cursor that pinpoints the end of the upcoming data page. |
+
+### `ProgramCastStruct` (struct)
+
+This object provides the cast information related to a program.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Name` | string | `M` | max length 256 | This field represents the name of the cast member. |
+| 1 | `Role` | string | `M` | max length 256 | This field represents the role of the cast member. |
+
+### `ProgramCategoryStruct` (struct)
+
+This object defines the category associated to a program.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Category` | string | `M` | max length 256 | This field represents the category or genre of the program. |
+| 1 | `SubCategory` | string | `O` | max length 256 | This field represents the sub-category or sub-genre of the program. |
+
+### `ProgramStruct` (struct)
+
+This indicates a program within an electronic program guide (EPG).
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Identifier` | string | `M` | max length 255 | Indicates a unique identifier for a program within an electronic program guide list. |
+| 1 | `Channel` | ChannelInfoStruct | `M` | — | Indicates the channel associated to the program. |
+| 2 | `StartTime` | epoch-s | `M` | — | Indicates an epoch time in seconds indicating the start time of a program, as a UTC time. |
+| 3 | `EndTime` | epoch-s | `M` | — | Indicates an epoch time in seconds indicating the end time of a program, as a UTC time. |
+| 4 | `Title` | string | `M` | max length 255 | Indicates the title or name for the specific program. |
+| 5 | `Subtitle` | string | `O` | max length 255 | Indicates the subtitle for the specific program. |
+| 6 | `Description` | string | `O` | max length 8192 | Indicates the brief description for the specific program. |
+| 7 | `AudioLanguages` | list of string | `O` | max 10 entries | Indicates the audio language for the specific program. |
+| 8 | `Ratings` | list of string | `O` | max 255 entries | This field is used for indicating the level of parental guidance recommended for of a particular program. |
+| 9 | `ThumbnailUrl` | string | `O` | max length 8192 | This field represents a URL of a thumbnail that clients can use to render an image for the program. |
+| 10 | `PosterArtUrl` | string | `O` | max length 8192 | This field represents a URL of a poster that clients can use to render an image for the program on the detail view. |
+| 11 | `DvbiUrl` | string | `O` | max length 8192 | This field represents the DVB-I URL associated to the program. |
+| 12 | `ReleaseDate` | string | `O` | max length 30 | This field is a string, in ISO 8601 format, representing the date on which the program was released. |
+| 13 | `ParentalGuidanceText` | string | `O` | max length 255 | This field represents a string providing additional information on the parental guidance. |
+| 14 | `RecordingFlag` | RecordingFlagBitmap | `RP` | — | This field represents the recording status of the program. |
+| 15 | `SeriesInfo` | SeriesInfoStruct (nullable) | `O` | — | This field represents the information of a series such as season and episode number. |
+| 16 | `CategoryList` | list of ProgramCategoryStruct | `O` | max 255 entries | This field represents the category of a particular program. |
+| 17 | `CastList` | list of ProgramCastStruct | `O` | max 255 entries | This field represents a list of the cast or the crew on the program. |
+| 18 | `ExternalIDList` | list of AdditionalInfoStruct | `O` | max 255 entries | — |
+
+### `SeriesInfoStruct` (struct)
+
+This object provides the episode information related to a program.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Season` | string | `M` | max length 256 | This field represents the season of the series associated to the program. |
+| 1 | `Episode` | string | `M` | max length 256 | This field represents the episode of the program. |
+
+---
+
+## Cluster 1284 Attributes
+
+Cluster 1284 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `ChannelList` | list of ChannelInfoStruct | `CL` | R (read: view) | — | `empty` |
+| 1 | `0x0001` | `Lineup` | LineupInfoStruct | `LI` | R (read: view) | nullable | `null` |
+| 2 | `0x0002` | `CurrentChannel` | ChannelInfoStruct | `O` | R (read: view) | nullable | `null` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `ChannelList`
+
+Path example:
+
+```text
+1/1284/0
+```
+
+This attribute provides the list of supported channels.
+
+| Property | Value |
+|---|---|
+| Type | list of ChannelInfoStruct |
+| Conformance | `CL` |
+| Access | R (read: view) |
+| Default | `empty` |
+
+Each entry is a `ChannelInfoStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1284/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `Lineup`
+
+Path example:
+
+```text
+1/1284/1
+```
+
+This attribute identifies the channel lineup using external data sources.
+
+| Property | Value |
+|---|---|
+| Type | LineupInfoStruct |
+| Conformance | `LI` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `LineupInfoStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1284/1": {
+    "operatorName": "example",
+    "lineupName": "example",
+    "postalCode": "example",
+    "lineupInfoType": 0
+  }
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `CurrentChannel`
+
+Path example:
+
+```text
+1/1284/2
+```
+
+This attribute contains the current channel. When supported but a channel is not currently tuned to (if a content application is in foreground), the value of the field is null.
+
+| Property | Value |
+|---|---|
+| Type | ChannelInfoStruct |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `null` |
+
+Value is a `ChannelInfoStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1284/2": {
+    "majorNumber": 1,
+    "minorNumber": 1,
+    "name": "example",
+    "callSign": "example"
+  }
+}
+```
+
+---
+
+# Cluster 1284 Commands
+
+Cluster 1284 has **6 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `ChangeChannel` | client → server | `CL \| LI` | ChangeChannelResponse | Change the channel to the channel case-insensitive exact matching the value passed as an argument. |
+| 1 | `0x01` | `ChangeChannelResponse` | server → client | `CL \| LI` | — | This command is generated in response to a ChangeChannel command. |
+| 2 | `0x02` | `ChangeChannelByNumber` | client → server | `M` | status | Change the channel to the channel with the given Number in the ChannelList attribute. |
+| 3 | `0x03` | `SkipChannel` | client → server | `M` | status | This command provides channel up and channel down functionality, but allows channel index jumps of size Count. |
+| 4 | `0x04` | `GetProgramGuide` | client → server | `EG` | ProgramGuideResponse | This command retrieves the program guide. |
+| 5 | `0x05` | `ProgramGuideResponse` | server → client | `EG` | — | This command is a response to the GetProgramGuide command. |
+| 6 | `0x06` | `RecordProgram` | client → server | `RP & EG` | status | Record a specific program or series when it goes live. |
+| 7 | `0x07` | `CancelRecordProgram` | client → server | `RP & EG` | status | Cancel recording for a specific program or series. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1284 / 65529
+```
+
+```json
+{
+  "1/1284/65529": [
+    0,
+    2,
+    3,
+    4,
+    6,
+    7
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1284 command, check that the command ID exists in <code>endpoint/1284/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1284,
+    "command_name": "ChangeChannel",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1284, always use `"cluster_id": 1284`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `ChangeChannel`
+
+## Purpose
+
+Change the channel to the channel case-insensitive exact matching the value passed as an argument. The match priority order is: Identifier, AffiliateCallSign, CallSign, Name, Number. In the match string, the Channel number should be presented in the Major.Minor format, such as 13.1. Upon receipt, this must generate a ChangeChannelResponse command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `ChangeChannel` |
+| Direction | client → server |
+| Conformance | `CL \| LI` |
+| Response | ChangeChannelResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Match` | `match` | string | `M` | — | This field contains a user-input string to match in order to identify the target channel. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1284,
+    "command_name": "ChangeChannel",
+    "payload": {
+      "match": "example"
+    }
+  }
+}
+```
+
+The device answers with `ChangeChannelResponse` (see below).
+
+---
+
+# Command: `ChangeChannelResponse`
+
+## Purpose
+
+This command is generated in response to a ChangeChannel command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ChangeChannelResponse` |
+| Direction | server → client (response) |
+| Conformance | `CL \| LI` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | StatusEnum | `M` | desc | Indicates the status of the command which resulted in this response. |
+| 1 | `Data` | `data` | string | `O` | — | Indicates Optional app-specific data. |
+
+`Status` values (`StatusEnum`): `0` = Success, `1` = MultipleMatches, `2` = NoMatches
+
+---
+
+# Command: `ChangeChannelByNumber`
+
+## Purpose
+
+Change the channel to the channel with the given Number in the ChannelList attribute.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `ChangeChannelByNumber` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `MajorNumber` | `majorNumber` | uint16 | `M` | — | Indicates the channel major number value (ATSC format) to which the channel should change. |
+| 1 | `MinorNumber` | `minorNumber` | uint16 | `M` | — | Indicates the channel minor number value (ATSC format) to which the channel should change. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1284,
+    "command_name": "ChangeChannelByNumber",
+    "payload": {
+      "majorNumber": 1,
+      "minorNumber": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `SkipChannel`
+
+## Purpose
+
+This command provides channel up and channel down functionality, but allows channel index jumps of size Count. Jumps are relative to the available list of channels. For example, when the current channel is 100.0 and the list of available channels is &#91;100.0, 200.0, 201.0, 305.1&#93;, a SkipChannel command with jump value of 2 must change the channel to 201.0. When the value of the increase or decrease is larger than the number of channels remaining in the given direction, then the behavior is to return to the beginning (or end) of the channel list and continue.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `SkipChannel` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Count` | `count` | int16 | `M` | — | Indicates the number of steps to increase (Count is positive) or decrease (Count is negative) the current channel. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1284,
+    "command_name": "SkipChannel",
+    "payload": {
+      "count": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `GetProgramGuide`
+
+## Purpose
+
+This command retrieves the program guide. It accepts several filter parameters to return specific schedule and program information from a content app. The command must receive in response a ProgramGuideResponse. Standard error codes is used when arguments provided are not valid.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `GetProgramGuide` |
+| Direction | client → server |
+| Conformance | `EG` |
+| Response | ProgramGuideResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StartTime` | `startTime` | epoch-s | `M` | — | Indicates the beginning of the time window for which program guide entries are to be retrieved, as a UTC time. Entries with a start time on or after this value will be included in the results. |
+| 1 | `EndTime` | `endTime` | epoch-s | `M` | — | Indicates the end of the time window for which program guide entries are to be retrieved, as a UTC time. Entries with an end time on or before this value will be included in the results. |
+| 2 | `ChannelList` | `channelList` | list of ChannelInfoStruct | `O` | max 255 entries | Indicates the set of channels for which program guide entries should be fetched. By providing a list of channels in this field, the response will only include entries corresponding to the specified channels. |
+| 3 | `PageToken` | `pageToken` | PageTokenStruct (nullable) | `O` | — | Indicates the pagination token used for managing pagination progression. |
+| 5 | `RecordingFlag` | `recordingFlag` | RecordingFlagBitmap (nullable) | `O` | — | Indicates the flags of the programs for which entries should be fetched. |
+| 6 | `ExternalIDList` | `externalIDList` | list of AdditionalInfoStruct | `O` | max 255 entries | — |
+| 7 | `Data` | `data` | octstr | `O` | max length 8092 | Indicates Optional app-specific data. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1284,
+    "command_name": "GetProgramGuide",
+    "payload": {
+      "startTime": 0,
+      "endTime": 0
+    }
+  }
+}
+```
+
+The device answers with `ProgramGuideResponse` (see below).
+
+---
+
+# Command: `ProgramGuideResponse`
+
+## Purpose
+
+This command is a response to the GetProgramGuide command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `ProgramGuideResponse` |
+| Direction | server → client (response) |
+| Conformance | `EG` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Paging` | `paging` | ChannelPagingStruct | `M` | — | Indicates the necessary pagination attributes that define information for both the succeeding and preceding data pages. |
+| 1 | `ProgramList` | `programList` | list of ProgramStruct | `M` | — | Indicates the list of programs. |
+
+---
+
+# Command: `RecordProgram`
+
+## Purpose
+
+Record a specific program or series when it goes live. This functionality enables DVR recording features.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `RecordProgram` |
+| Direction | client → server |
+| Conformance | `RP & EG` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ProgramIdentifier` | `programIdentifier` | string | `M` | max length 255 | Indicates the program identifier for the program that should be recorded. This value is provided by the identifier field in ProgramStruct. |
+| 1 | `ShouldRecordSeries` | `shouldRecordSeries` | bool | `M` | — | Indicates whether the whole series associated to the program should be recorded. For example, invoking record program on an episode with that flag set to true, the target should schedule record the whole series. |
+| 2 | `ExternalIDList` | `externalIDList` | list of AdditionalInfoStruct | `O` | max 255 entries | — |
+| 3 | `Data` | `data` | octstr | `O` | max length 8092 | This field, if present, indicates app-specific data. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1284,
+    "command_name": "RecordProgram",
+    "payload": {
+      "programIdentifier": "example",
+      "shouldRecordSeries": true
+    }
+  }
+}
+```
+
+---
+
+# Command: `CancelRecordProgram`
+
+## Purpose
+
+Cancel recording for a specific program or series.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `CancelRecordProgram` |
+| Direction | client → server |
+| Conformance | `RP & EG` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ProgramIdentifier` | `programIdentifier` | string | `M` | max length 255 | Indicates the program identifier for the program that should be cancelled from recording. This value is provided by the identifier field in ProgramStruct. |
+| 1 | `ShouldRecordSeries` | `shouldRecordSeries` | bool | `M` | — | Indicates whether the whole series associated to the program should be cancelled from recording. For example, invoking record program on an episode with that flag set to true, the target should schedule record the whole series. |
+| 2 | `ExternalIDList` | `externalIDList` | list of AdditionalInfoStruct | `O` | max 255 entries | — |
+| 3 | `Data` | `data` | octstr | `O` | max length 8092 | This field, if present, indicates app-specific data. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1284,
+    "command_name": "CancelRecordProgram",
+    "payload": {
+      "programIdentifier": "example",
+      "shouldRecordSeries": true
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1284 Events
+
+Cluster 1284 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1284 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1284/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

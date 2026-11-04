@@ -1,0 +1,741 @@
+---
+title: "Matter Cluster 1360 — Zone Management"
+description: "Matter Cluster 1360 (0x0550) Zone Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1360
+clusterHex: "0x0550"
+clusterName: "Zone Management"
+---
+
+# Matter Cluster 1360 — Zone Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>1360</code>, also written as <code>0x0550</code>, is the <strong>Zone Management Cluster</strong>.
+This cluster provides an interface to manage regions of interest, or Zones, which can be either manufacturer or user defined. This cluster also defines a Trigger, which is a set of conditions and timing that apply to a Zone and allow for events to be generated or the triggering state to be used by other clusters such as Push AV Stream Transport Cluster.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1360` |
+| Cluster ID hex | `0x0550` |
+| Cluster name | `Zone Management` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `ZONEMGMT` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial version of the Zone Management cluster |
+
+---
+
+## Shadow Path Format
+
+Cluster 1360 values in the device shadow use this format:
+
+```text
+endpoint_id / 1360 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1360/1": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1360` | Zone Management cluster |
+| `1` | `MaxZones` attribute |
+
+---
+
+## Cluster 1360 Features
+
+The `FeatureMap` attribute (`1/1360/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `TWODCART` | TwoDimensionalCartesianZone | `O` | Supports Two Dimensional Cartesian Zones |
+| 1 | `PERZONESENS` | PerZoneSensitivity | `[TWODCART]` | Supports a sensitivity value per Zone |
+| 2 | `USERDEFINED` | UserDefined | `[TWODCART]` | Supports user defined zones |
+| 3 | `FOCUSZONES` | FocusZones | `[USERDEFINED]` | Supports user defined focus zones |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `15` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ZoneEventStoppedReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `ActionStopped` | `M` | Indicates that whatever triggered the Zone event has stopped being detected. |
+| 1 | `Timeout` | `M` | Indicates that the max duration for detecting triggering activity has been reached. |
+
+### `ZoneEventTriggeredReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Motion` | `M` | Zone event triggered because motion is detected |
+
+### `ZoneSourceEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Mfg` | `M` | Indicates a Manufacturer defined Zone. |
+| 1 | `User` | `M` | Indicates a User defined Zone. |
+
+### `ZoneTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `TwoDCARTZone` | `M` | Indicates a Two Dimensional Cartesian Zone |
+
+### `ZoneUseEnum`
+
+This data type is derived from enum8, and is used to indicate intended Zone usage.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Motion` | `M` | Indicates Zone is intended to detect Motion |
+| 1 | `Privacy` | `M` | Indicates Zone is intended to protect privacy |
+| 2 | `Focus` | `FOCUSZONES` | Indicates Zone provides a focus area |
+
+### `TwoDCartesianVertexStruct` (struct)
+
+This struct is used to encode a point on the 2 Dimensional Cartesian Plane for the TwoDCartesianZone feature.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `X` | uint16 | `M` | — | This field represents the position of the vertex along the horizontal (x) axis. |
+| 1 | `Y` | uint16 | `M` | — | This field represents the position of the vertex along the vertical (y) axis. |
+
+### `TwoDCartesianZoneStruct` (struct)
+
+This struct is used to encode all information needed to define a TwoDCartesianZone.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Name` | string | `M` | max length 32 | The Name field is a string representing the name of the Zone. |
+| 1 | `Use` | ZoneUseEnum | `M` | — | The Use field is a Zone Use Enum representing the purpose of the Zone. |
+| 2 | `Vertices` | list of TwoDCartesianVertexStruct | `M` | 3 to 12 entries | The Vertices field is a list of vertices of type TwoDCartesianVertexStruct. |
+| 3 | `Color` | string | `O` | allowed: 7, 9 | Indicates the color, in RGB or RGBA, used for attaching a color to the Zone definition and is a purely informational value to help in uniformly presenting Zones in User Interfaces and may be ignored. |
+
+### `ZoneInformationStruct` (struct)
+
+This struct is used to encode basic information about a Zone without containing the specifics of how the zone is defined.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ZoneID` | ZoneID | `M` | — | — |
+| 1 | `ZoneType` | ZoneTypeEnum | `M` | — | Indicates the zone type which defines the Zone. |
+| 2 | `ZoneSource` | ZoneSourceEnum | `M` | — | Indicates the source of the Zone. |
+| 3 | `TwoDCartesianZone` | TwoDCartesianZoneStruct | `TWODCART & ZoneType = TwoDCARTZone` | — | Indicates the detailed information for the TwoDCartesianZone. |
+
+### `ZoneTriggerControlStruct` (struct)
+
+This struct is used to encode a set of values for controlling the generation of ZoneTriggered and ZoneStopped events from the Node. Zone events can be triggered due to many underlying reasons, such as a motion sensor on the device, and this is intended to be manufacturer-specific.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ZoneID` | ZoneID | `M` | — | — |
+| 1 | `InitialDuration` | elapsed-s | `M` | 1 to 65535 | Indicates the initial duration in seconds after triggering activity is first detected before the Node could generate a ZoneStopped event. |
+| 2 | `AugmentationDuration` | elapsed-s | `M` | max InitialDuration | Indicates the duration in seconds that the TriggerDetectedDuration value is to be extended by if the triggering activity is still detected during this period. |
+| 3 | `MaxDuration` | elapsed-s | `M` | min InitialDuration | Indicates the maximum duration in seconds after the initial triggering activity detection that additional triggering activity will be detected. |
+| 4 | `BlindDuration` | elapsed-s | `M` | — | Indicates the duration in seconds after a ZoneStopped event is generated that the Node must NOT generate any ZoneTriggered events. |
+| 5 | `Sensitivity` | uint8 | `PERZONESENS` | 1 to SensitivityMax | Indicates the per-zone sensitivity of the underlying zone triggering detection mechanism. |
+
+---
+
+## Cluster 1360 Attributes
+
+Cluster 1360 defines **7 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MaxUserDefinedZones` | uint8 | `USERDEFINED` | R (read: view) | — | — |
+| 1 | `0x0001` | `MaxZones` | uint8 | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `Zones` | list of ZoneInformationStruct | `M` | R (read: view) | persisted | — |
+| 3 | `0x0003` | `Triggers` | list of ZoneTriggerControlStruct | `M` | R (read: view) | persisted | — |
+| 4 | `0x0004` | `SensitivityMax` | uint8 | `M` | R (read: view) | — | — |
+| 5 | `0x0005` | `Sensitivity` | uint8 | `!PERZONESENS` | R/W (read: view, write: operate) | persisted | — |
+| 6 | `0x0006` | `TwoDCartesianMax` | TwoDCartesianVertexStruct | `TWODCART` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MaxUserDefinedZones`
+
+Path example:
+
+```text
+1/1360/0
+```
+
+This attribute specifies the maximum number of user-defined zones that can be supported by the Node. This value is manufacturer-defined.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `USERDEFINED` |
+| Access | R (read: view) |
+| Constraint | min 5 |
+
+Example:
+
+```json
+{
+  "1/1360/0": 5
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MaxZones`
+
+Path example:
+
+```text
+1/1360/1
+```
+
+This attribute specifies the maximum number of zones allowed to created. This value is the sum of the number of predefined Mfg Zones, and MaxUserDefinedZones, if supported. This value is manufacturer-defined.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/1360/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `Zones`
+
+Path example:
+
+```text
+1/1360/2
+```
+
+This attribute specifies all currently defined zones as a list of ZoneInformationStruct. Use the commands from this cluster to add, update or remove entries.
+
+| Property | Value |
+|---|---|
+| Type | list of ZoneInformationStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | 0 to MaxZones entries |
+
+Each entry is a `ZoneInformationStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1360/2": []
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `Triggers`
+
+Path example:
+
+```text
+1/1360/3
+```
+
+This attribute specifies all currently defined triggers controlling the generation of ZoneTriggered and ZoneStopped events and is a list of ZoneTriggerControlStruct. To add an entry use CreateOrUpdateTrigger. To remove an entry use RemoveTrigger.
+
+| Property | Value |
+|---|---|
+| Type | list of ZoneTriggerControlStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | 0 to MaxZones entries |
+
+Each entry is a `ZoneTriggerControlStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1360/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `SensitivityMax`
+
+Path example:
+
+```text
+1/1360/4
+```
+
+This attribute specifies the hardware specific value for the number of supported sensitivity levels. This value is manufacturer defined. If the PerZoneSensitivity feature is supported, the value of this attribute determines valid values for the Sensitivity field in ZoneTriggerControlStruct; if the PerZoneSensitivity feature is not supported, the value of this attribute determines valid values for the Sensitivity Attribute. Implementations require two to ten levels of sensitivity control in order to ensure that there is some user-level customization of the Trigger.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 2 to 10 |
+
+Example:
+
+```json
+{
+  "1/1360/4": 2
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `Sensitivity`
+
+Path example:
+
+```text
+1/1360/5
+```
+
+This attribute specifies the sensitivity of the underlying zone triggering detection mechanism if the PerZoneSensitivity features is not supported. The higher the value the more sensitive the detection. The actual meaning of the values is implementation specific.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `!PERZONESENS` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | 1 to SensitivityMax |
+
+Example:
+
+```json
+{
+  "1/1360/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `TwoDCartesianMax`
+
+Path example:
+
+```text
+1/1360/6
+```
+
+This attribute specifies the maximum X and Y points that are allowed for TwoD Cartesian Zones. If this cluster is on the same endpoint as Camera AV Stream Management Cluster, these values is equal to the value of SensorWidth - 1 and SensorHeight - 1 from the VideoSensorParams attribute.
+
+| Property | Value |
+|---|---|
+| Type | TwoDCartesianVertexStruct |
+| Conformance | `TWODCART` |
+| Access | R (read: view) |
+
+Value is a `TwoDCartesianVertexStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1360/6": {
+    "x": 1,
+    "y": 1
+  }
+}
+```
+
+---
+
+# Cluster 1360 Commands
+
+Cluster 1360 has **5 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `CreateTwoDCartesianZone` | client → server | `TWODCART & USERDEFINED` | CreateTwoDCartesianZoneResponse | This command must create and store a TwoD Cartesian Zone. |
+| 1 | `0x01` | `CreateTwoDCartesianZoneResponse` | server → client | `TWODCART & USERDEFINED` | — | This command is generated in response to a CreateTwoDCartesianZone command. |
+| 2 | `0x02` | `UpdateTwoDCartesianZone` | client → server | `TWODCART & USERDEFINED` | status | The UpdateTwoDCartesianZone must update a stored TwoD Cartesian Zone. |
+| 3 | `0x03` | `RemoveZone` | client → server | `USERDEFINED` | status | This command must remove the user-defined Zone indicated by ZoneID. |
+| 4 | `0x04` | `CreateOrUpdateTrigger` | client → server | `M` | status | This command is used to create or update a Trigger for the specified motion Zone. |
+| 5 | `0x05` | `RemoveTrigger` | client → server | `M` | status | This command must remove the Trigger for the provided ZoneID. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1360 / 65529
+```
+
+```json
+{
+  "1/1360/65529": [
+    0,
+    2,
+    3,
+    4,
+    5
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1360 command, check that the command ID exists in <code>endpoint/1360/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1360,
+    "command_name": "CreateTwoDCartesianZone",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1360, always use `"cluster_id": 1360`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `CreateTwoDCartesianZone`
+
+## Purpose
+
+This command must create and store a TwoD Cartesian Zone.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `CreateTwoDCartesianZone` |
+| Direction | client → server |
+| Conformance | `TWODCART & USERDEFINED` |
+| Response | CreateTwoDCartesianZoneResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Zone` | `zone` | TwoDCartesianZoneStruct | `M` | — | The Zone field is a TwoDCartesianZoneStruct representing all information required to define the TwoD Cartesian Zone. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1360,
+    "command_name": "CreateTwoDCartesianZone",
+    "payload": {
+      "zone": {
+        "name": "example",
+        "use": 0,
+        "vertices": [],
+        "color": "example"
+      }
+    }
+  }
+}
+```
+
+The device answers with `CreateTwoDCartesianZoneResponse` (see below).
+
+---
+
+# Command: `CreateTwoDCartesianZoneResponse`
+
+## Purpose
+
+This command is generated in response to a CreateTwoDCartesianZone command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `CreateTwoDCartesianZoneResponse` |
+| Direction | server → client (response) |
+| Conformance | `TWODCART & USERDEFINED` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ZoneID` | `zoneID` | ZoneID | `M` | — | — |
+
+---
+
+# Command: `UpdateTwoDCartesianZone`
+
+## Purpose
+
+The UpdateTwoDCartesianZone must update a stored TwoD Cartesian Zone.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `UpdateTwoDCartesianZone` |
+| Direction | client → server |
+| Conformance | `TWODCART & USERDEFINED` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ZoneID` | `zoneID` | ZoneID | `M` | — | — |
+| 1 | `Zone` | `zone` | TwoDCartesianZoneStruct | `M` | — | The Zone field is a TwoDCartesianZoneStruct representing updated Zone information. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1360,
+    "command_name": "UpdateTwoDCartesianZone",
+    "payload": {
+      "zoneID": 0,
+      "zone": {
+        "name": "example",
+        "use": 0,
+        "vertices": [],
+        "color": "example"
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveZone`
+
+## Purpose
+
+This command must remove the user-defined Zone indicated by ZoneID.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `RemoveZone` |
+| Direction | client → server |
+| Conformance | `USERDEFINED` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ZoneID` | `zoneID` | ZoneID | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1360,
+    "command_name": "RemoveZone",
+    "payload": {
+      "zoneID": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `CreateOrUpdateTrigger`
+
+## Purpose
+
+This command is used to create or update a Trigger for the specified motion Zone.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `CreateOrUpdateTrigger` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Trigger` | `trigger` | ZoneTriggerControlStruct | `M` | — | This field is a ZoneTriggerControlStruct representing all information required to define the Trigger conditions. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1360,
+    "command_name": "CreateOrUpdateTrigger",
+    "payload": {
+      "trigger": {
+        "zoneID": 0,
+        "initialDuration": 1,
+        "augmentationDuration": 1,
+        "maxDuration": 1
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveTrigger`
+
+## Purpose
+
+This command must remove the Trigger for the provided ZoneID.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `RemoveTrigger` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ZoneID` | `zoneID` | ZoneID | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1360,
+    "command_name": "RemoveTrigger",
+    "payload": {
+      "zoneID": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1360 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `ZoneTriggered` | info | `M` | This event is generated when a Zone is first triggered. |
+| 1 | `0x01` | `ZoneStopped` | info | `M` | This event is generated when either the TriggerDetectedDuration value is exceeded by the TimeSinceInitialTrigger value or the MaxDuration value is exceeded by the TimeSinceInitialTrigger value. |
+
+## Event `0` — `ZoneTriggered`
+
+This event is generated when a Zone is first triggered.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Zone` | ZoneID | `M` | This field contains the ZoneID of the Zone that triggered. |
+| 1 | `Reason` | ZoneEventTriggeredReasonEnum | `M` | Indicates why the zone was triggered. |
+
+## Event `1` — `ZoneStopped`
+
+This event is generated when either the TriggerDetectedDuration value is exceeded by the TimeSinceInitialTrigger value or the MaxDuration value is exceeded by the TimeSinceInitialTrigger value.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Zone` | ZoneID | `M` | This field contains the ZoneID of the Zone that stopped. |
+| 1 | `Reason` | ZoneEventStoppedReasonEnum | `M` | Indicates why the zone stopped triggering. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1360 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1360/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

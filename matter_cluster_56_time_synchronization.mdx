@@ -1,0 +1,963 @@
+---
+title: "Matter Cluster 56 — Time Synchronization"
+description: "Matter Cluster 56 (0x0038) Time Synchronization: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 56
+clusterHex: "0x0038"
+clusterName: "Time Synchronization"
+---
+
+# Matter Cluster 56 — Time Synchronization Cluster
+
+<Callout type="info">
+Matter Cluster <code>56</code>, also written as <code>0x0038</code>, is the <strong>Time Synchronization Cluster</strong>.
+Accurate time is required for a number of reasons, including scheduling, display and validating security materials. This section describes a mechanism for Nodes to achieve and maintain time synchronization. The Time Synchronization cluster provides attributes for reading a Node's current time.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `56` |
+| Cluster ID hex | `0x0038` |
+| Cluster name | `Time Synchronization` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `TIMESYNC` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Make TrustedTimeSource fabric-aware, add TSC feature, define list max sizes, change writable attributes to commands, remote port, add attribute for DNS support |
+
+---
+
+## Shadow Path Format
+
+Cluster 56 values in the device shadow use this format:
+
+```text
+endpoint_id / 56 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/56/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `56` | Time Synchronization cluster |
+| `0` | `UTCTime` attribute |
+
+---
+
+## Cluster 56 Features
+
+The `FeatureMap` attribute (`0/56/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `TZ` | TimeZone | `O` | Server supports time zone |
+| 1 | `NTPC` | NTPClient | `O` | Server supports an NTP or SNTP client |
+| 2 | `NTPS` | NTPServer | `O` | Server supports an NTP server role |
+| 3 | `TSC` | TimeSyncClient | `O` | Time synchronization client cluster is present |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `15` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `GranularityEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoTimeGranularity` | `M` | This indicates that the node is not currently synchronized with a UTC Time source and its clock is based on the Last Known Good UTC Time only. |
+| 1 | `MinutesGranularity` | `M` | This indicates the node was synchronized to an upstream source in the past, but sufficient clock drift has occurred such that the clock error is now &gt; 5 seconds. |
+| 2 | `SecondsGranularity` | `M` | This indicates the node is synchronized to an upstream source using a low resolution protocol. UTC Time is accurate to ± 5 seconds. |
+| 3 | `MillisecondsGranularity` | `M` | This indicates the node is synchronized to an upstream source using high resolution time-synchronization protocol such as NTP, or has built-in GNSS with some amount of jitter applying its GNSS timestamp. UTC Time is accurate to ± 50 ms. |
+| 4 | `MicrosecondsGranularity` | `M` | This indicates the node is synchronized to an upstream source using a highly precise time-synchronization protocol such as PTP, or has built-in GNSS. UTC time is accurate to ± 10 μs. |
+
+### `StatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 2 | `TimeNotAccepted` | `M` | Node rejected the attempt to set the UTC time |
+
+### `TimeSourceEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `None` | `M` | Node is not currently synchronized with a UTC Time source. |
+| 1 | `Unknown` | `M` | Node uses an unlisted time source. |
+| 2 | `Admin` | `M` | Node received time from a client using the SetUTCTime Command. |
+| 3 | `NodeTimeCluster` | `M` | Synchronized time by querying the Time Synchronization cluster of another Node. |
+| 4 | `NonMatterSNTP` | `M` | SNTP from a server not in the Matter network. NTS is not used. |
+| 5 | `NonMatterNTP` | `M` | NTP from servers not in the Matter network. None of the servers used NTS. |
+| 6 | `MatterSNTP` | `M` | SNTP from a server within the Matter network. NTS is not used. |
+| 7 | `MatterNTP` | `M` | NTP from servers within the Matter network. None of the servers used NTS. |
+| 8 | `MixedNTP` | `M` | NTP from multiple servers in the Matter network and external. None of the servers used NTS. |
+| 9 | `NonMatterSNTPNTS` | `M` | SNTP from a server not in the Matter network. NTS is used. |
+| 10 | `NonMatterNTPNTS` | `M` | NTP from servers not in the Matter network. NTS is used on at least one server. |
+| 11 | `MatterSNTPNTS` | `M` | SNTP from a server within the Matter network. NTS is used. |
+| 12 | `MatterNTPNTS` | `M` | NTP from a server within the Matter network. NTS is used on at least one server. |
+| 13 | `MixedNTPNTS` | `M` | NTP from multiple servers in the Matter network and external. NTS is used on at least one server. |
+| 14 | `CloudSource` | `M` | Time synchronization comes from a vendor cloud-based source (e.g. "Date" header in authenticated HTTPS connection). |
+| 15 | `PTP` | `M` | Time synchronization comes from PTP. |
+| 16 | `GNSS` | `M` | Time synchronization comes from a GNSS source. |
+
+### `TimeZoneDatabaseEnum`
+
+It indicates what the device knows about the contents of the IANA Time Zone Database. Partial support on a device may be used to omit historical data, less commonly used time zones, and/or time zones not related to the region a product is sold in.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Full` | `M` | Node has a full list of the available time zones |
+| 1 | `Partial` | `M` | Node has a partial list of the available time zones |
+| 2 | `None` | `M` | Node does not have a time zone database |
+
+### `DSTOffsetStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Offset` | int32 | `M` | desc | The DST offset in seconds. |
+| 1 | `ValidStarting` | epoch-us | `M` | — | The UTC time when the offset is applied. |
+| 2 | `ValidUntil` | epoch-us (nullable) | `M` | — | The UTC time when the offset must stop being applied. |
+
+### `FabricScopedTrustedTimeSourceStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `NodeID` | node-id | `M` | — | — |
+| 1 | `Endpoint` | endpoint-no | `M` | — | Endpoint on the trusted time source node that contains the Time Synchronization cluster server. |
+
+### `TimeZoneStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Offset` | int32 | `M` | -43200 to 50400 | The time zone offset from UTC in seconds. |
+| 1 | `ValidAt` | epoch-us | `M` | — | The UTC time when the offset is applied. |
+| 2 | `Name` | string | `O` | length 0 to 64 | The time zone name should provide a human-readable time zone name and it should use the country/city format specified by the IANA Time Zone Database. |
+
+### `TrustedTimeSourceStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `FabricIndex` | fabric-idx | `M` | — | The Fabric Index associated with the Fabric of the client which last set the value of the trusted time source node. |
+| 1 | `NodeID` | node-id | `M` | — | — |
+| 2 | `Endpoint` | endpoint-no | `M` | — | Endpoint on the trusted time source node that contains the Time Synchronization cluster server. |
+
+---
+
+## Cluster 56 Attributes
+
+Cluster 56 defines **13 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `UTCTime` | epoch-us | `M` | R (read: view) | nullable, change omitted | `null` |
+| 1 | `0x0001` | `Granularity` | GranularityEnum | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `TimeSource` | TimeSourceEnum | `O` | R (read: view) | — | — |
+| 3 | `0x0003` | `TrustedTimeSource` | TrustedTimeSourceStruct | `TSC` | R (read: view) | nullable, persisted | `null` |
+| 4 | `0x0004` | `DefaultNTP` | string | `NTPC` | R (read: view) | nullable, persisted | `null` |
+| 5 | `0x0005` | `TimeZone` | list of TimeZoneStruct | `TZ` | R (read: view) | persisted | — |
+| 6 | `0x0006` | `DSTOffset` | list of DSTOffsetStruct | `TZ` | R (read: view) | persisted | `empty` |
+| 7 | `0x0007` | `LocalTime` | epoch-us | `TZ` | R (read: view) | nullable, change omitted | `null` |
+| 8 | `0x0008` | `TimeZoneDatabase` | TimeZoneDatabaseEnum | `TZ` | R (read: view) | — | — |
+| 9 | `0x0009` | `NTPServerAvailable` | bool | `NTPS` | R (read: view) | — | `false` |
+| 10 | `0x000A` | `TimeZoneListMaxSize` | uint8 | `TZ` | R (read: view) | — | — |
+| 11 | `0x000B` | `DSTOffsetListMaxSize` | uint8 | `TZ` | R (read: view) | — | — |
+| 12 | `0x000C` | `SupportsDNSResolve` | bool | `NTPC` | R (read: view) | — | `false` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `UTCTime`
+
+Path example:
+
+```text
+0/56/0
+```
+
+No condensed specification text is available for `UTCTime`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | epoch-us |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/56/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `Granularity`
+
+Path example:
+
+```text
+0/56/1
+```
+
+Indicates granularity of the error that the node is willing to guarantee on the time synchronization. It is of type GranularityEnum. This value is set to NoTimeGranularity if UTCTime is null and must NOT be set to NoTimeGranularity if UTCTime is non-null.
+
+| Property | Value |
+|---|---|
+| Type | GranularityEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`GranularityEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `NoTimeGranularity` | This indicates that the node is not currently synchronized with a UTC Time source and its clock is based on the Last Known Good UTC Time only. |
+| 1 | `MinutesGranularity` | This indicates the node was synchronized to an upstream source in the past, but sufficient clock drift has occurred such that the clock error is now &gt; 5 seconds. |
+| 2 | `SecondsGranularity` | This indicates the node is synchronized to an upstream source using a low resolution protocol. UTC Time is accurate to ± 5 seconds. |
+| 3 | `MillisecondsGranularity` | This indicates the node is synchronized to an upstream source using high resolution time-synchronization protocol such as NTP, or has built-in GNSS with some amount of jitter applying its GNSS timestamp. UTC Time is accurate to ± 50 ms. |
+| 4 | `MicrosecondsGranularity` | This indicates the node is synchronized to an upstream source using a highly precise time-synchronization protocol such as PTP, or has built-in GNSS. UTC time is accurate to ± 10 μs. |
+
+Example:
+
+```json
+{
+  "0/56/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `TimeSource`
+
+Path example:
+
+```text
+0/56/2
+```
+
+Indicates the node's time source. This attribute indicates what method the node is using to sync, whether the source uses NTS or not and whether the source is internal or external to the Matter network. This attribute may be used by a client to determine its level of trust in the UTCTime. It is of type TimeSourceEnum.
+
+| Property | Value |
+|---|---|
+| Type | TimeSourceEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`TimeSourceEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `None` | Node is not currently synchronized with a UTC Time source. |
+| 1 | `Unknown` | Node uses an unlisted time source. |
+| 2 | `Admin` | Node received time from a client using the SetUTCTime Command. |
+| 3 | `NodeTimeCluster` | Synchronized time by querying the Time Synchronization cluster of another Node. |
+| 4 | `NonMatterSNTP` | SNTP from a server not in the Matter network. NTS is not used. |
+| 5 | `NonMatterNTP` | NTP from servers not in the Matter network. None of the servers used NTS. |
+| 6 | `MatterSNTP` | SNTP from a server within the Matter network. NTS is not used. |
+| 7 | `MatterNTP` | NTP from servers within the Matter network. None of the servers used NTS. |
+| 8 | `MixedNTP` | NTP from multiple servers in the Matter network and external. None of the servers used NTS. |
+| 9 | `NonMatterSNTPNTS` | SNTP from a server not in the Matter network. NTS is used. |
+| 10 | `NonMatterNTPNTS` | NTP from servers not in the Matter network. NTS is used on at least one server. |
+| 11 | `MatterSNTPNTS` | SNTP from a server within the Matter network. NTS is used. |
+| 12 | `MatterNTPNTS` | NTP from a server within the Matter network. NTS is used on at least one server. |
+| 13 | `MixedNTPNTS` | NTP from multiple servers in the Matter network and external. NTS is used on at least one server. |
+| 14 | `CloudSource` | Time synchronization comes from a vendor cloud-based source (e.g. "Date" header in authenticated HTTPS connection). |
+| 15 | `PTP` | Time synchronization comes from PTP. |
+| 16 | `GNSS` | Time synchronization comes from a GNSS source. |
+
+Example:
+
+```json
+{
+  "0/56/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `TrustedTimeSource`
+
+Path example:
+
+```text
+0/56/3
+```
+
+Indicates the Node ID, endpoint, and associated fabric index of a Node that may be used as trusted time source. 17.13, "Time source prioritization". This attribute reflects the last value set by an administrator using the SetTrustedTimeSource command. If the value is null, no trusted time source has yet been set.
+
+| Property | Value |
+|---|---|
+| Type | TrustedTimeSourceStruct |
+| Conformance | `TSC` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Default | `null` |
+
+Value is a `TrustedTimeSourceStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "0/56/3": {
+    "fabricIndex": 1,
+    "nodeID": 1,
+    "endpoint": 1
+  }
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `DefaultNTP`
+
+Path example:
+
+```text
+0/56/4
+```
+
+No condensed specification text is available for `DefaultNTP`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `NTPC` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Constraint | max length 128 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/56/4": "example"
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `TimeZone`
+
+Path example:
+
+```text
+0/56/5
+```
+
+This attribute contains a list of time zone offsets from UTC and when they must take effect. This attribute uses a list of time offset configurations to allow Nodes to handle scheduled regulatory time zone changes. This attribute must NOT be used to indicate daylight savings time changes. The first entry has a ValidAt entry of 0.
+
+| Property | Value |
+|---|---|
+| Type | list of TimeZoneStruct |
+| Conformance | `TZ` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | 1 to 2 entries |
+
+Each entry is a `TimeZoneStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/56/5": []
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `DSTOffset`
+
+Path example:
+
+```text
+0/56/6
+```
+
+No condensed specification text is available for `DSTOffset`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | list of DSTOffsetStruct |
+| Conformance | `TZ` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Default | `empty` |
+
+Each entry is a `DSTOffsetStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/56/6": []
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `LocalTime`
+
+Path example:
+
+```text
+0/56/7
+```
+
+Indicates the computed current local time of the node as a epoch-us (Epoch Time in Microseconds). The value of LocalTime is the sum of the UTCTime, the offset of the currently valid TimeZoneStruct from the TimeZone attribute (converted to microseconds), and the offset of the currently valid DSTOffsetStruct from the DSTOffset attribute (converted to microseconds), if such an entry exists. If the node has not achieved time synchronization, this is null. If the node has an empty DSTOffset, this is null.
+
+| Property | Value |
+|---|---|
+| Type | epoch-us |
+| Conformance | `TZ` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "0/56/7": 0
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `TimeZoneDatabase`
+
+Path example:
+
+```text
+0/56/8
+```
+
+Indicates whether the node has access to a time zone database. Nodes with a time zone database may update their own DSTOffset attribute to add new entries and may push DSTOffset updates to other Nodes in the same time zone as required.
+
+| Property | Value |
+|---|---|
+| Type | TimeZoneDatabaseEnum |
+| Conformance | `TZ` |
+| Access | R (read: view) |
+
+Values (`TimeZoneDatabaseEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Full` | Node has a full list of the available time zones |
+| 1 | `Partial` | Node has a partial list of the available time zones |
+| 2 | `None` | Node does not have a time zone database |
+
+Example:
+
+```json
+{
+  "0/56/8": 0
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `NTPServerAvailable`
+
+Path example:
+
+```text
+0/56/9
+```
+
+No condensed specification text is available for `NTPServerAvailable`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `NTPS` |
+| Access | R (read: view) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "0/56/9": true
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `TimeZoneListMaxSize`
+
+Path example:
+
+```text
+0/56/10
+```
+
+Indicates the number of supported list entries in the TimeZone attribute. This attribute may take the value of 1 or 2, where the optional second list entry may be used to handle scheduled regulatory time zone changes.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `TZ` |
+| Access | R (read: view) |
+| Constraint | 1 to 2 |
+
+Example:
+
+```json
+{
+  "0/56/10": 1
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `DSTOffsetListMaxSize`
+
+Path example:
+
+```text
+0/56/11
+```
+
+No condensed specification text is available for `DSTOffsetListMaxSize`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `TZ` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "0/56/11": 1
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `SupportsDNSResolve`
+
+Path example:
+
+```text
+0/56/12
+```
+
+No condensed specification text is available for `SupportsDNSResolve`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `NTPC` |
+| Access | R (read: view) |
+| Default | `false` |
+
+Example:
+
+```json
+{
+  "0/56/12": true
+}
+```
+
+---
+
+# Cluster 56 Commands
+
+Cluster 56 has **5 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SetUTCTime` | client → server | `M` | status | — |
+| 1 | `0x01` | `SetTrustedTimeSource` | client → server | `TSC` | status | This command is used to set the TrustedTimeSource attribute. |
+| 2 | `0x02` | `SetTimeZone` | client → server | `TZ` | SetTimeZoneResponse | This command is used to set the time zone of the node. |
+| 3 | `0x03` | `SetTimeZoneResponse` | server → client | `TZ` | — | THis command is used to report the result of a SetTimeZone command. |
+| 4 | `0x04` | `SetDSTOffset` | client → server | `TZ` | status | — |
+| 5 | `0x05` | `SetDefaultNTP` | client → server | `NTPC` | status | — |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 56 / 65529
+```
+
+```json
+{
+  "0/56/65529": [
+    0,
+    1,
+    2,
+    4,
+    5
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 56 command, check that the command ID exists in <code>endpoint/56/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 56,
+    "command_name": "SetUTCTime",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 56, always use `"cluster_id": 56`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SetUTCTime`
+
+## Purpose
+
+`SetUTCTime` is a client-to-server command of the Time Synchronization cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SetUTCTime` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `UTCTime` | `utcTime` | epoch-us | `M` | — | — |
+| 1 | `Granularity` | `granularity` | GranularityEnum | `M` | — | — |
+| 2 | `TimeSource` | `timeSource` | TimeSourceEnum | `O` | — | — |
+
+`Granularity` values (`GranularityEnum`): `0` = NoTimeGranularity, `1` = MinutesGranularity, `2` = SecondsGranularity, `3` = MillisecondsGranularity, `4` = MicrosecondsGranularity
+
+`TimeSource` values (`TimeSourceEnum`): `0` = None, `1` = Unknown, `2` = Admin, `3` = NodeTimeCluster, `4` = NonMatterSNTP, `5` = NonMatterNTP, `6` = MatterSNTP, `7` = MatterNTP, `8` = MixedNTP, `9` = NonMatterSNTPNTS, `10` = NonMatterNTPNTS, `11` = MatterSNTPNTS, `12` = MatterNTPNTS, `13` = MixedNTPNTS, `14` = CloudSource, `15` = PTP, `16` = GNSS
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 56,
+    "command_name": "SetUTCTime",
+    "payload": {
+      "utcTime": 0,
+      "granularity": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetTrustedTimeSource`
+
+## Purpose
+
+This command is used to set the TrustedTimeSource attribute. Upon receipt of this command: - If the TrustedTimeSource field in the command is null, the node must set the TrustedTimeSource attribute to null and must generate a MissingTrustedTimeSource event. - Otherwise, the node must set the TrustedTimeSource attribute to a struct which has NodeID and Endpoint fields matching those in the TrustedTimeSource field and has its FabricIndex field set to the command's accessing fabric index.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `SetTrustedTimeSource` |
+| Direction | client → server |
+| Conformance | `TSC` |
+| Response | status |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TrustedTimeSource` | `trustedTimeSource` | FabricScopedTrustedTimeSourceStruct (nullable) | `M` | — | This field contains the Node ID and endpoint of a trusted time source on the accessing fabric. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 56,
+    "command_name": "SetTrustedTimeSource",
+    "payload": {
+      "trustedTimeSource": {
+        "nodeID": 1,
+        "endpoint": 1
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetTimeZone`
+
+## Purpose
+
+This command is used to set the time zone of the node. If the given list is larger than the TimeZoneListMaxSize, the node must respond with RESOURCE_EXHAUSTED and the TimeZone attribute must NOT be updated. If the given list does not conform to the list requirements in TimeZone attribute the node must respond with a CONSTRAINT_ERROR and the TimeZone attribute must NOT be updated. If there are no errors in the list, the TimeZone field is copied to the TimeZone attribute.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `SetTimeZone` |
+| Direction | client → server |
+| Conformance | `TZ` |
+| Response | SetTimeZoneResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TimeZone` | `timeZone` | list of TimeZoneStruct | `M` | 1 to 2 entries | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 56,
+    "command_name": "SetTimeZone",
+    "payload": {
+      "timeZone": []
+    }
+  }
+}
+```
+
+The device answers with `SetTimeZoneResponse` (see below).
+
+---
+
+# Command: `SetTimeZoneResponse`
+
+## Purpose
+
+THis command is used to report the result of a SetTimeZone command. This command is generated in response to a SetTimeZone command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `SetTimeZoneResponse` |
+| Direction | server → client (response) |
+| Conformance | `TZ` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DSTOffsetRequired` | `dstOffsetRequired` | bool | `M` | — | — |
+
+---
+
+# Command: `SetDSTOffset`
+
+## Purpose
+
+`SetDSTOffset` is a client-to-server command of the Time Synchronization cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `SetDSTOffset` |
+| Direction | client → server |
+| Conformance | `TZ` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DSTOffset` | `dstOffset` | list of DSTOffsetStruct | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 56,
+    "command_name": "SetDSTOffset",
+    "payload": {
+      "dstOffset": []
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetDefaultNTP`
+
+## Purpose
+
+`SetDefaultNTP` is a client-to-server command of the Time Synchronization cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `SetDefaultNTP` |
+| Direction | client → server |
+| Conformance | `NTPC` |
+| Response | status |
+| Access | (invoke: admin) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `DefaultNTP` | `defaultNTP` | string (nullable) | `M` | max length 128 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 56,
+    "command_name": "SetDefaultNTP",
+    "payload": {
+      "defaultNTP": "example"
+    }
+  }
+}
+```
+
+---
+
+# Cluster 56 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `DSTTableEmpty` | info | `TZ` | — |
+| 1 | `0x01` | `DSTStatus` | info | `TZ` | — |
+| 2 | `0x02` | `TimeZoneStatus` | info | `TZ` | This event is generated when the node changes its time zone offset or name. |
+| 3 | `0x03` | `TimeFailure` | info | `M` | This event is generated if the node has not generated a TimeFailure event in the last hour, and the node is unable to get a time from any source. |
+| 4 | `0x04` | `MissingTrustedTimeSource` | info | `TSC` | This event is generated if the TrustedTimeSource is set to null upon fabric removal or by a SetTrustedTimeSource command. |
+
+## Event `0` — `DSTTableEmpty`
+
+This event has no fields.
+
+## Event `1` — `DSTStatus`
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `DSTOffsetActive` | bool | `M` | — |
+
+## Event `2` — `TimeZoneStatus`
+
+This event is generated when the node changes its time zone offset or name. It must NOT be sent for DST changes that are not accompanied by a time zone change.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Offset` | int32 | `M` | Current time zone offset from UTC in seconds. |
+| 1 | `Name` | string | `O` | Current time zone name. This name should use the country/city format specified by the IANA Time Zone Database. |
+
+## Event `3` — `TimeFailure`
+
+This event is generated if the node has not generated a TimeFailure event in the last hour, and the node is unable to get a time from any source. This event should NOT be generated more often than once per hour.
+
+This event has no fields.
+
+## Event `4` — `MissingTrustedTimeSource`
+
+This event is generated if the TrustedTimeSource is set to null upon fabric removal or by a SetTrustedTimeSource command. This event must also be generated if the node has not generated a MissingTrustedTimeSource event in the last hour, and the node fails to update its time from the TrustedTimeSource because the TrustedTimeSource is null or the specified peer cannot be reached. MissingTrustedTimeSource events corresponding to a time update should NOT be generated more often than once per hour.
+
+This event has no fields.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 56 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/56/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

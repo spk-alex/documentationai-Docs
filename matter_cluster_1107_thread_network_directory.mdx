@@ -1,0 +1,416 @@
+---
+title: "Matter Cluster 1107 — Thread Network Directory"
+description: "Matter Cluster 1107 (0x0453) Thread Network Directory: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1107
+clusterHex: "0x0453"
+clusterName: "Thread Network Directory"
+---
+
+# Matter Cluster 1107 — Thread Network Directory Cluster
+
+<Callout type="info">
+Matter Cluster <code>1107</code>, also written as <code>0x0453</code>, is the <strong>Thread Network Directory Cluster</strong>.
+This cluster stores a list of Thread networks (including the credentials required to access each network), as well as a designation of the user's preferred network, to facilitate the sharing of Thread networks across fabrics.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1107` |
+| Cluster ID hex | `0x0453` |
+| Cluster name | `Thread Network Directory` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `THNETDIR` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1107 values in the device shadow use this format:
+
+```text
+endpoint_id / 1107 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1107/0": "AQID"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1107` | Thread Network Directory cluster |
+| `0` | `PreferredExtendedPanID` attribute |
+
+---
+
+## Data Types
+
+### `ThreadNetworkStruct` (struct)
+
+Represents the data associated with a Thread Network.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ExtendedPanID` | octstr | `M` | allowed: 8 | — |
+| 1 | `NetworkName` | string | `M` | length 1 to 16 | Indicates the Network Name from the OperationalDataset for the given Thread network. |
+| 2 | `Channel` | uint16 | `M` | — | Indicates the Channel from the OperationalDataset for the given Thread network. |
+| 3 | `ActiveTimestamp` | uint64 | `M` | — | Indicates the Active Timestamp from the OperationalDataset for the given Thread network. |
+
+---
+
+## Cluster 1107 Attributes
+
+Cluster 1107 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `PreferredExtendedPanID` | octstr | `M` | R/W (read: view, write: manage) | nullable, persisted | — |
+| 1 | `0x0001` | `ThreadNetworks` | list of ThreadNetworkStruct | `M` | R (read: view) | persisted | — |
+| 2 | `0x0002` | `ThreadNetworkTableSize` | uint8 | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `PreferredExtendedPanID`
+
+Path example:
+
+```text
+1/1107/0
+```
+
+No condensed specification text is available for `PreferredExtendedPanID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | octstr |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | nullable, persisted |
+| Constraint | allowed: 8 |
+
+Example:
+
+```json
+{
+  "1/1107/0": "AQID"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ThreadNetworks`
+
+Path example:
+
+```text
+1/1107/1
+```
+
+Indicates the list of Thread Networks known about by this cluster. If the node hosting this cluster includes a Thread Border Router, then an entry for its Thread Network is included in this list. The list can be modified via the AddNetwork and RemoveNetwork commands. For each entry in the list, the cluster server also stores a Thread Operational Dataset.
+
+| Property | Value |
+|---|---|
+| Type | list of ThreadNetworkStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | max ThreadNetworkTableSize entries |
+
+Each entry is a `ThreadNetworkStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1107/1": []
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ThreadNetworkTableSize`
+
+Path example:
+
+```text
+1/1107/2
+```
+
+Indicates the maximum number of entries that can be held in the ThreadNetworks list; it is at least 2 times the number of SupportedFabrics advertised in the Operational Credentials Cluster on the root endpoint of this node.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/1107/2": 1
+}
+```
+
+---
+
+# Cluster 1107 Commands
+
+Cluster 1107 has **3 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `AddNetwork` | client → server | `M` | status | Adds an entry to the ThreadNetworks attribute with the specified Thread Operational Dataset. |
+| 1 | `0x01` | `RemoveNetwork` | client → server | `M` | status | Removes the network with the given Extended PAN ID from the ThreadNetworks attribute. |
+| 2 | `0x02` | `GetOperationalDataset` | client → server | `M` | OperationalDatasetResponse | Retrieves the Thread Operational Dataset with the given Extended PAN ID. |
+| 3 | `0x03` | `OperationalDatasetResponse` | server → client | `M` | — | Contains the Thread Operational Dataset for the Extended PAN specified in GetOperationalDataset. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1107 / 65529
+```
+
+```json
+{
+  "1/1107/65529": [
+    0,
+    1,
+    2
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1107 command, check that the command ID exists in <code>endpoint/1107/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1107,
+    "command_name": "AddNetwork",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1107, always use `"cluster_id": 1107`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `AddNetwork`
+
+## Purpose
+
+Adds an entry to the ThreadNetworks attribute with the specified Thread Operational Dataset. If there is an existing entry with the Extended PAN ID then the Thread Operational Dataset for that entry is replaced. As a result, changes to the network parameters (e.g. Channel, Network Name, PSKc, ...) of an existing entry with a given Extended PAN ID can be made using this command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AddNetwork` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OperationalDataset` | `operationalDataset` | octstr | `M` | max length 254 | This field represents the Operational Dataset for the network, using the encoding defined in the Thread specification. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1107,
+    "command_name": "AddNetwork",
+    "payload": {
+      "operationalDataset": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `RemoveNetwork`
+
+## Purpose
+
+Removes the network with the given Extended PAN ID from the ThreadNetworks attribute.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `RemoveNetwork` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ExtendedPanID` | `extendedPanID` | octstr | `M` | allowed: 8 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1107,
+    "command_name": "RemoveNetwork",
+    "payload": {
+      "extendedPanID": "AQID"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `GetOperationalDataset`
+
+## Purpose
+
+Retrieves the Thread Operational Dataset with the given Extended PAN ID.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `GetOperationalDataset` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | OperationalDatasetResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ExtendedPanID` | `extendedPanID` | octstr | `M` | allowed: 8 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1107,
+    "command_name": "GetOperationalDataset",
+    "payload": {
+      "extendedPanID": "AQID"
+    }
+  }
+}
+```
+
+The device answers with `OperationalDatasetResponse` (see below).
+
+---
+
+# Command: `OperationalDatasetResponse`
+
+## Purpose
+
+Contains the Thread Operational Dataset for the Extended PAN specified in GetOperationalDataset.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `OperationalDatasetResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OperationalDataset` | `operationalDataset` | octstr | `M` | max length 254 | — |
+
+---
+
+# Cluster 1107 Events
+
+Cluster 1107 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1107 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1107/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

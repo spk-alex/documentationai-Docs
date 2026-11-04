@@ -1,0 +1,506 @@
+---
+title: "Matter Cluster 95 — Microwave Oven Control"
+description: "Matter Cluster 95 (0x005F) Microwave Oven Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 95
+clusterHex: "0x005F"
+clusterName: "Microwave Oven Control"
+---
+
+# Matter Cluster 95 — Microwave Oven Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>95</code>, also written as <code>0x005F</code>, is the <strong>Microwave Oven Control Cluster</strong>.
+This cluster defines the requirements for the Microwave Oven Control cluster. This cluster has dependencies with the Operational State and Microwave Oven Mode clusters. The Operational State cluster and the Microwave Oven Mode clusters, or derivatives of those clusters must appear on the same endpoint as this cluster.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `95` |
+| Cluster ID hex | `0x005F` |
+| Cluster name | `Microwave Oven Control` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `MWOCTRL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 95 values in the device shadow use this format:
+
+```text
+endpoint_id / 95 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/95/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `95` | Microwave Oven Control cluster |
+| `0` | `CookTime` attribute |
+
+---
+
+## Cluster 95 Features
+
+The `FeatureMap` attribute (`1/95/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `PWRNUM` | PowerAsNumber | `O` | Power is specified as a unitless number or a percentage |
+| 1 | `WATTS` | PowerInWatts | `P, O` | Power is specified in Watts |
+| 2 | `PWRLMTS` | PowerNumberLimits | `[PWRNUM]` | Supports the limit attributes used with the PWRNUM feature |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `7` means every feature listed above is enabled.
+
+---
+
+## Cluster 95 Attributes
+
+Cluster 95 defines **9 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `CookTime` | elapsed-s | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `MaxCookTime` | elapsed-s | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `PowerSetting` | uint8 | `PWRNUM` | R (read: view) | — | — |
+| 3 | `0x0003` | `MinPower` | uint8 | `PWRLMTS` | R (read: view) | — | — |
+| 4 | `0x0004` | `MaxPower` | uint8 | `PWRLMTS` | R (read: view) | — | — |
+| 5 | `0x0005` | `PowerStep` | uint8 | `PWRLMTS` | R (read: view) | — | — |
+| 6 | `0x0006` | `SupportedWatts` | list of uint16 | `P, WATTS` | R (read: view) | — | — |
+| 7 | `0x0007` | `SelectedWattIndex` | uint8 | `P, WATTS` | R (read: view) | — | — |
+| 8 | `0x0008` | `WattRating` | uint16 | `O` | R (read: view) | — | `MS` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `CookTime`
+
+Path example:
+
+```text
+1/95/0
+```
+
+Indicates the total cook time associated with the operation of the device. This attribute must remain unchanged during the operation of the oven unless the value is changed via a command or out-of-band action.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 1 to MaxCookTime |
+
+Example:
+
+```json
+{
+  "1/95/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MaxCookTime`
+
+Path example:
+
+```text
+1/95/1
+```
+
+Indicates the maximum value to which the CookTime attribute can be set.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 1 to 86400 |
+
+Example:
+
+```json
+{
+  "1/95/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `PowerSetting`
+
+Path example:
+
+```text
+1/95/2
+```
+
+Indicates the power level associated with the operation of the device. If the MinPower, MaxPower, and PowerStep attributes are not supported: - The minimum value of this attribute is 10, - The maximum value of this attribute is 100, - The value is in even multiples of 10, - The default value is 100. If the MinPower, MaxPower, and PowerStep attributes are supported: - The value of this attribute is between MinPower and MaxPower inclusive. - The value of this attribute is such that (PowerSetting - MinPower) % PowerStep == 0
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PWRNUM` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/95/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `MinPower`
+
+Path example:
+
+```text
+1/95/3
+```
+
+Indicates the minimum value to which the PowerSetting attribute that can be set on the server.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PWRLMTS` |
+| Access | R (read: view) |
+| Constraint | 1 to 99 |
+
+Example:
+
+```json
+{
+  "1/95/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `MaxPower`
+
+Path example:
+
+```text
+1/95/4
+```
+
+Indicates the maximum value to which the PowerSetting attribute that can be set on the server.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PWRLMTS` |
+| Access | R (read: view) |
+| Constraint | compute to 100 |
+
+Example:
+
+```json
+{
+  "1/95/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `PowerStep`
+
+Path example:
+
+```text
+1/95/5
+```
+
+Indicates the increment of power that can be set on the server. The value of this attribute is between 1 and MaxPower inclusive. The value of this attribute is such that (MaxPower - MinPower) % PowerStep == 0 For example, if MinPower is 1, MaxPower is 10, and PowerSetting can be set to any integer between MinPower and MaxPower, PowerStep would be set to 1.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `PWRLMTS` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/95/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `SupportedWatts`
+
+Path example:
+
+```text
+1/95/6
+```
+
+Indicates the list of power levels (in W) supported by the server.
+
+| Property | Value |
+|---|---|
+| Type | list of uint16 |
+| Conformance | `P, WATTS` |
+| Access | R (read: view) |
+| Constraint | 1 to 10 entries |
+
+Example:
+
+```json
+{
+  "1/95/6": []
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `SelectedWattIndex`
+
+Path example:
+
+```text
+1/95/7
+```
+
+Indicates the index into the list of SupportedWatts of the currently selected power setting. The index is a valid index into the SupportedWatts list.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `P, WATTS` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/95/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `WattRating`
+
+Path example:
+
+```text
+1/95/8
+```
+
+Indicates the rating, in Watts, of the microwave power of the oven. Supporting this attribute can assist clients in suggesting cooking settings for various foods and beverages.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/95/8": 1
+}
+```
+
+---
+
+# Cluster 95 Commands
+
+Cluster 95 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SetCookingParameters` | client → server | `M` | status | This command is used to set the cooking parameters associated with the operation of the device. |
+| 1 | `0x01` | `AddMoreTime` | client → server | `O` | status | This command is used to add more time to the CookTime attribute of the server. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 95 / 65529
+```
+
+```json
+{
+  "1/95/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 95 command, check that the command ID exists in <code>endpoint/95/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 95,
+    "command_name": "SetCookingParameters",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 95, always use `"cluster_id": 95`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SetCookingParameters`
+
+## Purpose
+
+This command is used to set the cooking parameters associated with the operation of the device. This command supports the following fields:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SetCookingParameters` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CookMode` | `cookMode` | uint8 | `O` | desc | Indicates the value to which the CurrentMode attribute of the Microwave Oven Mode cluster should be set. The value of this field is one from the list of SupportedModes from the Microwave Oven Mode cluster. |
+| 1 | `CookTime` | `cookTime` | elapsed-s | `O` | 1 to MaxCookTime | Indicates the CookTime associated with the operation of the device. The value of this field is subject to the constraints of the CookTime attribute of this cluster. |
+| 2 | `PowerSetting` | `powerSetting` | uint8 | `[PWRNUM]` | MinPower to MaxPower | Indicates the PowerSetting associated with the operation of the device. The value of this field is subject to the constraints of the PowerSetting attribute of this cluster. |
+| 3 | `WattSettingIndex` | `wattSettingIndex` | uint8 | `[WATTS]` | desc | Indicates the value to which the SelectedWattIndex attribute is set. |
+| 4 | `StartAfterSetting` | `startAfterSetting` | bool | `O` | — | Indicates whether or not oven operation is started when the command is received. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 95,
+    "command_name": "SetCookingParameters",
+    "payload": {
+      "cookMode": 1,
+      "cookTime": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddMoreTime`
+
+## Purpose
+
+This command is used to add more time to the CookTime attribute of the server. This command supports these fields:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `AddMoreTime` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TimeToAdd` | `timeToAdd` | elapsed-s | `M` | 1 to MaxCookTime | Indicates the number of seconds to be added to the CookTime attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 95,
+    "command_name": "AddMoreTime",
+    "payload": {
+      "timeToAdd": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 95 Events
+
+Cluster 95 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 95 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/95/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

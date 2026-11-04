@@ -1,0 +1,1400 @@
+---
+title: "Matter Cluster 47 — Power Source"
+description: "Matter Cluster 47 (0x002F) Power Source: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 47
+clusterHex: "0x002F"
+clusterName: "Power Source"
+---
+
+# Matter Cluster 47 — Power Source Cluster
+
+<Callout type="info">
+Matter Cluster <code>47</code>, also written as <code>0x002F</code>, is the <strong>Power Source Cluster</strong>.
+This cluster is used to describe the configuration and capabilities of a physical power source that provides power to one or more endpoints on a node. In case the node has multiple power sources, each is described by its own cluster instance. Each instance of this cluster may be associated with one or more endpoints or the entire node.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `47` |
+| Cluster ID hex | `0x002F` |
+| Cluster name | `Power Source` |
+| Cluster revision (Matter 1.6.1) | `3` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `PS` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Added EndpointList attribute that maps a power source to a list of endpoints |
+| 3 | Added Q quality (replacing C quality) on BatPercentRemaining, BatTimeRemaining and BatTimeToFullCharge |
+
+---
+
+## Shadow Path Format
+
+Cluster 47 values in the device shadow use this format:
+
+```text
+endpoint_id / 47 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/47/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `47` | Power Source cluster |
+| `0` | `Status` attribute |
+
+---
+
+## Cluster 47 Features
+
+The `FeatureMap` attribute (`0/47/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `WIRED` | Wired | `O` | A wired power source |
+| 1 | `BAT` | Battery | `O` | A battery power source |
+| 2 | `RECHG` | Rechargeable | `[BAT]` | A rechargeable battery power source |
+| 3 | `REPLC` | Replaceable | `[BAT]` | A replaceable battery power source |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `15` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `BatApprovedChemistryEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | Cell chemistry is unspecified or unknown |
+| 1 | `Alkaline` | `M` | Cell chemistry is alkaline |
+| 2 | `LithiumCarbonFluoride` | `M` | Cell chemistry is lithium carbon fluoride |
+| 3 | `LithiumChromiumOxide` | `M` | Cell chemistry is lithium chromium oxide |
+| 4 | `LithiumCopperOxide` | `M` | Cell chemistry is lithium copper oxide |
+| 5 | `LithiumIronDisulfide` | `M` | Cell chemistry is lithium iron disulfide |
+| 6 | `LithiumManganeseDioxide` | `M` | Cell chemistry is lithium manganese dioxide |
+| 7 | `LithiumThionylChloride` | `M` | Cell chemistry is lithium thionyl chloride |
+| 8 | `Magnesium` | `M` | Cell chemistry is magnesium |
+| 9 | `MercuryOxide` | `M` | Cell chemistry is mercury oxide |
+| 10 | `NickelOxyhydride` | `M` | Cell chemistry is nickel oxyhydride |
+| 11 | `SilverOxide` | `M` | Cell chemistry is silver oxide |
+| 12 | `ZincAir` | `M` | Cell chemistry is zinc air |
+| 13 | `ZincCarbon` | `M` | Cell chemistry is zinc carbon |
+| 14 | `ZincChloride` | `M` | Cell chemistry is zinc chloride |
+| 15 | `ZincManganeseDioxide` | `M` | Cell chemistry is zinc manganese dioxide |
+| 16 | `LeadAcid` | `M` | Cell chemistry is lead acid |
+| 17 | `LithiumCobaltOxide` | `M` | Cell chemistry is lithium cobalt oxide |
+| 18 | `LithiumIon` | `M` | Cell chemistry is lithium ion |
+| 19 | `LithiumIonPolymer` | `M` | Cell chemistry is lithium ion polymer |
+| 20 | `LithiumIronPhosphate` | `M` | Cell chemistry is lithium iron phosphate |
+| 21 | `LithiumSulfur` | `M` | Cell chemistry is lithium sulfur |
+| 22 | `LithiumTitanate` | `M` | Cell chemistry is lithium titanate |
+| 23 | `NickelCadmium` | `M` | Cell chemistry is nickel cadmium |
+| 24 | `NickelHydrogen` | `M` | Cell chemistry is nickel hydrogen |
+| 25 | `NickelIron` | `M` | Cell chemistry is nickel iron |
+| 26 | `NickelMetalHydride` | `M` | Cell chemistry is nickel metal hydride |
+| 27 | `NickelZinc` | `M` | Cell chemistry is nickel zinc |
+| 28 | `SilverZinc` | `M` | Cell chemistry is silver zinc |
+| 29 | `SodiumIon` | `M` | Cell chemistry is sodium ion |
+| 30 | `SodiumSulfur` | `M` | Cell chemistry is sodium sulfur |
+| 31 | `ZincBromide` | `M` | Cell chemistry is zinc bromide |
+| 32 | `ZincCerium` | `M` | Cell chemistry is zinc cerium |
+
+### `BatChargeFaultEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The Node detects an unspecified fault on this battery source. |
+| 1 | `AmbientTooHot` | `M` | The Node detects the ambient temperature is above the nominal range for this battery source. |
+| 2 | `AmbientTooCold` | `M` | The Node detects the ambient temperature is below the nominal range for this battery source. |
+| 3 | `BatteryTooHot` | `M` | The Node detects the temperature of this battery source is above the nominal range. |
+| 4 | `BatteryTooCold` | `M` | The Node detects the temperature of this battery source is below the nominal range. |
+| 5 | `BatteryAbsent` | `M` | The Node detects this battery source is not present. |
+| 6 | `BatteryOverVoltage` | `M` | The Node detects this battery source is over voltage. |
+| 7 | `BatteryUnderVoltage` | `M` | The Node detects this battery source is under voltage. |
+| 8 | `ChargerOverVoltage` | `M` | The Node detects the charger for this battery source is over voltage. |
+| 9 | `ChargerUnderVoltage` | `M` | The Node detects the charger for this battery source is under voltage. |
+| 10 | `SafetyTimeout` | `M` | The Node detects a charging safety timeout for this battery source. |
+
+### `BatChargeLevelEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `OK` | `M` | Charge level is nominal |
+| 1 | `Warning` | `M` | Charge level is low, intervention may soon be required. |
+| 2 | `Critical` | `M` | Charge level is critical, immediate intervention is required |
+
+### `BatChargeStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unknown` | `M` | Unable to determine the charging state |
+| 1 | `IsCharging` | `M` | The battery is charging |
+| 2 | `IsAtFullCharge` | `M` | The battery is at full charge |
+| 3 | `IsNotCharging` | `M` | The battery is not charging |
+
+### `BatCommonDesignationEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | Common type is unknown or unspecified |
+| 1 | `AAA` | `M` | Common type is as specified |
+| 2 | `AA` | `M` | Common type is as specified |
+| 3 | `C` | `M` | Common type is as specified |
+| 4 | `D` | `M` | Common type is as specified |
+| 5 | `4v5` | `M` | Common type is as specified |
+| 6 | `6v0` | `M` | Common type is as specified |
+| 7 | `9v0` | `M` | Common type is as specified |
+| 8 | `1_2AA` | `M` | Common type is as specified |
+| 9 | `AAAA` | `M` | Common type is as specified |
+| 10 | `A` | `M` | Common type is as specified |
+| 11 | `B` | `M` | Common type is as specified |
+| 12 | `F` | `M` | Common type is as specified |
+| 13 | `N` | `M` | Common type is as specified |
+| 14 | `No6` | `M` | Common type is as specified |
+| 15 | `SubC` | `M` | Common type is as specified |
+| 16 | `A23` | `M` | Common type is as specified |
+| 17 | `A27` | `M` | Common type is as specified |
+| 18 | `BA5800` | `M` | Common type is as specified |
+| 19 | `Duplex` | `M` | Common type is as specified |
+| 20 | `4SR44` | `M` | Common type is as specified |
+| 21 | `523` | `M` | Common type is as specified |
+| 22 | `531` | `M` | Common type is as specified |
+| 23 | `15v0` | `M` | Common type is as specified |
+| 24 | `22v5` | `M` | Common type is as specified |
+| 25 | `30v0` | `M` | Common type is as specified |
+| 26 | `45v0` | `M` | Common type is as specified |
+| 27 | `67v5` | `M` | Common type is as specified |
+| 28 | `J` | `M` | Common type is as specified |
+| 29 | `CR123A` | `M` | Common type is as specified |
+| 30 | `CR2` | `M` | Common type is as specified |
+| 31 | `2CR5` | `M` | Common type is as specified |
+| 32 | `CR_P2` | `M` | Common type is as specified |
+| 33 | `CR_V3` | `M` | Common type is as specified |
+| 34 | `SR41` | `M` | Common type is as specified |
+| 35 | `SR43` | `M` | Common type is as specified |
+| 36 | `SR44` | `M` | Common type is as specified |
+| 37 | `SR45` | `M` | Common type is as specified |
+| 38 | `SR48` | `M` | Common type is as specified |
+| 39 | `SR54` | `M` | Common type is as specified |
+| 40 | `SR55` | `M` | Common type is as specified |
+| 41 | `SR57` | `M` | Common type is as specified |
+| 42 | `SR58` | `M` | Common type is as specified |
+| 43 | `SR59` | `M` | Common type is as specified |
+| 44 | `SR60` | `M` | Common type is as specified |
+| 45 | `SR63` | `M` | Common type is as specified |
+| 46 | `SR64` | `M` | Common type is as specified |
+| 47 | `SR65` | `M` | Common type is as specified |
+| 48 | `SR66` | `M` | Common type is as specified |
+| 49 | `SR67` | `M` | Common type is as specified |
+| 50 | `SR68` | `M` | Common type is as specified |
+| 51 | `SR69` | `M` | Common type is as specified |
+| 52 | `SR516` | `M` | Common type is as specified |
+| 53 | `SR731` | `M` | Common type is as specified |
+| 54 | `SR712` | `M` | Common type is as specified |
+| 55 | `LR932` | `M` | Common type is as specified |
+| 56 | `A5` | `M` | Common type is as specified |
+| 57 | `A10` | `M` | Common type is as specified |
+| 58 | `A13` | `M` | Common type is as specified |
+| 59 | `A312` | `M` | Common type is as specified |
+| 60 | `A675` | `M` | Common type is as specified |
+| 61 | `AC41E` | `M` | Common type is as specified |
+| 62 | `10180` | `M` | Common type is as specified |
+| 63 | `10280` | `M` | Common type is as specified |
+| 64 | `10440` | `M` | Common type is as specified |
+| 65 | `14250` | `M` | Common type is as specified |
+| 66 | `14430` | `M` | Common type is as specified |
+| 67 | `14500` | `M` | Common type is as specified |
+| 68 | `14650` | `M` | Common type is as specified |
+| 69 | `15270` | `M` | Common type is as specified |
+| 70 | `16340` | `M` | Common type is as specified |
+| 71 | `RCR123A` | `M` | Common type is as specified |
+| 72 | `17500` | `M` | Common type is as specified |
+| 73 | `17670` | `M` | Common type is as specified |
+| 74 | `18350` | `M` | Common type is as specified |
+| 75 | `18500` | `M` | Common type is as specified |
+| 76 | `18650` | `M` | Common type is as specified |
+| 77 | `19670` | `M` | Common type is as specified |
+| 78 | `25500` | `M` | Common type is as specified |
+| 79 | `26650` | `M` | Common type is as specified |
+| 80 | `32600` | `M` | Common type is as specified |
+
+### `BatFaultEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The Node detects an unspecified fault on this battery power source. |
+| 1 | `OverTemp` | `M` | The Node detects the temperature of this battery power source is above ideal operating conditions. |
+| 2 | `UnderTemp` | `M` | The Node detects the temperature of this battery power source is below ideal operating conditions. |
+
+### `BatReplaceabilityEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The replaceability is unspecified or unknown. |
+| 1 | `NotReplaceable` | `M` | The battery is not replaceable. |
+| 2 | `UserReplaceable` | `M` | The battery is replaceable by the user or customer. |
+| 3 | `FactoryReplaceable` | `M` | The battery is replaceable by an authorized factory technician. |
+
+### `PowerSourceStatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | Indicate the source status is not specified |
+| 1 | `Active` | `M` | Indicate the source is available and currently supplying power |
+| 2 | `Standby` | `M` | Indicate the source is available, but is not currently supplying power |
+| 3 | `Unavailable` | `M` | Indicate the source is not currently available to supply power |
+
+### `WiredCurrentTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `AC` | `M` | Indicates AC current |
+| 1 | `DC` | `M` | Indicates DC current |
+
+### `WiredFaultEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The Node detects an unspecified fault on this wired power source. |
+| 1 | `OverVoltage` | `M` | The Node detects the supplied voltage is above maximum supported value for this wired power source. |
+| 2 | `UnderVoltage` | `M` | The Node detects the supplied voltage is below maximum supported value for this wired power source. |
+
+---
+
+## Cluster 47 Attributes
+
+Cluster 47 defines **32 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Status` | PowerSourceStatusEnum | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `Order` | uint8 | `M` | R (read: view) | persisted | — |
+| 2 | `0x0002` | `Description` | string | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `WiredAssessedInputVoltage` | uint32 | `[WIRED]` | R (read: view) | nullable, change omitted | — |
+| 4 | `0x0004` | `WiredAssessedInputFrequency` | uint16 | `[WIRED]` | R (read: view) | nullable, change omitted | — |
+| 5 | `0x0005` | `WiredCurrentType` | WiredCurrentTypeEnum | `WIRED` | R (read: view) | — | — |
+| 6 | `0x0006` | `WiredAssessedCurrent` | uint32 | `[WIRED]` | R (read: view) | nullable, change omitted | — |
+| 7 | `0x0007` | `WiredNominalVoltage` | uint32 | `[WIRED]` | R (read: view) | — | — |
+| 8 | `0x0008` | `WiredMaximumCurrent` | uint32 | `[WIRED]` | R (read: view) | — | — |
+| 9 | `0x0009` | `WiredPresent` | bool | `[WIRED]` | R (read: view) | — | — |
+| 10 | `0x000A` | `ActiveWiredFaults` | list of WiredFaultEnum | `[WIRED]` | R (read: view) | — | — |
+| 11 | `0x000B` | `BatVoltage` | uint32 | `[BAT]` | R (read: view) | nullable, change omitted | — |
+| 12 | `0x000C` | `BatPercentRemaining` | uint8 | `[BAT]` | R (read: view) | nullable, quiet reporting | — |
+| 13 | `0x000D` | `BatTimeRemaining` | uint32 | `[BAT]` | R (read: view) | nullable, quiet reporting | — |
+| 14 | `0x000E` | `BatChargeLevel` | BatChargeLevelEnum | `BAT` | R (read: view) | — | — |
+| 15 | `0x000F` | `BatReplacementNeeded` | bool | `BAT` | R (read: view) | — | — |
+| 16 | `0x0010` | `BatReplaceability` | BatReplaceabilityEnum | `BAT` | R (read: view) | — | — |
+| 17 | `0x0011` | `BatPresent` | bool | `[BAT]` | R (read: view) | — | — |
+| 18 | `0x0012` | `ActiveBatFaults` | list of BatFaultEnum | `[BAT]` | R (read: view) | — | — |
+| 19 | `0x0013` | `BatReplacementDescription` | string | `REPLC` | R (read: view) | — | — |
+| 20 | `0x0014` | `BatCommonDesignation` | BatCommonDesignationEnum | `[REPLC]` | R (read: view) | — | — |
+| 21 | `0x0015` | `BatANSIDesignation` | string | `[REPLC]` | R (read: view) | — | — |
+| 22 | `0x0016` | `BatIECDesignation` | string | `[REPLC]` | R (read: view) | — | — |
+| 23 | `0x0017` | `BatApprovedChemistry` | BatApprovedChemistryEnum | `[REPLC]` | R (read: view) | — | — |
+| 24 | `0x0018` | `BatCapacity` | uint32 | `[REPLC \| RECHG]` | R (read: view) | — | — |
+| 25 | `0x0019` | `BatQuantity` | uint8 | `REPLC` | R (read: view) | — | — |
+| 26 | `0x001A` | `BatChargeState` | BatChargeStateEnum | `RECHG` | R (read: view) | — | — |
+| 27 | `0x001B` | `BatTimeToFullCharge` | uint32 | `[RECHG]` | R (read: view) | nullable, quiet reporting | — |
+| 28 | `0x001C` | `BatFunctionalWhileCharging` | bool | `RECHG` | R (read: view) | — | — |
+| 29 | `0x001D` | `BatChargingCurrent` | uint32 | `[RECHG]` | R (read: view) | nullable, change omitted | — |
+| 30 | `0x001E` | `ActiveBatChargeFaults` | list of BatChargeFaultEnum | `[RECHG]` | R (read: view) | — | — |
+| 31 | `0x001F` | `EndpointList` | list of endpoint-no | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `3` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Status`
+
+Path example:
+
+```text
+0/47/0
+```
+
+Indicates the participation of this power source in providing power to the Node as specified in PowerSourceStatusEnum.
+
+| Property | Value |
+|---|---|
+| Type | PowerSourceStatusEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`PowerSourceStatusEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | Indicate the source status is not specified |
+| 1 | `Active` | Indicate the source is available and currently supplying power |
+| 2 | `Standby` | Indicate the source is available, but is not currently supplying power |
+| 3 | `Unavailable` | Indicate the source is not currently available to supply power |
+
+Example:
+
+```json
+{
+  "0/47/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `Order`
+
+Path example:
+
+```text
+0/47/1
+```
+
+Indicates the relative preference with which the Node will select this source to provide power. A source with a lower order is selected by the Node to provide power before any other source with a higher order, if the lower order source is available. Note, Order is read-only and therefore NOT intended to allow clients control over power source selection.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "0/47/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `Description`
+
+Path example:
+
+```text
+0/47/2
+```
+
+This attribute provides a user-facing description of this source, used to distinguish it from other power sources, e.g. "DC Power", "Primary Battery" or "Battery back-up". This attribute must NOT be used to convey information such as battery form factor, or chemistry.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max length 60 |
+
+Example:
+
+```json
+{
+  "0/47/2": "example"
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `WiredAssessedInputVoltage`
+
+Path example:
+
+```text
+0/47/3
+```
+
+Indicates the assessed RMS or DC voltage currently provided by the hard-wired source, in mV (millivolts). A value of null indicates the Node is currently unable to assess the value. If the wired source is not connected, but the Node is still able to assess a value, then the assessed value may be reported.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[WIRED]` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+
+Example:
+
+```json
+{
+  "0/47/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `WiredAssessedInputFrequency`
+
+Path example:
+
+```text
+0/47/4
+```
+
+Indicates the assessed frequency of the voltage, currently provided by the hard-wired source, in Hz. A value of null indicates the Node is currently unable to assess the value. If the wired source is not connected, but the Node is still able to assess a value, then the assessed value may be reported.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[WIRED]` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+
+Example:
+
+```json
+{
+  "0/47/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `WiredCurrentType`
+
+Path example:
+
+```text
+0/47/5
+```
+
+Indicates the type of current the Node expects to be provided by the hard-wired source as specified in WiredCurrentTypeEnum.
+
+| Property | Value |
+|---|---|
+| Type | WiredCurrentTypeEnum |
+| Conformance | `WIRED` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`WiredCurrentTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `AC` | Indicates AC current |
+| 1 | `DC` | Indicates DC current |
+
+Example:
+
+```json
+{
+  "0/47/5": 0
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `WiredAssessedCurrent`
+
+Path example:
+
+```text
+0/47/6
+```
+
+Indicates the assessed instantaneous current draw of the Node on the hard-wired source, in mA (milliamps). A value of null indicates the Node is currently unable to assess the value. If the wired source is not connected, but the Node is still able to assess a value, then the assessed value may be reported.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[WIRED]` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+
+Example:
+
+```json
+{
+  "0/47/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `WiredNominalVoltage`
+
+Path example:
+
+```text
+0/47/7
+```
+
+Indicates the nominal voltage, printed as part of the Node's regulatory compliance label in mV (millivolts), expected to be provided by the hard-wired source.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[WIRED]` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/7": 1
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `WiredMaximumCurrent`
+
+Path example:
+
+```text
+0/47/8
+```
+
+Indicates the maximum current, printed as part of the Node's regulatory compliance label in mA (milliamps), expected to be provided by the hard-wired source.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[WIRED]` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/8": 1
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `WiredPresent`
+
+Path example:
+
+```text
+0/47/9
+```
+
+Indicates if the Node detects that the hard-wired power source is properly connected.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `[WIRED]` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/9": true
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `ActiveWiredFaults`
+
+Path example:
+
+```text
+0/47/10
+```
+
+Indicates the set of wired faults currently detected by the Node on this power source. This set is represented as a list of WiredFaultEnum. When the Node detects a fault has been raised, the appropriate WiredFaultEnum value is added to this list, provided it is not already present. This list must NOT contain more than one instance of a specific WiredFaultEnum value.
+
+| Property | Value |
+|---|---|
+| Type | list of WiredFaultEnum |
+| Conformance | `[WIRED]` |
+| Access | R (read: view) |
+| Constraint | max 8 entries |
+
+Example:
+
+```json
+{
+  "0/47/10": []
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `BatVoltage`
+
+Path example:
+
+```text
+0/47/11
+```
+
+Indicates the currently measured output voltage of the battery in mV (millivolts). A value of null indicates the Node is currently unable to assess the value.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[BAT]` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+
+Example:
+
+```json
+{
+  "0/47/11": 1
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `BatPercentRemaining`
+
+Path example:
+
+```text
+0/47/12
+```
+
+Indicates the estimated percentage of battery charge remaining until the battery will no longer be able to provide power to the Node. Values are expressed in half percent units, ranging from 0 to 200. E.g. a value of 48 is equivalent to 24%. A value of null indicates the Node is currently unable to assess the value.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `[BAT]` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+| Constraint | max 200 |
+
+Example:
+
+```json
+{
+  "0/47/12": 1
+}
+```
+
+---
+
+## Attribute `13` / `0x000D` — `BatTimeRemaining`
+
+Path example:
+
+```text
+0/47/13
+```
+
+Indicates the estimated time in seconds before the battery will no longer be able to provide power to the Node. A value of null indicates the Node is currently unable to assess the value. Changes to this attribute only be marked as reportable in the following cases: - At most once every 10 seconds, or - When it changes from null to any other value and vice versa. Since reporting consumes power, devices should be careful not to over-report.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[BAT]` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+
+Example:
+
+```json
+{
+  "0/47/13": 0
+}
+```
+
+---
+
+## Attribute `14` / `0x000E` — `BatChargeLevel`
+
+Path example:
+
+```text
+0/47/14
+```
+
+Indicates a coarse ranking of the charge level of the battery, used to indicate when intervention is required as specified in BatChargeLevelEnum.
+
+| Property | Value |
+|---|---|
+| Type | BatChargeLevelEnum |
+| Conformance | `BAT` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`BatChargeLevelEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `OK` | Charge level is nominal |
+| 1 | `Warning` | Charge level is low, intervention may soon be required. |
+| 2 | `Critical` | Charge level is critical, immediate intervention is required |
+
+Example:
+
+```json
+{
+  "0/47/14": 0
+}
+```
+
+---
+
+## Attribute `15` / `0x000F` — `BatReplacementNeeded`
+
+Path example:
+
+```text
+0/47/15
+```
+
+Indicates if the battery needs to be replaced. Replacement may be simple routine maintenance, such as with a single use, non-rechargeable cell. Replacement, however, may also indicate end of life, or serious fault with a rechargeable or even non-replaceable cell.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `BAT` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/15": true
+}
+```
+
+---
+
+## Attribute `16` / `0x0010` — `BatReplaceability`
+
+Path example:
+
+```text
+0/47/16
+```
+
+Indicates the replaceability of the battery as specified in BatReplaceabilityEnum.
+
+| Property | Value |
+|---|---|
+| Type | BatReplaceabilityEnum |
+| Conformance | `BAT` |
+| Access | R (read: view) |
+
+Values (`BatReplaceabilityEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | The replaceability is unspecified or unknown. |
+| 1 | `NotReplaceable` | The battery is not replaceable. |
+| 2 | `UserReplaceable` | The battery is replaceable by the user or customer. |
+| 3 | `FactoryReplaceable` | The battery is replaceable by an authorized factory technician. |
+
+Example:
+
+```json
+{
+  "0/47/16": 1
+}
+```
+
+---
+
+## Attribute `17` / `0x0011` — `BatPresent`
+
+Path example:
+
+```text
+0/47/17
+```
+
+Indicates whether the Node detects that the batteries are properly installed.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `[BAT]` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/17": true
+}
+```
+
+---
+
+## Attribute `18` / `0x0012` — `ActiveBatFaults`
+
+Path example:
+
+```text
+0/47/18
+```
+
+Indicates the set of battery faults currently detected by the Node on this power source. This set is represented as a list of BatFaultEnum. When the Node detects a fault has been raised, the appropriate BatFaultEnum value is added to this list, provided it is not already present. This list must NOT contain more than one instance of a specific BatFaultEnum value.
+
+| Property | Value |
+|---|---|
+| Type | list of BatFaultEnum |
+| Conformance | `[BAT]` |
+| Access | R (read: view) |
+| Constraint | max 8 entries |
+
+Example:
+
+```json
+{
+  "0/47/18": []
+}
+```
+
+---
+
+## Attribute `19` / `0x0013` — `BatReplacementDescription`
+
+Path example:
+
+```text
+0/47/19
+```
+
+This attribute provides a user-facing description of this battery, which should contain information required to identify a replacement, such as form factor, chemistry or preferred manufacturer.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `REPLC` |
+| Access | R (read: view) |
+| Constraint | max length 60 |
+
+Example:
+
+```json
+{
+  "0/47/19": "example"
+}
+```
+
+---
+
+## Attribute `20` / `0x0014` — `BatCommonDesignation`
+
+Path example:
+
+```text
+0/47/20
+```
+
+Indicates the ID of the common or colloquial designation of the battery, as specified in BatCommonDesignationEnum.
+
+| Property | Value |
+|---|---|
+| Type | BatCommonDesignationEnum |
+| Conformance | `[REPLC]` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`BatCommonDesignationEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | Common type is unknown or unspecified |
+| 1 | `AAA` | Common type is as specified |
+| 2 | `AA` | Common type is as specified |
+| 3 | `C` | Common type is as specified |
+| 4 | `D` | Common type is as specified |
+| 5 | `4v5` | Common type is as specified |
+| 6 | `6v0` | Common type is as specified |
+| 7 | `9v0` | Common type is as specified |
+| 8 | `1_2AA` | Common type is as specified |
+| 9 | `AAAA` | Common type is as specified |
+| 10 | `A` | Common type is as specified |
+| 11 | `B` | Common type is as specified |
+| 12 | `F` | Common type is as specified |
+| 13 | `N` | Common type is as specified |
+| 14 | `No6` | Common type is as specified |
+| 15 | `SubC` | Common type is as specified |
+| 16 | `A23` | Common type is as specified |
+| 17 | `A27` | Common type is as specified |
+| 18 | `BA5800` | Common type is as specified |
+| 19 | `Duplex` | Common type is as specified |
+| 20 | `4SR44` | Common type is as specified |
+| 21 | `523` | Common type is as specified |
+| 22 | `531` | Common type is as specified |
+| 23 | `15v0` | Common type is as specified |
+| 24 | `22v5` | Common type is as specified |
+| 25 | `30v0` | Common type is as specified |
+| 26 | `45v0` | Common type is as specified |
+| 27 | `67v5` | Common type is as specified |
+| 28 | `J` | Common type is as specified |
+| 29 | `CR123A` | Common type is as specified |
+| 30 | `CR2` | Common type is as specified |
+| 31 | `2CR5` | Common type is as specified |
+| 32 | `CR_P2` | Common type is as specified |
+| 33 | `CR_V3` | Common type is as specified |
+| 34 | `SR41` | Common type is as specified |
+| 35 | `SR43` | Common type is as specified |
+| 36 | `SR44` | Common type is as specified |
+| 37 | `SR45` | Common type is as specified |
+| 38 | `SR48` | Common type is as specified |
+| 39 | `SR54` | Common type is as specified |
+| 40 | `SR55` | Common type is as specified |
+| 41 | `SR57` | Common type is as specified |
+| 42 | `SR58` | Common type is as specified |
+| 43 | `SR59` | Common type is as specified |
+| 44 | `SR60` | Common type is as specified |
+| 45 | `SR63` | Common type is as specified |
+| 46 | `SR64` | Common type is as specified |
+| 47 | `SR65` | Common type is as specified |
+| 48 | `SR66` | Common type is as specified |
+| 49 | `SR67` | Common type is as specified |
+| 50 | `SR68` | Common type is as specified |
+| 51 | `SR69` | Common type is as specified |
+| 52 | `SR516` | Common type is as specified |
+| 53 | `SR731` | Common type is as specified |
+| 54 | `SR712` | Common type is as specified |
+| 55 | `LR932` | Common type is as specified |
+| 56 | `A5` | Common type is as specified |
+| 57 | `A10` | Common type is as specified |
+| 58 | `A13` | Common type is as specified |
+| 59 | `A312` | Common type is as specified |
+| 60 | `A675` | Common type is as specified |
+| 61 | `AC41E` | Common type is as specified |
+| 62 | `10180` | Common type is as specified |
+| 63 | `10280` | Common type is as specified |
+| 64 | `10440` | Common type is as specified |
+| 65 | `14250` | Common type is as specified |
+| 66 | `14430` | Common type is as specified |
+| 67 | `14500` | Common type is as specified |
+| 68 | `14650` | Common type is as specified |
+| 69 | `15270` | Common type is as specified |
+| 70 | `16340` | Common type is as specified |
+| 71 | `RCR123A` | Common type is as specified |
+| 72 | `17500` | Common type is as specified |
+| 73 | `17670` | Common type is as specified |
+| 74 | `18350` | Common type is as specified |
+| 75 | `18500` | Common type is as specified |
+| 76 | `18650` | Common type is as specified |
+| 77 | `19670` | Common type is as specified |
+| 78 | `25500` | Common type is as specified |
+| 79 | `26650` | Common type is as specified |
+| 80 | `32600` | Common type is as specified |
+
+Example:
+
+```json
+{
+  "0/47/20": 1
+}
+```
+
+---
+
+## Attribute `21` / `0x0015` — `BatANSIDesignation`
+
+Path example:
+
+```text
+0/47/21
+```
+
+No condensed specification text is available for `BatANSIDesignation`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `[REPLC]` |
+| Access | R (read: view) |
+| Constraint | max length 20 |
+
+Example:
+
+```json
+{
+  "0/47/21": "example"
+}
+```
+
+---
+
+## Attribute `22` / `0x0016` — `BatIECDesignation`
+
+Path example:
+
+```text
+0/47/22
+```
+
+No condensed specification text is available for `BatIECDesignation`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `[REPLC]` |
+| Access | R (read: view) |
+| Constraint | max length 20 |
+
+Example:
+
+```json
+{
+  "0/47/22": "example"
+}
+```
+
+---
+
+## Attribute `23` / `0x0017` — `BatApprovedChemistry`
+
+Path example:
+
+```text
+0/47/23
+```
+
+Indicates the ID of the preferred chemistry of the battery source as specified in BatApprovedChemistryEnum.
+
+| Property | Value |
+|---|---|
+| Type | BatApprovedChemistryEnum |
+| Conformance | `[REPLC]` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`BatApprovedChemistryEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | Cell chemistry is unspecified or unknown |
+| 1 | `Alkaline` | Cell chemistry is alkaline |
+| 2 | `LithiumCarbonFluoride` | Cell chemistry is lithium carbon fluoride |
+| 3 | `LithiumChromiumOxide` | Cell chemistry is lithium chromium oxide |
+| 4 | `LithiumCopperOxide` | Cell chemistry is lithium copper oxide |
+| 5 | `LithiumIronDisulfide` | Cell chemistry is lithium iron disulfide |
+| 6 | `LithiumManganeseDioxide` | Cell chemistry is lithium manganese dioxide |
+| 7 | `LithiumThionylChloride` | Cell chemistry is lithium thionyl chloride |
+| 8 | `Magnesium` | Cell chemistry is magnesium |
+| 9 | `MercuryOxide` | Cell chemistry is mercury oxide |
+| 10 | `NickelOxyhydride` | Cell chemistry is nickel oxyhydride |
+| 11 | `SilverOxide` | Cell chemistry is silver oxide |
+| 12 | `ZincAir` | Cell chemistry is zinc air |
+| 13 | `ZincCarbon` | Cell chemistry is zinc carbon |
+| 14 | `ZincChloride` | Cell chemistry is zinc chloride |
+| 15 | `ZincManganeseDioxide` | Cell chemistry is zinc manganese dioxide |
+| 16 | `LeadAcid` | Cell chemistry is lead acid |
+| 17 | `LithiumCobaltOxide` | Cell chemistry is lithium cobalt oxide |
+| 18 | `LithiumIon` | Cell chemistry is lithium ion |
+| 19 | `LithiumIonPolymer` | Cell chemistry is lithium ion polymer |
+| 20 | `LithiumIronPhosphate` | Cell chemistry is lithium iron phosphate |
+| 21 | `LithiumSulfur` | Cell chemistry is lithium sulfur |
+| 22 | `LithiumTitanate` | Cell chemistry is lithium titanate |
+| 23 | `NickelCadmium` | Cell chemistry is nickel cadmium |
+| 24 | `NickelHydrogen` | Cell chemistry is nickel hydrogen |
+| 25 | `NickelIron` | Cell chemistry is nickel iron |
+| 26 | `NickelMetalHydride` | Cell chemistry is nickel metal hydride |
+| 27 | `NickelZinc` | Cell chemistry is nickel zinc |
+| 28 | `SilverZinc` | Cell chemistry is silver zinc |
+| 29 | `SodiumIon` | Cell chemistry is sodium ion |
+| 30 | `SodiumSulfur` | Cell chemistry is sodium sulfur |
+| 31 | `ZincBromide` | Cell chemistry is zinc bromide |
+| 32 | `ZincCerium` | Cell chemistry is zinc cerium |
+
+Example:
+
+```json
+{
+  "0/47/23": 1
+}
+```
+
+---
+
+## Attribute `24` / `0x0018` — `BatCapacity`
+
+Path example:
+
+```text
+0/47/24
+```
+
+Indicates the preferred minimum charge capacity rating in mAh of individual, user- or factory-serviceable battery cells or packs in the battery source.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[REPLC \| RECHG]` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/24": 1
+}
+```
+
+---
+
+## Attribute `25` / `0x0019` — `BatQuantity`
+
+Path example:
+
+```text
+0/47/25
+```
+
+Indicates the quantity of individual, user- or factory-serviceable battery cells or packs in the battery source.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `REPLC` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/25": 1
+}
+```
+
+---
+
+## Attribute `26` / `0x001A` — `BatChargeState`
+
+Path example:
+
+```text
+0/47/26
+```
+
+Indicates the current state of the battery source with respect to charging as specified in BatChargeStateEnum.
+
+| Property | Value |
+|---|---|
+| Type | BatChargeStateEnum |
+| Conformance | `RECHG` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Values (`BatChargeStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unknown` | Unable to determine the charging state |
+| 1 | `IsCharging` | The battery is charging |
+| 2 | `IsAtFullCharge` | The battery is at full charge |
+| 3 | `IsNotCharging` | The battery is not charging |
+
+Example:
+
+```json
+{
+  "0/47/26": 1
+}
+```
+
+---
+
+## Attribute `27` / `0x001B` — `BatTimeToFullCharge`
+
+Path example:
+
+```text
+0/47/27
+```
+
+Indicates the estimated time in seconds before the battery source will be at full charge. A value of null indicates the Node is currently unable to assess the value. Changes to this attribute only be marked as reportable in the following cases: - At most once every 10 seconds, or - When it changes from null to any other value and vice versa. Since reporting consumes power, devices should be careful not to over-report.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[RECHG]` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+
+Example:
+
+```json
+{
+  "0/47/27": 0
+}
+```
+
+---
+
+## Attribute `28` / `0x001C` — `BatFunctionalWhileCharging`
+
+Path example:
+
+```text
+0/47/28
+```
+
+Indicates whether the Node can remain operational while the battery source is charging.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `RECHG` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/28": true
+}
+```
+
+---
+
+## Attribute `29` / `0x001D` — `BatChargingCurrent`
+
+Path example:
+
+```text
+0/47/29
+```
+
+Indicates assessed current in mA (milliamps) presently supplied to charge the battery source. A value of null indicates the Node is currently unable to assess the value.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `[RECHG]` |
+| Access | R (read: view) |
+| Qualities | nullable, change omitted |
+
+Example:
+
+```json
+{
+  "0/47/29": 1
+}
+```
+
+---
+
+## Attribute `30` / `0x001E` — `ActiveBatChargeFaults`
+
+Path example:
+
+```text
+0/47/30
+```
+
+Indicates the set of charge faults currently detected by the Node on this power source. This set is represented as a list of BatChargeFaultEnum. When the Node detects a fault has been raised, the appropriate BatChargeFaultEnum value is added to this list, provided it is not already present. This list must NOT contain more than one instance of a specific BatChargeFaultEnum value.
+
+| Property | Value |
+|---|---|
+| Type | list of BatChargeFaultEnum |
+| Conformance | `[RECHG]` |
+| Access | R (read: view) |
+| Constraint | max 16 entries |
+
+Example:
+
+```json
+{
+  "0/47/30": []
+}
+```
+
+---
+
+## Attribute `31` / `0x001F` — `EndpointList`
+
+Path example:
+
+```text
+0/47/31
+```
+
+Indicates a list of endpoints that are powered by the source defined by this cluster. Multiple instances of this cluster may list the same endpoint, because it is possible for power for an endpoint to come from multiple sources. In that case the Order attribute indicates their priority. For each power source on a node, there only be one instance of this cluster.
+
+| Property | Value |
+|---|---|
+| Type | list of endpoint-no |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/47/31": []
+}
+```
+
+---
+
+# Cluster 47 Commands
+
+Cluster 47 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 47 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `WiredFaultChange` | info | `[WIRED]` | The WiredFaultChange Event is generated when the set of wired faults currently detected by the Node on this wired power source changes. |
+| 1 | `0x01` | `BatFaultChange` | info | `[BAT]` | The BatFaultChange Event is generated when the set of battery faults currently detected by the Node on this battery power source changes. |
+| 2 | `0x02` | `BatChargeFaultChange` | info | `[RECHG]` | The BatChargeFaultChange Event is generated when the set of charge faults currently detected by the Node on this battery power source changes. |
+
+## Event `0` — `WiredFaultChange`
+
+The WiredFaultChange Event is generated when the set of wired faults currently detected by the Node on this wired power source changes. This event must correspond to a change in value of ActiveWiredFaults.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Current` | list of WiredFaultEnum | `M` | This field represents the set of faults currently detected, as per ActiveWiredFaults. |
+| 1 | `Previous` | list of WiredFaultEnum | `M` | This field represents the set of faults detected prior to this change event, as per ActiveWiredFaults. |
+
+## Event `1` — `BatFaultChange`
+
+The BatFaultChange Event is generated when the set of battery faults currently detected by the Node on this battery power source changes. This event must correspond to a change in value of ActiveBatFaults.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Current` | list of BatFaultEnum | `M` | This field represents the set of faults currently detected, as per ActiveBatFaults. |
+| 1 | `Previous` | list of BatFaultEnum | `M` | This field represents the set of faults detected prior to this change event, as per ActiveBatFaults. |
+
+## Event `2` — `BatChargeFaultChange`
+
+The BatChargeFaultChange Event is generated when the set of charge faults currently detected by the Node on this battery power source changes. This event must correspond to a change in value of ActiveBatChargeFaults.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Current` | list of BatChargeFaultEnum | `M` | This field represents the set of faults currently detected, as per ActiveBatChargeFaults. |
+| 1 | `Previous` | list of BatChargeFaultEnum | `M` | This field represents the set of faults detected prior to this change event, as per ActiveBatChargeFaults. |
+
+---
+
+# SmartphoneKey Notes
+
+- Battery level (`BatPercentRemaining`, attribute `12`, in half-percent units: `200` = 100 %) and `BatChargeLevel` (attribute `14`) are the values surfaced for battery devices.
+- Shadow paths follow `endpoint/47/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

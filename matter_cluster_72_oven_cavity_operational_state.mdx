@@ -1,0 +1,497 @@
+---
+title: "Matter Cluster 72 — Oven Cavity Operational State"
+description: "Matter Cluster 72 (0x0048) Oven Cavity Operational State: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 72
+clusterHex: "0x0048"
+clusterName: "Oven Cavity Operational State"
+---
+
+# Matter Cluster 72 — Oven Cavity Operational State Cluster
+
+<Callout type="info">
+Matter Cluster <code>72</code>, also written as <code>0x0048</code>, is the <strong>Oven Cavity Operational State Cluster</strong>.
+This cluster is derived from the Operational State cluster and provides an interface for monitoring the operational state of an oven.
+</Callout>
+
+<Callout type="info">
+This cluster is <strong>derived from the Operational State cluster</strong>: it inherits the base attributes, commands and data types listed below and adds the cluster-specific values. Where the base definition applies, the base text is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `72` |
+| Cluster ID hex | `0x0048` |
+| Cluster name | `Oven Cavity Operational State` |
+| Cluster revision (Matter 1.6.1) | `2` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `OVENOPSTATE` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Set Pause and Resume commands as disallowed (previously a Device Type override) |
+
+---
+
+## Shadow Path Format
+
+Cluster 72 values in the device shadow use this format:
+
+```text
+endpoint_id / 72 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/72/1": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `72` | Oven Cavity Operational State cluster |
+| `1` | `CurrentPhase` attribute |
+
+---
+
+## Data Types
+
+### `ErrorStateEnum`
+
+This type defines the set of known operational error values, and is derived from enum8. The following table defines the applicable ranges for values that are defined within this type.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `NoError` | `M` | The device is not in an error state |
+| 1 | `UnableToStartOrResume` | `M` | The device is unable to start or resume operation |
+| 2 | `UnableToCompleteOperation` | `M` | The device was unable to complete the current operation |
+| 3 | `CommandInvalidInState` | `M` | The device cannot process the command in its current state |
+
+### `OperationalStateEnum`
+
+This type defines the set of known operational state values, and is derived from enum8. The following table defines the applicable ranges for values that are defined within this type.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Stopped` | `M` | The device is stopped |
+| 1 | `Running` | `M` | The device is operating |
+| 2 | `Paused` | `M` | The device is paused during an operation |
+| 3 | `Error` | `M` | The device is in an error state |
+
+### `ErrorStateStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ErrorStateID` | ErrorStateEnum | `M` | — | — |
+| 1 | `ErrorStateLabel` | string | `ErrorStateID >= 0x80 & ErrorStateID <= 0xBF` | max length 64 | This field is present when the ErrorStateID is from the set reserved for Manufacturer Specific errors. |
+| 2 | `ErrorStateDetails` | string | `O` | max length 64 | This is a human-readable string that provides details about the error condition. |
+
+### `OperationalStateStruct` (struct)
+
+The OperationalStateStruct is used to indicate a possible state of the device.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `OperationalStateID` | OperationalStateEnum | `M` | — | — |
+| 1 | `OperationalStateLabel` | string | `OperationalStateID >= 0x80 & OperationalStateID <= 0xBF` | max length 64 | This field is present when the OperationalStateID is from the set reserved for Manufacturer Specific States. |
+
+---
+
+## Cluster 72 Attributes
+
+Cluster 72 defines **6 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `PhaseList` | list of string | `M` | R (read: view) | nullable | `MS` |
+| 1 | `0x0001` | `CurrentPhase` | uint8 | `M` | R (read: view) | nullable | `MS` |
+| 2 | `0x0002` | `CountdownTime` | elapsed-s | `O` | R (read: view) | nullable, quiet reporting | `null` |
+| 3 | `0x0003` | `OperationalStateList` | list of OperationalStateStruct | `M` | R (read: view) | — | `MS` |
+| 4 | `0x0004` | `OperationalState` | OperationalStateEnum | `M` | R (read: view) | — | — |
+| 5 | `0x0005` | `OperationalError` | ErrorStateStruct | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `2` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `PhaseList`
+
+Path example:
+
+```text
+1/72/0
+```
+
+Indicates a list of names of different phases that the device can go through for the selected function or mode. The list may not be in sequence order. For example in a washing machine this could include items such as "pre-soak", "rinse", and "spin". These phases are manufacturer specific and may change when a different function or mode is selected.
+
+| Property | Value |
+|---|---|
+| Type | list of string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 32 entries |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/72/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentPhase`
+
+Path example:
+
+```text
+1/72/1
+```
+
+This attribute represents the current phase of operation being performed by the server. This is the positional index representing the value from the set provided in the PhaseList Attribute, where the first item in that list is an index of 0. Thus, this attribute has a maximum value that is "length(PhaseList) - 1". Null if the PhaseList attribute is null or if the PhaseList attribute is an empty list.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | desc |
+| Default | `MS` |
+
+Example:
+
+```json
+{
+  "1/72/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `CountdownTime`
+
+Path example:
+
+```text
+1/72/2
+```
+
+Indicates the estimated time left before the operation is completed, in seconds. A value of 0 (zero) means that the operation has completed. A value of null represents that there is no time currently defined until operation completion. This may happen, for example, because no operation is in progress or because the completion time is unknown.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+| Constraint | max 259200 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/72/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `OperationalStateList`
+
+Path example:
+
+```text
+1/72/3
+```
+
+This attribute describes the set of possible operational states that the device exposes. An operational state is a fundamental device state such as Running or Error. Details of the phase of a device when, for example, in a state of Running are provided by the CurrentPhase attribute. All devices must, at a minimum, expose the set of states matching the commands that are also supported by the cluster instance, in addition to Error.
+
+| Property | Value |
+|---|---|
+| Type | list of OperationalStateStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `MS` |
+
+Each entry is a `OperationalStateStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/72/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `OperationalState`
+
+Path example:
+
+```text
+1/72/4
+```
+
+This attribute specifies the current operational state of a device. This is populated with a valid OperationalStateID from the set of values in the OperationalStateList Attribute.
+
+| Property | Value |
+|---|---|
+| Type | OperationalStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`OperationalStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Stopped` | The device is stopped |
+| 1 | `Running` | The device is operating |
+| 2 | `Paused` | The device is paused during an operation |
+| 3 | `Error` | The device is in an error state |
+
+Example:
+
+```json
+{
+  "1/72/4": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `OperationalError`
+
+Path example:
+
+```text
+1/72/5
+```
+
+When there is no error detected, this has an ErrorStateID of NoError.
+
+| Property | Value |
+|---|---|
+| Type | ErrorStateStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Value is a `ErrorStateStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/72/5": {
+    "errorStateID": 0,
+    "errorStateLabel": "example",
+    "errorStateDetails": "example"
+  }
+}
+```
+
+---
+
+# Cluster 72 Commands
+
+Cluster 72 has **0 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `Pause` | server → client | `X` | — | — |
+| 1 | `0x01` | `Stop` | server → client | — | — | — |
+| 2 | `0x02` | `Start` | server → client | — | — | — |
+| 3 | `0x03` | `Resume` | server → client | `X` | — | — |
+| 4 | `0x04` | `OperationalCommandResponse` | server → client | — | — | — |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 72 / 65529
+```
+
+```json
+{
+  "1/72/65529": []
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 72 command, check that the command ID exists in <code>endpoint/72/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+# Command: `Pause`
+
+## Purpose
+
+`Pause` is a server response of the Oven Cavity Operational State cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Pause` |
+| Direction | server → client (response) |
+| Conformance | `X` |
+
+## Payload Fields
+
+This response has no fields.
+
+---
+
+# Command: `Stop`
+
+## Purpose
+
+`Stop` is a server response of the Oven Cavity Operational State cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `Stop` |
+| Direction | server → client (response) |
+| Conformance | — |
+
+## Payload Fields
+
+This response has no fields.
+
+---
+
+# Command: `Start`
+
+## Purpose
+
+`Start` is a server response of the Oven Cavity Operational State cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `Start` |
+| Direction | server → client (response) |
+| Conformance | — |
+
+## Payload Fields
+
+This response has no fields.
+
+---
+
+# Command: `Resume`
+
+## Purpose
+
+`Resume` is a server response of the Oven Cavity Operational State cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `Resume` |
+| Direction | server → client (response) |
+| Conformance | `X` |
+
+## Payload Fields
+
+This response has no fields.
+
+---
+
+# Command: `OperationalCommandResponse`
+
+## Purpose
+
+`OperationalCommandResponse` is a server response of the Oven Cavity Operational State cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `OperationalCommandResponse` |
+| Direction | server → client (response) |
+| Conformance | — |
+
+## Payload Fields
+
+This response has no fields.
+
+---
+
+# Cluster 72 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `OperationalError` | critical | `M` | This event is generated when a reportable error condition is detected. |
+| 1 | `0x01` | `OperationCompletion` | info | `O` | This event should be generated when the overall operation ends, successfully or otherwise. |
+
+## Event `0` — `OperationalError`
+
+This event is generated when a reportable error condition is detected. A device that generates this event must also set the OperationalState attribute to Error, indicating an error condition. This event contains the following fields:
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ErrorState` | ErrorStateStruct | `M` | — |
+
+## Event `1` — `OperationCompletion`
+
+This event should be generated when the overall operation ends, successfully or otherwise. For example, the completion of a cleaning operation in a Robot Vacuum Cleaner, or the completion of a wash cycle in a Washing Machine. It is highly recommended that appliances device types employing the Operational State cluster support this event, even if it is optional.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CompletionErrorCode` | enum8 | `M` | This field provides an indication of the state at the end of the operation. This field has a value from the ErrorStateEnum set. |
+| 1 | `TotalOperationalTime` | elapsed-s (nullable) | `O` | The total operational time, in seconds, from when the operation was started via an initial Start command or autonomous/manual starting action, until the operation completed. This includes any time spent while paused. |
+| 2 | `PausedTime` | elapsed-s (nullable) | `O` | The total time spent in the paused state, in seconds. There may be cases whereby the total paused time exceeds the maximum value that can be conveyed by this attribute, in such instances, this attribute is populated with null. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 72 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/72/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

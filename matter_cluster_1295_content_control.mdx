@@ -1,0 +1,1308 @@
+---
+title: "Matter Cluster 1295 — Content Control"
+description: "Matter Cluster 1295 (0x050F) Content Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1295
+clusterHex: "0x050F"
+clusterName: "Content Control"
+---
+
+# Matter Cluster 1295 — Content Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>1295</code>, also written as <code>0x050F</code>, is the <strong>Content Control Cluster</strong>.
+This cluster is used for managing the content control (including "parental control") settings on a media device such as a TV, or Set-top Box. This cluster allows to configure content control settings by clients with the Management privilege. It is responsibility of the end product to enforce appropriate right access (for example, to prevent a child from disabling this feature).
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1295` |
+| Cluster ID hex | `0x050F` |
+| Cluster name | `Content Control` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `CONCON` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1295 values in the device shadow use this format:
+
+```text
+endpoint_id / 1295 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1295/0": true
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1295` | Content Control cluster |
+| `0` | `Enabled` attribute |
+
+---
+
+## Cluster 1295 Features
+
+The `FeatureMap` attribute (`1/1295/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ST` | ScreenTime | `O` | Supports managing screen time limits |
+| 1 | `PM` | PINManagement | `O` | Supports managing a PIN code which is used for restricting access to configuration of this feature |
+| 2 | `BU` | BlockUnrated | `O` | Supports managing content controls for unrated content |
+| 3 | `OCR` | OnDemandContentRating | `O` | Supports managing content controls based upon rating threshold for on demand content |
+| 4 | `SCR` | ScheduledContentRating | `O` | Supports managing content controls based upon rating threshold for scheduled content |
+| 5 | `BC` | BlockChannels | `O` | Supports managing a set of channels that are prohibited |
+| 6 | `BA` | BlockApplications | `O` | Supports managing a set of applications that are prohibited |
+| 7 | `BTW` | BlockContentTimeWindow | `O` | Supports managing content controls based upon setting time window in which all contents and applications SHALL be blocked |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `255` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `StatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 2 | `InvalidPINCode` | `M` | Provided PIN Code does not match the current PIN code |
+| 3 | `InvalidRating` | `M` | Provided Rating is out of scope of the corresponding Rating list |
+| 4 | `InvalidChannel` | `M` | Provided Channel(s) is invalid |
+| 5 | `ChannelAlreadyExist` | `M` | Provided Channel(s) already exists |
+| 6 | `ChannelNotExist` | `M` | Provided Channel(s) doesn't exist in BlockChannelList attribute |
+| 7 | `UnidentifiableApplication` | `M` | Provided Application(s) is not identified |
+| 8 | `ApplicationAlreadyExist` | `M` | Provided Application(s) already exists |
+| 9 | `ApplicationNotExist` | `M` | Provided Application(s) doesn't exist in BlockApplicationList attribute |
+| 10 | `TimeWindowAlreadyExist` | `M` | Provided time Window already exists in BlockContentTimeWindow attribute |
+| 11 | `TimeWindowNotExist` | `M` | Provided time window doesn't exist in BlockContentTimeWindow attribute |
+
+### `DayOfWeekBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Sunday` | `M` | Sunday |
+| 1 | `Monday` | `M` | Monday |
+| 2 | `Tuesday` | `M` | Tuesday |
+| 3 | `Wednesday` | `M` | Wednesday |
+| 4 | `Thursday` | `M` | Thursday |
+| 5 | `Friday` | `M` | Friday |
+| 6 | `Saturday` | `M` | Saturday |
+
+### `AppInfoStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CatalogVendorID` | uint16 | `M` | — | — |
+| 1 | `ApplicationID` | string | `M` | — | — |
+
+### `BlockChannelStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `BlockChannelIndex` | uint16 (nullable) | `M` | — | Indicates a unique index value for a blocked channel. |
+| 1 | `MajorNumber` | uint16 | `M` | — | Indicates the channel major number value (for example, using ATSC format). |
+| 2 | `MinorNumber` | uint16 | `M` | — | Indicates the channel minor number value (for example, using ATSC format). |
+| 3 | `Identifier` | string | `O` | — | Indicates the unique identifier for a specific channel. |
+
+### `RatingNameStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `RatingName` | string | `M` | max length 8 | Indicates the name of the rating level of the applied rating system. |
+| 1 | `RatingNameDesc` | string | `O` | max length 64 | This field specifies a human readable (displayable) description for RatingName. |
+
+### `TimePeriodStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `StartHour` | uint8 | `M` | 0 to 23 | Indicates the starting hour. |
+| 1 | `StartMinute` | uint8 | `M` | 0 to 59 | Indicates the starting minute. |
+| 2 | `EndHour` | uint8 | `M` | 0 to 23 | Indicates the ending hour. |
+| 3 | `EndMinute` | uint8 | `M` | 0 to 59 | Indicates the ending minute. |
+
+### `TimeWindowStruct` (struct)
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `TimeWindowIndex` | uint16 (nullable) | `M` | — | Indicates a unique index of a specific time window. |
+| 1 | `DayOfWeek` | DayOfWeekBitmap | `M` | desc | Indicates a day of week. |
+| 2 | `TimePeriod` | list of TimePeriodStruct | `M` | desc | Indicates one or more discrete time periods. |
+
+---
+
+## Cluster 1295 Attributes
+
+Cluster 1295 defines **11 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Enabled` | bool | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `OnDemandRatings` | list of RatingNameStruct | `OCR` | R (read: view) | — | — |
+| 2 | `0x0002` | `OnDemandRatingThreshold` | string | `OCR` | R (read: view) | — | — |
+| 3 | `0x0003` | `ScheduledContentRatings` | list of RatingNameStruct | `SCR` | R (read: view) | — | — |
+| 4 | `0x0004` | `ScheduledContentRatingThreshold` | string | `SCR` | R (read: view) | — | — |
+| 5 | `0x0005` | `ScreenDailyTime` | elapsed-s | `ST` | R (read: view) | — | — |
+| 6 | `0x0006` | `RemainingScreenTime` | elapsed-s | `ST` | R (read: view) | — | — |
+| 7 | `0x0007` | `BlockUnrated` | bool | `BU` | R (read: view) | — | — |
+| 8 | `0x0008` | `BlockChannelList` | list of BlockChannelStruct | `BC` | R (read: view) | — | — |
+| 9 | `0x0009` | `BlockApplicationList` | list of AppInfoStruct | `BA` | R (read: view) | — | — |
+| 10 | `0x000A` | `BlockContentTimeWindow` | list of TimeWindowStruct | `BTW` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Enabled`
+
+Path example:
+
+```text
+1/1295/0
+```
+
+Indicates whether the Content Control feature implemented on a media device is turned off (FALSE) or turned on (TRUE).
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1295/0": true
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `OnDemandRatings`
+
+Path example:
+
+```text
+1/1295/1
+```
+
+This attribute provides the collection of ratings that are currently valid for this media device. The items should honor the metadata of the on-demand content (e.g. Movie) rating system for one country or region where the media device has been provisioned. For example, for the MPAA system, RatingName may be one value out of "G", "PG", "PG-13", "R", "NC-17".
+
+| Property | Value |
+|---|---|
+| Type | list of RatingNameStruct |
+| Conformance | `OCR` |
+| Access | R (read: view) |
+
+Each entry is a `RatingNameStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1295/1": []
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `OnDemandRatingThreshold`
+
+Path example:
+
+```text
+1/1295/2
+```
+
+Indicates a threshold rating as a content filter which is compared with the rating for on-demand content. For example, if the on-demand content rating is greater than or equal to OnDemandRatingThreshold, for a rating system that is ordered from lower viewer age to higher viewer age, then on-demand content is not appropriate for the User and the Node must prevent the playback of content. This attribute is set to one of the values present in the OnDemandRatings attribute. When this attribute changes, the device should make the user aware of any limits of this feature.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `OCR` |
+| Access | R (read: view) |
+| Constraint | max length 8 |
+
+Example:
+
+```json
+{
+  "1/1295/2": "example"
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `ScheduledContentRatings`
+
+Path example:
+
+```text
+1/1295/3
+```
+
+Indicates a collection of ratings which ScheduledContentRatingThreshold can be set to. The items should honor metadata of the scheduled content rating system for the country or region where the media device has been provisioned. The media device has a way to determine which scheduled content rating system applies and then populate this attribute. For example, this can be done by examining the Location attribute in Basic Information cluster, and then determining which rating system applies.
+
+| Property | Value |
+|---|---|
+| Type | list of RatingNameStruct |
+| Conformance | `SCR` |
+| Access | R (read: view) |
+
+Each entry is a `RatingNameStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1295/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `ScheduledContentRatingThreshold`
+
+Path example:
+
+```text
+1/1295/4
+```
+
+Indicates a threshold rating as a content filter which is used to compare with the rating for scheduled content. For example, if the scheduled content rating is greater than or equal to ScheduledContentRatingThreshold for a rating system that is ordered from lower viewer age to higher viewer age, then the scheduled content is not appropriate for the User and is blocked. This attribute is set to one of the values present in the ScheduledContentRatings attribute. When this attribute changes, the device should make the user aware of any limits of this feature.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `SCR` |
+| Access | R (read: view) |
+| Constraint | max length 8 |
+
+Example:
+
+```json
+{
+  "1/1295/4": "example"
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `ScreenDailyTime`
+
+Path example:
+
+```text
+1/1295/5
+```
+
+Indicates the amount of time (in seconds) which the User is allowed to spend watching TV within one day when the Content Control feature is activated.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `ST` |
+| Access | R (read: view) |
+| Constraint | max 86400 |
+
+Example:
+
+```json
+{
+  "1/1295/5": 0
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `RemainingScreenTime`
+
+Path example:
+
+```text
+1/1295/6
+```
+
+Indicates the remaining screen time (in seconds) which the User is allowed to spend watching TV for the current day when the Content Control feature is activated. When this value equals 0, the media device must terminate the playback of content. This attribute is updated when the AddBonusTime command is received and processed successfully (with the correct PIN).
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `ST` |
+| Access | R (read: view) |
+| Constraint | max 86400 |
+
+Example:
+
+```json
+{
+  "1/1295/6": 0
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `BlockUnrated`
+
+Path example:
+
+```text
+1/1295/7
+```
+
+Indicates whether the playback of unrated content is allowed when the Content Control feature is activated. If this attribute equals FALSE, then playback of unrated content is permitted. Otherwise, the media device must prevent the playback of unrated content. When this attribute changes, the device should make the user aware of any limits of this feature.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `BU` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1295/7": true
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `BlockChannelList`
+
+Path example:
+
+```text
+1/1295/8
+```
+
+Indicates a set of channels that is blocked when the Content Control feature is activated.
+
+| Property | Value |
+|---|---|
+| Type | list of BlockChannelStruct |
+| Conformance | `BC` |
+| Access | R (read: view) |
+
+Each entry is a `BlockChannelStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1295/8": []
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `BlockApplicationList`
+
+Path example:
+
+```text
+1/1295/9
+```
+
+Indicates a set of applications that is blocked when the Content Control feature is activated.
+
+| Property | Value |
+|---|---|
+| Type | list of AppInfoStruct |
+| Conformance | `BA` |
+| Access | R (read: view) |
+
+Each entry is a `AppInfoStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1295/9": []
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `BlockContentTimeWindow`
+
+Path example:
+
+```text
+1/1295/10
+```
+
+Indicates a set of periods during which the playback of content on media device is blocked when the Content Control feature is activated. The media device must reject any request to play content during one period of this attribute. If it is entering any one period of this attribute, the media device must block content which is playing and generate an event EnteringBlockContentTimeWindow. There must NOT be multiple entries in this attribute list for the same day of week.
+
+| Property | Value |
+|---|---|
+| Type | list of TimeWindowStruct |
+| Conformance | `BTW` |
+| Access | R (read: view) |
+| Constraint | max 7 entries |
+
+Each entry is a `TimeWindowStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1295/10": []
+}
+```
+
+---
+
+# Cluster 1295 Commands
+
+Cluster 1295 has **16 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `UpdatePIN` | client → server | `PM` | status | — |
+| 1 | `0x01` | `ResetPIN` | client → server | `PM` | ResetPINResponse | — |
+| 2 | `0x02` | `ResetPINResponse` | server → client | `PM` | — | — |
+| 3 | `0x03` | `Enable` | client → server | `M` | status | The purpose of this command is to turn on the Content Control feature on a media device. |
+| 4 | `0x04` | `Disable` | client → server | `M` | status | The purpose of this command is to turn off the Content Control feature on a media device. |
+| 5 | `0x05` | `AddBonusTime` | client → server | `ST` | status | The purpose of this command is to add the extra screen time for the user. |
+| 6 | `0x06` | `SetScreenDailyTime` | client → server | `ST` | status | The purpose of this command is to set the ScreenDailyTime attribute. |
+| 7 | `0x07` | `BlockUnratedContent` | client → server | `BU` | status | The purpose of this command is to specify whether programs with no Content rating must be blocked by this media device. |
+| 8 | `0x08` | `UnblockUnratedContent` | client → server | `BU` | status | The purpose of this command is to specify whether programs with no Content rating must be blocked by this media device. |
+| 9 | `0x09` | `SetOnDemandRatingThreshold` | client → server | `OCR` | status | The purpose of this command is to set the OnDemandRatingThreshold attribute. |
+| 10 | `0x0A` | `SetScheduledContentRatingThreshold` | client → server | `SCR` | status | The purpose of this command is to set ScheduledContentRatingThreshold attribute. |
+| 11 | `0x0B` | `AddBlockChannels` | client → server | `BC` | status | The purpose of this command is to set BlockChannelList attribute. |
+| 12 | `0x0C` | `RemoveBlockChannels` | client → server | `BC` | status | The purpose of this command is to remove channels from the BlockChannelList attribute. |
+| 13 | `0x0D` | `AddBlockApplications` | client → server | `BA` | status | The purpose of this command is to set applications to the BlockApplicationList attribute. |
+| 14 | `0x0E` | `RemoveBlockApplications` | client → server | `BA` | status | The purpose of this command is to remove applications from the BlockApplicationList attribute. |
+| 15 | `0x0F` | `SetBlockContentTimeWindow` | client → server | `BTW` | status | The purpose of this command is to set the BlockContentTimeWindow attribute. |
+| 16 | `0x10` | `RemoveBlockContentTimeWindow` | client → server | `BTW` | status | The purpose of this command is to remove the selected time windows from the BlockContentTimeWindow attribute. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1295 / 65529
+```
+
+```json
+{
+  "1/1295/65529": [
+    0,
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1295 command, check that the command ID exists in <code>endpoint/1295/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "UpdatePIN",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1295, always use `"cluster_id": 1295`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `UpdatePIN`
+
+## Purpose
+
+`UpdatePIN` is a client-to-server command of the Content Control cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `UpdatePIN` |
+| Direction | client → server |
+| Conformance | `PM` |
+| Response | status |
+| Access | (invoke: manage, timed) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OldPIN` | `oldPIN` | string | `M` | max length 6 | — |
+| 1 | `NewPIN` | `newPIN` | string | `M` | max length 6 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "UpdatePIN",
+    "payload": {
+      "oldPIN": "example",
+      "newPIN": "example"
+    },
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `ResetPIN`
+
+## Purpose
+
+`ResetPIN` is a client-to-server command of the Content Control cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ResetPIN` |
+| Direction | client → server |
+| Conformance | `PM` |
+| Response | ResetPINResponse |
+| Access | (invoke: admin, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "ResetPIN",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+The device answers with `ResetPINResponse` (see below).
+
+---
+
+# Command: `ResetPINResponse`
+
+## Purpose
+
+`ResetPINResponse` is a server response of the Content Control cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `ResetPINResponse` |
+| Direction | server → client (response) |
+| Conformance | `PM` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PINCode` | `pinCode` | string | `M` | max length 6 | — |
+
+---
+
+# Command: `Enable`
+
+## Purpose
+
+The purpose of this command is to turn on the Content Control feature on a media device. Upon receipt of the Enable command, the media device must set the Enabled attribute to TRUE.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `Enable` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "Enable",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `Disable`
+
+## Purpose
+
+The purpose of this command is to turn off the Content Control feature on a media device. On receipt of the Disable command, the media device must set the Enabled attribute to FALSE.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `Disable` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, timed) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "Disable",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+This is a **timed command**: the bridge must send it inside a timed interaction, so `timed_request_timeout_ms` is required.
+
+---
+
+# Command: `AddBonusTime`
+
+## Purpose
+
+The purpose of this command is to add the extra screen time for the user. If a client with Operate privilege invokes this command, the media device must check whether the PINCode passed in the command matches the current PINCode value. If these match, then the RemainingScreenTime attribute is increased by the specified BonusTime value. If the PINs do not match, then a response with InvalidPINCode error status is returned, and no changes is made to RemainingScreenTime.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `AddBonusTime` |
+| Direction | client → server |
+| Conformance | `ST` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PINCode` | `pinCode` | string | `O` | max length 6 | — |
+| 1 | `BonusTime` | `bonusTime` | elapsed-s | `M` | desc | Indicates the amount of extra time (in seconds) to increase RemainingScreenTime. This field must NOT exceed the remaining time of this day. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "AddBonusTime",
+    "payload": {
+      "bonusTime": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetScreenDailyTime`
+
+## Purpose
+
+The purpose of this command is to set the ScreenDailyTime attribute. Upon receipt of the SetScreenDailyTime command, the media device must set the ScreenDailyTime attribute to the ScreenTime value.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `SetScreenDailyTime` |
+| Direction | client → server |
+| Conformance | `ST` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ScreenTime` | `screenTime` | elapsed-s | `M` | max 86400 | Indicates the time (in seconds) which the User is allowed to spend watching TV on this media device within one day. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "SetScreenDailyTime",
+    "payload": {
+      "screenTime": 0
+    }
+  }
+}
+```
+
+---
+
+# Command: `BlockUnratedContent`
+
+## Purpose
+
+The purpose of this command is to specify whether programs with no Content rating must be blocked by this media device. Upon receipt of the BlockUnratedContent command, the media device must set the BlockUnrated attribute to TRUE.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `7` |
+| Command hex | `0x07` |
+| Command name | `BlockUnratedContent` |
+| Direction | client → server |
+| Conformance | `BU` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "BlockUnratedContent",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `UnblockUnratedContent`
+
+## Purpose
+
+The purpose of this command is to specify whether programs with no Content rating must be blocked by this media device. Upon receipt of the UnblockUnratedContent command, the media device must set the BlockUnrated attribute to FALSE.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `UnblockUnratedContent` |
+| Direction | client → server |
+| Conformance | `BU` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "UnblockUnratedContent",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `SetOnDemandRatingThreshold`
+
+## Purpose
+
+The purpose of this command is to set the OnDemandRatingThreshold attribute. Upon receipt of the SetOnDemandRatingThreshold command, the media device must check if the Rating field is one of values present in the OnDemandRatings attribute. If not, then a response with InvalidRating error status is returned.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `9` |
+| Command hex | `0x09` |
+| Command name | `SetOnDemandRatingThreshold` |
+| Direction | client → server |
+| Conformance | `OCR` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Rating` | `rating` | string | `M` | max length 8 | This field indicates a threshold rating for filtering on-demand content. This field is set to one of the values present in the OnDemandRatings attribute |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "SetOnDemandRatingThreshold",
+    "payload": {
+      "rating": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetScheduledContentRatingThreshold`
+
+## Purpose
+
+The purpose of this command is to set ScheduledContentRatingThreshold attribute. Upon receipt of the SetScheduledContentRatingThreshold command, the media device must check if the Rating field is one of values present in the ScheduledContentRatings attribute. If not, then a response with InvalidRating error status is returned.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `10` |
+| Command hex | `0x0A` |
+| Command name | `SetScheduledContentRatingThreshold` |
+| Direction | client → server |
+| Conformance | `SCR` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Rating` | `rating` | string | `M` | max length 8 | This field indicates a threshold rating for filtering scheduled content. This field is set to one of the values present in the ScheduledContentRatings attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "SetScheduledContentRatingThreshold",
+    "payload": {
+      "rating": "example"
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddBlockChannels`
+
+## Purpose
+
+The purpose of this command is to set BlockChannelList attribute. Upon receipt of the AddBlockChannels command, the media device must check if the channels passed in this command are valid. If the channel is invalid, then a response with InvalidChannel error Status is returned. If there is at least one channel in Channels field which is not in the BlockChannelList attribute, the media device must process the request by adding these new channels into the BlockChannelList attribute and return a successful Status Response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `11` |
+| Command hex | `0x0B` |
+| Command name | `AddBlockChannels` |
+| Direction | client → server |
+| Conformance | `BC` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Channels` | `channels` | list of BlockChannelStruct | `M` | — | This field indicates a set of channels that is blocked when the Content Control feature is activated. This field is set to values present in ChannelList attribute in the Channel cluster. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "AddBlockChannels",
+    "payload": {
+      "channels": []
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveBlockChannels`
+
+## Purpose
+
+The purpose of this command is to remove channels from the BlockChannelList attribute. Upon receipt of the RemoveBlockChannels command, the media device must check if the channels indicated by ChannelIndexes passed in this command are present in BlockChannelList attribute. If one or more channels indicated by ChannelIndexes passed in this command field are not present in the BlockChannelList attribute, then a response with ChannelNotExist error Status is returned.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `12` |
+| Command hex | `0x0C` |
+| Command name | `RemoveBlockChannels` |
+| Direction | client → server |
+| Conformance | `BC` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ChannelIndexes` | `channelIndexes` | list of uint16 | `M` | — | This field specifies a set of indexes indicating Which channels is removed from the BlockChannelList attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "RemoveBlockChannels",
+    "payload": {
+      "channelIndexes": []
+    }
+  }
+}
+```
+
+---
+
+# Command: `AddBlockApplications`
+
+## Purpose
+
+The purpose of this command is to set applications to the BlockApplicationList attribute. Upon receipt of the AddBlockApplications command, the media device must check if the Applications passed in this command are installed. If there is an application in Applications field which is not identified by media device, then a response with UnidentifiableApplication error Status may be returned. If there is one or more applications which are not present in BlockApplicationList attribute, the media device must process the request by adding the new application to the BlockApplicationList attribute and return a successful Status Response.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `13` |
+| Command hex | `0x0D` |
+| Command name | `AddBlockApplications` |
+| Direction | client → server |
+| Conformance | `BA` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Applications` | `applications` | list of AppInfoStruct | `M` | — | This field indicates a set of applications that is blocked when the Content Control feature is activated. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "AddBlockApplications",
+    "payload": {
+      "applications": []
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveBlockApplications`
+
+## Purpose
+
+The purpose of this command is to remove applications from the BlockApplicationList attribute. Upon receipt of the RemoveBlockApplications command, the media device must check if the applications passed in this command present in the BlockApplicationList attribute. If one or more applications in Applications field which are not present in the BlockApplicationList attribute, then a response with ApplicationNotExist error Status is returned.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `14` |
+| Command hex | `0x0E` |
+| Command name | `RemoveBlockApplications` |
+| Direction | client → server |
+| Conformance | `BA` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Applications` | `applications` | list of AppInfoStruct | `M` | — | This field indicates a set of applications which is removed from BlockApplicationList attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "RemoveBlockApplications",
+    "payload": {
+      "applications": []
+    }
+  }
+}
+```
+
+---
+
+# Command: `SetBlockContentTimeWindow`
+
+## Purpose
+
+The purpose of this command is to set the BlockContentTimeWindow attribute. Upon receipt of the SetBlockContentTimeWindow command, the media device must check if the TimeWindowIndex field passed in this command is null. If the TimeWindowIndex field is null, the media device must check if there is an entry in the BlockContentTimeWindow attribute which matches with the TimePeriod and DayOfWeek fields passed in this command. If Yes, then a response with TimeWindowAlreadyExist error status is returned.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `15` |
+| Command hex | `0x0F` |
+| Command name | `SetBlockContentTimeWindow` |
+| Direction | client → server |
+| Conformance | `BTW` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TimeWindow` | `timeWindow` | TimeWindowStruct | `M` | — | Indicates a time window requested to set to the BlockContentTimeWindow attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "SetBlockContentTimeWindow",
+    "payload": {
+      "timeWindow": {
+        "timeWindowIndex": 0,
+        "dayOfWeek": 0,
+        "timePeriod": []
+      }
+    }
+  }
+}
+```
+
+---
+
+# Command: `RemoveBlockContentTimeWindow`
+
+## Purpose
+
+The purpose of this command is to remove the selected time windows from the BlockContentTimeWindow attribute. Upon receipt of the RemoveBlockContentTimeWindow command, the media device must check if the time window index passed in this command presents in the BlockContentTimeWindow attribute. If one or more time window indexes passed in this command are not present in BlockContentTimeWindow attribute, then a response with TimeWindowNotExist error status is returned.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `16` |
+| Command hex | `0x10` |
+| Command name | `RemoveBlockContentTimeWindow` |
+| Direction | client → server |
+| Conformance | `BTW` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TimeWindowIndexes` | `timeWindowIndexes` | list of uint16 | `M` | — | This field specifies a set of time window indexes indicating which time windows will be removed from the BlockContentTimeWindow attribute. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1295,
+    "command_name": "RemoveBlockContentTimeWindow",
+    "payload": {
+      "timeWindowIndexes": []
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1295 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `RemainingScreenTimeExpired` | info | `ST` | This event is generated when the RemainingScreenTime equals 0. |
+| 1 | `0x01` | `EnteringBlockContentTimeWindow` | info | `BTW` | This event is generated when entering a period of blocked content as configured in the BlockContentTimeWindow attribute. |
+
+## Event `0` — `RemainingScreenTimeExpired`
+
+This event is generated when the RemainingScreenTime equals 0.
+
+This event has no fields.
+
+## Event `1` — `EnteringBlockContentTimeWindow`
+
+This event is generated when entering a period of blocked content as configured in the BlockContentTimeWindow attribute.
+
+This event has no fields.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1295 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1295/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

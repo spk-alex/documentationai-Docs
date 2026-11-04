@@ -1,0 +1,374 @@
+---
+title: "Matter Cluster 86 — Temperature Control"
+description: "Matter Cluster 86 (0x0056) Temperature Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 86
+clusterHex: "0x0056"
+clusterName: "Temperature Control"
+---
+
+# Matter Cluster 86 — Temperature Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>86</code>, also written as <code>0x0056</code>, is the <strong>Temperature Control Cluster</strong>.
+This cluster provides an interface to the setpoint temperature on devices such as washers, refrigerators, and water heaters. The setpoint temperature is the temperature to which a device using this cluster would attempt to control to. This cluster does not provide access to the actual or physical temperature associated with any device using this cluster.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `86` |
+| Cluster ID hex | `0x0056` |
+| Cluster name | `Temperature Control` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `TCTL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 86 values in the device shadow use this format:
+
+```text
+endpoint_id / 86 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/86/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `86` | Temperature Control cluster |
+| `0` | `TemperatureSetpoint` attribute |
+
+---
+
+## Cluster 86 Features
+
+The `FeatureMap` attribute (`1/86/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `TN` | TemperatureNumber | `O` | Use actual temperature numbers |
+| 1 | `TL` | TemperatureLevel | `O` | Use temperature levels |
+| 2 | `STEP` | TemperatureStep | `[TN]` | Use step control with temperature numbers |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `7` means every feature listed above is enabled.
+
+---
+
+## Cluster 86 Attributes
+
+Cluster 86 defines **6 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `TemperatureSetpoint` | temperature | `TN` | R (read: view) | — | — |
+| 1 | `0x0001` | `MinTemperature` | temperature | `TN` | R (read: view) | — | — |
+| 2 | `0x0002` | `MaxTemperature` | temperature | `TN` | R (read: view) | — | — |
+| 3 | `0x0003` | `Step` | temperature | `STEP` | R (read: view) | — | — |
+| 4 | `0x0004` | `SelectedTemperatureLevel` | uint8 | `TL` | R (read: view) | — | — |
+| 5 | `0x0005` | `SupportedTemperatureLevels` | list of string | `TL` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `TemperatureSetpoint`
+
+Path example:
+
+```text
+1/86/0
+```
+
+Indicates the desired Temperature Setpoint on the device.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `TN` |
+| Access | R (read: view) |
+| Constraint | MinTemperature to MaxTemperature |
+
+Example:
+
+```json
+{
+  "1/86/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MinTemperature`
+
+Path example:
+
+```text
+1/86/1
+```
+
+Indicates the minimum temperature to which the TemperatureSetpoint attribute may be set.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `TN` |
+| Access | R (read: view) |
+| Constraint | max compute |
+
+Example:
+
+```json
+{
+  "1/86/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MaxTemperature`
+
+Path example:
+
+```text
+1/86/2
+```
+
+Indicates the maximum temperature to which the TemperatureSetpoint attribute may be set. If the Step attribute is supported, this attribute is such that MaxTemperature = MinTemperature + (Step &#42; n), where n is an integer and n $&gt;$ 0. If the Step attribute is not supported, this attribute is such that MaxTemperature $&gt;$ MinTemperature.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `TN` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/86/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `Step`
+
+Path example:
+
+```text
+1/86/3
+```
+
+Indicates the discrete value by which the TemperatureSetpoint attribute can be changed via the SetTemperature command. For example, if the value of MinTemperature is 25.00C (2500) and the Step value is 0.50C (50), valid values of the TargetTemperature field of the SetTemperature command would be 25.50C (2550), 26.00C (2600), 26.50C (2650), etc.
+
+| Property | Value |
+|---|---|
+| Type | temperature |
+| Conformance | `STEP` |
+| Access | R (read: view) |
+| Constraint | 1 to compute |
+
+Example:
+
+```json
+{
+  "1/86/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `SelectedTemperatureLevel`
+
+Path example:
+
+```text
+1/86/4
+```
+
+Indicates the currently selected temperature level setting of the server. This attribute is the positional index of the list item in the SupportedTemperatureLevels list that represents the currently selected temperature level setting of the server.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `TL` |
+| Access | R (read: view) |
+| Constraint | max 31 |
+
+Example:
+
+```json
+{
+  "1/86/4": 100
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `SupportedTemperatureLevels`
+
+Path example:
+
+```text
+1/86/5
+```
+
+Indicates the list of supported temperature level settings that may be selected via the TargetTemperatureLevel field in the SetTemperature command. Each string is readable text that describes each temperature level setting in a way that can be easily understood by humans. For example, a washing machine can have temperature levels like "Cold", "Warm", and "Hot". Each string is specified by the manufacturer.
+
+| Property | Value |
+|---|---|
+| Type | list of string |
+| Conformance | `TL` |
+| Access | R (read: view) |
+| Constraint | max 32 entries |
+
+Example:
+
+```json
+{
+  "1/86/5": []
+}
+```
+
+---
+
+# Cluster 86 Commands
+
+Cluster 86 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SetTemperature` | client → server | `M` | status | This command is used to set the temperature setpoint. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 86 / 65529
+```
+
+```json
+{
+  "1/86/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 86 command, check that the command ID exists in <code>endpoint/86/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 86,
+    "command_name": "SetTemperature",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 86, always use `"cluster_id": 86`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SetTemperature`
+
+## Purpose
+
+This command is used to set the temperature setpoint.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SetTemperature` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TargetTemperature` | `targetTemperature` | temperature | `TN` | desc | This field specifies the desired temperature setpoint that the server is to be set to. The TargetTemperature is from MinTemperature to MaxTemperature inclusive. |
+| 1 | `TargetTemperatureLevel` | `targetTemperatureLevel` | uint8 | `TL` | desc | This field specifies the index of the list item in the SupportedTemperatureLevels list that represents the desired temperature level setting of the server. The value of this field is between 0 and the length of the SupportedTemperatureLevels list -1. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 86,
+    "command_name": "SetTemperature",
+    "payload": {
+      "targetTemperature": 1,
+      "targetTemperatureLevel": 100
+    }
+  }
+}
+```
+
+---
+
+# Cluster 86 Events
+
+Cluster 86 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 86 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/86/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,169 @@
+---
+title: "Matter Cluster 156 — Power Topology"
+description: "Matter Cluster 156 (0x009C) Power Topology: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 156
+clusterHex: "0x009C"
+clusterName: "Power Topology"
+---
+
+# Matter Cluster 156 — Power Topology Cluster
+
+<Callout type="info">
+Matter Cluster <code>156</code>, also written as <code>0x009C</code>, is the <strong>Power Topology Cluster</strong>.
+The Power Topology Cluster provides a mechanism for expressing how power is flowing between endpoints.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `156` |
+| Cluster ID hex | `0x009C` |
+| Cluster name | `Power Topology` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `PWRTL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 156 values in the device shadow use this format:
+
+```text
+endpoint_id / 156 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/156/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `156` | Power Topology cluster |
+| `0` | `AvailableEndpoints` attribute |
+
+---
+
+## Cluster 156 Features
+
+The `FeatureMap` attribute (`1/156/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `NODE` | NodeTopology | `O` | This endpoint provides or consumes power to/from the entire node |
+| 1 | `TREE` | TreeTopology | `O` | This endpoint provides or consumes power to/from itself and its child endpoints |
+| 2 | `SET` | SetTopology | `O` | This endpoint provides or consumes power to/from a specified set of endpoints |
+| 3 | `DYPF` | DynamicPowerFlow | `[SET]` | The specified set of endpoints may change |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `15` means every feature listed above is enabled.
+
+---
+
+## Cluster 156 Attributes
+
+Cluster 156 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `AvailableEndpoints` | list of endpoint-no | `SET` | R (read: view) | — | — |
+| 1 | `0x0001` | `ActiveEndpoints` | list of endpoint-no | `DYPF` | R (read: view) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `AvailableEndpoints`
+
+Path example:
+
+```text
+1/156/0
+```
+
+Indicates the list of endpoints capable of providing power to and/or consuming power from the endpoint hosting this server.
+
+| Property | Value |
+|---|---|
+| Type | list of endpoint-no |
+| Conformance | `SET` |
+| Access | R (read: view) |
+| Constraint | max 20 entries |
+
+Example:
+
+```json
+{
+  "1/156/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ActiveEndpoints`
+
+Path example:
+
+```text
+1/156/1
+```
+
+Indicates the current list of endpoints currently providing or consuming power to or from the endpoint hosting this server. This list is a subset of the value of the AvailableEndpoints attribute.
+
+| Property | Value |
+|---|---|
+| Type | list of endpoint-no |
+| Conformance | `DYPF` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | max 20 entries |
+
+Example:
+
+```json
+{
+  "1/156/1": []
+}
+```
+
+---
+
+# Cluster 156 Commands
+
+Cluster 156 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 156 Events
+
+Cluster 156 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 156 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/156/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

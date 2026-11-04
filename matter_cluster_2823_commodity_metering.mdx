@@ -1,0 +1,226 @@
+---
+title: "Matter Cluster 2823 — Commodity Metering"
+description: "Matter Cluster 2823 (0x0B07) Commodity Metering: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 2823
+clusterHex: "0x0B07"
+clusterName: "Commodity Metering"
+---
+
+# Matter Cluster 2823 — Commodity Metering Cluster
+
+<Callout type="info">
+Matter Cluster <code>2823</code>, also written as <code>0x0B07</code>, is the <strong>Commodity Metering Cluster</strong>.
+The Commodity Metering Cluster provides the mechanism for communicating commodity consumption information within a premises.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `2823` |
+| Cluster ID hex | `0x0B07` |
+| Cluster name | `Commodity Metering` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `COMMTR` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial Release |
+
+---
+
+## Shadow Path Format
+
+Cluster 2823 values in the device shadow use this format:
+
+```text
+endpoint_id / 2823 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/2823/1": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `2823` | Commodity Metering cluster |
+| `1` | `MeteredQuantityTimestamp` attribute |
+
+---
+
+## Data Types
+
+### `MeteredQuantityStruct` (struct)
+
+Provides access to the Electric Metering device's readings.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `TariffComponentIDs` | list of uint32 | `M` | max 128 entries | — |
+| 1 | `Quantity` | int64 | `M` | — | This field indicates the amount of a commodity metered during the associated TariffComponentStructs. |
+
+---
+
+## Cluster 2823 Attributes
+
+Cluster 2823 defines **4 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MeteredQuantity` | list of MeteredQuantityStruct | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `MeteredQuantityTimestamp` | epoch-s | `M` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `TariffUnit` | TariffUnitEnum | `M` | R (read: view) | nullable | — |
+| 3 | `0x0003` | `MaximumMeteredQuantities` | uint16 | `M` | R (read: view) | nullable | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MeteredQuantity`
+
+Path example:
+
+```text
+1/2823/0
+```
+
+The most recent summed value of a commodity delivered to and consumed in the premises. A null value indicates that metering data is currently unavailable.
+
+| Property | Value |
+|---|---|
+| Type | list of MeteredQuantityStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max MaximumMeteredQuantities entries |
+
+Each entry is a `MeteredQuantityStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/2823/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MeteredQuantityTimestamp`
+
+Path example:
+
+```text
+1/2823/1
+```
+
+The timestamp in UTC for when the value of the MeteredQuantity attribute was last updated. A null value indicates that metering data is currently unavailable.
+
+| Property | Value |
+|---|---|
+| Type | epoch-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/2823/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `TariffUnit`
+
+Path example:
+
+```text
+1/2823/2
+```
+
+Indicates the unit for the Quantity field on all MeteredQuantityStructs in the MeteredQuantity attribute. A null value indicates that metering data is currently unavailable.
+
+| Property | Value |
+|---|---|
+| Type | TariffUnitEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/2823/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `MaximumMeteredQuantities`
+
+Path example:
+
+```text
+1/2823/3
+```
+
+Indicates the maximum number of MeteredQuantityStructs in the MeteredQuantity attribute. A null value indicates that metering data is currently unavailable.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/2823/3": 1
+}
+```
+
+---
+
+# Cluster 2823 Commands
+
+Cluster 2823 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 2823 Events
+
+Cluster 2823 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 2823 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/2823/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

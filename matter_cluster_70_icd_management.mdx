@@ -1,0 +1,730 @@
+---
+title: "Matter Cluster 70 — ICD Management"
+description: "Matter Cluster 70 (0x0046) ICD Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 70
+clusterHex: "0x0046"
+clusterName: "ICD Management"
+---
+
+# Matter Cluster 70 — ICD Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>70</code>, also written as <code>0x0046</code>, is the <strong>ICD Management Cluster</strong>.
+ICD Management Cluster enables configuration of the ICD's behavior and ensuring that listed clients can be notified when an intermittently connected device, ICD, is available for communication. The cluster implements the requirements of the Check-In Protocol that enables the ICD Check-In use case.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `70` |
+| Cluster ID hex | `0x0046` |
+| Cluster name | `ICD Management` |
+| Cluster revision (Matter 1.6.1) | `3` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `ICDM` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | Addition of LIT ICD support, UserActiveModeTrigger, ActiveModeDuration, StayActiveResponse; removal of field Key in MonitoringRegistrationStruct |
+| 3 | Addition of the ClientType attribute; addition of the ICD Check-In Backoff support; addition of the DynamicSitLitSupport feature |
+
+---
+
+## Shadow Path Format
+
+Cluster 70 values in the device shadow use this format:
+
+```text
+endpoint_id / 70 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/70/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `70` | ICD Management cluster |
+| `0` | `IdleModeDuration` attribute |
+
+---
+
+## Cluster 70 Features
+
+The `FeatureMap` attribute (`0/70/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CIP` | CheckInProtocolSupport | `LITS, O` | Device supports attributes and commands for the Check-In Protocol support |
+| 1 | `UAT` | UserActiveModeTrigger | `LITS, O` | Device supports the user active mode trigger feature |
+| 2 | `LITS` | LongIdleTimeSupport | `O` | Device supports operating as a Long Idle Time ICD |
+| 3 | `DSLS` | DynamicSitLitSupport | `[LITS]` | Device supports dynamic switching from SIT to LIT operating modes |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `15` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ClientTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Permanent` | `M` | The client is typically resident, always-on, fixed infrastructure in the home. |
+| 1 | `Ephemeral` | `M` | The client is mobile or non-resident or not always-on and may not always be available in the home. |
+
+### `OperatingModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `SIT` | `M` | ICD is operating as a Short Idle Time ICD. |
+| 1 | `LIT` | `M` | ICD is operating as a Long Idle Time ICD. |
+
+### `UserActiveModeTriggerBitmap` (bitmap)
+
+See the UserActiveModeTriggerHint table for requirements associated to each bit.
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `PowerCycle` | `M` | Power Cycle to transition the device to ActiveMode |
+| 1 | `SettingsMenu` | `M` | Settings menu on the device informs how to transition the device to ActiveMode |
+| 2 | `CustomInstruction` | `M` | Custom Instruction on how to transition the device to ActiveMode |
+| 3 | `DeviceManual` | `M` | Device Manual informs how to transition the device to ActiveMode |
+| 4 | `ActuateSensor` | `M` | Actuate Sensor to transition the device to ActiveMode |
+| 5 | `ActuateSensorSeconds` | `M` | Actuate Sensor for N seconds to transition the device to ActiveMode |
+| 6 | `ActuateSensorTimes` | `M` | Actuate Sensor N times to transition the device to ActiveMode |
+| 7 | `ActuateSensorLightsBlink` | `M` | Actuate Sensor until light blinks to transition the device to ActiveMode |
+| 8 | `ResetButton` | `M` | Press Reset Button to transition the device to ActiveMode |
+| 9 | `ResetButtonLightsBlink` | `M` | Press Reset Button until light blinks to transition the device to ActiveMode |
+| 10 | `ResetButtonSeconds` | `M` | Press Reset Button for N seconds to transition the device to ActiveMode |
+| 11 | `ResetButtonTimes` | `M` | Press Reset Button N times to transition the device to ActiveMode |
+| 12 | `SetupButton` | `M` | Press Setup Button to transition the device to ActiveMode |
+| 13 | `SetupButtonSeconds` | `M` | Press Setup Button for N seconds to transition the device to ActiveMode |
+| 14 | `SetupButtonLightsBlink` | `M` | Press Setup Button until light blinks to transition the device to ActiveMode |
+| 15 | `SetupButtonTimes` | `M` | Press Setup Button N times to transition the device to ActiveMode |
+| 16 | `AppDefinedButton` | `M` | Press the N Button to transition the device to ActiveMode |
+
+### `MonitoringRegistrationStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 1 | `CheckInNodeID` | node-id | `M` | — | — |
+| 2 | `MonitoredSubject` | subject-id | `M` | — | Indicates the monitored Subject ID. |
+| 3 | `Key` |  | `D` | — | This field is deprecated. |
+| 4 | `ClientType` | ClientTypeEnum | `M` | — | Indicates the client's type to inform the ICD of the availability for communication of the client. |
+
+---
+
+## Cluster 70 Attributes
+
+Cluster 70 defines **10 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `IdleModeDuration` | uint32 | `M` | R (read: view) | — | `1` |
+| 1 | `0x0001` | `ActiveModeDuration` | uint32 | `M` | R (read: view) | — | `300` |
+| 2 | `0x0002` | `ActiveModeThreshold` | uint16 | `M` | R (read: view) | — | `300` |
+| 3 | `0x0003` | `RegisteredClients` | list of MonitoringRegistrationStruct | `CIP` | R (read: admin, fabric-scoped) | persisted | `empty` |
+| 4 | `0x0004` | `ICDCounter` | uint32 | `CIP` | R (read: admin) | persisted, change omitted | `0` |
+| 5 | `0x0005` | `ClientsSupportedPerFabric` | uint16 | `CIP` | R (read: view) | — | `1` |
+| 6 | `0x0006` | `UserActiveModeTriggerHint` | UserActiveModeTriggerBitmap | `UAT` | R (read: view) | — | `0` |
+| 7 | `0x0007` | `UserActiveModeTriggerInstruction` | string | `desc` | R (read: view) | — | `""` |
+| 8 | `0x0008` | `OperatingMode` | OperatingModeEnum | `LITS` | R (read: view) | — | — |
+| 9 | `0x0009` | `MaximumCheckInBackoff` | uint32 | `CIP` | R (read: view) | — | `1` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `3` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `IdleModeDuration`
+
+Path example:
+
+```text
+0/70/0
+```
+
+Indicates the maximum interval in seconds the server can stay in idle mode. The IdleModeDuration must NOT be smaller than the ActiveModeDuration.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | 1 to 64800 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "0/70/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `ActiveModeDuration`
+
+Path example:
+
+```text
+0/70/1
+```
+
+Indicates the minimum interval in milliseconds the server typically will stay in active mode after initial transition out of idle mode. The ActiveModeDuration does not include the ActiveModeThreshold.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `300` |
+
+Example:
+
+```json
+{
+  "0/70/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ActiveModeThreshold`
+
+Path example:
+
+```text
+0/70/2
+```
+
+Indicates the minimum amount of time in milliseconds the server typically will stay active after network activity when in active mode.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Default | `300` |
+
+Example:
+
+```json
+{
+  "0/70/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `RegisteredClients`
+
+Path example:
+
+```text
+0/70/3
+```
+
+This attribute contains all clients registered to receive notification if their subscription is lost. The maximum number of entries that can be in the list is ClientsSupportedPerFabric for each fabric supported on the server, as indicated by the value of the SupportedFabrics attribute in the Operational Credentials cluster.
+
+| Property | Value |
+|---|---|
+| Type | list of MonitoringRegistrationStruct |
+| Conformance | `CIP` |
+| Access | R (read: admin, fabric-scoped) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `empty` |
+
+Each entry is a `MonitoringRegistrationStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/70/3": []
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `ICDCounter`
+
+Path example:
+
+```text
+0/70/4
+```
+
+No condensed specification text is available for `ICDCounter`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `CIP` |
+| Access | R (read: admin) |
+| Qualities | persisted, change omitted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "0/70/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `ClientsSupportedPerFabric`
+
+Path example:
+
+```text
+0/70/5
+```
+
+Indicates the maximum number of entries that the server is able to store for each fabric in the RegisteredClients attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `CIP` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "0/70/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `UserActiveModeTriggerHint`
+
+Path example:
+
+```text
+0/70/6
+```
+
+Indicates which user action(s) will trigger the ICD to switch to Active mode. If the attribute indicates support for a trigger that is dependent on the UserActiveModeTriggerInstruction in the UserActiveModeTriggerHint table, the UserActiveModeTriggerInstruction attribute is implemented and provides the required information, unless specified otherwise in the requirement column of the UserActiveModeTriggerHint table. ActuateSensorLightsBlink, ResetButtonLightsBlink and SetupButtonLightsBlink (i.e. bits 7, 9 and 14) have a dependency on the UserActiveModeTriggerInstruction attribute but do not require the attribute to be present.
+
+| Property | Value |
+|---|---|
+| Type | UserActiveModeTriggerBitmap |
+| Conformance | `UAT` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Bits (`UserActiveModeTriggerBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `PowerCycle` | Power Cycle to transition the device to ActiveMode |
+| 1 | `SettingsMenu` | Settings menu on the device informs how to transition the device to ActiveMode |
+| 2 | `CustomInstruction` | Custom Instruction on how to transition the device to ActiveMode |
+| 3 | `DeviceManual` | Device Manual informs how to transition the device to ActiveMode |
+| 4 | `ActuateSensor` | Actuate Sensor to transition the device to ActiveMode |
+| 5 | `ActuateSensorSeconds` | Actuate Sensor for N seconds to transition the device to ActiveMode |
+| 6 | `ActuateSensorTimes` | Actuate Sensor N times to transition the device to ActiveMode |
+| 7 | `ActuateSensorLightsBlink` | Actuate Sensor until light blinks to transition the device to ActiveMode |
+| 8 | `ResetButton` | Press Reset Button to transition the device to ActiveMode |
+| 9 | `ResetButtonLightsBlink` | Press Reset Button until light blinks to transition the device to ActiveMode |
+| 10 | `ResetButtonSeconds` | Press Reset Button for N seconds to transition the device to ActiveMode |
+| 11 | `ResetButtonTimes` | Press Reset Button N times to transition the device to ActiveMode |
+| 12 | `SetupButton` | Press Setup Button to transition the device to ActiveMode |
+| 13 | `SetupButtonSeconds` | Press Setup Button for N seconds to transition the device to ActiveMode |
+| 14 | `SetupButtonLightsBlink` | Press Setup Button until light blinks to transition the device to ActiveMode |
+| 15 | `SetupButtonTimes` | Press Setup Button N times to transition the device to ActiveMode |
+| 16 | `AppDefinedButton` | Press the N Button to transition the device to ActiveMode |
+
+Example:
+
+```json
+{
+  "0/70/6": 0
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `UserActiveModeTriggerInstruction`
+
+Path example:
+
+```text
+0/70/7
+```
+
+The meaning of the attribute is dependent upon the UserActiveModeTriggerHint attribute value, and the conformance is in indicated in the "dependency" column in UserActiveModeTriggerHint table. The UserActiveModeTriggerInstruction attribute may give additional information on how to transition the device to Active Mode. If the attribute is present, the value is encoded as a valid UTF-8 string with a maximum length of 128 bytes.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `desc` |
+| Access | R (read: view) |
+| Constraint | max length 128 |
+| Default | `""` |
+
+Example:
+
+```json
+{
+  "0/70/7": "example"
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `OperatingMode`
+
+Path example:
+
+```text
+0/70/8
+```
+
+Indicates the operating mode of the ICD as specified in the OperatingModeEnum. - If the ICD is operating as a LIT ICD, OperatingMode is LIT. - If the ICD is operating as a SIT ICD, OperatingMode is SIT.
+
+| Property | Value |
+|---|---|
+| Type | OperatingModeEnum |
+| Conformance | `LITS` |
+| Access | R (read: view) |
+
+Values (`OperatingModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `SIT` | ICD is operating as a Short Idle Time ICD. |
+| 1 | `LIT` | ICD is operating as a Long Idle Time ICD. |
+
+Example:
+
+```json
+{
+  "0/70/8": 0
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `MaximumCheckInBackoff`
+
+Path example:
+
+```text
+0/70/9
+```
+
+Indicates the maximum time in seconds between two Check-In messages when back-off is active. The MaximumCheckInBackoff must NOT be smaller than the IdleModeDuration. If the MaximumCheckInBackoff is equal to the IdleModeDuration, it means the ICD does not back-off.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `CIP` |
+| Access | R (read: view) |
+| Constraint | IdleModeDuration to 64800 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "0/70/9": 1
+}
+```
+
+---
+
+# Cluster 70 Commands
+
+Cluster 70 has **3 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `RegisterClient` | client → server | `CIP` | RegisterClientResponse | This command allows a client to register itself with the ICD to be notified when the device is available for communication. |
+| 1 | `0x01` | `RegisterClientResponse` | server → client | `CIP` | — | This command is sent by the ICD Management Cluster server in response to a successful RegisterClient command. |
+| 2 | `0x02` | `UnregisterClient` | client → server | `CIP` | status | This command allows a client to unregister itself with the ICD. |
+| 3 | `0x03` | `StayActiveRequest` | client → server | `LITS, O` | StayActiveResponse | This command allows a client to request that the server stays in active mode for at least a given time duration (in milliseconds) from when this command is received. |
+| 4 | `0x04` | `StayActiveResponse` | server → client | `LITS, O` | — | This message is sent by the ICD in response to the StayActiveRequest command and contains the computed duration (in milliseconds) that the ICD intends to stay active for. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 70 / 65529
+```
+
+```json
+{
+  "0/70/65529": [
+    0,
+    2,
+    3
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 70 command, check that the command ID exists in <code>endpoint/70/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 70,
+    "command_name": "RegisterClient",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 70, always use `"cluster_id": 70`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `RegisterClient`
+
+## Purpose
+
+This command allows a client to register itself with the ICD to be notified when the device is available for communication.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `RegisterClient` |
+| Direction | client → server |
+| Conformance | `CIP` |
+| Response | RegisterClientResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CheckInNodeID` | `checkInNodeID` | node-id | `M` | — | — |
+| 1 | `MonitoredSubject` | `monitoredSubject` | subject-id | `M` | — | This field provides the monitored subject ID. |
+| 2 | `Key` | `key` | octstr | `M` | allowed: 16 | This field contains the ICDToken, a 128-bit symmetric key shared by the ICD and the ICD Client, used to encrypt Check-In messages from this ICD to the MonitoredSubject. |
+| 3 | `VerificationKey` | `verificationKey` | octstr | `O` | allowed: 16 | This field provides the verification key. The verification key represents the key already stored on the server. |
+| 4 | `ClientType` | `clientType` | ClientTypeEnum | `M` | — | This field provides the client type of the client registering. |
+
+`ClientType` values (`ClientTypeEnum`): `0` = Permanent, `1` = Ephemeral
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 70,
+    "command_name": "RegisterClient",
+    "payload": {
+      "checkInNodeID": 1,
+      "monitoredSubject": 1,
+      "key": "AQID",
+      "clientType": 0
+    }
+  }
+}
+```
+
+The device answers with `RegisterClientResponse` (see below).
+
+---
+
+# Command: `RegisterClientResponse`
+
+## Purpose
+
+This command is sent by the ICD Management Cluster server in response to a successful RegisterClient command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `RegisterClientResponse` |
+| Direction | server → client (response) |
+| Conformance | `CIP` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `ICDCounter` | `icdCounter` | uint32 | `M` | — | — |
+
+---
+
+# Command: `UnregisterClient`
+
+## Purpose
+
+This command allows a client to unregister itself with the ICD. Example: a client that is leaving the network (e.g. running on a phone which is leaving the home) can (and should) remove its subscriptions and send this UnregisterClient command before leaving to prevent the burden on the ICD of an absent client.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `UnregisterClient` |
+| Direction | client → server |
+| Conformance | `CIP` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `CheckInNodeID` | `checkInNodeID` | node-id | `M` | — | — |
+| 1 | `VerificationKey` | `verificationKey` | octstr | `O` | allowed: 16 | This field provides the verification key associated with the CheckInNodeID to remove from storage. The verification key represents the key already stored on the server. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 70,
+    "command_name": "UnregisterClient",
+    "payload": {
+      "checkInNodeID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `StayActiveRequest`
+
+## Purpose
+
+This command allows a client to request that the server stays in active mode for at least a given time duration (in milliseconds) from when this command is received. This StayActiveDuration may be longer than the ActiveModeThreshold value and would, typically, be used by the client to request the server to stay active and responsive for this period to allow a sequence of message exchanges during that period. The client may slightly overestimate the duration it wants the ICD to be active for, in order to account for network delays.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `StayActiveRequest` |
+| Direction | client → server |
+| Conformance | `LITS, O` |
+| Response | StayActiveResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `StayActiveDuration` | `stayActiveDuration` | uint32 | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 70,
+    "command_name": "StayActiveRequest",
+    "payload": {
+      "stayActiveDuration": 1
+    }
+  }
+}
+```
+
+The device answers with `StayActiveResponse` (see below).
+
+---
+
+# Command: `StayActiveResponse`
+
+## Purpose
+
+This message is sent by the ICD in response to the StayActiveRequest command and contains the computed duration (in milliseconds) that the ICD intends to stay active for.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `StayActiveResponse` |
+| Direction | server → client (response) |
+| Conformance | `LITS, O` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `PromisedActiveDuration` | `promisedActiveDuration` | uint32 | `M` | desc | This field provides the actual duration that the ICD server can stay active from the time it receives the StayActiveRequest command. |
+
+---
+
+# Cluster 70 Events
+
+Cluster 70 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Sleepy devices (locks, sensors) are ICDs: expect `0/70/*` on them. Long Idle Time (LIT) devices only wake on their own schedule; live attribute reads time out by design.
+- Shadow paths follow `endpoint/70/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

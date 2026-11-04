@@ -1,0 +1,356 @@
+---
+title: "Matter Cluster 1293 — Application Basic"
+description: "Matter Cluster 1293 (0x050D) Application Basic: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1293
+clusterHex: "0x050D"
+clusterName: "Application Basic"
+---
+
+# Matter Cluster 1293 — Application Basic Cluster
+
+<Callout type="info">
+Matter Cluster <code>1293</code>, also written as <code>0x050D</code>, is the <strong>Application Basic Cluster</strong>.
+This cluster provides information about a Content App running on a Video Player device which is represented as an endpoint. The cluster server for this cluster should be supported on each endpoint that represents a Content App on a Video Player device. This cluster provides identification information about the Content App such as vendor and product.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1293` |
+| Cluster ID hex | `0x050D` |
+| Cluster name | `Application Basic` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `APBSC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1293 values in the device shadow use this format:
+
+```text
+endpoint_id / 1293 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1293/2": "example"
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1293` | Application Basic cluster |
+| `2` | `ApplicationName` attribute |
+
+---
+
+## Data Types
+
+### `ApplicationStatusEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Stopped` | `M` | Application is not running. |
+| 1 | `ActiveVisibleFocus` | `M` | Application is running, is visible to the user, and is the active target for input. |
+| 2 | `ActiveHidden` | `M` | Application is running but not visible to the user. |
+| 3 | `ActiveVisibleNotFocus` | `M` | Application is running and visible, but is not the active target for input. |
+
+### `ApplicationStruct` (struct)
+
+This indicates a global identifier for an Application given a catalog.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CatalogVendorID` | uint16 | `M` | — | — |
+| 1 | `ApplicationID` | string | `M` | — | — |
+
+---
+
+## Cluster 1293 Attributes
+
+Cluster 1293 defines **8 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `VendorName` | string | `O` | R (read: view) | — | `empty` |
+| 1 | `0x0001` | `VendorID` | vendor-id | `O` | R (read: view) | — | — |
+| 2 | `0x0002` | `ApplicationName` | string | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `ProductID` | uint16 | `O` | R (read: view) | — | — |
+| 4 | `0x0004` | `Application` | ApplicationStruct | `M` | R (read: view) | — | — |
+| 5 | `0x0005` | `Status` | ApplicationStatusEnum | `M` | R (read: view) | — | `MS` |
+| 6 | `0x0006` | `ApplicationVersion` | string | `M` | R (read: view) | — | — |
+| 7 | `0x0007` | `AllowedVendorList` | list of vendor-id | `M` | R (read: admin) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `VendorName`
+
+Path example:
+
+```text
+1/1293/0
+```
+
+This attribute specifies a human readable (displayable) name of the vendor for the Content App.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+| Default | `empty` |
+
+Example:
+
+```json
+{
+  "1/1293/0": "example"
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `VendorID`
+
+Path example:
+
+```text
+1/1293/1
+```
+
+No condensed specification text is available for `VendorID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | vendor-id |
+| Conformance | `O` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1293/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ApplicationName`
+
+Path example:
+
+```text
+1/1293/2
+```
+
+This attribute specifies a human readable (displayable) name of the Content App assigned by the vendor. For example, "NPR On Demand".
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max length 256 |
+
+Example:
+
+```json
+{
+  "1/1293/2": "example"
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `ProductID`
+
+Path example:
+
+```text
+1/1293/3
+```
+
+No condensed specification text is available for `ProductID`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1293/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `Application`
+
+Path example:
+
+```text
+1/1293/4
+```
+
+This attribute specifies a Content App which consists of an Application ID using a specified catalog.
+
+| Property | Value |
+|---|---|
+| Type | ApplicationStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Value is a `ApplicationStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1293/4": {
+    "catalogVendorID": 1,
+    "applicationID": "example"
+  }
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `Status`
+
+Path example:
+
+```text
+1/1293/5
+```
+
+This attribute specifies the current running status of the application.
+
+| Property | Value |
+|---|---|
+| Type | ApplicationStatusEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `MS` |
+
+Values (`ApplicationStatusEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Stopped` | Application is not running. |
+| 1 | `ActiveVisibleFocus` | Application is running, is visible to the user, and is the active target for input. |
+| 2 | `ActiveHidden` | Application is running but not visible to the user. |
+| 3 | `ActiveVisibleNotFocus` | Application is running and visible, but is not the active target for input. |
+
+Example:
+
+```json
+{
+  "1/1293/5": 0
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `ApplicationVersion`
+
+Path example:
+
+```text
+1/1293/6
+```
+
+This attribute specifies a human readable (displayable) version of the Content App assigned by the vendor.
+
+| Property | Value |
+|---|---|
+| Type | string |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max length 32 |
+
+Example:
+
+```json
+{
+  "1/1293/6": "example"
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `AllowedVendorList`
+
+Path example:
+
+```text
+1/1293/7
+```
+
+This attribute is a list of vendor IDs. Each entry is a vendor-id.
+
+| Property | Value |
+|---|---|
+| Type | list of vendor-id |
+| Conformance | `M` |
+| Access | R (read: admin) |
+
+Example:
+
+```json
+{
+  "1/1293/7": []
+}
+```
+
+---
+
+# Cluster 1293 Commands
+
+Cluster 1293 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1293 Events
+
+Cluster 1293 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1293 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1293/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

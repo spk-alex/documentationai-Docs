@@ -1,0 +1,217 @@
+---
+title: "Matter Cluster 1028 — Flow Measurement"
+description: "Matter Cluster 1028 (0x0404) Flow Measurement: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1028
+clusterHex: "0x0404"
+clusterName: "Flow Measurement"
+---
+
+# Matter Cluster 1028 — Flow Measurement Cluster
+
+<Callout type="info">
+Matter Cluster <code>1028</code>, also written as <code>0x0404</code>, is the <strong>Flow Measurement Cluster</strong>.
+This cluster provides an interface to flow measurement functionality, including configuration and provision of notifications of flow measurements.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1028` |
+| Cluster ID hex | `0x0404` |
+| Cluster name | `Flow Measurement` |
+| Cluster revision (Matter 1.6.1) | `5` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `FLW` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | CCB 2241 2370 |
+| 3 | New data model format and notation |
+| 4 | Removed P quality |
+| 5 | Added F quality to MinMeasuredValue, MaxMeasuredValue and Tolerance attributes |
+
+---
+
+## Shadow Path Format
+
+Cluster 1028 values in the device shadow use this format:
+
+```text
+endpoint_id / 1028 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1028/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1028` | Flow Measurement cluster |
+| `0` | `MeasuredValue` attribute |
+
+---
+
+## Cluster 1028 Attributes
+
+Cluster 1028 defines **4 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `MeasuredValue` | uint16 | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `MinMeasuredValue` | uint16 | `M` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `MaxMeasuredValue` | uint16 | `M` | R (read: view) | nullable | — |
+| 3 | `0x0003` | `Tolerance` | uint16 | `O` | R (read: view) | — | `0` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `5` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `MeasuredValue`
+
+Path example:
+
+```text
+1/1028/0
+```
+
+Indicates the flow in m^3/h as follows: MeasuredValue = 10 x Flow The null value indicates that the flow measurement is unknown, otherwise the range is as described in Measured Value.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | MinMeasuredValue to MaxMeasuredValue |
+
+Example:
+
+```json
+{
+  "1/1028/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MinMeasuredValue`
+
+Path example:
+
+```text
+1/1028/1
+```
+
+Indicates the minimum value of MeasuredValue that can be measured. See Measured Value for more details. The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | max 65533 |
+
+Example:
+
+```json
+{
+  "1/1028/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MaxMeasuredValue`
+
+Path example:
+
+```text
+1/1028/2
+```
+
+Indicates the maximum value of MeasuredValue that can be measured. See Measured Value for more details. The null value indicates that the value is not available.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min compute |
+
+Example:
+
+```json
+{
+  "1/1028/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `Tolerance`
+
+Path example:
+
+```text
+1/1028/3
+```
+
+See Measured Value.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 2048 |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/1028/3": 1
+}
+```
+
+---
+
+# Cluster 1028 Commands
+
+Cluster 1028 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 1028 Events
+
+Cluster 1028 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1028 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1028/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

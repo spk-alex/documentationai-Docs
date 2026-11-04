@@ -1,0 +1,146 @@
+---
+title: "Matter Cluster 65 — User Label"
+description: "Matter Cluster 65 (0x0041) User Label: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 65
+clusterHex: "0x0041"
+clusterName: "User Label"
+---
+
+# Matter Cluster 65 — User Label Cluster
+
+<Callout type="info">
+Matter Cluster <code>65</code>, also written as <code>0x0041</code>, is the <strong>User Label Cluster</strong>.
+This cluster is derived from the Label cluster and provides a feature to tag an endpoint with zero or more writable labels.
+</Callout>
+
+<Callout type="info">
+This cluster is <strong>derived from the Label cluster</strong>: it inherits the base attributes, commands and data types listed below and adds the cluster-specific values. Where the base definition applies, the base text is used.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `65` |
+| Cluster ID hex | `0x0041` |
+| Cluster name | `User Label` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Endpoint |
+| PICS code | `ULABEL` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 65 values in the device shadow use this format:
+
+```text
+endpoint_id / 65 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/65/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `65` | User Label cluster |
+| `0` | `LabelList` attribute |
+
+---
+
+## Data Types
+
+### `LabelStruct` (struct)
+
+This is a string tuple with strings that are user defined.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Label` | string | `M` | max length 16 | The Label or Value semantic is not defined here. |
+| 1 | `Value` | string | `M` | max length 16 | The Label or Value semantic is not defined here. |
+
+---
+
+## Cluster 65 Attributes
+
+Cluster 65 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `LabelList` | list of LabelStruct | `M` | R/W (read: view, write: manage) | persisted | `empty` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `LabelList`
+
+Path example:
+
+```text
+1/65/0
+```
+
+The server must support the storage of up to 4 list entries in this attribute. The server may support the storage of more than 4 entries in this attribute. When reading from this attribute, the server must respond with the actual contents of the attribute which may contain any number of entries (possibly more than 4), When writing to this attribute, a client may include any number of entries to be written, or none at all. If an attempt is made to write to this attribute with a list length that is not supported by the server, the server must respond with RESOURCE_EXHAUSTED.
+
+| Property | Value |
+|---|---|
+| Type | list of LabelStruct |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `empty` |
+
+Each entry is a `LabelStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/65/0": []
+}
+```
+
+---
+
+# Cluster 65 Commands
+
+Cluster 65 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 65 Events
+
+Cluster 65 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 65 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/65/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

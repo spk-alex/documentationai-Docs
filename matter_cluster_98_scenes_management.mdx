@@ -1,0 +1,878 @@
+---
+title: "Matter Cluster 98 — Scenes Management"
+description: "Matter Cluster 98 (0x0062) Scenes Management: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 98
+clusterHex: "0x0062"
+clusterName: "Scenes Management"
+---
+
+# Matter Cluster 98 — Scenes Management Cluster
+
+<Callout type="info">
+Matter Cluster <code>98</code>, also written as <code>0x0062</code>, is the <strong>Scenes Management Cluster</strong>.
+The Scenes Management cluster provides attributes and commands for setting up and recalling scenes. Each scene corresponds to a set of stored values of specified attributes for one or more clusters on the same end point as the Scenes Management cluster. In most cases scenes are associated with a particular group identifier.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `98` |
+| Cluster ID hex | `0x0062` |
+| Cluster name | `Scenes Management` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `S` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Based on the ZCL Scenes Cluster, Updated the Cluster ID to 0x0062, the name to Scenes Management, removed the provisional status; Removed attributes SceneCount, CurrentScene, CurrentGroup, SceneValid, and NameSupport; Removed Explicit, TableSize and FabricScenes features; Removed EnhancedAddScene, EnhancedAddSceneResponse, EnhancedViewScene, EnhancedViewSceneResponse; TransitionTime field changed milliseconds in AddScene, ViewSceneResponse and RecallScene |
+
+---
+
+## Shadow Path Format
+
+Cluster 98 values in the device shadow use this format:
+
+```text
+endpoint_id / 98 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/98/1": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `98` | Scenes Management cluster |
+| `1` | `SceneTableSize` attribute |
+
+---
+
+## Cluster 98 Features
+
+The `FeatureMap` attribute (`1/98/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SN` | SceneNames | `O` | The ability to store a name for a scene |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `CopyModeBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `CopyAllScenes` | `M` | Copy all scenes in the scene table |
+
+### `AttributeValuePairStruct` (struct)
+
+This data type indicates a combination of an identifier and the value of an attribute.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `AttributeID` | attribute-id | `M` | — | — |
+| 1 | `ValueUnsigned8` | uint8 | `O` | — | — |
+| 2 | `ValueSigned8` | int8 | `O` | — | — |
+| 3 | `ValueUnsigned16` | uint16 | `O` | — | — |
+| 4 | `ValueSigned16` | int16 | `O` | — | — |
+| 5 | `ValueUnsigned32` | uint32 | `O` | — | — |
+| 6 | `ValueSigned32` | int32 | `O` | — | — |
+| 7 | `ValueUnsigned64` | uint64 | `O` | — | — |
+| 8 | `ValueSigned64` | int64 | `O` | — | — |
+
+### `ExtensionFieldSetStruct` (struct)
+
+This data type indicates for a given cluster a set of attributes and their values.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `ClusterID` | cluster-id | `M` | — | — |
+| 1 | `AttributeValueList` | list of AttributeValuePairStruct | `M` | desc | Indicates a set of attributes and their values which are stored as part of a scene. |
+
+### `SceneInfoStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `SceneCount` | uint8 | `M` | — | Indicates the number of scenes currently used in the server's Scene Table on the endpoint where the Scenes Management cluster appears. |
+| 1 | `CurrentScene` | uint8 | `M` | desc | Indicates the scene identifier of the scene last invoked on the associated fabric. |
+| 2 | `CurrentGroup` | group-id | `M` | — | Indicates the group identifier of the scene last invoked on the associated fabric, or 0 if the scene last invoked is not associated with a group. |
+| 3 | `SceneValid` | bool | `M` | — | Indicates whether the state of the server corresponds to that associated with the CurrentScene and CurrentGroup fields of the SceneInfoStruct they belong to. |
+| 4 | `RemainingCapacity` | uint8 | `M` | max 253 | Indicates the remaining capacity of the Scene Table on this endpoint for the accessing fabric. |
+
+---
+
+## Cluster 98 Attributes
+
+Cluster 98 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `DoNotUse` |  | `X` | R (read: view) | — | — |
+| 1 | `0x0001` | `SceneTableSize` | uint16 | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `FabricSceneInfo` | list of SceneInfoStruct | `M` | R (read: view, fabric-scoped) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `DoNotUse`
+
+Path example:
+
+```text
+1/98/0
+```
+
+No condensed specification text is available for `DoNotUse`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `X` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/98/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `SceneTableSize`
+
+Path example:
+
+```text
+1/98/1
+```
+
+Indicates the number of entries in the Scene Table on this endpoint. This is the total across all fabrics; note that a single fabric cannot use all those entries. The minimum size of this table, (i.e., the minimum number of scenes to support across all fabrics per endpoint) is 16, unless a device type in which this cluster is used, defines a larger value in the device type definition.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+
+Example:
+
+```json
+{
+  "1/98/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `FabricSceneInfo`
+
+Path example:
+
+```text
+1/98/2
+```
+
+Indicates a list of fabric scoped information about scenes on this endpoint. The number of list entries for this attribute must NOT exceed the number of supported fabrics by the device.
+
+| Property | Value |
+|---|---|
+| Type | list of SceneInfoStruct |
+| Conformance | `M` |
+| Access | R (read: view, fabric-scoped) |
+| Constraint | desc |
+
+Each entry is a `SceneInfoStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/98/2": []
+}
+```
+
+---
+
+# Cluster 98 Commands
+
+Cluster 98 has **8 client-to-server commands** and **7 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `AddScene` | client → server | `M` | AddSceneResponse | This command is used to add a new scene. |
+| 0 | `0x00` | `AddSceneResponse` | server → client | `M` | — | This command is sent in response to the AddScene command. |
+| 1 | `0x01` | `ViewScene` | client → server | `M` | ViewSceneResponse | This command returns the details for the requested scene. |
+| 1 | `0x01` | `ViewSceneResponse` | server → client | `M` | — | This command is sent in response to the ViewScene command. |
+| 2 | `0x02` | `RemoveScene` | client → server | `M` | RemoveSceneResponse | This command removes the specified scene. |
+| 2 | `0x02` | `RemoveSceneResponse` | server → client | `M` | — | This command is sent in response to the RemoveScene command. |
+| 3 | `0x03` | `RemoveAllScenes` | client → server | `M` | RemoveAllScenesResponse | This command removes all scenes for the specified GroupID. |
+| 3 | `0x03` | `RemoveAllScenesResponse` | server → client | `M` | — | This command is sent in response to the RemoveAllScenes command. |
+| 4 | `0x04` | `StoreScene` | client → server | `M` | StoreSceneResponse | This command will create a new entry for the requested scene. |
+| 4 | `0x04` | `StoreSceneResponse` | server → client | `M` | — | This command is sent in response to the StoreScene command. |
+| 5 | `0x05` | `RecallScene` | client → server | `M` | status | This command will cause the specified scene to be recalled. |
+| 6 | `0x06` | `GetSceneMembership` | client → server | `M` | GetSceneMembershipResponse | This command can be used to get the used scene identifiers within a certain group, for the endpoint that implements this cluster. |
+| 6 | `0x06` | `GetSceneMembershipResponse` | server → client | `M` | — | This command is sent in response to the GetSceneMembership command. |
+| 64 | `0x40` | `CopyScene` | client → server | `O` | CopySceneResponse | This command allows a client to efficiently copy scenes from one group/scene identifier pair to another group/scene identifier pair. |
+| 64 | `0x40` | `CopySceneResponse` | server → client | `CopyScene` | — | This command is sent in response to the CopyScene command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 98 / 65529
+```
+
+```json
+{
+  "1/98/65529": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    64
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 98 command, check that the command ID exists in <code>endpoint/98/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "AddScene",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 98, always use `"cluster_id": 98`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `AddScene`
+
+## Purpose
+
+This command is used to add a new scene. It is not mandatory for an extension field set to be included in the command for every cluster on that endpoint that has a defined extension field set. Extension field sets may be omitted, including the case of no extension field sets at all.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AddScene` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | AddSceneResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+| 2 | `TransitionTime` | `transitionTime` | uint32 | `M` | max 60000000 | Indicates the transition time of the scene, measured in milliseconds. |
+| 3 | `SceneName` | `sceneName` | string | `M` | max length 16 | Indicates the name of the scene. |
+| 4 | `ExtensionFieldSetStructs` | `extensionFieldSetStructs` | list of ExtensionFieldSetStruct | `M` | desc | This field must contains the list of extension fields. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "AddScene",
+    "payload": {
+      "groupID": 1,
+      "sceneID": 1,
+      "transitionTime": 0,
+      "sceneName": "example",
+      "extensionFieldSetStructs": []
+    }
+  }
+}
+```
+
+The device answers with `AddSceneResponse` (see below).
+
+---
+
+# Command: `AddSceneResponse`
+
+## Purpose
+
+This command is sent in response to the AddScene command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `AddSceneResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | This field is set according to the Effect on Receipt section for AddScene command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 2 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+
+---
+
+# Command: `ViewScene`
+
+## Purpose
+
+This command returns the details for the requested scene.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ViewScene` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | ViewSceneResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "ViewScene",
+    "payload": {
+      "groupID": 1,
+      "sceneID": 1
+    }
+  }
+}
+```
+
+The device answers with `ViewSceneResponse` (see below).
+
+---
+
+# Command: `ViewSceneResponse`
+
+## Purpose
+
+This command is sent in response to the ViewScene command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `ViewSceneResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | This field is set according to the Effect on Receipt section for ViewScene command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 2 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+| 3 | `TransitionTime` | `transitionTime` | uint32 | `Status = status` | max 60000000 | This field is set to the corresponding field in the Scene Table entry. |
+| 4 | `SceneName` | `sceneName` | string | `Status = status` | max length 16 | This field is set to the corresponding field in the Scene Table entry. |
+| 5 | `ExtensionFieldSetStructs` | `extensionFieldSetStructs` | list of ExtensionFieldSetStruct | `Status = status` | — | This field is set to the corresponding field in the Scene Table entry. |
+
+---
+
+# Command: `RemoveScene`
+
+## Purpose
+
+This command removes the specified scene.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `RemoveScene` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | RemoveSceneResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "RemoveScene",
+    "payload": {
+      "groupID": 1,
+      "sceneID": 1
+    }
+  }
+}
+```
+
+The device answers with `RemoveSceneResponse` (see below).
+
+---
+
+# Command: `RemoveSceneResponse`
+
+## Purpose
+
+This command is sent in response to the RemoveScene command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `RemoveSceneResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | This field is set according to the Effect on Receipt section for RemoveScene command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 2 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+
+---
+
+# Command: `RemoveAllScenes`
+
+## Purpose
+
+This command removes all scenes for the specified GroupID.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `RemoveAllScenes` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | RemoveAllScenesResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "RemoveAllScenes",
+    "payload": {
+      "groupID": 1
+    }
+  }
+}
+```
+
+The device answers with `RemoveAllScenesResponse` (see below).
+
+---
+
+# Command: `RemoveAllScenesResponse`
+
+## Purpose
+
+This command is sent in response to the RemoveAllScenes command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `RemoveAllScenesResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | This field is set according to the Effect on Receipt section for RemoveAllScenes command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | — | — |
+
+---
+
+# Command: `StoreScene`
+
+## Purpose
+
+This command will create a new entry for the requested scene.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `StoreScene` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | StoreSceneResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "StoreScene",
+    "payload": {
+      "groupID": 1,
+      "sceneID": 1
+    }
+  }
+}
+```
+
+The device answers with `StoreSceneResponse` (see below).
+
+---
+
+# Command: `StoreSceneResponse`
+
+## Purpose
+
+This command is sent in response to the StoreScene command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `StoreSceneResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | This field is set according to the Effect on Receipt section for StoreScene command. |
+| 1 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 2 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+
+---
+
+# Command: `RecallScene`
+
+## Purpose
+
+This command will cause the specified scene to be recalled.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `RecallScene` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `SceneID` | `sceneID` | uint8 | `M` | max 254 | — |
+| 2 | `TransitionTime` | `transitionTime` | uint32 (nullable) | `O` | max 60000000 | Indicates the transition time of the scene, measured in milliseconds. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "RecallScene",
+    "payload": {
+      "groupID": 1,
+      "sceneID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `GetSceneMembership`
+
+## Purpose
+
+This command can be used to get the used scene identifiers within a certain group, for the endpoint that implements this cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `GetSceneMembership` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | GetSceneMembershipResponse |
+| Access | (invoke: operate, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "GetSceneMembership",
+    "payload": {
+      "groupID": 1
+    }
+  }
+}
+```
+
+The device answers with `GetSceneMembershipResponse` (see below).
+
+---
+
+# Command: `GetSceneMembershipResponse`
+
+## Purpose
+
+This command is sent in response to the GetSceneMembership command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `6` |
+| Command hex | `0x06` |
+| Command name | `GetSceneMembershipResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | This field is set according to the Effect on Receipt section for GetSceneMembership command. |
+| 1 | `Capacity` | `capacity` | uint8 (nullable) | `M` | — | This field contains the remaining capacity of the Scene Table of the server (for all groups for the accessing fabric). |
+| 2 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 3 | `SceneList` | `sceneList` | list of uint8 | `Status = status` | — | If the status is not SUCCESS then this field is omitted, else this field contains the identifiers of all the scenes in the Scene Table with the corresponding Group ID. |
+
+---
+
+# Command: `CopyScene`
+
+## Purpose
+
+This command allows a client to efficiently copy scenes from one group/scene identifier pair to another group/scene identifier pair.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `64` |
+| Command hex | `0x40` |
+| Command name | `CopyScene` |
+| Direction | client → server |
+| Conformance | `O` |
+| Response | CopySceneResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Mode` | `mode` | CopyModeBitmap | `M` | desc | This field contains the information of how the scene copy is to proceed. The CopyAllScenes bit of the Mode indicates whether all scenes are to be copied. |
+| 1 | `GroupIdentifierFrom` | `groupIdentifierFrom` | group-id | `M` | — | Indicates the identifier of the group from which the scene is to be copied. Together with the SceneIdentifierFrom field, this field uniquely identifies the scene to copy from the Scene Table. |
+| 2 | `SceneIdentifierFrom` | `sceneIdentifierFrom` | uint8 | `M` | max 254 | Indicates the identifier of the scene from which the scene is to be copied. Together with the GroupIdentifierFrom field, this field uniquely identifies the scene to copy from the Scene Table. |
+| 3 | `GroupIdentifierTo` | `groupIdentifierTo` | group-id | `M` | — | Indicates the identifier of the group to which the scene is to be copied. Together with the SceneIdentifierTo field, this field uniquely identifies the scene to copy to the Scene Table. |
+| 4 | `SceneIdentifierTo` | `sceneIdentifierTo` | uint8 | `M` | max 254 | Indicates the identifier of the scene to which the scene is to be copied. Together with the GroupIdentifierTo field, this field uniquely identifies the scene to copy to the Scene Table. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 98,
+    "command_name": "CopyScene",
+    "payload": {
+      "mode": 0,
+      "groupIdentifierFrom": 1,
+      "sceneIdentifierFrom": 1,
+      "groupIdentifierTo": 1,
+      "sceneIdentifierTo": 1
+    }
+  }
+}
+```
+
+The device answers with `CopySceneResponse` (see below).
+
+---
+
+# Command: `CopySceneResponse`
+
+## Purpose
+
+This command is sent in response to the CopyScene command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `64` |
+| Command hex | `0x40` |
+| Command name | `CopySceneResponse` |
+| Direction | server → client (response) |
+| Conformance | `CopyScene` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Status` | `status` | status | `M` | desc | This field is set according to the Effect on Receipt section for the CopyScene command. |
+| 1 | `GroupIdentifierFrom` | `groupIdentifierFrom` | group-id | `M` | — | This field is set to the same values as in the corresponding fields of the received CopyScene command. |
+| 2 | `SceneIdentifierFrom` | `sceneIdentifierFrom` | uint8 | `M` | max 254 | This field is set to the same values as in the corresponding fields of the received CopyScene command. |
+
+---
+
+# Cluster 98 Events
+
+Cluster 98 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 98 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/98/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

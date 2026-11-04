@@ -1,0 +1,239 @@
+---
+title: "Matter Cluster 160 — Electrical Grid Conditions"
+description: "Matter Cluster 160 (0x00A0) Electrical Grid Conditions: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 160
+clusterHex: "0x00A0"
+clusterName: "Electrical Grid Conditions"
+---
+
+# Matter Cluster 160 — Electrical Grid Conditions Cluster
+
+<Callout type="info">
+Matter Cluster <code>160</code>, also written as <code>0x00A0</code>, is the <strong>Electrical Grid Conditions Cluster</strong>.
+The Electrical Grid Conditions Cluster provides the mechanism for communicating electricity grid carbon intensity to devices within the premises in units of Grams of CO2e per kWh. This is an important mechanism to allow energy appliances decide when to operate to help consumers reduce their carbon footprint, when the pricing may be the same throughout the day.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `160` |
+| Cluster ID hex | `0x00A0` |
+| Cluster name | `Electrical Grid Conditions` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `EGC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial Matter revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 160 values in the device shadow use this format:
+
+```text
+endpoint_id / 160 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/160/0": true
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `160` | Electrical Grid Conditions cluster |
+| `0` | `LocalGenerationAvailable` attribute |
+
+---
+
+## Cluster 160 Features
+
+The `FeatureMap` attribute (`1/160/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `FORE` | Forecasting | `O` | Forecasts upcoming |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `ThreeLevelEnum`
+
+This data type is derived from enum8 and is used for indicating three levels: Low, Medium, High.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Low` | `M` | Low |
+| 1 | `Medium` | `M` | Medium |
+| 2 | `High` | `M` | High |
+
+### `ElectricalGridConditionsStruct` (struct)
+
+This represents the greenhouse gas carbon intensity over a given period.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `PeriodStart` | epoch-s | `M` | — | Indicates the beginning timestamp in UTC of the period. |
+| 1 | `PeriodEnd` | epoch-s (nullable) | `M` | min compute | Indicates the ending timestamp in UTC of the period. |
+| 2 | `GridCarbonIntensity` | int16 | `M` | — | Indicates the estimated carbon intensity in grams of CO2 equivalent per kWh of the grid. |
+| 3 | `GridCarbonLevel` | ThreeLevelEnum | `M` | — | Indicates the relative level of carbon intensity of the grid. |
+| 4 | `LocalCarbonIntensity` | int16 | `M` | — | Indicates the estimated carbon intensity in grams of CO2 equivalent per kWh of the premises mains supply. |
+| 5 | `LocalCarbonLevel` | ThreeLevelEnum | `M` | — | Indicates the relative level of carbon intensity of the premises mains supply. |
+
+---
+
+## Cluster 160 Attributes
+
+Cluster 160 defines **3 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `LocalGenerationAvailable` | bool | `M` | R/W (read: view, write: operate) | nullable | — |
+| 1 | `0x0001` | `CurrentConditions` | ElectricalGridConditionsStruct | `M` | R (read: view) | nullable | — |
+| 2 | `0x0002` | `ForecastConditions` | list of ElectricalGridConditionsStruct | `FORE` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `LocalGenerationAvailable`
+
+Path example:
+
+```text
+1/160/0
+```
+
+This indicates if there is known to be local generation (for example Solar PV or Battery Storage) at the premises. If the presence of any local generation is unknown, or cannot be determined, the value is null.
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/160/0": true
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentConditions`
+
+Path example:
+
+```text
+1/160/1
+```
+
+This indicates the current electricity supply conditions. If the current conditions are unknown, or cannot be determined, the value is null.
+
+| Property | Value |
+|---|---|
+| Type | ElectricalGridConditionsStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Value is a `ElectricalGridConditionsStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "1/160/1": {
+    "periodStart": 1,
+    "periodEnd": 1,
+    "gridCarbonIntensity": 1,
+    "gridCarbonLevel": 0
+  }
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `ForecastConditions`
+
+Path example:
+
+```text
+1/160/2
+```
+
+This indicates the forecast of upcoming electricity supply conditions. If the forecast is unable to be determined, this list is empty. The list entries is in time order: - All entries except the last one has a non-null PeriodEnd. - For all entries except the first one, PeriodStart is greater than the previous entry's PeriodEnd.
+
+| Property | Value |
+|---|---|
+| Type | list of ElectricalGridConditionsStruct |
+| Conformance | `FORE` |
+| Access | R (read: view) |
+| Constraint | max 56 entries |
+
+Each entry is a `ElectricalGridConditionsStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/160/2": []
+}
+```
+
+---
+
+# Cluster 160 Commands
+
+Cluster 160 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 160 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `CurrentConditionsChanged` | info | `O` | This event is generated when the value of the CurrentConditions attribute changes. |
+
+## Event `0` — `CurrentConditionsChanged`
+
+This event is generated when the value of the CurrentConditions attribute changes.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `CurrentConditions` | ElectricalGridConditionsStruct (nullable) | `M` | This field is the new value of the CurrentConditions attribute. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 160 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/160/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

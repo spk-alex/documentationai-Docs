@@ -1,0 +1,126 @@
+---
+title: "Matter Cluster 46 — Power Source Configuration"
+description: "Matter Cluster 46 (0x002E) Power Source Configuration: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 46
+clusterHex: "0x002E"
+clusterName: "Power Source Configuration"
+---
+
+# Matter Cluster 46 — Power Source Configuration Cluster
+
+<Callout type="info">
+Matter Cluster <code>46</code>, also written as <code>0x002E</code>, is the <strong>Power Source Configuration Cluster</strong>.
+This cluster is used to describe the configuration and capabilities of a Device's power system. It provides an ordering overview as well as linking to the one or more endpoints each supporting a Power Source cluster.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `46` |
+| Cluster ID hex | `0x002E` |
+| Cluster name | `Power Source Configuration` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `PSCFG` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 46 values in the device shadow use this format:
+
+```text
+endpoint_id / 46 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/46/0": []
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `46` | Power Source Configuration cluster |
+| `0` | `Sources` attribute |
+
+---
+
+## Cluster 46 Attributes
+
+Cluster 46 defines **1 attribute** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Sources` | list of endpoint-no | `M` | R (read: view) | persisted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Sources`
+
+Path example:
+
+```text
+0/46/0
+```
+
+This list contains the set of all power sources capable of participating in the power system of this Node. Each entry in the list is the endpoint number of an endpoint having a Power Source cluster, which corresponds to a physical power source. The endpoint number is unique within the list. The order of power sources on a Node is defined by the Order attribute of its associated Power Source cluster provided on the endpoint.
+
+| Property | Value |
+|---|---|
+| Type | list of endpoint-no |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | max 6 entries |
+
+Example:
+
+```json
+{
+  "0/46/0": []
+}
+```
+
+---
+
+# Cluster 46 Commands
+
+Cluster 46 defines **no commands**. It is read (and, for writable attributes, written) through attribute access only.
+
+# Cluster 46 Events
+
+Cluster 46 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 46 is present on SmartphoneKey devices or hubs today. See [Matter Bridge Clusters — Detailed Reference](/matter_bridge_clusters_detailed_updated) and [Matter Device Attributes & Commands](/matter-clusters) for the values the bridge actually reports.
+- Shadow paths follow `endpoint/46/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

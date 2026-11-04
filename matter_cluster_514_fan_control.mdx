@@ -1,0 +1,669 @@
+---
+title: "Matter Cluster 514 — Fan Control"
+description: "Matter Cluster 514 (0x0202) Fan Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 514
+clusterHex: "0x0202"
+clusterName: "Fan Control"
+---
+
+# Matter Cluster 514 — Fan Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>514</code>, also written as <code>0x0202</code>, is the <strong>Fan Control Cluster</strong>.
+This cluster specifies an interface to control the speed of a fan.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `514` |
+| Cluster ID hex | `0x0202` |
+| Cluster name | `Fan Control` |
+| Cluster revision (Matter 1.6.1) | `6` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `FAN` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added |
+| 2 | New data model format and notation; Percent, speed and motion settings; General cleanup |
+| 3 | Addition of AirflowDirection and Step command |
+| 4 | Change conformance for FanModeSequenceEnum |
+| 5 | Clarified attribute usage, added conformance column |
+| 6 | Removed Zigbee related elements, removed P quality |
+
+---
+
+## Shadow Path Format
+
+Cluster 514 values in the device shadow use this format:
+
+```text
+endpoint_id / 514 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/514/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `514` | Fan Control cluster |
+| `0` | `FanMode` attribute |
+
+---
+
+## Cluster 514 Features
+
+The `FeatureMap` attribute (`1/514/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SPD` | MultiSpeed | `O` | 0-SpeedMax Fan Speeds |
+| 1 | `AUT` | Auto | `O` | Automatic mode supported for fan speed |
+| 2 | `RCK` | Rocking | `O` | Rocking movement supported |
+| 3 | `WND` | Wind | `O` | Wind emulation supported |
+| 4 | `STEP` | Step | `O` | Step command supported |
+| 5 | `DIR` | AirflowDirection | `O` | Airflow Direction attribute is supported |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `63` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `AirflowDirectionEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Forward` | `M` | Airflow is in the forward direction |
+| 1 | `Reverse` | `M` | Airflow is in the reverse direction |
+
+### `FanModeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Off` | `M` | Fan is off |
+| 1 | `Low` | `O` | Fan using low speed |
+| 2 | `Medium` | `[value]` | Fan using medium speed |
+| 3 | `High` | `M` | Fan using high speed |
+| 4 | `On` | `D` | — |
+| 5 | `Auto` | `AUT` | Fan is using auto mode |
+| 6 | `Smart` | `D` | Fan is using smart mode |
+
+### `FanModeSequenceEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `OffLowMedHigh` | `[!AUT]` | Fan is capable of off, low, medium and high modes |
+| 1 | `OffLowHigh` | `[!AUT]` | Fan is capable of off, low and high modes |
+| 2 | `OffLowMedHighAuto` | `[AUT]` | Fan is capable of off, low, medium, high and auto modes |
+| 3 | `OffLowHighAuto` | `[AUT]` | Fan is capable of off, low, high and auto modes |
+| 4 | `OffHighAuto` | `[AUT]` | Fan is capable of off, high and auto modes |
+| 5 | `OffHigh` | `[!AUT]` | Fan is capable of off and high modes |
+
+### `StepDirectionEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Increase` | `M` | Step moves in increasing direction |
+| 1 | `Decrease` | `M` | Step moves in decreasing direction |
+
+### `RockBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `RockLeftRight` | `M` | Indicate rock left to right |
+| 1 | `RockUpDown` | `M` | Indicate rock up and down |
+| 2 | `RockRound` | `M` | Indicate rock around |
+
+### `WindBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `SleepWind` | `M` | Indicate sleep wind |
+| 1 | `NaturalWind` | `M` | Indicate natural wind |
+
+---
+
+## Cluster 514 Attributes
+
+Cluster 514 defines **12 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `FanMode` | FanModeEnum | `M` | R/W (read: view, write: operate) | persisted | — |
+| 1 | `0x0001` | `FanModeSequence` | FanModeSequenceEnum | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `PercentSetting` | percent | `M` | R/W (read: view, write: operate) | nullable | — |
+| 3 | `0x0003` | `PercentCurrent` | percent | `M` | R (read: view) | — | — |
+| 4 | `0x0004` | `SpeedMax` | uint8 | `SPD` | R (read: view) | — | — |
+| 5 | `0x0005` | `SpeedSetting` | uint8 | `SPD` | R/W (read: view, write: operate) | nullable | — |
+| 6 | `0x0006` | `SpeedCurrent` | uint8 | `SPD` | R (read: view) | — | — |
+| 7 | `0x0007` | `RockSupport` | RockBitmap | `RCK` | R (read: view) | — | — |
+| 8 | `0x0008` | `RockSetting` | RockBitmap | `RCK` | R/W (read: view, write: operate) | — | — |
+| 9 | `0x0009` | `WindSupport` | WindBitmap | `WND` | R (read: view) | — | — |
+| 10 | `0x000A` | `WindSetting` | WindBitmap | `WND` | R/W (read: view, write: operate) | — | — |
+| 11 | `0x000B` | `AirflowDirection` | AirflowDirectionEnum | `DIR` | R/W (read: view, write: operate) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `6` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `FanMode`
+
+Path example:
+
+```text
+1/514/0
+```
+
+Indicates the current speed mode of the fan. This attribute is set to one of the values in FanModeEnum supported by the server as indicated in the FanModeSequence attribute. The Low value is supported if and only if the FanModeSequence attribute value is less than 4. The Medium value is supported if and only if the FanModeSequence attribute value is 0 or 2.
+
+| Property | Value |
+|---|---|
+| Type | FanModeEnum |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Values (`FanModeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Off` | Fan is off |
+| 1 | `Low` | Fan using low speed |
+| 2 | `Medium` | Fan using medium speed |
+| 3 | `High` | Fan using high speed |
+| 4 | `On` | — |
+| 5 | `Auto` | Fan is using auto mode |
+| 6 | `Smart` | Fan is using smart mode |
+
+Example:
+
+```json
+{
+  "1/514/0": 0
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `FanModeSequence`
+
+Path example:
+
+```text
+1/514/1
+```
+
+This attribute indicates the fan speed ranges that is supported by the server.
+
+| Property | Value |
+|---|---|
+| Type | FanModeSequenceEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Values (`FanModeSequenceEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `OffLowMedHigh` | Fan is capable of off, low, medium and high modes |
+| 1 | `OffLowHigh` | Fan is capable of off, low and high modes |
+| 2 | `OffLowMedHighAuto` | Fan is capable of off, low, medium, high and auto modes |
+| 3 | `OffLowHighAuto` | Fan is capable of off, low, high and auto modes |
+| 4 | `OffHighAuto` | Fan is capable of off, high and auto modes |
+| 5 | `OffHigh` | Fan is capable of off and high modes |
+
+Example:
+
+```json
+{
+  "1/514/1": 0
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `PercentSetting`
+
+Path example:
+
+```text
+1/514/2
+```
+
+Indicates the speed setting for the fan with a value of 0 indicating that the fan is off and a value of 100 indicating that the fan is set to run at its maximum speed. If the FanMode attribute is set to Auto, the value of this attribute is set to null. This attribute may be written to by a client to indicate a new fan speed. If a client writes null to this attribute, the attribute value must NOT change.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable |
+| Constraint | max 100 |
+
+Example:
+
+```json
+{
+  "1/514/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `PercentCurrent`
+
+Path example:
+
+```text
+1/514/3
+```
+
+Indicates the actual currently operating fan speed, or zero to indicate that the fan is off. There may be a temporary mismatch between the value of this attribute and the value of the PercentSetting attribute due to other system requirements or constraints that would not allow the fan to operate at the requested setting. For example, if the value of this attribute is currently 50%, and the PercentSetting attribute is newly set to 25%, the value of this attribute may stay above 25% for a period necessary to dissipate internal heat, maintain product operational safety, etc.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 100 |
+
+Example:
+
+```json
+{
+  "1/514/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `SpeedMax`
+
+Path example:
+
+```text
+1/514/4
+```
+
+Indicates the maximum value to which the SpeedSetting attribute can be set.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `SPD` |
+| Access | R (read: view) |
+| Constraint | 1 to 100 |
+
+Example:
+
+```json
+{
+  "1/514/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `SpeedSetting`
+
+Path example:
+
+```text
+1/514/5
+```
+
+Indicates the speed setting for the fan. This attribute may be written by a client to indicate a new fan speed. If the FanMode attribute is set to Auto, the value of this attribute is set to null. The server must support all values between 0 and SpeedMax.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `SPD` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable |
+| Constraint | max SpeedMax |
+
+Example:
+
+```json
+{
+  "1/514/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `SpeedCurrent`
+
+Path example:
+
+```text
+1/514/6
+```
+
+Indicates the actual currently operating fan speed, or zero to indicate that the fan is off. There may be a temporary mismatch between the value of this attribute and the value of the SpeedSetting attribute due to other system requirements or constraints that would not allow the fan to operate at the requested setting. For example, if the value of this attribute is currently 5, and the SpeedSetting attribute is newly set to 2, the value of this attribute may stay above 2 for a period necessary to dissipate internal heat, maintain product operational safety, etc.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `SPD` |
+| Access | R (read: view) |
+| Constraint | max SpeedMax |
+
+Example:
+
+```json
+{
+  "1/514/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `RockSupport`
+
+Path example:
+
+```text
+1/514/7
+```
+
+This attribute is a bitmap that indicates the rocking motions that are supported by the server. If this attribute is supported by the server, at least one bit is set in this attribute.
+
+| Property | Value |
+|---|---|
+| Type | RockBitmap |
+| Conformance | `RCK` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Bits (`RockBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `RockLeftRight` | Indicate rock left to right |
+| 1 | `RockUpDown` | Indicate rock up and down |
+| 2 | `RockRound` | Indicate rock around |
+
+Example:
+
+```json
+{
+  "1/514/7": 0
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `RockSetting`
+
+Path example:
+
+```text
+1/514/8
+```
+
+This attribute is a bitmap that indicates the currently active fan rocking motion setting. Each bit only be set to 1, if the corresponding bit in the RockSupport attribute is set to 1, otherwise a status code of CONSTRAINT_ERROR is returned. If a combination of supported bits is set by a client, and the server does not support the combination, the lowest supported single bit in the combination is set and active, and all other bits indicates zero. For example: If RockUpDown and RockRound are both set, but this combination is not possible, then only RockUpDown becomes active.
+
+| Property | Value |
+|---|---|
+| Type | RockBitmap |
+| Conformance | `RCK` |
+| Access | R/W (read: view, write: operate) |
+| Constraint | desc |
+
+Bits (`RockBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `RockLeftRight` | Indicate rock left to right |
+| 1 | `RockUpDown` | Indicate rock up and down |
+| 2 | `RockRound` | Indicate rock around |
+
+Example:
+
+```json
+{
+  "1/514/8": 0
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `WindSupport`
+
+Path example:
+
+```text
+1/514/9
+```
+
+This attribute is a bitmap that indicates what wind modes are supported by the server. If this attribute is supported by the server, at least one bit is set in this attribute.
+
+| Property | Value |
+|---|---|
+| Type | WindBitmap |
+| Conformance | `WND` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Bits (`WindBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `SleepWind` | Indicate sleep wind |
+| 1 | `NaturalWind` | Indicate natural wind |
+
+Example:
+
+```json
+{
+  "1/514/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `WindSetting`
+
+Path example:
+
+```text
+1/514/10
+```
+
+This attribute is a bitmap that indicates the current active fan wind feature settings. Each bit only be set to 1, if the corresponding bit in the WindSupport attribute is set to 1, otherwise a status code of CONSTRAINT_ERROR is returned. If a combination of supported bits is set by a client, and the server does not support the combination, the lowest supported single bit in the combination is set and active, and all other bits indicates zero. For example: If Sleep Wind and Natural Wind are set, but this combination is not possible, then only Sleep Wind becomes active.
+
+| Property | Value |
+|---|---|
+| Type | WindBitmap |
+| Conformance | `WND` |
+| Access | R/W (read: view, write: operate) |
+| Constraint | desc |
+
+Bits (`WindBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `SleepWind` | Indicate sleep wind |
+| 1 | `NaturalWind` | Indicate natural wind |
+
+Example:
+
+```json
+{
+  "1/514/10": 0
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `AirflowDirection`
+
+Path example:
+
+```text
+1/514/11
+```
+
+Indicates the current airflow direction of the fan. This attribute may be written by a client to indicate a new airflow direction for the fan. This attribute is set to one of the values in the AirflowDirectionEnum table.
+
+| Property | Value |
+|---|---|
+| Type | AirflowDirectionEnum |
+| Conformance | `DIR` |
+| Access | R/W (read: view, write: operate) |
+
+Values (`AirflowDirectionEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Forward` | Airflow is in the forward direction |
+| 1 | `Reverse` | Airflow is in the reverse direction |
+
+Example:
+
+```json
+{
+  "1/514/11": 0
+}
+```
+
+---
+
+# Cluster 514 Commands
+
+Cluster 514 has **1 client-to-server command** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `Step` | client → server | `STEP` | status | This command indirectly changes the speed-oriented attributes of the fan in steps rather than using the speed-oriented attributes, FanMode, PercentSetting, or SpeedSetting, … |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 514 / 65529
+```
+
+```json
+{
+  "1/514/65529": [
+    0
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 514 command, check that the command ID exists in <code>endpoint/514/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 514,
+    "command_name": "Step",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 514, always use `"cluster_id": 514`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `Step`
+
+## Purpose
+
+This command indirectly changes the speed-oriented attributes of the fan in steps rather than using the speed-oriented attributes, FanMode, PercentSetting, or SpeedSetting, directly. This command supports, for example, a user-operated and wall-mounted toggle switch that can be used to increase or decrease the speed of the fan by pressing the toggle switch up or down until the desired fan speed is reached. How this command is interpreted by the server and how it affects the values of the speed-oriented attributes is implementation specific. For example, a fan supports this command, and the value of the FanModeSequence attribute is 0.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Step` |
+| Direction | client → server |
+| Conformance | `STEP` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Direction` | `direction` | StepDirectionEnum | `M` | — | Indicates whether the speed-oriented attributes increase or decrease to the next step value. |
+| 1 | `Wrap` | `wrap` | bool | `O` | — | Indicates if the speed-oriented attributes wrap between highest and lowest step value. |
+| 2 | `LowestOff` | `lowestOff` | bool | `O` | — | Indicates that the fan being off (FanMode = Off, PercentSetting = 0, or SpeedSetting = 0) is included as a step value. |
+
+`Direction` values (`StepDirectionEnum`): `0` = Increase, `1` = Decrease
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 514,
+    "command_name": "Step",
+    "payload": {
+      "direction": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 514 Events
+
+Cluster 514 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 514 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/514/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

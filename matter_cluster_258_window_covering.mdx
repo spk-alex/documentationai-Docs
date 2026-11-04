@@ -1,0 +1,980 @@
+---
+title: "Matter Cluster 258 — Window Covering"
+description: "Matter Cluster 258 (0x0102) Window Covering: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 258
+clusterHex: "0x0102"
+clusterName: "Window Covering"
+---
+
+# Matter Cluster 258 — Window Covering Cluster
+
+<Callout type="info">
+Matter Cluster <code>258</code>, also written as <code>0x0102</code>, is the <strong>Window Covering Cluster</strong>.
+The window covering cluster provides an interface for controlling and adjusting automatic window coverings such as drapery motors, automatic shades, curtains and blinds.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `258` |
+| Cluster ID hex | `0x0102` |
+| Cluster name | `Window Covering` |
+| Cluster revision (Matter 1.6.1) | `8` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `WNCV` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Mandatory global ClusterRevision attribute added; CCB 1994 1995 1996 1997 2086 2094 2095 2096 2097 |
+| 2 | CCB 2328 |
+| 3 | CCB 2477 2555 2845 3028 |
+| 4 | All Hubs changes with FeatureMap & OperationalStatus attribute |
+| 5 | New data model format and notation. Created plus clarified PositionAware and AbsolutePosition features. General cleanup of functionality. |
+| 6 | Marked AbsolutePosition feature and associated elements provisional. |
+| 7 | Removed ABS feature and all associated elements from the cluster. |
+| 8 | Removed P quality. |
+
+---
+
+## Shadow Path Format
+
+Cluster 258 values in the device shadow use this format:
+
+```text
+endpoint_id / 258 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/258/0": 0
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `258` | Window Covering cluster |
+| `0` | `Type` attribute |
+
+---
+
+## Cluster 258 Features
+
+The `FeatureMap` attribute (`1/258/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `LF` | Lift | `O` | Lift control and behavior for lifting/sliding window coverings |
+| 1 | `TL` | Tilt | `O` | Tilt control and behavior for tilting window coverings |
+| 2 | `PA_LF` | PositionAwareLift | `[LF]` | Position aware lift control is supported. |
+| 4 | `PA_TL` | PositionAwareTilt | `[TL]` | Position aware tilt control is supported. |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `23` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `EndProductTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `RollerShade` | `M` | Simple Roller Shade |
+| 1 | `RomanShade` | `M` | Roman Shade |
+| 2 | `BalloonShade` | `M` | Balloon Shade |
+| 3 | `WovenWood` | `M` | Woven Wood |
+| 4 | `PleatedShade` | `M` | Pleated Shade |
+| 5 | `CellularShade` | `M` | Cellular Shade |
+| 6 | `LayeredShade` | `M` | Layered Shade |
+| 7 | `LayeredShade2D` | `M` | Layered Shade 2D |
+| 8 | `SheerShade` | `M` | Sheer Shade |
+| 9 | `TiltOnlyInteriorBlind` | `M` | Tilt Only Interior Blind |
+| 10 | `InteriorBlind` | `M` | Interior Blind |
+| 11 | `VerticalBlindStripCurtain` | `M` | Vertical Blind, Strip Curtain |
+| 12 | `InteriorVenetianBlind` | `M` | Interior Venetian Blind |
+| 13 | `ExteriorVenetianBlind` | `M` | Exterior Venetian Blind |
+| 14 | `LateralLeftCurtain` | `M` | Lateral Left Curtain |
+| 15 | `LateralRightCurtain` | `M` | Lateral Right Curtain |
+| 16 | `CentralCurtain` | `M` | Central Curtain |
+| 17 | `RollerShutter` | `M` | Roller Shutter |
+| 18 | `ExteriorVerticalScreen` | `M` | Exterior Vertical Screen |
+| 19 | `AwningTerracePatio` | `M` | Awning Terrace (Patio) |
+| 20 | `AwningVerticalScreen` | `M` | Awning Vertical Screen |
+| 21 | `TiltOnlyPergola` | `M` | Tilt Only Pergola |
+| 22 | `SwingingShutter` | `M` | Swinging Shutter |
+| 23 | `SlidingShutter` | `M` | Sliding Shutter |
+| 255 | `Unknown` | `M` | Unknown |
+
+### `TypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `RollerShade` | `M` | RollerShade |
+| 1 | `RollerShade2Motor` | `M` | RollerShade - 2 Motor |
+| 2 | `RollerShadeExterior` | `M` | RollerShade - Exterior |
+| 3 | `RollerShadeExterior2Motor` | `M` | RollerShade - Exterior - 2 Motor |
+| 4 | `Drapery` | `M` | Drapery (curtain) |
+| 5 | `Awning` | `M` | Awning |
+| 6 | `Shutter` | `M` | Shutter |
+| 7 | `TiltBlindTiltOnly` | `M` | Tilt Blind - Tilt Only |
+| 8 | `TiltBlindLiftAndTilt` | `M` | Tilt Blind - Lift & Tilt |
+| 9 | `ProjectorScreen` | `M` | Projector Screen |
+| 255 | `Unknown` | `M` | Unknown |
+
+### `ConfigStatusBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Operational` | `M` | Device is operational. |
+| 1 | `OnlineReserved` | `D` | — |
+| 2 | `LiftMovementReversed` | `LF` | The lift movement is reversed. |
+| 3 | `LiftPositionAware` | `PA_LF` | Supports the PositionAwareLift feature (PA_LF). |
+| 4 | `TiltPositionAware` | `PA_TL` | Supports the PositionAwareTilt feature (PA_TL). |
+| 5 | `LiftEncoderControlled` | `PA_LF` | Uses an encoder for lift. |
+| 6 | `TiltEncoderControlled` | `PA_TL` | Uses an encoder for tilt. |
+
+### `ModeBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `MotorDirectionReversed` | `M` | Reverse the lift direction. |
+| 1 | `CalibrationMode` | `M` | Perform a calibration. |
+| 2 | `MaintenanceMode` | `M` | Freeze all motions for maintenance. |
+| 3 | `LedFeedback` | `M` | Control the LEDs feedback. |
+
+### `OperationalStatusBitmap` (bitmap)
+
+The OperationalStatusBitmap is using several internal operational state fields (composed of 2 bits) following this definition: - 00b = Currently not moving - 01b = Currently opening (e.g. moving from closed to open). - 10b = Currently closing (e.g. moving from open to closed). - 11b = Reserved
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| — | `Global` | `M` | Global operational state. |
+| — | `Lift` | `LF` | Lift operational state. |
+| — | `Tilt` | `TL` | Tilt operational state. |
+
+### `SafetyStatusBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `RemoteLockout` | `M` | Movement commands are ignored (locked out). e.g. not granted authorization, outside some time/date range. |
+| 1 | `TamperDetection` | `M` | Tampering detected on sensors or any other safety equipment. Ex: a device has been forcedly moved without its actuator(s). |
+| 2 | `FailedCommunication` | `M` | Communication failure to sensors or other safety equipment. |
+| 3 | `PositionFailure` | `M` | Device has failed to reach the desired position. e.g. with position aware device, time expired before TargetPosition is reached. |
+| 4 | `ThermalProtection` | `M` | Motor(s) and/or electric circuit thermal protection activated. |
+| 5 | `ObstacleDetected` | `M` | An obstacle is preventing actuator movement. |
+| 6 | `Power` | `M` | Device has power related issue or limitation e.g. device is running w/ the help of a backup battery or power might not be fully available at the moment. |
+| 7 | `StopInput` | `M` | Local safety sensor (not a direct obstacle) is preventing movements (e.g. Safety EU Standard EN60335). |
+| 8 | `MotorJammed` | `M` | Mechanical problem related to the motor(s) detected. |
+| 9 | `HardwareFailure` | `M` | PCB, fuse and other electrics problems. |
+| 10 | `ManualOperation` | `M` | Actuator is manually operated and is preventing actuator movement (e.g. actuator is disengaged/decoupled). |
+| 11 | `Protection` | `M` | Protection is activated. |
+
+---
+
+## Cluster 258 Attributes
+
+Cluster 258 defines **14 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Type` | TypeEnum | `M` | R (read: view) | — | `0` |
+| 5 | `0x0005` | `NumberOfActuationsLift` | uint16 | `[LF]` | R (read: view) | persisted | `0` |
+| 6 | `0x0006` | `NumberOfActuationsTilt` | uint16 | `[TL]` | R (read: view) | persisted | `0` |
+| 7 | `0x0007` | `ConfigStatus` | ConfigStatusBitmap | `M` | R (read: view) | persisted | `desc` |
+| 8 | `0x0008` | `CurrentPositionLiftPercentage` | percent | `[LF & PA_LF]` | R (read: view) | nullable, persisted | `null` |
+| 9 | `0x0009` | `CurrentPositionTiltPercentage` | percent | `[TL & PA_TL]` | R (read: view) | nullable, persisted | `null` |
+| 10 | `0x000A` | `OperationalStatus` | OperationalStatusBitmap | `M` | R (read: view) | — | `0` |
+| 11 | `0x000B` | `TargetPositionLiftPercent100ths` | percent100ths | `LF & PA_LF` | R (read: view) | nullable | `null` |
+| 12 | `0x000C` | `TargetPositionTiltPercent100ths` | percent100ths | `TL & PA_TL` | R (read: view) | nullable | `null` |
+| 13 | `0x000D` | `EndProductType` | EndProductTypeEnum | `M` | R (read: view) | — | `0` |
+| 14 | `0x000E` | `CurrentPositionLiftPercent100ths` | percent100ths | `LF & PA_LF` | R (read: view) | nullable, persisted | `null` |
+| 15 | `0x000F` | `CurrentPositionTiltPercent100ths` | percent100ths | `TL & PA_TL` | R (read: view) | nullable, persisted | `null` |
+| 23 | `0x0017` | `Mode` | ModeBitmap | `M` | R/W (read: view, write: manage) | persisted | `0` |
+| 26 | `0x001A` | `SafetyStatus` | SafetyStatusBitmap | `O` | R (read: view) | — | `0` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `8` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Type`
+
+Path example:
+
+```text
+1/258/0
+```
+
+This attribute identifies the type of window covering. If the window covering supports the LF feature and not the TL feature, the following types is used as the constraint for this attribute: If the window covering supports the TL feature and not the LF feature, the following types is used as the constraint for this attribute: If the window covering supports both the LF and TL features, the following types are allowed to be used:
+
+| Property | Value |
+|---|---|
+| Type | TypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`TypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `RollerShade` | RollerShade |
+| 1 | `RollerShade2Motor` | RollerShade - 2 Motor |
+| 2 | `RollerShadeExterior` | RollerShade - Exterior |
+| 3 | `RollerShadeExterior2Motor` | RollerShade - Exterior - 2 Motor |
+| 4 | `Drapery` | Drapery (curtain) |
+| 5 | `Awning` | Awning |
+| 6 | `Shutter` | Shutter |
+| 7 | `TiltBlindTiltOnly` | Tilt Blind - Tilt Only |
+| 8 | `TiltBlindLiftAndTilt` | Tilt Blind - Lift & Tilt |
+| 9 | `ProjectorScreen` | Projector Screen |
+| 255 | `Unknown` | Unknown |
+
+Example:
+
+```json
+{
+  "1/258/0": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `NumberOfActuationsLift`
+
+Path example:
+
+```text
+1/258/5
+```
+
+Indicates the total number of lift/slide actuations applied to the window covering since the device was installed.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[LF]` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/258/5": 1
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `NumberOfActuationsTilt`
+
+Path example:
+
+```text
+1/258/6
+```
+
+Indicates the total number of tilt actuations applied to the window covering since the device was installed.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `[TL]` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Default | `0` |
+
+Example:
+
+```json
+{
+  "1/258/6": 1
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `ConfigStatus`
+
+Path example:
+
+```text
+1/258/7
+```
+
+This attribute specifies the configuration and status information of the window covering. To change settings, devices must write to the Mode attribute. The behavior causing the setting or clearing of each bit is vendor specific.
+
+| Property | Value |
+|---|---|
+| Type | ConfigStatusBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+| Constraint | desc |
+| Default | `desc` |
+
+Bits (`ConfigStatusBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `Operational` | Device is operational. |
+| 1 | `OnlineReserved` | — |
+| 2 | `LiftMovementReversed` | The lift movement is reversed. |
+| 3 | `LiftPositionAware` | Supports the PositionAwareLift feature (PA_LF). |
+| 4 | `TiltPositionAware` | Supports the PositionAwareTilt feature (PA_TL). |
+| 5 | `LiftEncoderControlled` | Uses an encoder for lift. |
+| 6 | `TiltEncoderControlled` | Uses an encoder for tilt. |
+
+Example:
+
+```json
+{
+  "1/258/7": 0
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `CurrentPositionLiftPercentage`
+
+Path example:
+
+```text
+1/258/8
+```
+
+Indicates the actual position as a percentage from 0% to 100% with 1% default step. This attribute is equal to CurrentPositionLiftPercent100ths attribute divided by 100.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `[LF & PA_LF]` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/258/8": 1
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `CurrentPositionTiltPercentage`
+
+Path example:
+
+```text
+1/258/9
+```
+
+Indicates the actual position as a percentage from 0% to 100% with 1% default step. This attribute is equal to CurrentPositionTiltPercent100ths attribute divided by 100.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `[TL & PA_TL]` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/258/9": 1
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `OperationalStatus`
+
+Path example:
+
+```text
+1/258/10
+```
+
+Indicates the currently ongoing operations and applies to all type of devices.
+
+| Property | Value |
+|---|---|
+| Type | OperationalStatusBitmap |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 63 |
+| Default | `0` |
+
+Bits (`OperationalStatusBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| — | `Global` | Global operational state. |
+| — | `Lift` | Lift operational state. |
+| — | `Tilt` | Tilt operational state. |
+
+Example:
+
+```json
+{
+  "1/258/10": 0
+}
+```
+
+---
+
+## Attribute `11` / `0x000B` — `TargetPositionLiftPercent100ths`
+
+Path example:
+
+```text
+1/258/11
+```
+
+Indicates the position where the window covering lift will go or is moving to as a percentage (Unit 0.01%).
+
+| Property | Value |
+|---|---|
+| Type | percent100ths |
+| Conformance | `LF & PA_LF` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/258/11": 1
+}
+```
+
+---
+
+## Attribute `12` / `0x000C` — `TargetPositionTiltPercent100ths`
+
+Path example:
+
+```text
+1/258/12
+```
+
+Indicates the position where the window covering tilt will go or is moving to as a percentage (Unit 0.01%).
+
+| Property | Value |
+|---|---|
+| Type | percent100ths |
+| Conformance | `TL & PA_TL` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/258/12": 1
+}
+```
+
+---
+
+## Attribute `13` / `0x000D` — `EndProductType`
+
+Path example:
+
+```text
+1/258/13
+```
+
+This attribute should provide more detail about the product type than can be determined from the main category indicated by the Type attribute. If the window covering supports the LF feature and not the TL feature, the following types is used as the constraint for this attribute: If the window covering supports the TL feature and not the LF feature, the following types is used as the constraint for this attribute: If the window covering supports both the LF and TL features, the following types are allowed to be used: The table below helps to match the EndProductType attribute with the Type attribute.
+
+| Property | Value |
+|---|---|
+| Type | EndProductTypeEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Values (`EndProductTypeEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `RollerShade` | Simple Roller Shade |
+| 1 | `RomanShade` | Roman Shade |
+| 2 | `BalloonShade` | Balloon Shade |
+| 3 | `WovenWood` | Woven Wood |
+| 4 | `PleatedShade` | Pleated Shade |
+| 5 | `CellularShade` | Cellular Shade |
+| 6 | `LayeredShade` | Layered Shade |
+| 7 | `LayeredShade2D` | Layered Shade 2D |
+| 8 | `SheerShade` | Sheer Shade |
+| 9 | `TiltOnlyInteriorBlind` | Tilt Only Interior Blind |
+| 10 | `InteriorBlind` | Interior Blind |
+| 11 | `VerticalBlindStripCurtain` | Vertical Blind, Strip Curtain |
+| 12 | `InteriorVenetianBlind` | Interior Venetian Blind |
+| 13 | `ExteriorVenetianBlind` | Exterior Venetian Blind |
+| 14 | `LateralLeftCurtain` | Lateral Left Curtain |
+| 15 | `LateralRightCurtain` | Lateral Right Curtain |
+| 16 | `CentralCurtain` | Central Curtain |
+| 17 | `RollerShutter` | Roller Shutter |
+| 18 | `ExteriorVerticalScreen` | Exterior Vertical Screen |
+| 19 | `AwningTerracePatio` | Awning Terrace (Patio) |
+| 20 | `AwningVerticalScreen` | Awning Vertical Screen |
+| 21 | `TiltOnlyPergola` | Tilt Only Pergola |
+| 22 | `SwingingShutter` | Swinging Shutter |
+| 23 | `SlidingShutter` | Sliding Shutter |
+| 255 | `Unknown` | Unknown |
+
+Example:
+
+```json
+{
+  "1/258/13": 0
+}
+```
+
+---
+
+## Attribute `14` / `0x000E` — `CurrentPositionLiftPercent100ths`
+
+Path example:
+
+```text
+1/258/14
+```
+
+Indicates the actual position as a percentage with a minimal step of 0.01%. E.g Max 10000 equals 100.00%.
+
+| Property | Value |
+|---|---|
+| Type | percent100ths |
+| Conformance | `LF & PA_LF` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Constraint | max 10000 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/258/14": 1
+}
+```
+
+---
+
+## Attribute `15` / `0x000F` — `CurrentPositionTiltPercent100ths`
+
+Path example:
+
+```text
+1/258/15
+```
+
+Indicates the actual position as a percentage with a minimal step of 0.01%. E.g Max 10000 equals 100.00%.
+
+| Property | Value |
+|---|---|
+| Type | percent100ths |
+| Conformance | `TL & PA_TL` |
+| Access | R (read: view) |
+| Qualities | nullable, persisted |
+| Constraint | max 10000 |
+| Default | `null` |
+
+Example:
+
+```json
+{
+  "1/258/15": 1
+}
+```
+
+---
+
+## Attribute `23` / `0x0017` — `Mode`
+
+Path example:
+
+```text
+1/258/23
+```
+
+The Mode attribute allows configuration of the window covering, such as: reversing the motor direction, placing the window covering into calibration mode, placing the motor into maintenance mode, disabling the network, and disabling status LEDs. In the case a device does not support or implement a specific mode, e.g. the device has a specific installation method and reversal is not relevant or the device does not include a maintenance mode, any write interaction to the Mode attribute, with an unsupported mode bit or any out of bounds bits set, must be ignored and a response containing the status of CONSTRAINT_ERROR will be returned.
+
+| Property | Value |
+|---|---|
+| Type | ModeBitmap |
+| Conformance | `M` |
+| Access | R/W (read: view, write: manage) |
+| Qualities | persisted |
+| Constraint | max 15 |
+| Default | `0` |
+
+Bits (`ModeBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `MotorDirectionReversed` | Reverse the lift direction. |
+| 1 | `CalibrationMode` | Perform a calibration. |
+| 2 | `MaintenanceMode` | Freeze all motions for maintenance. |
+| 3 | `LedFeedback` | Control the LEDs feedback. |
+
+Example:
+
+```json
+{
+  "1/258/23": 0
+}
+```
+
+---
+
+## Attribute `26` / `0x001A` — `SafetyStatus`
+
+Path example:
+
+```text
+1/258/26
+```
+
+The SafetyStatus attribute reflects the state of the safety sensors and the common issues preventing movements. By default for nominal operation all flags are cleared (0). A device might support none, one or several bit flags from this attribute (all optional).
+
+| Property | Value |
+|---|---|
+| Type | SafetyStatusBitmap |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | desc |
+| Default | `0` |
+
+Bits (`SafetyStatusBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `RemoteLockout` | Movement commands are ignored (locked out). e.g. not granted authorization, outside some time/date range. |
+| 1 | `TamperDetection` | Tampering detected on sensors or any other safety equipment. Ex: a device has been forcedly moved without its actuator(s). |
+| 2 | `FailedCommunication` | Communication failure to sensors or other safety equipment. |
+| 3 | `PositionFailure` | Device has failed to reach the desired position. e.g. with position aware device, time expired before TargetPosition is reached. |
+| 4 | `ThermalProtection` | Motor(s) and/or electric circuit thermal protection activated. |
+| 5 | `ObstacleDetected` | An obstacle is preventing actuator movement. |
+| 6 | `Power` | Device has power related issue or limitation e.g. device is running w/ the help of a backup battery or power might not be fully available at the moment. |
+| 7 | `StopInput` | Local safety sensor (not a direct obstacle) is preventing movements (e.g. Safety EU Standard EN60335). |
+| 8 | `MotorJammed` | Mechanical problem related to the motor(s) detected. |
+| 9 | `HardwareFailure` | PCB, fuse and other electrics problems. |
+| 10 | `ManualOperation` | Actuator is manually operated and is preventing actuator movement (e.g. actuator is disengaged/decoupled). |
+| 11 | `Protection` | Protection is activated. |
+
+Example:
+
+```json
+{
+  "1/258/26": 0
+}
+```
+
+---
+
+# Cluster 258 Commands
+
+Cluster 258 has **5 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `UpOrOpen` | client → server | `M` | status | On receipt, the window covering will adjust its position so the physical lift/slide and tilt is at the maximum open/up position. |
+| 1 | `0x01` | `DownOrClose` | client → server | `M` | status | On receipt, the window covering will adjust its position so the physical lift/slide and tilt is at the maximum closed/down position. |
+| 2 | `0x02` | `StopMotion` | client → server | `M` | status | On receipt, the window covering will stop any adjusting to the physical tilt and lift/slide that is currently occurring. |
+| 5 | `0x05` | `GoToLiftPercentage` | client → server | `LF & PA_LF, [LF]` | status | This command is used to set the target lift position of the window covering to the percentage value specified in the command. |
+| 8 | `0x08` | `GoToTiltPercentage` | client → server | `TL & PA_TL, [TL]` | status | This command is used to set the target tilt position of the window covering to the percentage value specified in the command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 258 / 65529
+```
+
+```json
+{
+  "1/258/65529": [
+    0,
+    1,
+    2,
+    5,
+    8
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 258 command, check that the command ID exists in <code>endpoint/258/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 258,
+    "command_name": "UpOrOpen",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 258, always use `"cluster_id": 258`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `UpOrOpen`
+
+## Purpose
+
+On receipt, the window covering will adjust its position so the physical lift/slide and tilt is at the maximum open/up position. This will happen as fast as possible. The server attributes is updated as follows: if the PositionAware feature is supported: - TargetPositionLiftPercent100ths attribute is set to 0.00%. - TargetPositionTiltPercent100ths attribute is set to 0.00%.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `UpOrOpen` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 258,
+    "command_name": "UpOrOpen",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `DownOrClose`
+
+## Purpose
+
+On receipt, the window covering will adjust its position so the physical lift/slide and tilt is at the maximum closed/down position. This will happen as fast as possible. The server attributes supported is updated as follows: if the PositionAware feature is supported: - TargetPositionLiftPercent100ths attribute is set to 100.00%. - TargetPositionTiltPercent100ths attribute is set to 100.00%.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `DownOrClose` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 258,
+    "command_name": "DownOrClose",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `StopMotion`
+
+## Purpose
+
+On receipt, the window covering will stop any adjusting to the physical tilt and lift/slide that is currently occurring. The server attributes supported is updated as follows: - TargetPositionLiftPercent100ths attribute will be set to CurrentPositionLiftPercent100ths attribute value. - TargetPositionTiltPercent100ths attribute will be set to CurrentPositionTiltPercent100ths attribute value.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `StopMotion` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 258,
+    "command_name": "StopMotion",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Command: `GoToLiftPercentage`
+
+## Purpose
+
+This command is used to set the target lift position of the window covering to the percentage value specified in the command. Upon receipt of this command, the server will adjust the window covering to the lift/slide percentage specified in the payload of this command. If the command includes LiftPercent100thsValue, then TargetPositionLiftPercent100ths attribute is set to LiftPercent100thsValue. Otherwise the TargetPositionLiftPercent100ths attribute is set to LiftPercentageValue &#42; 100.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `GoToLiftPercentage` |
+| Direction | client → server |
+| Conformance | `LF & PA_LF, [LF]` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `LiftPercent100thsValue` | `liftPercent100thsValue` | percent100ths | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 258,
+    "command_name": "GoToLiftPercentage",
+    "payload": {
+      "liftPercent100thsValue": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `GoToTiltPercentage`
+
+## Purpose
+
+This command is used to set the target tilt position of the window covering to the percentage value specified in the command. Upon receipt of this command, the server will adjust the window covering to the tilt percentage specified in the payload of this command. If the command includes TiltPercent100thsValue, then TargetPositionTiltPercent100ths attribute is set to TiltPercent100thsValue. Otherwise the TargetPositionTiltPercent100ths attribute is set to TiltPercentageValue &#42; 100.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `8` |
+| Command hex | `0x08` |
+| Command name | `GoToTiltPercentage` |
+| Direction | client → server |
+| Conformance | `TL & PA_TL, [TL]` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TiltPercent100thsValue` | `tiltPercent100thsValue` | percent100ths | `M` | desc | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 258,
+    "command_name": "GoToTiltPercentage",
+    "payload": {
+      "tiltPercent100thsValue": 1
+    }
+  }
+}
+```
+
+---
+
+# Cluster 258 Events
+
+Cluster 258 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 258 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/258/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

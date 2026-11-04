@@ -1,0 +1,332 @@
+---
+title: "Matter Cluster 1291 — Audio Output"
+description: "Matter Cluster 1291 (0x050B) Audio Output: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 1291
+clusterHex: "0x050B"
+clusterName: "Audio Output"
+---
+
+# Matter Cluster 1291 — Audio Output Cluster
+
+<Callout type="info">
+Matter Cluster <code>1291</code>, also written as <code>0x050B</code>, is the <strong>Audio Output Cluster</strong>.
+This cluster provides an interface for controlling the Output on a Video Player device such as a TV. This cluster would be supported on a device with audio outputs like a Video Player device (Smart TV, TV Setup Top Box, Smart Speaker, etc). This cluster provides the list of available outputs and provides commands for selecting and renaming them.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `1291` |
+| Cluster ID hex | `0x050B` |
+| Cluster name | `Audio Output` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `AUDIOOUTPUT` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 1291 values in the device shadow use this format:
+
+```text
+endpoint_id / 1291 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/1291/1": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `1291` | Audio Output cluster |
+| `1` | `CurrentOutput` attribute |
+
+---
+
+## Cluster 1291 Features
+
+The `FeatureMap` attribute (`1/1291/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `NU` | NameUpdates | `O` | Supports updates to output names |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `OutputTypeEnum`
+
+The type of output, expressed as an enum, with the following values:
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `HDMI` | `M` | HDMI |
+| 1 | `BT` | `M` | — |
+| 2 | `Optical` | `M` | — |
+| 3 | `Headphone` | `M` | — |
+| 4 | `Internal` | `M` | — |
+| 5 | `Other` | `M` | — |
+
+### `OutputInfoStruct` (struct)
+
+This contains information about an output.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Index` | uint8 | `M` | — | Indicates the unique index into the list of outputs. |
+| 1 | `OutputType` | OutputTypeEnum | `M` | desc | Indicates the type of output. |
+| 2 | `Name` | string | `M` | max length 32 | The device defined and user editable output name, such as “Soundbar”, “Speakers”. |
+
+---
+
+## Cluster 1291 Attributes
+
+Cluster 1291 defines **2 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `OutputList` | list of OutputInfoStruct | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `CurrentOutput` | uint8 | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `OutputList`
+
+Path example:
+
+```text
+1/1291/0
+```
+
+This attribute provides the list of outputs supported by the device.
+
+| Property | Value |
+|---|---|
+| Type | list of OutputInfoStruct |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Each entry is a `OutputInfoStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "1/1291/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `CurrentOutput`
+
+Path example:
+
+```text
+1/1291/1
+```
+
+This attribute contains the value of the index field of the currently selected OutputInfoStruct.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "1/1291/1": 1
+}
+```
+
+---
+
+# Cluster 1291 Commands
+
+Cluster 1291 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `SelectOutput` | client → server | `M` | status | On receipt, this must change the output on the device to the output at a specific index in the Output List. |
+| 1 | `0x01` | `RenameOutput` | client → server | `NU` | status | On receipt, this must rename the output at a specific index in the Output List. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 1291 / 65529
+```
+
+```json
+{
+  "1/1291/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 1291 command, check that the command ID exists in <code>endpoint/1291/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1291,
+    "command_name": "SelectOutput",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 1291, always use `"cluster_id": 1291`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `SelectOutput`
+
+## Purpose
+
+On receipt, this must change the output on the device to the output at a specific index in the Output List. Note that when the current output is set to an output of type HDMI, adjustments to volume via a Speaker endpoint on the same node may cause HDMI volume up/down commands to be sent to the given HDMI output.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `SelectOutput` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Index` | `index` | uint8 | `M` | — | This indicates the index field of the OutputInfoStruct from the OutputList attribute in which to change to. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1291,
+    "command_name": "SelectOutput",
+    "payload": {
+      "index": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `RenameOutput`
+
+## Purpose
+
+On receipt, this must rename the output at a specific index in the Output List. Updates to the output name must appear in the device's settings menus. Name updates may automatically be sent to the actual device to which the output connects.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `RenameOutput` |
+| Direction | client → server |
+| Conformance | `NU` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Index` | `index` | uint8 | `M` | — | — |
+| 1 | `Name` | `name` | string | `M` | max length 32 | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 1291,
+    "command_name": "RenameOutput",
+    "payload": {
+      "index": 1,
+      "name": "example"
+    }
+  }
+}
+```
+
+---
+
+# Cluster 1291 Events
+
+Cluster 1291 defines **no events**.
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 1291 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/1291/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,635 @@
+---
+title: "Matter Cluster 129 — Valve Configuration and Control"
+description: "Matter Cluster 129 (0x0081) Valve Configuration and Control: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 129
+clusterHex: "0x0081"
+clusterName: "Valve Configuration and Control"
+---
+
+# Matter Cluster 129 — Valve Configuration and Control Cluster
+
+<Callout type="info">
+Matter Cluster <code>129</code>, also written as <code>0x0081</code>, is the <strong>Valve Configuration and Control Cluster</strong>.
+This cluster is used to configure a valve.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `129` |
+| Cluster ID hex | `0x0081` |
+| Cluster name | `Valve Configuration and Control` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | application |
+| Scope | Endpoint |
+| PICS code | `VALCC` |
+| Typical endpoint | `1` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+
+---
+
+## Shadow Path Format
+
+Cluster 129 values in the device shadow use this format:
+
+```text
+endpoint_id / 129 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "1/129/0": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `1` | Endpoint ID |
+| `129` | Valve Configuration and Control cluster |
+| `0` | `OpenDuration` attribute |
+
+---
+
+## Cluster 129 Features
+
+The `FeatureMap` attribute (`1/129/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `TS` | TimeSync | `desc` | UTC time is used for time indications |
+| 1 | `LVL` | Level | `O` | Device supports setting the specific position of the valve |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `3` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `StatusCodeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 2 | `FailureDueToFault` | `M` | The requested action could not be performed due to a fault on the valve. |
+
+### `ValveStateEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Closed` | `M` | Valve is in closed position |
+| 1 | `Open` | `M` | Valve is in open position |
+| 2 | `Transitioning` | `M` | Valve is transitioning between closed and open positions or between levels |
+
+### `ValveFaultBitmap` (bitmap)
+
+| Bit | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `GeneralFault` | `M` | Unspecified fault detected |
+| 1 | `Blocked` | `M` | Valve is blocked |
+| 2 | `Leaking` | `M` | Valve has detected a leak |
+| 3 | `NotConnected` | `M` | No valve is connected to controller |
+| 4 | `ShortCircuit` | `M` | Short circuit is detected |
+| 5 | `CurrentExceeded` | `M` | The available current has been exceeded |
+
+---
+
+## Cluster 129 Attributes
+
+Cluster 129 defines **11 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `OpenDuration` | elapsed-s | `M` | R (read: view) | nullable | — |
+| 1 | `0x0001` | `DefaultOpenDuration` | elapsed-s | `M` | R/W (read: view, write: operate) | nullable, persisted | — |
+| 2 | `0x0002` | `AutoCloseTime` | epoch-us | `TS` | R (read: view) | nullable | — |
+| 3 | `0x0003` | `RemainingDuration` | elapsed-s | `M` | R (read: view) | nullable, quiet reporting | — |
+| 4 | `0x0004` | `CurrentState` | ValveStateEnum | `M` | R (read: view) | nullable | — |
+| 5 | `0x0005` | `TargetState` | ValveStateEnum | `M` | R (read: view) | nullable | — |
+| 6 | `0x0006` | `CurrentLevel` | percent | `LVL` | R (read: view) | nullable | — |
+| 7 | `0x0007` | `TargetLevel` | percent | `LVL` | R (read: view) | nullable | — |
+| 8 | `0x0008` | `DefaultOpenLevel` | percent | `[LVL]` | R/W (read: view, write: operate) | persisted | `100` |
+| 9 | `0x0009` | `ValveFault` | ValveFaultBitmap | `O` | R (read: view) | — | `0` |
+| 10 | `0x000A` | `LevelStep` | uint8 | `[LVL]` | R (read: view) | — | `1` |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `OpenDuration`
+
+Path example:
+
+```text
+1/129/0
+```
+
+Indicates the total duration, in seconds, for which the valve will remain open for this current opening. A value of null indicates the duration is not set, meaning that the valve will remain open until closed by the user or some other automation.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/129/0": 1
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `DefaultOpenDuration`
+
+Path example:
+
+```text
+1/129/1
+```
+
+Indicates the default duration, in seconds, for which the valve will remain open, if the OpenDuration field is not present in the Open command. A value of null indicates the duration is not set, meaning that the valve will remain open until closed by the user or some other automation.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `M` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | nullable, persisted |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "1/129/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `AutoCloseTime`
+
+Path example:
+
+```text
+1/129/2
+```
+
+Indicates the UTC time when the valve will close, depending on value of the OpenDuration attribute. Null: - When OpenDuration is null, or - When the valve does not have a synchronized UTCTime in the Time Synchronization cluster, or - When the valve is closed. When the value of this attribute is earlier or equal to the current UTC time, the valve must automatically transition to its closed position. The behavior of transitioning to the closed position, must match the behavior described in the Close command.
+
+| Property | Value |
+|---|---|
+| Type | epoch-us |
+| Conformance | `TS` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/129/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `RemainingDuration`
+
+Path example:
+
+```text
+1/129/3
+```
+
+Indicates the remaining duration, in seconds, until the valve closes. Null: - When OpenDuration is null, or - When the valve is closed. The value of this attribute only be reported in the following cases: - When it changes from null to any other value and vice versa, or - When it changes to 0, or - When it increases, or - When the closing time changes. Meaning that clients should NOT rely on the reporting of this attribute in order to keep track of the remaining duration, due to this attribute not being reported during regular countdown.
+
+| Property | Value |
+|---|---|
+| Type | elapsed-s |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable, quiet reporting |
+
+Example:
+
+```json
+{
+  "1/129/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `CurrentState`
+
+Path example:
+
+```text
+1/129/4
+```
+
+Indicates the current state of the valve. A value of null indicates that the current state is not known.
+
+| Property | Value |
+|---|---|
+| Type | ValveStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Values (`ValveStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Closed` | Valve is in closed position |
+| 1 | `Open` | Valve is in open position |
+| 2 | `Transitioning` | Valve is transitioning between closed and open positions or between levels |
+
+Example:
+
+```json
+{
+  "1/129/4": 0
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `TargetState`
+
+Path example:
+
+```text
+1/129/5
+```
+
+Indicates the target state, while changing the state, of the valve. A value of null indicates that no target position is set, since the change in state is either done or failed.
+
+| Property | Value |
+|---|---|
+| Type | ValveStateEnum |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Values (`ValveStateEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Closed` | Valve is in closed position |
+| 1 | `Open` | Valve is in open position |
+| 2 | `Transitioning` | Valve is transitioning between closed and open positions or between levels |
+
+Example:
+
+```json
+{
+  "1/129/5": 0
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `CurrentLevel`
+
+Path example:
+
+```text
+1/129/6
+```
+
+Indicates the current level of the valve as a percentage value, between fully closed and fully open. During a transition from one level to another level, the valve should keep this attribute updated to the best of its ability, in order to represent the actual level of the valve during the movement. A value of 100 percent indicates the fully open position. A value of 0 percent indicates the fully closed position.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `LVL` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/129/6": 100
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `TargetLevel`
+
+Path example:
+
+```text
+1/129/7
+```
+
+Indicates the target level of the valve as a percentage value, between fully closed and fully open. The interpretation of the percentage value is the same as for the CurrentLevel attribute. A value of null indicates that no target position is set, since the change of level is either done or failed.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `LVL` |
+| Access | R (read: view) |
+| Qualities | nullable |
+
+Example:
+
+```json
+{
+  "1/129/7": 100
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `DefaultOpenLevel`
+
+Path example:
+
+```text
+1/129/8
+```
+
+Indicates the default value used for the TargetLevel attribute, when a valve transitions from the closed to the open state, caused by an Open command, if a TargetLevel field is not present in the Open command. If the LevelStep attribute is present and the value of a write interaction to this attribute field is not 100, the value is a supported value as defined by the LevelStep attribute, such that (Value received in the write interaction) % (Value of LevelStep attribute) equals 0. If the resulting value is not 0, the requested DefaultOpenLevel value is considered an unsupported value and a CONSTRAINT_ERROR status is returned.
+
+| Property | Value |
+|---|---|
+| Type | percent |
+| Conformance | `[LVL]` |
+| Access | R/W (read: view, write: operate) |
+| Qualities | persisted |
+| Constraint | 1 to 100 |
+| Default | `100` |
+
+Example:
+
+```json
+{
+  "1/129/8": 100
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `ValveFault`
+
+Path example:
+
+```text
+1/129/9
+```
+
+Indicates any faults registered by the valve.
+
+| Property | Value |
+|---|---|
+| Type | ValveFaultBitmap |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Default | `0` |
+
+Bits (`ValveFaultBitmap`):
+
+| Bit | Name | Meaning |
+|---:|---|---|
+| 0 | `GeneralFault` | Unspecified fault detected |
+| 1 | `Blocked` | Valve is blocked |
+| 2 | `Leaking` | Valve has detected a leak |
+| 3 | `NotConnected` | No valve is connected to controller |
+| 4 | `ShortCircuit` | Short circuit is detected |
+| 5 | `CurrentExceeded` | The available current has been exceeded |
+
+Example:
+
+```json
+{
+  "1/129/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `LevelStep`
+
+Path example:
+
+```text
+1/129/10
+```
+
+Indicates the step size the valve can support. The step size defined by this attribute is counted from 0 and the final step towards 100 may be different than what is defined in this attribute. For example, if the value of this attribute is 15, it results in these target values being supported; 0, 15, 30, 45, 60, 75, 90 and 100. The values of 0 and 100 must always be supported, regardless of the value of this attribute.
+
+| Property | Value |
+|---|---|
+| Type | uint8 |
+| Conformance | `[LVL]` |
+| Access | R (read: view) |
+| Constraint | 1 to 50 |
+| Default | `1` |
+
+Example:
+
+```json
+{
+  "1/129/10": 1
+}
+```
+
+---
+
+# Cluster 129 Commands
+
+Cluster 129 has **2 client-to-server commands** and **0 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `Open` | client → server | `M` | status | This command is used to set the valve to its open position. |
+| 1 | `0x01` | `Close` | client → server | `M` | status | This command is used to set the valve to its closed position. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 129 / 65529
+```
+
+```json
+{
+  "1/129/65529": [
+    0,
+    1
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 129 command, check that the command ID exists in <code>endpoint/129/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 129,
+    "command_name": "Open",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 129, always use `"cluster_id": 129`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `Open`
+
+## Purpose
+
+This command is used to set the valve to its open position.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `Open` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `OpenDuration` | `openDuration` | elapsed-s (nullable) | `O` | min 1 | Indicates the duration that the valve will remain open for this specific Open command. A value of null indicates the duration is not set, meaning that the valve will remain open until closed by the user or some other automation. |
+| 1 | `TargetLevel` | `targetLevel` | percent | `[LVL]` | min 1 | Indicates the target level used for this specific Open command. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 129,
+    "command_name": "Open",
+    "payload": {
+      "openDuration": 1,
+      "targetLevel": 100
+    }
+  }
+}
+```
+
+---
+
+# Command: `Close`
+
+## Purpose
+
+This command is used to set the valve to its closed position.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `Close` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 1,
+    "cluster_id": 129,
+    "command_name": "Close",
+    "payload": {}
+  }
+}
+```
+
+---
+
+# Cluster 129 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `ValveStateChanged` | info | `O` | This event is generated when the valve state changed. |
+| 1 | `0x01` | `ValveFault` | info | `O` | This event is generated when the valve registers or clears a fault, e.g. not being able to transition to the requested target level or state. |
+
+## Event `0` — `ValveStateChanged`
+
+This event is generated when the valve state changed. For level changes, after the end of movement, for state changes when the new state has been reached.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ValveState` | ValveStateEnum | `M` | Indicates the new state of the valve. |
+| 1 | `ValveLevel` | percent | `LVL` | Indicates the new level of the valve. |
+
+## Event `1` — `ValveFault`
+
+This event is generated when the valve registers or clears a fault, e.g. not being able to transition to the requested target level or state.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `ValveFault` | ValveFaultBitmap | `M` | Indicates the value of the ValveFault attribute, at the time this event is generated. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 129 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/129/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

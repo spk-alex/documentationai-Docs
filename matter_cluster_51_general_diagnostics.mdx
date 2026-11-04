@@ -1,0 +1,807 @@
+---
+title: "Matter Cluster 51 — General Diagnostics"
+description: "Matter Cluster 51 (0x0033) General Diagnostics: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 51
+clusterHex: "0x0033"
+clusterName: "General Diagnostics"
+---
+
+# Matter Cluster 51 — General Diagnostics Cluster
+
+<Callout type="info">
+Matter Cluster <code>51</code>, also written as <code>0x0033</code>, is the <strong>General Diagnostics Cluster</strong>.
+The General Diagnostics Cluster, along with other diagnostics clusters, provide a means to acquire standardized diagnostics metrics that may be used by a Node to assist a user or Administrator in diagnosing potential problems. The General Diagnostics Cluster attempts to centralize all metrics that are broadly relevant to the majority of Nodes.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `51` |
+| Cluster ID hex | `0x0033` |
+| Cluster name | `General Diagnostics` |
+| Cluster revision (Matter 1.6.1) | `3` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `DGGEN` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial revision |
+| 2 | UpTime attribute now mandatory, and added TimeSnapshot command, added DMTEST feature |
+| 3 | Added DeviceLoadStatus attribute |
+
+---
+
+## Shadow Path Format
+
+Cluster 51 values in the device shadow use this format:
+
+```text
+endpoint_id / 51 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/51/1": 1
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `51` | General Diagnostics cluster |
+| `1` | `RebootCount` attribute |
+
+---
+
+## Cluster 51 Features
+
+The `FeatureMap` attribute (`0/51/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `DMTEST` | DataModelTest | `desc` | Support specific testing needs for extended Data Model features |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `1` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `BootReasonEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The Node is unable to identify the Power-On reason as one of the other provided enumeration values. |
+| 1 | `PowerOnReboot` | `M` | The Node has booted as the result of physical interaction with the device resulting in a reboot. |
+| 2 | `BrownOutReset` | `M` | The Node has rebooted as the result of a brown-out of the Node's power supply. |
+| 3 | `SoftwareWatchdogReset` | `M` | The Node has rebooted as the result of a software watchdog timer. |
+| 4 | `HardwareWatchdogReset` | `M` | The Node has rebooted as the result of a hardware watchdog timer. |
+| 5 | `SoftwareUpdateCompleted` | `M` | The Node has rebooted as the result of a completed software update. |
+| 6 | `SoftwareReset` | `M` | The Node has rebooted as the result of a software initiated reboot. |
+
+### `HardwareFaultEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The Node has encountered an unspecified fault. |
+| 1 | `Radio` | `O` | The Node has encountered a fault with at least one of its radios. |
+| 2 | `Sensor` | `O` | The Node has encountered a fault with at least one of its sensors. |
+| 3 | `ResettableOverTemp` | `O` | The Node has encountered an over-temperature fault that is resettable. |
+| 4 | `NonResettableOverTemp` | `O` | The Node has encountered an over-temperature fault that is not resettable. |
+| 5 | `PowerSource` | `O` | The Node has encountered a fault with at least one of its power sources. |
+| 6 | `VisualDisplayFault` | `O` | The Node has encountered a fault with at least one of its visual displays. |
+| 7 | `AudioOutputFault` | `O` | The Node has encountered a fault with at least one of its audio outputs. |
+| 8 | `UserInterfaceFault` | `O` | The Node has encountered a fault with at least one of its user interfaces. |
+| 9 | `NonVolatileMemoryError` | `O` | The Node has encountered a fault with its non-volatile memory. |
+| 10 | `TamperDetected` | `O` | The Node has encountered disallowed physical tampering. |
+
+### `InterfaceTypeEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | Indicates an interface of an unspecified type. |
+| 1 | `WiFi` | `O` | Indicates a Wi-Fi interface. |
+| 2 | `Ethernet` | `O` | Indicates a Ethernet interface. |
+| 3 | `Cellular` | `O` | Indicates a Cellular interface. |
+| 4 | `Thread` | `O` | Indicates a Thread interface. |
+
+### `NetworkFaultEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The Node has encountered an unspecified fault. |
+| 1 | `HardwareFailure` | `O` | The Node has encountered a network fault as a result of a hardware failure. |
+| 2 | `NetworkJammed` | `O` | The Node has encountered a network fault as a result of a jammed network. |
+| 3 | `ConnectionFailed` | `O` | The Node has encountered a network fault as a result of a failure to establish a connection. |
+
+### `RadioFaultEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Unspecified` | `M` | The Node has encountered an unspecified radio fault. |
+| 1 | `WiFiFault` | `O` | The Node has encountered a fault with its Wi-Fi radio. |
+| 2 | `CellularFault` | `O` | The Node has encountered a fault with its cellular radio. |
+| 3 | `ThreadFault` | `O` | The Node has encountered a fault with its 802.15.4 radio. |
+| 4 | `NFCFault` | `O` | The Node has encountered a fault with its NFC radio. |
+| 5 | `BLEFault` | `O` | The Node has encountered a fault with its BLE radio. |
+| 6 | `EthernetFault` | `O` | The Node has encountered a fault with its Ethernet controller. |
+
+### `DeviceLoadStruct` (struct)
+
+This structure describes some important resource utilization metrics for the Node, as provided in the DeviceLoadStatus attribute. For all the fields, the value must remain at the maximum representable (clamp to max) if the maximum value is reached.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `CurrentSubscriptions` | uint16 | `M` | — | Indicates the number of currently-active Interaction Model subscriptions across all fabrics on the node. |
+| 1 | `CurrentSubscriptionsForFabric` | uint16 | `M` | — | Indicates the number of currently-active Interaction Model subscriptions for the accessing fabric only. |
+| 2 | `TotalSubscriptionsEstablished` | uint32 | `M` | — | Indicates the total number of Interaction Model subscriptions successfully established across all fabrics on the node since start-up. |
+| 3 | `TotalInteractionModelMessagesSent` | uint32 | `M` | — | Indicates the number of outgoing Interaction Model protocol messages sent since start-up. |
+| 4 | `TotalInteractionModelMessagesReceived` | uint32 | `M` | — | Indicates the number of incoming Interaction Model protocol messages received since start-up. |
+
+### `NetworkInterface` (struct)
+
+This structure describes a network interface supported by the Node, as provided in the NetworkInterfaces attribute.
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `Name` | string | `M` | max length 32 | Indicates a human-readable (displayable) name for the network interface, that is different from all other interfaces. |
+| 1 | `IsOperational` | bool | `M` | — | Indicates if the Node is currently advertising itself operationally on this network interface and is capable of successfully receiving incoming traffic from other Nodes. |
+| 2 | `OffPremiseServicesReachableIPv4` | bool (nullable) | `M` | — | Indicates whether the Node is currently able to reach off-premise services it uses by utilizing IPv4. |
+| 3 | `OffPremiseServicesReachableIPv6` | bool (nullable) | `M` | — | Indicates whether the Node is currently able to reach off-premise services it uses by utilizing IPv6. |
+| 4 | `HardwareAddress` | hwadr | `M` | allowed: 6, 8 | The byte order of the octstr is in wire byte order. |
+| 5 | `IPv4Addresses` | list of ipv4adr | `M` | max 4 entries | This field provides a list of the IPv4 addresses that are currently assigned to the network interface. |
+| 6 | `IPv6Addresses` | list of ipv6adr | `M` | max 8 entries | This field provides a list of the unicast IPv6 addresses that are currently assigned to the network interface. |
+| 7 | `Type` | InterfaceTypeEnum | `M` | — | Indicates the type of the interface using the InterfaceTypeEnum. |
+
+---
+
+## Cluster 51 Attributes
+
+Cluster 51 defines **11 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `NetworkInterfaces` | list of NetworkInterface | `M` | R (read: view) | — | — |
+| 1 | `0x0001` | `RebootCount` | uint16 | `M` | R (read: view) | persisted | — |
+| 2 | `0x0002` | `UpTime` | uint64 | `M` | R (read: view) | change omitted | — |
+| 3 | `0x0003` | `TotalOperationalHours` | uint32 | `O` | R (read: view) | persisted, change omitted | — |
+| 4 | `0x0004` | `BootReason` | BootReasonEnum | `O` | R (read: view) | — | — |
+| 5 | `0x0005` | `ActiveHardwareFaults` | list of HardwareFaultEnum | `O` | R (read: view) | — | — |
+| 6 | `0x0006` | `ActiveRadioFaults` | list of RadioFaultEnum | `O` | R (read: view) | — | — |
+| 7 | `0x0007` | `ActiveNetworkFaults` | list of NetworkFaultEnum | `O` | R (read: view) | — | — |
+| 8 | `0x0008` | `TestEventTriggersEnabled` | bool | `M` | R (read: view) | — | — |
+| 9 | `0x0009` | `DoNotUse` |  | `X` | — | — | — |
+| 10 | `0x000A` | `DeviceLoadStatus` | DeviceLoadStruct | `ClusterRevision >= 3` | R (read: view) | change omitted | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `3` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `NetworkInterfaces`
+
+Path example:
+
+```text
+0/51/0
+```
+
+The NetworkInterfaces attribute is a list of NetworkInterface structs. Each logical network interface on the Node is represented by a single entry within the NetworkInterfaces attribute.
+
+| Property | Value |
+|---|---|
+| Type | list of NetworkInterface |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | max 8 entries |
+
+Each entry is a `NetworkInterface` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/51/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `RebootCount`
+
+Path example:
+
+```text
+0/51/1
+```
+
+The RebootCount attribute indicates a best-effort count of the number of times the Node has rebooted. The RebootCount attribute should be incremented each time the Node reboots. The RebootCount attribute must NOT be incremented when a Node wakes from a low-power or sleep state. The RebootCount attribute only be reset to 0 upon a factory reset of the Node.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | persisted |
+
+Example:
+
+```json
+{
+  "0/51/1": 1
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `UpTime`
+
+Path example:
+
+```text
+0/51/2
+```
+
+The UpTime attribute indicates a best-effort assessment of the length of time, in seconds, since the Node's last reboot. This attribute should be incremented to account for the periods of time that a Node is in a low-power or sleep state. This attribute only be reset upon a device reboot. This attribute is based on the same System Time source as those used to fulfill any usage of the systime-us and systime-ms data types within the server.
+
+| Property | Value |
+|---|---|
+| Type | uint64 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+
+Example:
+
+```json
+{
+  "0/51/2": 0
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `TotalOperationalHours`
+
+Path example:
+
+```text
+0/51/3
+```
+
+The TotalOperationalHours attribute indicates a best-effort attempt at tracking the length of time, in hours, that the Node has been operational. The TotalOperationalHours attribute should be incremented to account for the periods of time that a Node is in a low-power or sleep state. The TotalOperationalHours attribute only be reset upon a factory reset of the Node.
+
+| Property | Value |
+|---|---|
+| Type | uint32 |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Qualities | persisted, change omitted |
+
+Example:
+
+```json
+{
+  "0/51/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `BootReason`
+
+Path example:
+
+```text
+0/51/4
+```
+
+The BootReason attribute indicates the reason for the Node's most recent boot.
+
+| Property | Value |
+|---|---|
+| Type | BootReasonEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+
+Values (`BootReasonEnum`):
+
+| Value | Name | Meaning |
+|---:|---|---|
+| 0 | `Unspecified` | The Node is unable to identify the Power-On reason as one of the other provided enumeration values. |
+| 1 | `PowerOnReboot` | The Node has booted as the result of physical interaction with the device resulting in a reboot. |
+| 2 | `BrownOutReset` | The Node has rebooted as the result of a brown-out of the Node's power supply. |
+| 3 | `SoftwareWatchdogReset` | The Node has rebooted as the result of a software watchdog timer. |
+| 4 | `HardwareWatchdogReset` | The Node has rebooted as the result of a hardware watchdog timer. |
+| 5 | `SoftwareUpdateCompleted` | The Node has rebooted as the result of a completed software update. |
+| 6 | `SoftwareReset` | The Node has rebooted as the result of a software initiated reboot. |
+
+Example:
+
+```json
+{
+  "0/51/4": 1
+}
+```
+
+---
+
+## Attribute `5` / `0x0005` — `ActiveHardwareFaults`
+
+Path example:
+
+```text
+0/51/5
+```
+
+The ActiveHardwareFaults attribute indicates the set of faults currently detected by the Node. When the Node detects a fault has been raised, the appropriate HardwareFaultEnum value is added to this list. This list must NOT contain more than one instance of a specific HardwareFaultEnum value. When the Node detects that all conditions contributing to a fault has been cleared, the corresponding HardwareFaultEnum value is removed from this list.
+
+| Property | Value |
+|---|---|
+| Type | list of HardwareFaultEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 11 entries |
+
+Example:
+
+```json
+{
+  "0/51/5": []
+}
+```
+
+---
+
+## Attribute `6` / `0x0006` — `ActiveRadioFaults`
+
+Path example:
+
+```text
+0/51/6
+```
+
+The ActiveRadioFaults attribute indicates the set of faults currently detected by the Node. When the Node detects a fault has been raised, the appropriate RadioFaultEnum value is added to this list. This list must NOT contain more than one instance of a specific RadioFaultEnum value. When the Node detects that all conditions contributing to a fault has been cleared, the corresponding RadioFaultEnum value is removed from this list.
+
+| Property | Value |
+|---|---|
+| Type | list of RadioFaultEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 7 entries |
+
+Example:
+
+```json
+{
+  "0/51/6": []
+}
+```
+
+---
+
+## Attribute `7` / `0x0007` — `ActiveNetworkFaults`
+
+Path example:
+
+```text
+0/51/7
+```
+
+The ActiveNetworkFaults attribute indicates the set of faults currently detected by the Node. When the Node detects a fault has been raised, the appropriate NetworkFaultEnum value is added to this list. This list must NOT contain more than one instance of a specific NetworkFaultEnum value. When the Node detects that all conditions contributing to a fault has been cleared, the corresponding NetworkFaultEnum value is removed from this list.
+
+| Property | Value |
+|---|---|
+| Type | list of NetworkFaultEnum |
+| Conformance | `O` |
+| Access | R (read: view) |
+| Constraint | max 4 entries |
+
+Example:
+
+```json
+{
+  "0/51/7": []
+}
+```
+
+---
+
+## Attribute `8` / `0x0008` — `TestEventTriggersEnabled`
+
+Path example:
+
+```text
+0/51/8
+```
+
+The TestEventTriggersEnabled attribute indicates whether the Node has any TestEventTrigger configured. When this attribute is true, the Node has been configured with one or more test event triggers by virtue of the internally programmed EnableKey value being set to a non-zero value. This attribute can be used by Administrators to detect if a device was inadvertently commissioned with test event trigger mode enabled, and take appropriate action (e.g. warn the user and/or offer to remove all fabrics on the Node).
+
+| Property | Value |
+|---|---|
+| Type | bool |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/51/8": true
+}
+```
+
+---
+
+## Attribute `9` / `0x0009` — `DoNotUse`
+
+Path example:
+
+```text
+0/51/9
+```
+
+No condensed specification text is available for `DoNotUse`; use the type, conformance and constraint below together with the cluster description above.
+
+| Property | Value |
+|---|---|
+| Type |  |
+| Conformance | `X` |
+| Access | — |
+
+Example:
+
+```json
+{
+  "0/51/9": 0
+}
+```
+
+---
+
+## Attribute `10` / `0x000A` — `DeviceLoadStatus`
+
+Path example:
+
+```text
+0/51/10
+```
+
+Indicates the status of various resources used.
+
+| Property | Value |
+|---|---|
+| Type | DeviceLoadStruct |
+| Conformance | `ClusterRevision >= 3` |
+| Access | R (read: view) |
+| Qualities | change omitted |
+
+Value is a `DeviceLoadStruct` struct (see Data Types).
+
+Example:
+
+```json
+{
+  "0/51/10": {
+    "currentSubscriptions": 1,
+    "currentSubscriptionsForFabric": 1,
+    "totalSubscriptionsEstablished": 1,
+    "totalInteractionModelMessagesSent": 1
+  }
+}
+```
+
+---
+
+# Cluster 51 Commands
+
+Cluster 51 has **3 client-to-server commands** and **2 responses**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `TestEventTrigger` | client → server | `M` | status | This command is supported to provide a means for certification tests to trigger some test-plan-specific events, necessary to assist in automation of device interactions for some … |
+| 1 | `0x01` | `TimeSnapshot` | client → server | `M` | TimeSnapshotResponse | This command may be used by a client to obtain a correlated view of both System Time, and, if currently synchronized and supported, "wall clock time" of the server. |
+| 2 | `0x02` | `TimeSnapshotResponse` | server → client | `M` | — | This command is generated in response to a TimeSnapshot command. |
+| 3 | `0x03` | `PayloadTestRequest` | client → server | `DMTEST` | PayloadTestResponse | This command provides a means for certification tests or manufacturer's internal tests to validate particular command handling and encoding constraints by generating a response of … |
+| 4 | `0x04` | `PayloadTestResponse` | server → client | `DMTEST` | — | This command is sent by the server on receipt of the PayloadTestRequest command. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 51 / 65529
+```
+
+```json
+{
+  "0/51/65529": [
+    0,
+    1,
+    3
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 51 command, check that the command ID exists in <code>endpoint/51/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 51,
+    "command_name": "TestEventTrigger",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 51, always use `"cluster_id": 51`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `TestEventTrigger`
+
+## Purpose
+
+This command is supported to provide a means for certification tests to trigger some test-plan-specific events, necessary to assist in automation of device interactions for some certification test cases. This command must NOT cause any changes to the state of the device that persist after the last fabric is removed. The fields for the TestEventTrigger command are as follows:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `TestEventTrigger` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EnableKey` | `enableKey` | octstr | `M` | allowed: 16 | The EnableKey is a 128 bit value provided by the client in this command, which needs to match a value chosen by the manufacturer and configured on the server using manufacturer-specific means, such as pre-provisioning. |
+| 1 | `EventTrigger` | `eventTrigger` | uint64 | `M` | — | Indicates the test or test mode which the client wants to trigger. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 51,
+    "command_name": "TestEventTrigger",
+    "payload": {
+      "enableKey": "AQID",
+      "eventTrigger": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `TimeSnapshot`
+
+## Purpose
+
+This command may be used by a client to obtain a correlated view of both System Time, and, if currently synchronized and supported, "wall clock time" of the server. This can help clients establish time correlation between their concept of time and the server's concept of time. This is especially useful when processing event histories where some events only contain System Time. Upon command invocation, the server must respond with a TimeSnapshotResponse.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `TimeSnapshot` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | TimeSnapshotResponse |
+| Access | (invoke: operate) |
+
+## Payload Fields
+
+This command has no payload fields.
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 51,
+    "command_name": "TimeSnapshot",
+    "payload": {}
+  }
+}
+```
+
+The device answers with `TimeSnapshotResponse` (see below).
+
+---
+
+# Command: `TimeSnapshotResponse`
+
+## Purpose
+
+This command is generated in response to a TimeSnapshot command. When generating this response, all fields is gathered as close together in time as possible, so that the time jitter between the values is minimized. If the Time Synchronization cluster is supported by the node, the PosixTimeMs field must NOT be null unless the UTCTime attribute in the Time Synchronization cluster is also null.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `TimeSnapshotResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `SystemTimeMs` | `systemTimeMs` | systime-ms | `M` | — | This indicates the current System Time in milliseconds (type systime-ms), with the value taken at the time of processing of the TimeSnapshot command that generated this response. |
+| 1 | `PosixTimeMs` | `posixTimeMs` | posix-ms (nullable) | `M` | — | This indicates the current time in POSIX Time in milliseconds, with the value taken from the same source that could populate the Timestamp field of events. |
+
+---
+
+# Command: `PayloadTestRequest`
+
+## Purpose
+
+This command provides a means for certification tests or manufacturer's internal tests to validate particular command handling and encoding constraints by generating a response of a given size. This command must use the same EnableKey behavior as the TestEventTrigger command, whereby processing of the command is only enabled when the TestEventTriggersEnabled field is true, which must NOT be true outside of certification testing or manufacturer's internal tests. The fields for the PayloadTestRequest command are as follows:
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `PayloadTestRequest` |
+| Direction | client → server |
+| Conformance | `DMTEST` |
+| Response | PayloadTestResponse |
+| Access | (invoke: manage) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `EnableKey` | `enableKey` | octstr | `M` | allowed: 16 | This field has the same meaning and usage as the TestEventTrigger EnableKey field. |
+| 1 | `Value` | `value` | uint8 | `M` | — | Indicates the value to use in every byte of the PayloadTestResponse's Payload field. |
+| 2 | `Count` | `count` | uint16 | `M` | max 2048 | Indicates the number of times to repeat the Value in the PayloadTestResponse's Payload field. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 51,
+    "command_name": "PayloadTestRequest",
+    "payload": {
+      "enableKey": "AQID",
+      "value": 1,
+      "count": 1
+    }
+  }
+}
+```
+
+The device answers with `PayloadTestResponse` (see below).
+
+---
+
+# Command: `PayloadTestResponse`
+
+## Purpose
+
+This command is sent by the server on receipt of the PayloadTestRequest command.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `PayloadTestResponse` |
+| Direction | server → client (response) |
+| Conformance | `DMTEST` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `Payload` | `payload` | octstr | `M` | max length 2048 | This field contains the computed response of the PayloadTestRequest command. |
+
+---
+
+# Cluster 51 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `HardwareFaultChange` | critical | `O` | The HardwareFaultChange Event indicates a change in the set of hardware faults currently detected by the Node. |
+| 1 | `0x01` | `RadioFaultChange` | critical | `O` | The RadioFaultChange Event indicates a change in the set of radio faults currently detected by the Node. |
+| 2 | `0x02` | `NetworkFaultChange` | critical | `O` | The NetworkFaultChange Event indicates a change in the set of network faults currently detected by the Node. |
+| 3 | `0x03` | `BootReason` | critical | `M` | The BootReason Event indicates the reason that caused the device to start-up. |
+
+## Event `0` — `HardwareFaultChange`
+
+The HardwareFaultChange Event indicates a change in the set of hardware faults currently detected by the Node.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Current` | list of HardwareFaultEnum | `M` | This field represents the set of faults currently detected, as per HardwareFaultEnum. |
+| 1 | `Previous` | list of HardwareFaultEnum | `M` | This field represents the set of faults detected prior to this change event, as per HardwareFaultEnum. |
+
+## Event `1` — `RadioFaultChange`
+
+The RadioFaultChange Event indicates a change in the set of radio faults currently detected by the Node.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Current` | list of RadioFaultEnum | `M` | This field represents the set of faults currently detected, as per RadioFaultEnum. |
+| 1 | `Previous` | list of RadioFaultEnum | `M` | This field represents the set of faults detected prior to this change event, as per RadioFaultEnum. |
+
+## Event `2` — `NetworkFaultChange`
+
+The NetworkFaultChange Event indicates a change in the set of network faults currently detected by the Node.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `Current` | list of NetworkFaultEnum | `M` | This field represents the set of faults currently detected, as per NetworkFaultEnum. |
+| 1 | `Previous` | list of NetworkFaultEnum | `M` | This field represents the set of faults detected prior to this change event, as per NetworkFaultEnum. |
+
+## Event `3` — `BootReason`
+
+The BootReason Event indicates the reason that caused the device to start-up.
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `BootReason` | BootReasonEnum | `M` | This field contains the reason for this BootReason event. |
+
+---
+
+# SmartphoneKey Notes
+
+- `NetworkInterfaces` (attribute `0`) is where a device's Thread or Wi-Fi interface and its IPv6 addresses are listed.
+- Shadow paths follow `endpoint/51/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+

@@ -1,0 +1,631 @@
+---
+title: "Matter Cluster 101 — Groupcast"
+description: "Matter Cluster 101 (0x0065) Groupcast: attributes, commands, events, data types, shadow paths and bridge payload examples."
+clusterId: 101
+clusterHex: "0x0065"
+clusterName: "Groupcast"
+---
+
+# Matter Cluster 101 — Groupcast Cluster
+
+<Callout type="info">
+Matter Cluster <code>101</code>, also written as <code>0x0065</code>, is the <strong>Groupcast Cluster</strong>.
+The Groupcast Cluster defines a unified, simpler, and more scalable mechanism for configuring, managing, and using groups in Matter. It is designed to replace the legacy Groups cluster, addressing long-standing limitations that have made group configuration complex and inconsistently supported across devices and ecosystems. The Groupcast Cluster consolidates group-related functionality that was previously distributed across multiple clusters into a single, coherent model for membership, addressing, key management, and ACL permissions.
+</Callout>
+
+## Cluster Identity
+
+| Field | Value |
+|---|---|
+| Cluster ID decimal | `101` |
+| Cluster ID hex | `0x0065` |
+| Cluster name | `Groupcast` |
+| Cluster revision (Matter 1.6.1) | `1` |
+| Role | utility |
+| Scope | Node |
+| PICS code | `GC` |
+| Typical endpoint | `0` |
+
+### Revision history
+
+| Revision | Change |
+|---:|---|
+| 1 | Initial release, replacing functionality previously in Groups and Group Key Management clusters and addressing issues with application of those clusters (TCR 11433) |
+
+---
+
+## Shadow Path Format
+
+Cluster 101 values in the device shadow use this format:
+
+```text
+endpoint_id / 101 / attribute_id
+```
+
+Example:
+
+```json
+{
+  "0/101/1": 10
+}
+```
+
+| Part | Meaning |
+|---|---|
+| `0` | Endpoint ID |
+| `101` | Groupcast cluster |
+| `1` | `MaxMembershipCount` attribute |
+
+---
+
+## Cluster 101 Features
+
+The `FeatureMap` attribute (`0/101/65532`) is a bitmap. Each bit set means the device implements that feature and the attributes and commands that depend on it.
+
+| Bit | Code | Feature | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `LN` | Listener | `O` | Supports joining a multicast group of nodes as a listener |
+| 1 | `SD` | Sender | `O` | Supports sending multicast message to a targeted group of nodes |
+| 2 | `PGA` | PerGroup | `O` | Supports PerGroup multicast addresses |
+
+Example: `FeatureMap` = `0` means no optional feature is enabled; `7` means every feature listed above is enabled.
+
+---
+
+## Data Types
+
+### `GroupcastTestResultEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `Success` | `M` | There was no failure |
+| 1 | `GeneralError` | `M` | Other error during processing not otherwise covered |
+| 2 | `MessageReplay` | `M` | Message counter was &lt;= counter from last received |
+| 3 | `FailedAuth` | `M` | Message authentication failed |
+| 4 | `NoAvailableKey` | `M` | No key was found to process the message |
+| 5 | `SendFailure` | `M` | Issue with attempting to send a multicast IPv6 message |
+
+### `GroupcastTestingEnum`
+
+See the GroupcastTesting command for a description of these operations.
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `DisableTesting` | `M` | Disable all test event generation |
+| 1 | `EnableListenerTesting` | `LN` | Enable Listener test event generation |
+| 2 | `EnableSenderTesting` | `SD` | Enable Sender test event generation |
+
+### `MulticastAddrPolicyEnum`
+
+| Value | Name | Conformance | Meaning |
+|---:|---|---|---|
+| 0 | `IanaAddr` | `M` | Indicates group uses the IANA-assigned multicast address (default) |
+| 1 | `PerGroup` | `PGA` | Group uses multicast address scoped to Fabric ID and Group ID |
+
+### `MembershipStruct` (struct) — fabric-scoped
+
+| Field | Name | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|
+| 0 | `GroupID` | group-id | `M` | min 1 | — |
+| 1 | `Endpoints` | list of endpoint-no | `LN` | max 255 entries | Indicates a list of endpoint numbers that are members of the multicast group. |
+| 2 | `KeySetID` | uint16 | `M` | min 1 | — |
+| 3 | `HasAuxiliaryACL` | bool | `LN` | — | — |
+| 4 | `McastAddrPolicy` | MulticastAddrPolicyEnum | `M` | — | Indicates how the IPv6 Multicast Address is constructed for this group. |
+
+---
+
+## Cluster 101 Attributes
+
+Cluster 101 defines **5 attributes** plus the global attributes. Conformance: `M` mandatory, `O` optional, a feature code means "mandatory when that feature is present", square brackets mean "optional when …".
+
+| ID | Hex | Attribute | Type | Conformance | Access | Qualities | Default |
+|---:|---|---|---|---|---|---|---|
+| 0 | `0x0000` | `Membership` | list of MembershipStruct | `M` | R (read: view, fabric-scoped) | persisted | — |
+| 1 | `0x0001` | `MaxMembershipCount` | uint16 | `M` | R (read: view) | — | — |
+| 2 | `0x0002` | `MaxMcastAddrCount` | uint16 | `M` | R (read: view) | — | — |
+| 3 | `0x0003` | `UsedMcastAddrCount` | uint16 | `M` | R (read: view) | — | — |
+| 4 | `0x0004` | `FabricUnderTest` | fabric-idx | `M` | R (read: view) | — | — |
+
+### Global attributes
+
+| ID | Hex | Attribute | Meaning |
+|---:|---|---|---|
+| 65528 | `0xFFF8` | `GeneratedCommandList` | Response command IDs this server generates. |
+| 65529 | `0xFFF9` | `AcceptedCommandList` | Command IDs this server accepts. |
+| 65531 | `0xFFFB` | `AttributeList` | Attribute IDs implemented. |
+| 65532 | `0xFFFC` | `FeatureMap` | Implemented optional features (see above). |
+| 65533 | `0xFFFD` | `ClusterRevision` | Cluster revision implemented; `1` for a Matter 1.6.1 device. |
+
+---
+
+# Attribute Details
+
+## Attribute `0` / `0x0000` — `Membership`
+
+Path example:
+
+```text
+0/101/0
+```
+
+Indicates the list of groups memberships currently active on the node. Each entry specifies the group ID and the list of the endpoints that participate in that group, as well as policy for that group. For any single fabric, the server must limit the total number of GroupIDs used across all entries in the Membership attribute to no more than half (rounded down) of the MaxMembershipCount value. If processing a command would cause this per-fabric limit to be exceeded, then the resource exhaustion behavior of the associated command must apply.
+
+| Property | Value |
+|---|---|
+| Type | list of MembershipStruct |
+| Conformance | `M` |
+| Access | R (read: view, fabric-scoped) |
+| Qualities | persisted |
+| Constraint | desc |
+
+Each entry is a `MembershipStruct` (see Data Types).
+
+Example:
+
+```json
+{
+  "0/101/0": []
+}
+```
+
+---
+
+## Attribute `1` / `0x0001` — `MaxMembershipCount`
+
+Path example:
+
+```text
+0/101/1
+```
+
+Indicates the maximum number of Groups which can be joined and appear in entries of the Membership attribute. This attribute does not specify the maximum number of list entries in the Membership attribute list, but rather the maximum number of different GroupID values which can appear across all entries of the list.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | min 10 |
+
+Example:
+
+```json
+{
+  "0/101/1": 10
+}
+```
+
+---
+
+## Attribute `2` / `0x0002` — `MaxMcastAddrCount`
+
+Path example:
+
+```text
+0/101/2
+```
+
+Indicates the maximum number of unique multicast addresses the node can support. The value of this attribute is at least 1, to support the IANA Assigned IPv6 Multicast Address. When the PerGroup feature is supported, this attribute should be equal to MaxMembershipCount. However, the value may be less than MaxMembershipCount.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+| Constraint | min 1 |
+
+Example:
+
+```json
+{
+  "0/101/2": 1
+}
+```
+
+---
+
+## Attribute `3` / `0x0003` — `UsedMcastAddrCount`
+
+Path example:
+
+```text
+0/101/3
+```
+
+Indicates the number of unique multicast addresses currently in use by the Groupcast cluster. This count includes the IANA Assigned IPv6 Multicast Address if at least one group is configured to use the IanaAddr policy. This count includes one unique multicast address for each group configured to use the PerGroup policy. The value of this attribute must NOT exceed MaxMcastAddrCount.
+
+| Property | Value |
+|---|---|
+| Type | uint16 |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/101/3": 1
+}
+```
+
+---
+
+## Attribute `4` / `0x0004` — `FabricUnderTest`
+
+Path example:
+
+```text
+0/101/4
+```
+
+Indicates the FabricIndex of the fabric currently testing the Groupcast feature with the GroupcastTesting command. The last accessing fabric to have invoked a successful TestGroupcast command that caused testing mode to be engaged is the value indicated. Otherwise, if Groupcast testing is currently disabled, this attribute has a value of zero, which is the invalid FabricIndex value. This attribute is set to zero when the server initializes.
+
+| Property | Value |
+|---|---|
+| Type | fabric-idx |
+| Conformance | `M` |
+| Access | R (read: view) |
+
+Example:
+
+```json
+{
+  "0/101/4": 1
+}
+```
+
+---
+
+# Cluster 101 Commands
+
+Cluster 101 has **5 client-to-server commands** and **1 response**.
+
+| ID | Hex | Command | Direction | Conformance | Response | Description |
+|---:|---|---|---|---|---|---|
+| 0 | `0x00` | `JoinGroup` | client → server | `M` | status | This command is used to instruct the server to join a multicast group. |
+| 1 | `0x01` | `LeaveGroup` | client → server | `M` | LeaveGroupResponse | This command must allow a maintainer to request that the server withdraws itself or specific endpoints from a specific group or from all groups of this client's fabric. |
+| 2 | `0x02` | `LeaveGroupResponse` | server → client | `M` | — | This command must allow the server to inform the client about the result of the LeaveGroup command. |
+| 3 | `0x03` | `UpdateGroupKey` | client → server | `M` | status | This command must allow a fabric administrator to update the OperationalGroupKey associated with the existing group identified by GroupID, which is already joined. |
+| 4 | `0x04` | `ConfigureAuxiliaryACL` | client → server | `LN` | status | — |
+| 5 | `0x05` | `GroupcastTesting` | client → server | `M` | status | This command must allow an Administrator to configure test modes that allow validation of Groupcast communication. |
+
+---
+
+## AcceptedCommandList
+
+The `AcceptedCommandList` attribute lists the command IDs the endpoint actually implements:
+
+```text
+endpoint_id / 101 / 65529
+```
+
+```json
+{
+  "0/101/65529": [
+    0,
+    1,
+    3,
+    4,
+    5
+  ]
+}
+```
+
+<Callout type="warning">
+Before sending a Cluster 101 command, check that the command ID exists in <code>endpoint/101/65529</code>. Optional commands are only present when the matching feature is set in <code>FeatureMap</code>.
+</Callout>
+
+---
+
+## Bridge Command Payload Format
+
+The bridge accepts Matter commands in this structure:
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 101,
+    "command_name": "JoinGroup",
+    "payload": {},
+    "timed_request_timeout_ms": 1000
+  }
+}
+```
+
+For Cluster 101, always use `"cluster_id": 101`. Payload keys are the command field names in lowerCamelCase. Octet-string fields are base64-encoded. `timed_request_timeout_ms` is required for timed commands and ignored otherwise.
+
+---
+
+# Command: `JoinGroup`
+
+## Purpose
+
+This command is used to instruct the server to join a multicast group. It provides a comprehensive way to add all information required to create a new group in one command. This command is used to create a new GroupID or to add specified endpoints to an existing GroupID. This command may also be used to change the OperationalGroupKey associated with an existing GroupID, but if this is the only operation desired, the UpdateGroupKey command should be used instead.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `0` |
+| Command hex | `0x00` |
+| Command name | `JoinGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+| 1 | `Endpoints` | `endpoints` | list of endpoint-no | `M` | desc | Indicates the list of endpoints that must receive this multicast group's messages. When joining a group as a Sender only, this field is empty. |
+| 2 | `KeySetID` | `keySetID` | uint16 | `M` | min 1 | — |
+| 3 | `Key` | `key` | octstr | `O` | allowed: 16 | Indicates the value used to derive the OperationalGroupKey. This key is new for the group, with a unique KeySetID that does not exist on the node yet. |
+| 4 | `UseAuxiliaryACL` | `useAuxiliaryACL` | bool | `[LN]` | — | — |
+| 5 | `ReplaceEndpoints` | `replaceEndpoints` | bool | `[LN]` | — | — |
+| 6 | `McastAddrPolicy` | `mcastAddrPolicy` | MulticastAddrPolicyEnum | `O` | — | Indicates the IPv6 Multicast Address that is used by the group. If omitted, the group must use the IANA-assigned Multicast Address. |
+
+`McastAddrPolicy` values (`MulticastAddrPolicyEnum`): `0` = IanaAddr, `1` = PerGroup
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 101,
+    "command_name": "JoinGroup",
+    "payload": {
+      "groupID": 1,
+      "endpoints": [],
+      "keySetID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `LeaveGroup`
+
+## Purpose
+
+This command must allow a maintainer to request that the server withdraws itself or specific endpoints from a specific group or from all groups of this client's fabric. This command has the following data fields subject to the listed conformance.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `1` |
+| Command hex | `0x01` |
+| Command name | `LeaveGroup` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | LeaveGroupResponse |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `Endpoints` | `endpoints` | list of endpoint-no | `O` | 1 to 20 entries | Indicates a list of endpoints that must leave the group identified by the GroupID field. See 4. |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 101,
+    "command_name": "LeaveGroup",
+    "payload": {
+      "groupID": 1
+    }
+  }
+}
+```
+
+The device answers with `LeaveGroupResponse` (see below).
+
+---
+
+# Command: `LeaveGroupResponse`
+
+## Purpose
+
+This command must allow the server to inform the client about the result of the LeaveGroup command. This command has the following data fields subject to the listed conformance.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `2` |
+| Command hex | `0x02` |
+| Command name | `LeaveGroupResponse` |
+| Direction | server → client (response) |
+| Conformance | `M` |
+
+## Response Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `Endpoints` | `endpoints` | list of endpoint-no | `M` | max 20 entries | Indicates a list of endpoints that were removed from the group identified by the GroupID field. Endpoints listed in the Endpoints field of the LeaveGroup command that were not members of the affected group is excluded from this response. |
+
+---
+
+# Command: `UpdateGroupKey`
+
+## Purpose
+
+This command must allow a fabric administrator to update the OperationalGroupKey associated with the existing group identified by GroupID, which is already joined. This command is used following the rules defined in Groupcast Key Management section. This command has the following data fields subject to the listed conformance.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `3` |
+| Command hex | `0x03` |
+| Command name | `UpdateGroupKey` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: manage, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | min 1 | — |
+| 1 | `KeySetID` | `keySetID` | uint16 | `M` | min 1 | — |
+| 2 | `Key` | `key` | octstr | `O` | allowed: 16 | Indicates the 128-bit InputKey used to derive the OperationalGroupKey for the specified GroupID (per Operational Group Key Derivation). |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 101,
+    "command_name": "UpdateGroupKey",
+    "payload": {
+      "groupID": 1,
+      "keySetID": 1
+    }
+  }
+}
+```
+
+---
+
+# Command: `ConfigureAuxiliaryACL`
+
+## Purpose
+
+`ConfigureAuxiliaryACL` is a client-to-server command of the Groupcast cluster.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `4` |
+| Command hex | `0x04` |
+| Command name | `ConfigureAuxiliaryACL` |
+| Direction | client → server |
+| Conformance | `LN` |
+| Response | status |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `GroupID` | `groupID` | group-id | `M` | — | — |
+| 1 | `UseAuxiliaryACL` | `useAuxiliaryACL` | bool | `M` | — | — |
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 101,
+    "command_name": "ConfigureAuxiliaryACL",
+    "payload": {
+      "groupID": 1,
+      "useAuxiliaryACL": true
+    }
+  }
+}
+```
+
+---
+
+# Command: `GroupcastTesting`
+
+## Purpose
+
+This command must allow an Administrator to configure test modes that allow validation of Groupcast communication. This command has the following data fields subject to the listed conformance. Note: The behavior of the command when the TestOperation is EnableSenderTesting is provisional.
+
+## Command Identity
+
+| Field | Value |
+|---|---|
+| Command ID | `5` |
+| Command hex | `0x05` |
+| Command name | `GroupcastTesting` |
+| Direction | client → server |
+| Conformance | `M` |
+| Response | status |
+| Access | (invoke: admin, fabric-scoped) |
+
+## Payload Fields
+
+| ID | Field | Payload key | Type | Conformance | Constraint | Meaning |
+|---:|---|---|---|---|---|---|
+| 0 | `TestOperation` | `testOperation` | GroupcastTestingEnum | `M` | — | This field identifies the type of TestOperation to execute. See Effect on Receipt. |
+| 1 | `DurationSeconds` | `durationSeconds` | uint16 | `O` | 10 to 1200 | Indicates the time duration in seconds for the test operation until all testing operations reverts to a disabled state. This field is ignored when the TestOperation field has a value of DisableTesting. |
+
+`TestOperation` values (`GroupcastTestingEnum`): `0` = DisableTesting, `1` = EnableListenerTesting, `2` = EnableSenderTesting
+
+## Bridge Command Example
+
+```json
+{
+  "message_id": "1",
+  "command": "device_command",
+  "args": {
+    "endpoint_id": 0,
+    "cluster_id": 101,
+    "command_name": "GroupcastTesting",
+    "payload": {
+      "testOperation": 0
+    }
+  }
+}
+```
+
+---
+
+# Cluster 101 Events
+
+| ID | Hex | Event | Priority | Conformance | Description |
+|---:|---|---|---|---|---|
+| 0 | `0x00` | `GroupcastTesting` | info | `M` | This event is generated during Groupcast testing processing after invocation of the GroupcastTesting command, under the conditions stated in that command's Effect on Receipt section. |
+
+## Event `0` — `GroupcastTesting`
+
+This event is generated during Groupcast testing processing after invocation of the GroupcastTesting command, under the conditions stated in that command's Effect on Receipt section. Some of the fields may be present or absent depending of the test mode involved. This event contains the following fields:
+
+| ID | Field | Type | Conformance | Meaning |
+|---:|---|---|---|---|
+| 0 | `SourceIpAddress` | ipv6adr | `O` | This field, if present, is set to the source IPv6 address obtained from the UDP datagram of the groupcast message. |
+| 1 | `DestinationIpAddress` | ipv6adr | `O` | This field, if present, is set to the destination IPv6 group address obtained from the UDP datagram of a groupcast message. |
+| 2 | `GroupID` | group-id | `O` | — |
+| 3 | `EndpointID` | endpoint-id | `O` | — |
+| 4 | `ClusterID` | cluster-id | `O` | — |
+| 5 | `ElementID` | uint32 | `O` | — |
+| 6 | `AccessAllowed` | bool | `O` | This field, if present, indicates whether the Groupcast sender was allowed to invoke the command by Access Control, in this Node. The value is set to true if the request was allowed, and false otherwise. |
+| 7 | `GroupcastTestResult` | GroupcastTestResultEnum | `M` | Indicates the outcome of the groupcast operation or the specific error encountered. The value is one of the values defined in GroupcastTestResultEnum. |
+
+---
+
+# SmartphoneKey Notes
+
+- Cluster 101 is **not currently exposed by SmartphoneKey devices**. This page documents the Matter 1.6.1 specification so that future devices can be interpreted without changes to the backend.
+- Shadow paths follow `endpoint/101/attribute`; attribute values that the device reports as unreadable are written as `n/a`.
+- Attribute IDs, command IDs and enum values on this page come from the CSA Matter 1.6.1 data model; descriptions are condensed from the specification text.
+
