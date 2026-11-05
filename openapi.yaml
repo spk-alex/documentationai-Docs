@@ -9435,7 +9435,7 @@
     "/matter-devices/{id}/UpdateDesiredShadow": {
       "post": {
         "summary": "Update desired shadow",
-        "description": "Sets desired shadow state and pushes to AWS IoT Core. An organization API key may send any desired write. A user's token (the mobile app) may send only to a device in the user's devices (`GET /users/&#123;id&#125;/devices`, deviceType matter) or to the hub one of those devices is on (the device's hubId), and only a Scenario Engine command (scenario_upsert, scenario_remove, scenario_set_status); the scenario's creator is the token's user.",
+        "description": "Sets desired shadow state and pushes to AWS IoT Core. An organization API key may send any desired write. A user's token (the mobile app) may send only to a device in the user's devices (`GET /users/&#123;id&#125;/devices`, deviceType matter) or to the hub one of those devices is on (the device's hubId), with any desired command allowed on a child device. Hubs accept only Scenario Engine commands (scenario_upsert, scenario_remove, scenario_set_status); the creator is the token's user. A shadow with no parent hub recorded keeps the hub restriction.",
         "operationId": "post_UpdateDesiredShadowRoute",
         "parameters": [
           {
@@ -9575,7 +9575,7 @@
             }
           },
           "403": {
-            "description": "A user's token sent to a device that is neither in the user's devices nor a hub one of them is on, sent a desired write that is not a Scenario Engine command, or named another user as requestedByUserId",
+            "description": "A user's token sent to a device that is neither in the user's devices nor a hub one of them is on, sent a hub write that is not a Scenario Engine command, or named another user as requestedByUserId",
             "content": {
               "application/json": {
                 "schema": {
