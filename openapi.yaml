@@ -10287,6 +10287,29 @@
                     "type": "string",
                     "description": "Optional HTTP JPEG/PNG snapshot endpoint"
                   },
+                  "onvif": {
+                    "type": "object",
+                    "properties": {
+                      "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535,
+                        "description": "ONVIF port of the camera (1-65535). Given without it, the box tries port 80 only."
+                      },
+                      "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "ONVIF login. Given without it, the box tries the RTSP login."
+                      },
+                      "password": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "description": "ONVIF password. Write-only: no answer ever returns it."
+                      }
+                    },
+                    "description": "Optional ONVIF access of the camera. Without it the VMS box uses no ONVIF for the camera and asks it for no keyframe on demand."
+                  },
                   "ownerId": {
                     "type": "string",
                     "description": "B2C user ID who owns this camera. Must be the authenticated caller unless the caller is an admin or holds a super API key; omit it and the caller owns the camera."
@@ -11656,6 +11679,32 @@
                   },
                   "httpSnapshotUrl": {
                     "type": "string"
+                  },
+                  "onvif": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535,
+                        "description": "ONVIF port of the camera (1-65535). Given without it, the box tries port 80 only."
+                      },
+                      "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "ONVIF login. Given without it, the box tries the RTSP login."
+                      },
+                      "password": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "description": "ONVIF password. Write-only: no answer ever returns it."
+                      }
+                    },
+                    "description": "ONVIF access to set or change (merged field by field onto the stored one); `null` removes it, so the VMS box stops using ONVIF for that camera."
                   }
                 }
               }
@@ -11719,6 +11768,12 @@
                               "type": "string"
                             },
                             "sourceChanged": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
+                            },
+                            "onvifOnly": {
                               "type": "boolean",
                               "enum": [
                                 true
@@ -16529,6 +16584,30 @@
                     "monitoring": {
                       "type": "boolean"
                     },
+                    "onvif": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "port": {
+                          "type": "integer",
+                          "description": "The given ONVIF port"
+                        },
+                        "username": {
+                          "type": "string",
+                          "description": "The given ONVIF login"
+                        },
+                        "hasPassword": {
+                          "type": "boolean",
+                          "description": "Whether an ONVIF password is set; the password itself is never returned"
+                        }
+                      },
+                      "required": [
+                        "hasPassword"
+                      ],
+                      "description": "ONVIF access (port, login, whether a password is set; never the password). Only for the owner, the owning organisation and a super key; null = none given, the box uses no ONVIF."
+                    },
                     "createdAt": {
                       "type": "string"
                     },
@@ -17186,6 +17265,29 @@
                   "httpSnapshotUrl": {
                     "type": "string",
                     "description": "Optional HTTP JPEG/PNG snapshot endpoint"
+                  },
+                  "onvif": {
+                    "type": "object",
+                    "properties": {
+                      "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535,
+                        "description": "ONVIF port of the camera (1-65535). Given without it, the box tries port 80 only."
+                      },
+                      "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "ONVIF login. Given without it, the box tries the RTSP login."
+                      },
+                      "password": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "description": "ONVIF password. Write-only: no answer ever returns it."
+                      }
+                    },
+                    "description": "Optional ONVIF access of the camera. Without it the VMS box uses no ONVIF for the camera and asks it for no keyframe on demand."
                   }
                 },
                 "required": [
