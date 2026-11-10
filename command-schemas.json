@@ -1,7 +1,404 @@
 {
-  "version": "b7e93800",
+  "version": "bd780758",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
+    "AddAccessibleLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "string",
+          "description": "Lock ID"
+        },
+        "lockName": {
+          "type": "string",
+          "description": "Lock name"
+        },
+        "accessLevel": {
+          "type": "string",
+          "enum": [
+            "OWNER",
+            "ADMIN",
+            "USER",
+            "GUEST"
+          ],
+          "description": "Access level"
+        },
+        "validFrom": {
+          "description": "Valid from date",
+          "type": "string"
+        },
+        "validUntil": {
+          "description": "Valid until date",
+          "type": "string"
+        },
+        "grantedBy": {
+          "type": "string",
+          "description": "User who granted access"
+        }
+      },
+      "required": [
+        "lockId",
+        "lockName",
+        "accessLevel",
+        "grantedBy"
+      ]
+    },
+    "AddKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "keyUuid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key identifier"
+        },
+        "keyIndexNumber": {
+          "description": "Physical key index",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "userId": {
+          "description": "User ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyUuid"
+      ]
+    },
+    "AddLicensePlate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "plate": {
+          "type": "string",
+          "minLength": 1,
+          "description": "License plate number"
+        },
+        "label": {
+          "default": "",
+          "description": "Human-readable label for the plate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plate"
+      ]
+    },
+    "AddPhysicalKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Issuing organisation id"
+        },
+        "orgName": {
+          "description": "Issuing organisation display name",
+          "type": "string"
+        },
+        "note": {
+          "description": "Free-text note about the key (max 500 chars)",
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "orgId"
+      ]
+    },
+    "AddResident": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Resident name"
+        },
+        "email": {
+          "description": "Resident email — resolved to the user UUID via D1",
+          "type": "string"
+        },
+        "phoneNumber": {
+          "description": "Resident phone number in international form (\"+48123456789\" or \"0048123456789\") — resolved to the user UUID via D1 (phone-only users)",
+          "type": "string"
+        },
+        "userId": {
+          "description": "Resident user UUID — used directly (unambiguous)",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "AddWalletKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "walletType": {
+          "type": "string",
+          "enum": [
+            "APPLE",
+            "GOOGLE"
+          ],
+          "description": "Wallet type (APPLE or GOOGLE)"
+        },
+        "keyIndex": {
+          "type": "number",
+          "description": "Key index"
+        },
+        "orgId": {
+          "description": "Super-admin API keys only: the org the key is issued for (defaults to the caller's org). Ignored for every other caller: a partner key always issues for its own org, a user for themself.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "walletType",
+        "keyIndex"
+      ]
+    },
+    "AssignCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Camera ID in 3dEye (numeric, coerced to string)"
+        },
+        "permissions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Permissions (e.g. View, Share)"
+        }
+      },
+      "required": [
+        "cameraId",
+        "permissions"
+      ]
+    },
+    "AssignUser": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Our user UUID — server resolves 3dEye account on demand"
+        }
+      },
+      "required": [
+        "userId"
+      ]
+    },
+    "BulkAddKeys": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "keys": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "keyUuid": {
+                "type": "string",
+                "description": "Key identifier"
+              },
+              "keyIndexNumber": {
+                "description": "Physical key index",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "userId": {
+                "description": "User ID",
+                "type": "string"
+              }
+            },
+            "required": [
+              "keyUuid"
+            ]
+          },
+          "description": "List of keys to add to the lock"
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    },
+    "ChooseCallToOpenLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "targets": {
+          "description": "Every lock or Matter device to choose, each with the digit that picks it; replaces the whole choice",
+          "minItems": 1,
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "lock",
+                  "matter"
+                ],
+                "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
+                "description": "A lock aggregate id or a Matter device id, never a phone number"
+              },
+              "digit": {
+                "type": "string",
+                "pattern": "^\\d$",
+                "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "digit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "kind": {
+          "description": "Deprecated, use `targets`: the one target's list, `lock` or `matter` (with `id`; on digit 1)",
+          "type": "string",
+          "enum": [
+            "lock",
+            "matter"
+          ]
+        },
+        "id": {
+          "description": "Deprecated, use `targets`: the one target's id (with `kind`)",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9:_.-]{1,128}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClaimHub": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "hubId": {
+          "type": "string",
+          "description": "Hub ID"
+        },
+        "orgId": {
+          "description": "Organization ID. Normal keys: bound from the authenticated key — a mismatching value is rejected (403); omit it to claim into your own org. Super keys only: may set any org for a cross-org claim.",
+          "type": "string"
+        },
+        "siteId": {
+          "type": "string",
+          "description": "Site ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "User ID claiming the hub"
+        }
+      },
+      "required": [
+        "hubId",
+        "siteId",
+        "userId"
+      ]
+    },
+    "ClearCallToOpenLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "ClearMatterPin": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "credentialIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "userIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "credentialIndex"
+      ]
+    },
+    "CommissionDevice": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "hubId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Hub ID"
+        },
+        "commissioningCode": {
+          "type": "string",
+          "pattern": "^(\\d{11}|\\d{21}|MT:.+)$",
+          "description": "Matter commissioning code (11 or 21 digits, or MT:<code>)"
+        }
+      },
+      "required": [
+        "hubId",
+        "commissioningCode"
+      ]
+    },
+    "CreateCameraRole": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "roleId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Camera Role ID"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Role name"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Role description"
+        },
+        "orgId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organization ID — opaque string, conventionally but not always a UUID"
+        }
+      },
+      "required": [
+        "roleId",
+        "name",
+        "description",
+        "orgId"
+      ]
+    },
     "CreateLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -64,311 +461,32 @@
         "uuid"
       ]
     },
-    "AddKey": {
+    "CreateMatterDevice": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "keyUuid": {
+        "deviceId": {
           "type": "string",
-          "minLength": 1,
-          "description": "Key identifier"
+          "description": "Matter Device ID"
         },
-        "keyIndexNumber": {
-          "description": "Physical key index",
-          "type": "integer",
-          "minimum": -9007199254740991,
-          "maximum": 9007199254740991
+        "thingName": {
+          "type": "string",
+          "description": "AWS IoT Thing name"
         },
-        "userId": {
-          "description": "User ID",
+        "hubId": {
+          "type": "string",
+          "description": "Hub ID this device belongs to"
+        },
+        "deviceType": {
+          "default": "generic",
+          "description": "Matter device type",
           "type": "string"
         }
       },
       "required": [
-        "keyUuid"
-      ]
-    },
-    "RemoveKey": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "keyUuid": {
-          "description": "Key identifier",
-          "type": "string",
-          "minLength": 1
-        },
-        "keyIndexNumber": {
-          "description": "Physical key index",
-          "type": "integer",
-          "minimum": -9007199254740991,
-          "maximum": 9007199254740991
-        }
-      }
-    },
-    "WriteKey": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "keyUuid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Key identifier to write to device firmware"
-        },
-        "keyIndexNumber": {
-          "description": "Physical key index on device",
-          "type": "integer",
-          "minimum": -9007199254740991,
-          "maximum": 9007199254740991
-        }
-      },
-      "required": [
-        "keyUuid"
-      ]
-    },
-    "AddResident": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Resident name"
-        },
-        "email": {
-          "description": "Resident email — resolved to the user UUID via D1",
-          "type": "string"
-        },
-        "phoneNumber": {
-          "description": "Resident phone number in international form (\"+48123456789\" or \"0048123456789\") — resolved to the user UUID via D1 (phone-only users)",
-          "type": "string"
-        },
-        "userId": {
-          "description": "Resident user UUID — used directly (unambiguous)",
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "name"
-      ]
-    },
-    "RemoveResident": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "email": {
-          "description": "Resident email to remove",
-          "type": "string"
-        },
-        "phoneNumber": {
-          "description": "Resident phone number to remove, in international form (\"+48123456789\" or \"0048123456789\") — phone-only users",
-          "type": "string"
-        },
-        "userId": {
-          "description": "Resident user UUID to remove",
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "SetOwner": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string",
-          "description": "User ID to set as owner"
-        }
-      },
-      "required": [
-        "userId"
-      ]
-    },
-    "SetOrganization": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "orgId": {
-          "type": "string",
-          "description": "Organization ID"
-        }
-      },
-      "required": [
-        "orgId"
-      ]
-    },
-    "OpenLock": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "description": "Request tracking ID",
-          "type": "string"
-        },
-        "reason": {
-          "description": "Reason for opening",
-          "type": "string"
-        }
-      }
-    },
-    "BulkAddKeys": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "keys": {
-          "minItems": 1,
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "keyUuid": {
-                "type": "string",
-                "description": "Key identifier"
-              },
-              "keyIndexNumber": {
-                "description": "Physical key index",
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "userId": {
-                "description": "User ID",
-                "type": "string"
-              }
-            },
-            "required": [
-              "keyUuid"
-            ]
-          },
-          "description": "List of keys to add to the lock"
-        }
-      },
-      "required": [
-        "keys"
-      ]
-    },
-    "create-temp-key": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "tempKeyUuid": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-        },
-        "accessMode": {
-          "type": "string",
-          "enum": [
-            "public",
-            "user-whitelist"
-          ]
-        },
-        "allowedUserIds": {
-          "default": [],
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-          }
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date-time",
-          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-        },
-        "maxUses": {
-          "anyOf": [
-            {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "maximum": 9007199254740991
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 2000
-        }
-      },
-      "required": [
-        "tempKeyUuid",
-        "accessMode",
-        "validFrom",
-        "validUntil"
-      ]
-    },
-    "delete-temp-key": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "tempKeyUuid": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-        }
-      },
-      "required": [
-        "tempKeyUuid"
-      ]
-    },
-    "update-temp-key": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "tempKeyUuid": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date-time",
-          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-        },
-        "maxUses": {
-          "anyOf": [
-            {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "maximum": 9007199254740991
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "allowedUserIds": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-          }
-        },
-        "accessMode": {
-          "type": "string",
-          "enum": [
-            "public",
-            "user-whitelist"
-          ]
-        }
-      },
-      "required": [
-        "tempKeyUuid"
+        "deviceId",
+        "thingName",
+        "hubId"
       ]
     },
     "CreateUser": {
@@ -402,278 +520,120 @@
         "userId"
       ]
     },
-    "UpdatePhoneNumber": {
+    "DeleteCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "phoneNumber": {
-          "description": "Phone number to set, in international form (\"+48123456789\" or \"0048123456789\"); null to remove the existing phone number",
-          "type": [
-            "string",
-            "null"
-          ]
+        "deletedBy": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "User ID who deleted the camera"
         }
       },
       "required": [
-        "phoneNumber"
+        "deletedBy"
       ]
     },
-    "UpdateEmail": {
+    "DeleteCameraRole": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "email": {
-          "description": "Email to set on a user that currently has none",
-          "type": "string"
+        "deletedBy": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "User ID who deleted the role"
         }
       },
       "required": [
-        "email"
+        "deletedBy"
       ]
     },
-    "AddAccessibleLock": {
+    "DeleteRtspCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "lockId": {
-          "type": "string",
-          "description": "Lock ID"
-        },
-        "lockName": {
-          "type": "string",
-          "description": "Lock name"
-        },
-        "accessLevel": {
-          "type": "string",
-          "enum": [
-            "OWNER",
-            "ADMIN",
-            "USER",
-            "GUEST"
-          ],
-          "description": "Access level"
-        },
-        "validFrom": {
-          "description": "Valid from date",
+        "deletedBy": {
+          "description": "Actor who requested the deletion",
           "type": "string"
-        },
-        "validUntil": {
-          "description": "Valid until date",
-          "type": "string"
-        },
-        "grantedBy": {
-          "type": "string",
-          "description": "User who granted access"
         }
-      },
-      "required": [
-        "lockId",
-        "lockName",
-        "accessLevel",
-        "grantedBy"
-      ]
+      }
     },
-    "RemoveAccessibleLock": {
+    "DisableCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "lockId": {
-          "type": "string",
-          "description": "Lock ID"
-        },
-        "removedBy": {
-          "type": "string",
-          "description": "User who removed access"
-        },
         "reason": {
           "type": "string",
-          "description": "Reason for removal"
+          "minLength": 1,
+          "description": "Reason for disabling the camera"
+        },
+        "disabledBy": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "User ID who disabled the camera"
         }
       },
       "required": [
-        "lockId",
-        "removedBy",
-        "reason"
+        "reason",
+        "disabledBy"
       ]
     },
-    "AddLicensePlate": {
+    "GrantAccess": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "plate": {
+        "userId": {
           "type": "string",
           "minLength": 1,
-          "description": "License plate number"
+          "description": "User to grant access to"
         },
-        "label": {
-          "default": "",
-          "description": "Human-readable label for the plate",
-          "type": "string"
-        }
-      },
-      "required": [
-        "plate"
-      ]
-    },
-    "RemoveLicensePlate": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "plate": {
-          "type": "string",
-          "minLength": 1,
-          "description": "License plate number to remove"
-        }
-      },
-      "required": [
-        "plate"
-      ]
-    },
-    "AddPhysicalKey": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "orgId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Issuing organisation id"
-        },
-        "orgName": {
-          "description": "Issuing organisation display name",
-          "type": "string"
-        },
-        "note": {
-          "description": "Free-text note about the key (max 500 chars)",
-          "type": "string",
-          "maxLength": 500
-        }
-      },
-      "required": [
-        "orgId"
-      ]
-    },
-    "RemovePhysicalKey": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "number": {
-          "type": "integer",
-          "exclusiveMinimum": 0,
-          "maximum": 9007199254740991,
-          "description": "Number of the physical key to remove"
-        },
-        "_callerOrgId": {
-          "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this.",
-          "type": "string"
-        }
-      },
-      "required": [
-        "number"
-      ]
-    },
-    "AddWalletKey": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "walletType": {
+        "role": {
           "type": "string",
           "enum": [
-            "APPLE",
-            "GOOGLE"
+            "viewer",
+            "manager"
           ],
-          "description": "Wallet type (APPLE or GOOGLE)"
+          "description": "Role to grant"
         },
-        "keyIndex": {
-          "type": "number",
-          "description": "Key index"
-        },
-        "orgId": {
-          "description": "Super-admin API keys only: the org the key is issued for (defaults to the caller's org). Ignored for every other caller: a partner key always issues for its own org, a user for themself.",
+        "grantedBy": {
+          "description": "Actor who issued the grant",
           "type": "string"
         }
       },
       "required": [
-        "walletType",
-        "keyIndex"
+        "userId",
+        "role"
       ]
     },
-    "ChooseCallToOpenLock": {
+    "LinkCameraToLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "targets": {
-          "description": "Every lock or Matter device to choose, each with the digit that picks it; replaces the whole choice",
-          "minItems": 1,
-          "maxItems": 10,
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "lock",
-                  "matter"
-                ],
-                "description": "Which of the user's lists the id is in: `lock` (accessible locks) or `matter` (Matter devices)"
-              },
-              "id": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9:_.-]{1,128}$",
-                "description": "A lock aggregate id or a Matter device id, never a phone number"
-              },
-              "digit": {
-                "type": "string",
-                "pattern": "^\\d$",
-                "description": "The key that picks this target in a call: one digit, 0-9, unique within the choice"
-              }
-            },
-            "required": [
-              "kind",
-              "id",
-              "digit"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "kind": {
-          "description": "Deprecated, use `targets`: the one target's list, `lock` or `matter` (with `id`; on digit 1)",
+        "lockId": {
           "type": "string",
-          "enum": [
-            "lock",
-            "matter"
-          ]
-        },
-        "id": {
-          "description": "Deprecated, use `targets`: the one target's id (with `kind`)",
-          "type": "string",
-          "pattern": "^[A-Za-z0-9:_.-]{1,128}$"
+          "description": "Lock ID to link this camera to"
         }
       },
-      "additionalProperties": false
+      "required": [
+        "lockId"
+      ]
     },
-    "ClearCallToOpenLock": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {},
-      "additionalProperties": false
-    },
-    "UpdateSubscriptionStatus": {
+    "OpenLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "mobileAppAccess": {
-          "description": "Whether the user may use the mobile app for this organization; an app entitlement, not door access",
-          "type": "boolean"
+        "requestId": {
+          "description": "Request tracking ID",
+          "type": "string"
         },
-        "orgId": {
-          "description": "The organization whose entry to change; only a super API key may name another organization than its own",
-          "type": "string",
-          "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+        "reason": {
+          "description": "Reason for opening",
+          "type": "string"
         }
-      },
-      "additionalProperties": false,
-      "description": "A patch of the organization's subscription status entry; omitted fields are left unchanged"
+      }
     },
     "ProvisionHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -710,32 +670,21 @@
         "model"
       ]
     },
-    "ClaimHub": {
+    "PurgeRecordings": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "hubId": {
-          "type": "string",
-          "description": "Hub ID"
-        },
-        "orgId": {
-          "description": "Organization ID. Normal keys: bound from the authenticated key — a mismatching value is rejected (403); omit it to claim into your own org. Super keys only: may set any org for a cross-org claim.",
-          "type": "string"
-        },
-        "siteId": {
-          "type": "string",
-          "description": "Site ID"
-        },
-        "userId": {
-          "type": "string",
-          "description": "User ID claiming the hub"
+        "olderThanDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30,
+          "description": "Delete every segment that started more than this many whole days ago; 0 deletes the whole archive"
         }
       },
       "required": [
-        "hubId",
-        "siteId",
-        "userId"
-      ]
+        "olderThanDays"
+      ],
+      "additionalProperties": false
     },
     "ReClaimHub": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -769,107 +718,6 @@
         "newSiteId",
         "reason",
         "userId"
-      ]
-    },
-    "SetHubRole": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "hubId": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "Hub ID"
-        },
-        "isPrimary": {
-          "type": "boolean",
-          "description": "Whether hub is primary"
-        },
-        "userId": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "User ID setting the role"
-        }
-      },
-      "required": [
-        "hubId",
-        "isPrimary",
-        "userId"
-      ]
-    },
-    "SuspendHub": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "hubId": {
-          "type": "string",
-          "description": "Hub ID"
-        },
-        "reason": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Reason for suspension"
-        },
-        "userId": {
-          "type": "string",
-          "description": "User ID suspending the hub"
-        }
-      },
-      "required": [
-        "hubId",
-        "reason",
-        "userId"
-      ]
-    },
-    "CommissionDevice": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "hubId": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "Hub ID"
-        },
-        "commissioningCode": {
-          "type": "string",
-          "pattern": "^(\\d{11}|\\d{21}|MT:.+)$",
-          "description": "Matter commissioning code (11 or 21 digits, or MT:<code>)"
-        }
-      },
-      "required": [
-        "hubId",
-        "commissioningCode"
-      ]
-    },
-    "SendHubCommand": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "hubId": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "Hub ID"
-        },
-        "command": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Hub command name, forwarded verbatim to the device shadow (e.g. get_nodes, server_info, set_wifi_credentials)"
-        },
-        "args": {
-          "description": "Command arguments, forwarded verbatim (e.g. set_wifi_credentials → { ssid, credentials })",
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {}
-        }
-      },
-      "required": [
-        "hubId",
-        "command"
       ]
     },
     "RegisterCamera": {
@@ -998,290 +846,6 @@
         "password"
       ]
     },
-    "UpdateCamera": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "name": {
-          "description": "Updated camera name",
-          "type": "string",
-          "minLength": 1
-        },
-        "httpUrl": {
-          "description": "Updated HTTP access URL",
-          "type": "string",
-          "format": "uri"
-        },
-        "rtspUrl": {
-          "description": "Updated RTSP streaming URL",
-          "type": "string",
-          "format": "uri"
-        }
-      }
-    },
-    "DisableCamera": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "reason": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Reason for disabling the camera"
-        },
-        "disabledBy": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "User ID who disabled the camera"
-        }
-      },
-      "required": [
-        "reason",
-        "disabledBy"
-      ]
-    },
-    "DeleteCamera": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "deletedBy": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "User ID who deleted the camera"
-        }
-      },
-      "required": [
-        "deletedBy"
-      ]
-    },
-    "LinkCameraToLock": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "lockId": {
-          "type": "string",
-          "description": "Lock ID to link this camera to"
-        }
-      },
-      "required": [
-        "lockId"
-      ]
-    },
-    "UnlinkCameraFromLock": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {}
-    },
-    "CreateCameraRole": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "roleId": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "Camera Role ID"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Role name"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Role description"
-        },
-        "orgId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Organization ID — opaque string, conventionally but not always a UUID"
-        }
-      },
-      "required": [
-        "roleId",
-        "name",
-        "description",
-        "orgId"
-      ]
-    },
-    "DeleteCameraRole": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "deletedBy": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "User ID who deleted the role"
-        }
-      },
-      "required": [
-        "deletedBy"
-      ]
-    },
-    "AssignUser": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "Our user UUID — server resolves 3dEye account on demand"
-        }
-      },
-      "required": [
-        "userId"
-      ]
-    },
-    "RemoveUser": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
-          "description": "Our user UUID — server resolves 3dEye account on demand"
-        }
-      },
-      "required": [
-        "userId"
-      ]
-    },
-    "AssignCamera": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "cameraId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Camera ID in 3dEye (numeric, coerced to string)"
-        },
-        "permissions": {
-          "minItems": 1,
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Permissions (e.g. View, Share)"
-        }
-      },
-      "required": [
-        "cameraId",
-        "permissions"
-      ]
-    },
-    "RemoveCamera": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "cameraId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Camera ID in 3dEye (numeric, coerced to string)"
-        }
-      },
-      "required": [
-        "cameraId"
-      ]
-    },
-    "CreateMatterDevice": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "deviceId": {
-          "type": "string",
-          "description": "Matter Device ID"
-        },
-        "thingName": {
-          "type": "string",
-          "description": "AWS IoT Thing name"
-        },
-        "hubId": {
-          "type": "string",
-          "description": "Hub ID this device belongs to"
-        },
-        "deviceType": {
-          "default": "generic",
-          "description": "Matter device type",
-          "type": "string"
-        }
-      },
-      "required": [
-        "deviceId",
-        "thingName",
-        "hubId"
-      ]
-    },
-    "UpdateDesiredShadow": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "desired": {
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {},
-          "description": "Desired shadow state to push to device"
-        },
-        "requestedByUserId": {
-          "description": "App user the write is made for. Recorded on the event only, never written to the shadow. For a Scenario Engine command, the creator of the scenario: SpacetimeDB shows it to that user. With a user's token it may be left out (the token's user is used) and must otherwise be that user; with an organization API key it names the user, or is left out.",
-          "type": "string",
-          "format": "uuid",
-          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-        }
-      },
-      "required": [
-        "desired"
-      ]
-    },
-    "SetMatterPin": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "pinCode": {
-          "type": "string",
-          "pattern": "^\\d{4,8}$"
-        },
-        "userIndex": {
-          "type": "integer",
-          "exclusiveMinimum": 0,
-          "maximum": 9007199254740991
-        },
-        "credentialIndex": {
-          "type": "integer",
-          "exclusiveMinimum": 0,
-          "maximum": 9007199254740991
-        }
-      },
-      "required": [
-        "pinCode"
-      ]
-    },
-    "ClearMatterPin": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "credentialIndex": {
-          "type": "integer",
-          "exclusiveMinimum": 0,
-          "maximum": 9007199254740991
-        },
-        "userIndex": {
-          "type": "integer",
-          "exclusiveMinimum": 0,
-          "maximum": 9007199254740991
-        }
-      },
-      "required": [
-        "credentialIndex"
-      ]
-    },
     "RegisterRtspCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -1349,6 +913,423 @@
         "rtspUrl"
       ]
     },
+    "RemoveAccessibleLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "string",
+          "description": "Lock ID"
+        },
+        "removedBy": {
+          "type": "string",
+          "description": "User who removed access"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for removal"
+        }
+      },
+      "required": [
+        "lockId",
+        "removedBy",
+        "reason"
+      ]
+    },
+    "RemoveCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Camera ID in 3dEye (numeric, coerced to string)"
+        }
+      },
+      "required": [
+        "cameraId"
+      ]
+    },
+    "RemoveKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "keyUuid": {
+          "description": "Key identifier",
+          "type": "string",
+          "minLength": 1
+        },
+        "keyIndexNumber": {
+          "description": "Physical key index",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "RemoveLicensePlate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "plate": {
+          "type": "string",
+          "minLength": 1,
+          "description": "License plate number to remove"
+        }
+      },
+      "required": [
+        "plate"
+      ]
+    },
+    "RemovePhysicalKey": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Number of the physical key to remove"
+        },
+        "_callerOrgId": {
+          "description": "Server-set: caller org id from API-key auth. Clients MUST NOT supply this.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "number"
+      ]
+    },
+    "RemoveResident": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "Resident email to remove",
+          "type": "string"
+        },
+        "phoneNumber": {
+          "description": "Resident phone number to remove, in international form (\"+48123456789\" or \"0048123456789\") — phone-only users",
+          "type": "string"
+        },
+        "userId": {
+          "description": "Resident user UUID to remove",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "RemoveUser": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Our user UUID — server resolves 3dEye account on demand"
+        }
+      },
+      "required": [
+        "userId"
+      ]
+    },
+    "RevokeAccess": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "User to revoke access from"
+        },
+        "revokedBy": {
+          "description": "Actor who issued the revocation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ]
+    },
+    "SendHubCommand": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "hubId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Hub ID"
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Hub command name, forwarded verbatim to the device shadow (e.g. get_nodes, server_info, set_wifi_credentials)"
+        },
+        "args": {
+          "description": "Command arguments, forwarded verbatim (e.g. set_wifi_credentials → { ssid, credentials })",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "hubId",
+        "command"
+      ]
+    },
+    "SetAlarmMode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The device's alarm mode: false = no alarm push to any of its users; true = alarms are pushed (the default)"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "SetHubRole": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "hubId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "Hub ID"
+        },
+        "isPrimary": {
+          "type": "boolean",
+          "description": "Whether hub is primary"
+        },
+        "userId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+          "description": "User ID setting the role"
+        }
+      },
+      "required": [
+        "hubId",
+        "isPrimary",
+        "userId"
+      ]
+    },
+    "SetMatterDeviceName": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Display name of the device, e.g. \"Front door\""
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "SetMatterPin": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "pinCode": {
+          "type": "string",
+          "pattern": "^\\d{4,8}$"
+        },
+        "userIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "credentialIndex": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "pinCode"
+      ]
+    },
+    "SetMonitoring": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the camera's availability is monitored while it is in standby"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "SetOrganization": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "description": "Organization ID"
+        }
+      },
+      "required": [
+        "orgId"
+      ]
+    },
+    "SetOwner": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "User ID to set as owner"
+        }
+      },
+      "required": [
+        "userId"
+      ]
+    },
+    "SetRecordingRetention": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "retentionDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30,
+          "description": "How many whole days a recorded segment is kept, 0..30; 0 switches recording off"
+        }
+      },
+      "required": [
+        "retentionDays"
+      ],
+      "additionalProperties": false
+    },
+    "StartStream": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "StopStream": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "SuspendHub": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "hubId": {
+          "type": "string",
+          "description": "Hub ID"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reason for suspension"
+        },
+        "userId": {
+          "type": "string",
+          "description": "User ID suspending the hub"
+        }
+      },
+      "required": [
+        "hubId",
+        "reason",
+        "userId"
+      ]
+    },
+    "UnlinkCameraFromLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {}
+    },
+    "UpdateCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Updated camera name",
+          "type": "string",
+          "minLength": 1
+        },
+        "httpUrl": {
+          "description": "Updated HTTP access URL",
+          "type": "string",
+          "format": "uri"
+        },
+        "rtspUrl": {
+          "description": "Updated RTSP streaming URL",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "UpdateDesiredShadow": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "desired": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {},
+          "description": "Desired shadow state to push to device"
+        },
+        "requestedByUserId": {
+          "description": "App user the write is made for. Recorded on the event only, never written to the shadow. For a Scenario Engine command, the creator of the scenario: SpacetimeDB shows it to that user. With a user's token it may be left out (the token's user is used) and must otherwise be that user; with an organization API key it names the user, or is left out.",
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+        }
+      },
+      "required": [
+        "desired"
+      ]
+    },
+    "UpdateEmail": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "Email to set on a user that currently has none",
+          "type": "string"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    },
+    "UpdatePhoneNumber": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "phoneNumber": {
+          "description": "Phone number to set, in international form (\"+48123456789\" or \"0048123456789\"); null to remove the existing phone number",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "phoneNumber"
+      ]
+    },
     "UpdateRtspCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -1403,104 +1384,166 @@
         }
       }
     },
-    "DeleteRtspCamera": {
+    "UpdateSubscriptionStatus": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "deletedBy": {
-          "description": "Actor who requested the deletion",
-          "type": "string"
+        "mobileAppAccess": {
+          "description": "Whether the user may use the mobile app for this organization; an app entitlement, not door access",
+          "type": "boolean"
+        },
+        "orgId": {
+          "description": "The organization whose entry to change; only a super API key may name another organization than its own",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,128}$"
         }
-      }
+      },
+      "additionalProperties": false,
+      "description": "A patch of the organization's subscription status entry; omitted fields are left unchanged"
     },
-    "StartStream": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {},
-      "additionalProperties": false
-    },
-    "StopStream": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {},
-      "additionalProperties": false
-    },
-    "GrantAccess": {
+    "WriteKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "userId": {
+        "keyUuid": {
           "type": "string",
           "minLength": 1,
-          "description": "User to grant access to"
+          "description": "Key identifier to write to device firmware"
         },
-        "role": {
+        "keyIndexNumber": {
+          "description": "Physical key index on device",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "keyUuid"
+      ]
+    },
+    "create-temp-key": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tempKeyUuid": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+        },
+        "accessMode": {
           "type": "string",
           "enum": [
-            "viewer",
-            "manager"
-          ],
-          "description": "Role to grant"
+            "public",
+            "user-whitelist"
+          ]
         },
-        "grantedBy": {
-          "description": "Actor who issued the grant",
-          "type": "string"
-        }
-      },
-      "required": [
-        "userId",
-        "role"
-      ]
-    },
-    "RevokeAccess": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": {
-        "userId": {
+        "allowedUserIds": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+          }
+        },
+        "validFrom": {
           "type": "string",
-          "minLength": 1,
-          "description": "User to revoke access from"
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
         },
-        "revokedBy": {
-          "description": "Actor who issued the revocation",
-          "type": "string"
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "maxUses": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000
         }
       },
       "required": [
-        "userId"
+        "tempKeyUuid",
+        "accessMode",
+        "validFrom",
+        "validUntil"
       ]
     },
-    "SetRecordingRetention": {
+    "delete-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "retentionDays": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 30,
-          "description": "How many whole days a recorded segment is kept, 0..30; 0 switches recording off"
+        "tempKeyUuid": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
         }
       },
       "required": [
-        "retentionDays"
-      ],
-      "additionalProperties": false
+        "tempKeyUuid"
+      ]
     },
-    "PurgeRecordings": {
+    "update-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "olderThanDays": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 30,
-          "description": "Delete every segment that started more than this many whole days ago; 0 deletes the whole archive"
+        "tempKeyUuid": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "maxUses": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "allowedUserIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+          }
+        },
+        "accessMode": {
+          "type": "string",
+          "enum": [
+            "public",
+            "user-whitelist"
+          ]
         }
       },
       "required": [
-        "olderThanDays"
-      ],
-      "additionalProperties": false
+        "tempKeyUuid"
+      ]
     }
   }
 }
