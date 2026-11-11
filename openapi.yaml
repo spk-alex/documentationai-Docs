@@ -14532,188 +14532,6 @@
         ]
       }
     },
-    "/users/{id}/UpdateEmail": {
-      "post": {
-        "summary": "Add an email to a user that has none",
-        "description": "Writes the email (PII) to D1 and emits a UserEmailUpdated audit event carrying only a masked (first-initial + domain) form — the raw address never enters the event log. Only sets the email when the user currently has none; returns 409 if an email is already on file or the address belongs to another user.",
-        "operationId": "post_UpdateUserEmailRoute",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "description": "User ID"
-            },
-            "required": true,
-            "description": "User ID",
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "description": "Email to set on a user that currently has none"
-                  }
-                },
-                "required": [
-                  "email"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email added (raw value in D1, masked audit event emitted)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "aggregateId": {
-                      "type": "string"
-                    },
-                    "version": {
-                      "type": "number"
-                    },
-                    "event": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "UserEmailUpdated"
-                          ]
-                        },
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "userId": {
-                              "type": "string"
-                            },
-                            "action": {
-                              "type": "string",
-                              "enum": [
-                                "set",
-                                "removed"
-                              ]
-                            },
-                            "maskedEmail": {
-                              "type": "string",
-                              "description": "Obfuscated email (first initial + domain, e.g. \"a***@example.com\") — present only when action is \"set\""
-                            },
-                            "timestamp": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "userId",
-                            "action",
-                            "timestamp"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "data"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "aggregateId",
-                    "version",
-                    "event"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "User already has an email, or the email belongs to another user",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Database not available",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "User",
-          "Command",
-          "Profile"
-        ]
-      }
-    },
     "/users/{id}/keys": {
       "get": {
         "summary": "Get user keys",
@@ -16273,10 +16091,192 @@
         ]
       }
     },
+    "/users/{id}/UpdateEmail": {
+      "post": {
+        "summary": "Add an email to a user that has none",
+        "description": "Writes the email (PII) to D1 and emits a UserEmailUpdated audit event carrying only a masked (first-initial + domain) form — the raw address never enters the event log. Only sets the email when the user currently has none; returns 409 if an email is already on file or the address belongs to another user.",
+        "operationId": "post_UpdateUserEmailRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "User ID"
+            },
+            "required": true,
+            "description": "User ID",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "Email to set on a user that currently has none"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email added (raw value in D1, masked audit event emitted)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "UserEmailUpdated"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string"
+                            },
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "set",
+                                "removed"
+                              ]
+                            },
+                            "maskedEmail": {
+                              "type": "string",
+                              "description": "Obfuscated email (first initial + domain, e.g. \"a***@example.com\") — present only when action is \"set\""
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "action",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already has an email, or the email belongs to another user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "User",
+          "Command",
+          "Profile"
+        ]
+      }
+    },
     "/users/{id}/UpdatePhoneNumber": {
       "post": {
         "summary": "Set or remove a user's phone number",
-        "description": "Writes the phone number (PII) to D1 and emits a UserPhoneNumberUpdated audit event carrying only a masked (last-4) form — the raw number never enters the event log. Pass phoneNumber as a string to set it, or null to remove it.",
+        "description": "Writes the phone number (PII) to D1 and emits a UserPhoneNumberUpdated audit event carrying only a masked (last-4) form — the raw number never enters the event log. Pass phoneNumber as a string to set it, or null to remove it. A phone number belongs to at most one user: a number another user already has is refused with 409 and nothing changes.",
         "operationId": "post_UpdateUserPhoneRoute",
         "parameters": [
           {
@@ -16386,6 +16386,28 @@
           },
           "404": {
             "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The phone number already belongs to another user",
             "content": {
               "application/json": {
                 "schema": {
