@@ -3438,6 +3438,46 @@
                 }
               }
             }
+          },
+          "504": {
+            "description": "could not confirm, check in 3dEye: 3dEye did not answer the create in time, so whether it created the camera is unknown. The reason is errors[0].message, exactly \"could not confirm, check in 3dEye\". An operator removes any camera 3dEye created, then the add is repeated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3449,7 +3489,7 @@
     "/cameras/{id}/RegisterPnpCamera": {
       "post": {
         "summary": "Register plug-and-play (push-module) camera",
-        "description": "Registers a plug-and-play camera in 3dEye by its registration code (POST /v3/cameras/pnp/create) and persists the registration event.",
+        "description": "Adds a plug-and-play camera by its registration code. The code is looked up in 3dEye first: a camera of our 3dEye account that no SmartKey camera uses is linked to this camera id, otherwise the camera is created in 3dEye (POST /v3/cameras/pnp/create). Either way the registration event is persisted and the answer is the same.",
         "operationId": "post_RegisterPnpCameraRoute",
         "parameters": [
           {
@@ -3762,6 +3802,86 @@
                     "success",
                     "error",
                     "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "registration code in use: another SmartKey camera uses it, another 3dEye account holds it, or another organization's add of it has not finished. The reason is errors[0].message, exactly \"registration code in use\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "camera add not finished, repeat the add: 3dEye did not finish in time; the add is not failed and nothing was created on our side. The reason is errors[0].message, exactly \"camera add not finished, repeat the add\". A repeat under the same or a new camera id completes the add.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
                   ]
                 }
               }
