@@ -124,7 +124,8 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
     "events": [
       "LockCreated",
       "KeyAdded"
-    ]
+    ],
+    "secret": "'"$WEBHOOK_SECRET"'"
   }'
 ```
 
@@ -139,7 +140,7 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 
 **補足:**
 - 本番環境では URL は HTTPS である必要があります（dev では HTTP も可）
-- Webhook シークレットを指定しない場合は自動生成されます
+- 独自の `secret`（この Webhook 用に生成した十分に長いランダムな値）を送信し、安全な経路でパートナーに渡してください。パートナーはこの値と `X-Webhook-Secret` を照合します。レスポンスにシークレットは含まれないため、指定せずに自動生成されたシークレットをパートナーに渡すことはできません。
 - Webhook は AWS EventBridge を基盤としており、パートナーの `orgId` に一致するイベントが URL に配信されます
 
 #### 利用可能なイベントタイプ

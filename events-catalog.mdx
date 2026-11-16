@@ -26,7 +26,7 @@ All `spk.api` events share the same envelope structure. The domain payload is wr
 }
 ```
 
-`detail.timestamp` is the projection time as **epoch milliseconds** (a number). The ISO-8601 timestamp inside `detail.data.timestamp` is the domain-event time. The fields documented below describe `detail.data` — the actual domain event.
+`detail.timestamp` is the projection time as **epoch milliseconds** (a number). `detail.data.timestamp` is the domain-event time: an ISO-8601 string on most events, epoch milliseconds (a number) on the few whose table says so. The fields documented below describe `detail.data` — the actual domain event.
 
 ---
 

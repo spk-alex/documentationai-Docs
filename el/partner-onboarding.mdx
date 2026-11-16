@@ -124,7 +124,8 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
     "events": [
       "LockCreated",
       "KeyAdded"
-    ]
+    ],
+    "secret": "'"$WEBHOOK_SECRET"'"
   }'
 ```
 
@@ -139,7 +140,7 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 
 **Σημειώσεις:**
 - Το URL πρέπει να είναι HTTPS σε production (επιτρέπεται HTTP σε dev)
-- Δημιουργείται αυτόματα ένα webhook secret αν δεν παρασχεθεί
+- Στείλτε το δικό σας `secret` (μια μεγάλη τυχαία τιμή, δημιουργημένη για αυτό το webhook) και δώστε το στον εταίρο μέσω ασφαλούς καναλιού: με αυτό συγκρίνει το `X-Webhook-Secret`. Η απόκριση δεν επιστρέφει το secret, οπότε ένα που δημιουργείται αυτόματα επειδή δεν στάλθηκε κανένα δεν μπορεί να δοθεί στον εταίρο.
 - Το webhook υποστηρίζεται από το AWS EventBridge — events που ταιριάζουν με το `orgId` του εταίρου παραδίδονται στο URL
 
 #### Διαθέσιμοι τύποι event

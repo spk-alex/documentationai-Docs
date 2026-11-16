@@ -124,7 +124,8 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
     "events": [
       "LockCreated",
       "KeyAdded"
-    ]
+    ],
+    "secret": "'"$WEBHOOK_SECRET"'"
   }'
 ```
 
@@ -139,7 +140,7 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 
 **Notes:**
 - URL must be HTTPS in production (HTTP allowed in dev)
-- A webhook secret is auto-generated if not provided
+- Send your own `secret` (a long random value, generated for this webhook) and pass it to the partner over a secure channel: it is what they compare `X-Webhook-Secret` against. The response does not return the secret, so one that is auto-generated because none was sent cannot be given to the partner.
 - The webhook is backed by AWS EventBridge — events matching the partner's `orgId` are delivered to the URL
 
 #### Available Event Types

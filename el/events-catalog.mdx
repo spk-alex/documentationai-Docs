@@ -26,7 +26,7 @@ description: Τεκμηρίωση αναφοράς για τα events του Eve
 }
 ```
 
-Το `detail.timestamp` είναι ο χρόνος της προβολής (projection) σε **epoch milliseconds** (αριθμός). Η χρονοσφραγίδα ISO-8601 μέσα στο `detail.data.timestamp` είναι ο χρόνος του domain event. Τα πεδία που τεκμηριώνονται παρακάτω περιγράφουν το `detail.data` — το πραγματικό domain event.
+Το `detail.timestamp` είναι ο χρόνος της προβολής (projection) σε **epoch milliseconds** (αριθμός). Το `detail.data.timestamp` είναι ο χρόνος του domain event: συμβολοσειρά ISO-8601 στα περισσότερα events, epoch milliseconds (αριθμός) στα λίγα όπου το αναφέρει ο πίνακάς τους. Τα πεδία που τεκμηριώνονται παρακάτω περιγράφουν το `detail.data` — το πραγματικό domain event.
 
 ---
 
