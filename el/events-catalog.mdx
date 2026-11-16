@@ -223,6 +223,9 @@ An unlock command was delivered to the lock.
 | `requestId` | `string` | όχι |  |
 | `messageId` | `string` | όχι |  |
 | `requestedAt` | `number` | όχι |  |
+| `openedByUserId` | `string \| null` | όχι | The user the lock let in; set only on opens made by licence-plate recognition |
+| `lprCameraId` | `string \| null` | όχι | The LPR camera whose recognition triggered this open; set only on opens made by licence-plate recognition, together with openedByGrant. Identify an LPR open by this field, never by reason, which any OpenLock caller can set |
+| `openedByGrant` | `"owner" \| "key" \| "accessible_lock" \| "accessible_device" \| null` | όχι | Which grant admitted the opener: owner, key, accessible_lock or accessible_device |
 
 ### LockOpenConfirmed
 
@@ -924,6 +927,24 @@ A license plate has been removed from a user.
 |---|---|---|---|
 | `userId` | `string` | ναι | User ID |
 | `plate` | `string` | ναι |  |
+
+### UserVehiclePlateUpdated
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `UserVehiclePlateUpdated` |
+| **aggregateType** | `UserAggregate` |
+
+A user's vehicle plate has been set or cleared (the plate itself is never carried).
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `userId` | `string` | ναι | User ID |
+| `action` | `"set" \| "cleared"` | ναι | set or cleared |
+| `setAt` | `number \| null` | ναι | Unix epoch ms of the write; null when cleared |
 
 ### DeviceAdded
 

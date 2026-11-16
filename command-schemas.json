@@ -1,5 +1,5 @@
 {
-  "version": "345c89a2",
+  "version": "e361baa1",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
@@ -581,6 +581,16 @@
         "disabledBy"
       ]
     },
+    "DisableLprCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {}
+    },
+    "EnableLprCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {}
+    },
     "GrantAccess": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -619,6 +629,35 @@
       },
       "required": [
         "lockId"
+      ]
+    },
+    "LinkLprCameraToLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Numeric id of the lock the camera opens"
+        }
+      },
+      "required": [
+        "lockId"
+      ]
+    },
+    "LinkLprCameraToMatterDevice": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "matterDeviceId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{1,128}$",
+          "description": "Matter device id (thing name) of a door lock registered as a lock"
+        }
+      },
+      "required": [
+        "matterDeviceId"
       ]
     },
     "OpenLock": {
@@ -792,6 +831,20 @@
         "ownerId",
         "login",
         "password"
+      ]
+    },
+    "RegisterLprCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organization that owns the camera"
+        }
+      },
+      "required": [
+        "organizationId"
       ]
     },
     "RegisterPnpCamera": {
@@ -1253,6 +1306,11 @@
       ]
     },
     "UnlinkCameraFromLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {}
+    },
+    "UnlinkLprCamera": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {}

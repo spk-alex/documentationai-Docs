@@ -4662,7 +4662,7 @@
                           },
                           "plate": {
                             "type": "string",
-                            "description": "Detected license plate"
+                            "description": "Detected licence plate, masked (last two characters)"
                           },
                           "confidence": {
                             "type": "number",
@@ -4686,6 +4686,14 @@
                           "timestamp": {
                             "type": "string",
                             "description": "ISO-8601 event timestamp"
+                          },
+                          "requestId": {
+                            "type": "string",
+                            "description": "The matcher's per-recognition id (AA-281); joins LockOpenRequested.requestId. Absent on older records"
+                          },
+                          "signatureVerified": {
+                            "type": "boolean",
+                            "description": "Whether the webhook signature was verified (AA-281); unsigned webhooks open nothing. Absent on older records"
                           }
                         },
                         "required": [
@@ -7157,6 +7165,31 @@
                             "requestedAt": {
                               "type": "integer",
                               "minimum": 0
+                            },
+                            "openedByUserId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "lprCameraId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "openedByGrant": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "enum": [
+                                "owner",
+                                "key",
+                                "accessible_lock",
+                                "accessible_device",
+                                null
+                              ]
                             }
                           },
                           "required": [
@@ -8815,6 +8848,2234 @@
         "tags": [
           "Lock",
           "Query"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/DisableLprCamera": {
+      "post": {
+        "summary": "Disable an LPR camera (kill switch)",
+        "operationId": "post_DisableLprCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera disabled (or already disabled: `event: null`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LprCameraDisabled"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "organizationId",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND — no such camera for this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/EnableLprCamera": {
+      "post": {
+        "summary": "Enable a disabled LPR camera",
+        "operationId": "post_EnableLprCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera enabled (or already active: `event: null`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LprCameraEnabled"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "organizationId",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND — no such camera for this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/LinkLprCameraToLock": {
+      "post": {
+        "summary": "Link an LPR camera to a lock",
+        "operationId": "post_LinkLprCameraToLockRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lockId": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Numeric id of the lock the camera opens"
+                  }
+                },
+                "required": [
+                  "lockId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera linked (or already linked to that lock: `event: null`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LprCameraLinkedToLock"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "organizationId",
+                            "timestamp",
+                            "lockId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND, or LOCK_NOT_FOUND — no such lock in the camera's organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/RegisterLprCamera": {
+      "post": {
+        "summary": "Register an LPR camera",
+        "description": "Registers an LPR camera for the calling organization at the client-chosen UUID in the path. No camera name is stored: the event that records it is append-only.",
+        "operationId": "post_RegisterLprCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organizationId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Organization that owns the camera"
+                  }
+                },
+                "required": [
+                  "organizationId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The camera already exists: an idempotent no-op with `event: null`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LprCameraRegistered"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "organizationId",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Camera registered — the genuine create",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LprCameraRegistered"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "organizationId",
+                            "timestamp"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORGANIZATION_MISMATCH — the body names another organization (or none); LPR_CAMERA_B2B_ONLY for a user JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND — no such camera for this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/UnlinkLprCamera": {
+      "post": {
+        "summary": "Unlink an LPR camera from its lock",
+        "operationId": "post_UnlinkLprCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera unlinked (or already unlinked: `event: null`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LprCameraUnlinked"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "description": "The lock the camera was linked to"
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "organizationId",
+                            "timestamp",
+                            "lockId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND — no such camera for this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/details": {
+      "get": {
+        "summary": "Get an LPR camera",
+        "operationId": "get_GetLprCameraDetailsRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The camera",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cameraId": {
+                      "type": "string"
+                    },
+                    "organizationId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "DISABLED"
+                      ]
+                    },
+                    "lockId": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "cameraId",
+                    "organizationId",
+                    "status",
+                    "lockId"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND — no such camera for this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Query"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/LinkLprCameraToMatterDevice": {
+      "post": {
+        "summary": "Link an LPR camera to the lock a Matter door lock is",
+        "operationId": "post_LinkLprCameraToMatterDeviceRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "matterDeviceId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;1,128&#125;$",
+                    "description": "Matter device id (thing name) of a door lock registered as a lock"
+                  }
+                },
+                "required": [
+                  "matterDeviceId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera linked (or already linked to that lock: `event: null`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "aggregateId": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "event": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "LprCameraLinkedToLock"
+                          ]
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "cameraId": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "lockId": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            }
+                          },
+                          "required": [
+                            "cameraId",
+                            "organizationId",
+                            "timestamp",
+                            "lockId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "aggregateId",
+                    "version",
+                    "event"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND, or LOCK_NOT_FOUND — no lock of the camera's organization is this device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "number",
+                            "description": "HTTP status"
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Starts with the error code, e.g. \"LPR_CAMERA_NOT_FOUND: …\""
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "errors"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
         ]
       }
     },
@@ -12390,8 +14651,8 @@
     },
     "/users/{id}/AddLicensePlate": {
       "post": {
-        "summary": "Add license plate to user",
-        "description": "Adds a license plate to the user profile for LPR automation. Plates are normalized (uppercase, no spaces/dashes) and deduplicated.",
+        "summary": "Set the user's license plate (merged onto the vehicle plate)",
+        "description": "Sets the user's one vehicle plate, as UpdateVehiclePlate does (normalized: upper case, no spaces, \"-\" or \".\"), with an optional label. A different plate replaces the current one; the event carries no plate.",
         "operationId": "post_AddLicensePlateRoute",
         "parameters": [
           {
@@ -12431,7 +14692,7 @@
         },
         "responses": {
           "200": {
-            "description": "License plate added successfully",
+            "description": "Plate set (the user has one plate; a different one replaces it)",
             "content": {
               "application/json": {
                 "schema": {
@@ -12455,7 +14716,7 @@
                         "type": {
                           "type": "string",
                           "enum": [
-                            "LicensePlateAdded"
+                            "UserVehiclePlateUpdated"
                           ]
                         },
                         "data": {
@@ -12464,21 +14725,25 @@
                             "userId": {
                               "type": "string"
                             },
-                            "plate": {
-                              "type": "string"
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "set",
+                                "cleared"
+                              ]
                             },
-                            "label": {
-                              "type": "string"
-                            },
-                            "addedAt": {
-                              "type": "number"
+                            "setAt": {
+                              "type": [
+                                "number",
+                                "null"
+                              ],
+                              "description": "Epoch ms of the D1 write this event audits; null when the plate was cleared"
                             }
                           },
                           "required": [
                             "userId",
-                            "plate",
-                            "label",
-                            "addedAt"
+                            "action",
+                            "setAt"
                           ]
                         }
                       },
@@ -12486,28 +14751,42 @@
                         "type",
                         "data"
                       ]
-                    },
-                    "plate": {
-                      "type": "string"
-                    },
-                    "label": {
-                      "type": "string"
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
                     "version",
-                    "event",
-                    "plate",
-                    "label"
+                    "event"
                   ]
                 }
               }
             }
           },
           "400": {
-            "description": "Invalid request or plate already exists",
+            "description": "INVALID_PLATE, or PLATE_ALREADY_SET",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "SELF_ONLY — only the user themselves may set their plate",
             "content": {
               "application/json": {
                 "schema": {
@@ -12530,6 +14809,28 @@
           },
           "404": {
             "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database not available",
             "content": {
               "application/json": {
                 "schema": {
@@ -14397,7 +16698,7 @@
     "/users/{id}/license-plates": {
       "get": {
         "summary": "Get license plates",
-        "description": "Get the user's registered license plates for LPR automation",
+        "description": "Get the user's vehicle plate (at most one) from D1",
         "operationId": "get_GetLicensePlatesRoute",
         "parameters": [
           {
@@ -15429,8 +17730,8 @@
     },
     "/users/{id}/RemoveLicensePlate": {
       "post": {
-        "summary": "Remove license plate from user",
-        "description": "Removes a license plate from the user's profile.",
+        "summary": "Clear the user's license plate (merged onto the vehicle plate)",
+        "description": "Clears the user's vehicle plate when it is the plate named; the event carries no plate.",
         "operationId": "post_RemoveLicensePlateRoute",
         "parameters": [
           {
@@ -15465,7 +17766,7 @@
         },
         "responses": {
           "200": {
-            "description": "License plate removed successfully",
+            "description": "Plate cleared",
             "content": {
               "application/json": {
                 "schema": {
@@ -15489,7 +17790,7 @@
                         "type": {
                           "type": "string",
                           "enum": [
-                            "LicensePlateRemoved"
+                            "UserVehiclePlateUpdated"
                           ]
                         },
                         "data": {
@@ -15498,13 +17799,25 @@
                             "userId": {
                               "type": "string"
                             },
-                            "plate": {
-                              "type": "string"
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "set",
+                                "cleared"
+                              ]
+                            },
+                            "setAt": {
+                              "type": [
+                                "number",
+                                "null"
+                              ],
+                              "description": "Epoch ms of the D1 write this event audits; null when the plate was cleared"
                             }
                           },
                           "required": [
                             "userId",
-                            "plate"
+                            "action",
+                            "setAt"
                           ]
                         }
                       },
@@ -15512,24 +17825,42 @@
                         "type",
                         "data"
                       ]
-                    },
-                    "plate": {
-                      "type": "string"
                     }
                   },
                   "required": [
                     "success",
                     "aggregateId",
                     "version",
-                    "event",
-                    "plate"
+                    "event"
                   ]
                 }
               }
             }
           },
           "400": {
-            "description": "Invalid request or plate not found",
+            "description": "INVALID_PLATE, or PLATE_NOT_FOUND — the user holds no such plate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "SELF_ONLY — only the user themselves may remove their plate",
             "content": {
               "application/json": {
                 "schema": {
@@ -15552,6 +17883,28 @@
           },
           "404": {
             "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database not available",
             "content": {
               "application/json": {
                 "schema": {

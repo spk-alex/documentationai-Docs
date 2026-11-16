@@ -223,6 +223,9 @@ An unlock command was delivered to the lock.
 | `requestId` | `string` | no |  |
 | `messageId` | `string` | no |  |
 | `requestedAt` | `number` | no |  |
+| `openedByUserId` | `string \| null` | no | The user the lock let in; set only on opens made by licence-plate recognition |
+| `lprCameraId` | `string \| null` | no | The LPR camera whose recognition triggered this open; set only on opens made by licence-plate recognition, together with openedByGrant. Identify an LPR open by this field, never by reason, which any OpenLock caller can set |
+| `openedByGrant` | `"owner" \| "key" \| "accessible_lock" \| "accessible_device" \| null` | no | Which grant admitted the opener: owner, key, accessible_lock or accessible_device |
 
 ### LockOpenConfirmed
 
@@ -924,6 +927,24 @@ A license plate has been removed from a user.
 |---|---|---|---|
 | `userId` | `string` | yes | User ID |
 | `plate` | `string` | yes |  |
+
+### UserVehiclePlateUpdated
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `UserVehiclePlateUpdated` |
+| **aggregateType** | `UserAggregate` |
+
+A user's vehicle plate has been set or cleared (the plate itself is never carried).
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `userId` | `string` | yes | User ID |
+| `action` | `"set" \| "cleared"` | yes | set or cleared |
+| `setAt` | `number \| null` | yes | Unix epoch ms of the write; null when cleared |
 
 ### DeviceAdded
 
