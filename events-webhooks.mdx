@@ -254,24 +254,16 @@ The `source` is `spk.iot.shadow` and several `detail` fields are **stringified J
 
 ## Partner Self-Service
 
-Partners can manage their own credentials and webhook URL without going through SmartphoneKey support.
+Once SmartphoneKey has created your organization and user account (see [Partner Onboarding](/partner-onboarding) — there is no self-registration), you manage your credentials and webhook yourself.
 
 ### Partner Portal
 
-A web UI is available per environment:
+The Partner Portal is a page in the SmartphoneKey Admin Panel (Odoo). Partners sign in with the account SmartphoneKey created for them and can:
 
-| Environment | URL |
-|-------------|-----|
-| Dev | `https://partner-portal.spk-dev.workers.dev/` |
-| Stage | `https://partner-portal.spk-stage.workers.dev/` |
-| Nonprod | `https://partner-portal.spk-nonprod.workers.dev/` |
-| Prod | `https://partner-portal.spk-prod.workers.dev/` |
-
-Partners sign in with Auth0 and can:
-
-- View their `orgId` and active API key (revealed once on first issue, masked thereafter)
-- Rotate their API key — instantly revokes the previous one
-- Create or update their webhook URL
+- Register their `orgId` and create their API key (shown once, masked thereafter)
+- Rotate their API key, after SmartphoneKey revokes the current one
+- Register a webhook with its events, update its URL, or replace it
+- See webhook health and delivery statistics
 
 See the [Partner Portal guide](/partner-portal) for a walkthrough.
 

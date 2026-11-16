@@ -254,24 +254,16 @@ description: Πώς να λαμβάνετε events της SmartphoneKey μέσω
 
 ## Self-Service Εταίρων
 
-Οι εταίροι μπορούν να διαχειρίζονται τα δικά τους διαπιστευτήρια και το webhook URL τους χωρίς να περνούν από την υποστήριξη της SmartphoneKey.
+Αφού η SmartphoneKey δημιουργήσει τον οργανισμό σας και τον λογαριασμό χρήστη σας (δείτε [Onboarding Εταίρων](/el/partner-onboarding) — δεν υπάρχει αυτοεγγραφή), διαχειρίζεστε μόνοι σας τα διαπιστευτήριά σας και το webhook σας.
 
 ### Partner Portal
 
-Διατίθεται ένα web περιβάλλον ανά περιβάλλον (environment):
+Το Partner Portal είναι μια σελίδα στο SmartphoneKey Admin Panel (Odoo). Οι εταίροι συνδέονται με τον λογαριασμό που δημιούργησε για αυτούς η SmartphoneKey και μπορούν να:
 
-| Περιβάλλον | URL |
-|-------------|-----|
-| Dev | `https://partner-portal.spk-dev.workers.dev/` |
-| Stage | `https://partner-portal.spk-stage.workers.dev/` |
-| Nonprod | `https://partner-portal.spk-nonprod.workers.dev/` |
-| Prod | `https://partner-portal.spk-prod.workers.dev/` |
-
-Οι εταίροι συνδέονται με Auth0 και μπορούν να:
-
-- Δουν το `orgId` τους και το ενεργό API key τους (αποκαλύπτεται μία φορά κατά την πρώτη έκδοση, μασκαρισμένο στη συνέχεια)
-- Περιστρέψουν το API key τους — ανακαλεί ακαριαία το προηγούμενο
-- Δημιουργήσουν ή ενημερώσουν το webhook URL τους
+- Καταχωρήσουν το `orgId` τους και να δημιουργήσουν το API key τους (εμφανίζεται μία φορά, μασκαρισμένο στη συνέχεια)
+- Περιστρέψουν το API key τους, αφού η SmartphoneKey ανακαλέσει το τρέχον
+- Καταχωρήσουν ένα webhook με τα events του, να ενημερώσουν το URL του ή να το αντικαταστήσουν
+- Δουν την υγεία του webhook και τα στατιστικά παράδοσης
 
 Δείτε τον [οδηγό Partner Portal](/el/partner-portal) για μια ξενάγηση.
 
