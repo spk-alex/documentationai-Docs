@@ -214,8 +214,8 @@ These rows show whether the endpoint currently detects smoke locally or receives
 
 | Cluster | Attribute | Path |
 |---|---|---|
-| Smoke CO Alarm (92) | SmokeState | `1/92/0` |
-| Smoke CO Alarm (92) | InterconnectSmokeAlarm | `1/92/7` |
+| Smoke CO Alarm (92) | SmokeState | `1/92/1` |
+| Smoke CO Alarm (92) | InterconnectSmokeAlarm | `1/92/8` |
 
 **SmokeState** — Local smoke state of this exact detector.
 
@@ -243,8 +243,8 @@ Example:
 
 ```json
 {
-  "1/92/0": 0,
-  "1/92/7": 2
+  "1/92/1": 0,
+  "1/92/8": 2
 }
 ```
 
@@ -252,7 +252,7 @@ This means this detector does not detect smoke locally, but another interconnect
 
 #### Interpretation
 
-| `1/92/0` SmokeState | `1/92/7` InterconnectSmokeAlarm | Local smoke | Interconnected smoke | Final status |
+| `1/92/1` SmokeState | `1/92/8` InterconnectSmokeAlarm | Local smoke | Interconnected smoke | Final status |
 |---|---|---|---|---|
 | `0` | `0` | No | No | Normal / no smoke detected |
 | `1` | `0` | Warning | No | Local smoke warning |

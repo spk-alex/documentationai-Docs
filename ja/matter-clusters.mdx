@@ -214,8 +214,8 @@ Thread Network Diagnostics (クラスター <code>53</code>) は、現在のブ�
 
 | クラスター | 属性 | パス |
 |---|---|---|
-| Smoke CO Alarm (92) | SmokeState | `1/92/0` |
-| Smoke CO Alarm (92) | InterconnectSmokeAlarm | `1/92/7` |
+| Smoke CO Alarm (92) | SmokeState | `1/92/1` |
+| Smoke CO Alarm (92) | InterconnectSmokeAlarm | `1/92/8` |
 
 **SmokeState** — この検知器自身のローカルな煙の状態です。
 
@@ -243,8 +243,8 @@ Thread Network Diagnostics (クラスター <code>53</code>) は、現在のブ�
 
 ```json
 {
-  "1/92/0": 0,
-  "1/92/7": 2
+  "1/92/1": 0,
+  "1/92/8": 2
 }
 ```
 
@@ -252,7 +252,7 @@ Thread Network Diagnostics (クラスター <code>53</code>) は、現在のブ�
 
 #### 解釈
 
-| `1/92/0` SmokeState | `1/92/7` InterconnectSmokeAlarm | ローカルの煙 | 連動先の煙 | 最終的な状態 |
+| `1/92/1` SmokeState | `1/92/8` InterconnectSmokeAlarm | ローカルの煙 | 連動先の煙 | 最終的な状態 |
 |---|---|---|---|---|
 | `0` | `0` | なし | なし | 正常 / 煙の検知なし |
 | `1` | `0` | 警告 | なし | ローカルの煙警告 |

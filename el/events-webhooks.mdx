@@ -331,7 +331,7 @@ function verifyToken(received: string, expected: string): boolean {
 | **Μοντέλο παράδοσης** | At-least-once |
 | **Retries** | Σύμφωνα με την πολιτική retry του EventBridge API destination (υπόκειται σε αλλαγές) |
 | **Backoff retry** | Εκθετικό |
-| **Triggers retry** | Αποκρίσεις `5xx` και timeouts |
+| **Triggers retry** | Αποκρίσεις `5xx`, `401`, `407`, `409` και `429`, και timeouts |
 
 Επειδή η παράδοση είναι at-least-once, σχεδιάστε το endpoint σας να είναι **idempotent** — χρησιμοποιήστε το πεδίο `id` στον φάκελο EventBridge ως κλειδί deduplication. Τα events που εξαντλούν τα retries τους απορρίπτονται· επικοινωνήστε με την υποστήριξη αν χρειάζεστε ανάκτηση events που χάθηκαν.
 
@@ -340,7 +340,7 @@ function verifyToken(received: string, expected: string): boolean {
 Το endpoint σας πρέπει να:
 
 - Επιστρέφει HTTP `2xx` εντός του παραθύρου timeout για να επιβεβαιώσει τη λήψη.
-- Οι αποκρίσεις `4xx` αντιμετωπίζονται ως μόνιμες αποτυχίες και **δεν** γίνονται retried.
+- Οι αποκρίσεις `4xx` αντιμετωπίζονται ως μόνιμες αποτυχίες και **δεν** γίνονται retried, εκτός από τις `401`, `407`, `409` και `429`, που γίνονται retried.
 - Οι αποκρίσεις `5xx` ή τα timeouts ενεργοποιούν retry με εκθετικό backoff.
 
 Η επιστροφή `2xx` αμέσως και η ασύγχρονη επεξεργασία συνιστάται για webhooks που ενεργοποιούν βαριά εργασία.
@@ -357,7 +357,7 @@ function verifyToken(received: string, expected: string): boolean {
 - **Χρησιμοποιήστε HTTPS** — Καταχωρείτε μόνο HTTPS endpoints. Το HTTP απορρίπτεται εκτός του περιβάλλοντος dev.
 - **Απαντήστε γρήγορα** — Επιστρέψτε `2xx` πριν κάνετε βαριά επεξεργασία. Βάλτε τα events σε ουρά για ασύγχρονη επεξεργασία αν χρειάζεται.
 - **Να είστε idempotent** — Το ίδιο event μπορεί να παραδοθεί περισσότερες από μία φορές. Χρησιμοποιήστε το `id` από τον φάκελο για deduplication.
-- **Περιστρέφετε τα secrets περιοδικά** — Χρησιμοποιήστε το **Replace webhook** στο Partner Portal για να λάβετε νέο secret. Η νέα συνδρομή δημιουργείται πριν αφαιρεθεί η παλιά, οπότε δεχθείτε και τα δύο secrets για ένα σύντομο παράθυρο επικάλυψης.
+- **Περιστρέφετε τα secrets περιοδικά** — Χρησιμοποιήστε το **Replace webhook** στο Partner Portal για να λάβετε νέο secret. Η νέα συνδρομή δημιουργείται πριν αφαιρεθεί η παλιά, οπότε δεχθείτε και τα δύο secrets για ένα σύντομο παράθυρο επικάλυψης. Οι παραδόσεις με το νέο secret μπορούν να ξεκινήσουν μόλις υπάρξει η νέα συνδρομή, οπότε αποθηκεύστε το νέο secret τη στιγμή που εμφανίζεται, και απαντήστε σε ασυμφωνία secret με `401`, που γίνεται retried.
 
 ## Αποσφαλμάτωση παραδόσεων
 
@@ -366,7 +366,7 @@ function verifyToken(received: string, expected: string): boolean {
 1. Επιβεβαιώστε ότι το endpoint σας επιστρέφει `2xx` για ένα δοκιμαστικό POST.
 2. Ελέγξτε ότι η συνδρομή σας περιλαμβάνει τους σωστούς τύπους event — περάστε `events: ['*']` για να λαμβάνετε κάθε event για τον tenant σας.
 3. Επαληθεύστε ότι το URL του endpoint σας είναι προσβάσιμο από το δημόσιο internet (όχι localhost ή ιδιωτικό δίκτυο).
-4. Ελέγξτε τον έλεγχο του `X-Webhook-Secret` σας — μια απόκριση `4xx` από το endpoint σας αντιμετωπίζεται ως μόνιμη αποτυχία και **δεν** θα γίνει retried. Μόνο αποκρίσεις `5xx` και timeouts ενεργοποιούν retries.
+4. Ελέγξτε τον έλεγχο του `X-Webhook-Secret` σας — μια απόκριση `4xx` από το endpoint σας, εκτός από `401`, `407`, `409` ή `429`, αντιμετωπίζεται ως μόνιμη αποτυχία και **δεν** θα γίνει retried. Αυτές οι τέσσερις, οι αποκρίσεις `5xx` και τα timeouts ενεργοποιούν retries.
 5. Ελέγξτε αν τα events ενεργοποιούνται καθόλου χρησιμοποιώντας το [Event Catalog](/el/events-catalog) για να επιβεβαιώσετε πότε θα έπρεπε να παράγονται τα events που περιμένετε.
 
 ## Εγγραφή σε όλα τα events
@@ -392,7 +392,7 @@ function verifyToken(received: string, expected: string): boolean {
 
 ```bash
 # TypeScript
-npx openapi-generator-cli generate -i eventbridge-schemas.yaml -g typescript-fetch -o ./generated
+npx @openapitools/openapi-generator-cli generate -i eventbridge-schemas.yaml -g typescript-fetch -o ./generated
 
 # Python
 openapi-generator-cli generate -i eventbridge-schemas.yaml -g python -o ./generated

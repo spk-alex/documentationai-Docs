@@ -331,7 +331,7 @@ SmartphoneKey delivers webhooks via AWS EventBridge API destinations, which retr
 | **Delivery model** | At-least-once |
 | **Retries** | Per the EventBridge API-destination retry policy (subject to change) |
 | **Retry backoff** | Exponential |
-| **Retry triggers** | `5xx` responses and timeouts |
+| **Retry triggers** | `5xx`, `401`, `407`, `409` and `429` responses, and timeouts |
 
 Because delivery is at-least-once, design your endpoint to be **idempotent** — use the `id` field in the EventBridge envelope as a deduplication key. Events that exhaust their retries are dropped; contact support if you need to recover missed events.
 
@@ -340,7 +340,7 @@ Because delivery is at-least-once, design your endpoint to be **idempotent** —
 Your endpoint must:
 
 - Return HTTP `2xx` within the timeout window to acknowledge receipt.
-- `4xx` responses are treated as permanent failures and are **not** retried.
+- `4xx` responses are treated as permanent failures and are **not** retried, except `401`, `407`, `409` and `429`, which are retried.
 - `5xx` responses or timeouts trigger a retry with exponential backoff.
 
 Returning `2xx` immediately and processing asynchronously is recommended for webhooks that trigger heavy work.
@@ -357,7 +357,7 @@ You may additionally filter by `detail-type` (event name) at subscription time. 
 - **Use HTTPS** — Only register HTTPS endpoints. HTTP is rejected outside the dev environment.
 - **Respond quickly** — Return `2xx` before doing heavy processing. Queue events for async processing if needed.
 - **Be idempotent** — The same event may be delivered more than once. Use `id` from the envelope for deduplication.
-- **Rotate secrets periodically** — Use **Replace webhook** in the Partner Portal to get a new secret. The new subscription is created before the old one is removed, so accept both secrets for a short overlap window.
+- **Rotate secrets periodically** — Use **Replace webhook** in the Partner Portal to get a new secret. The new subscription is created before the old one is removed, so accept both secrets for a short overlap window. Deliveries carrying the new secret can start as soon as the new subscription exists, so store the new secret the moment it is shown, and answer a secret mismatch with `401`, which is retried.
 
 ## Debugging Deliveries
 
@@ -366,7 +366,7 @@ If your endpoint is not receiving events:
 1. Confirm your endpoint returns `2xx` for a test POST.
 2. Check that your subscription includes the correct event types — pass `events: ['*']` to receive every event for your tenant.
 3. Verify your endpoint URL is reachable from the public internet (not localhost or a private network).
-4. Review your `X-Webhook-Secret` check — a `4xx` response from your endpoint is treated as a permanent failure and will **not** be retried. Only `5xx` responses and timeouts trigger retries.
+4. Review your `X-Webhook-Secret` check — a `4xx` response from your endpoint other than `401`, `407`, `409` or `429` is treated as a permanent failure and will **not** be retried. Those four, `5xx` responses and timeouts trigger retries.
 5. Check whether events are firing at all using the [Event Catalog](/events-catalog) to confirm when the events you expect should be generated.
 
 ## Subscribing to All Events
@@ -392,7 +392,7 @@ Generate a typed client:
 
 ```bash
 # TypeScript
-npx openapi-generator-cli generate -i eventbridge-schemas.yaml -g typescript-fetch -o ./generated
+npx @openapitools/openapi-generator-cli generate -i eventbridge-schemas.yaml -g typescript-fetch -o ./generated
 
 # Python
 openapi-generator-cli generate -i eventbridge-schemas.yaml -g python -o ./generated
