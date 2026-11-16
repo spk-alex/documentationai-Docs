@@ -1,24 +1,23 @@
 ---
 title: Onboarding Εταίρων
-description: Πώς οι εταίροι κάνουν onboarding μόνοι τους μέσω του Partner Portal, καθώς και το Admin API για αυτοματοποιημένο/scripted onboarding.
+description: Πώς οι εταίροι αποκτούν πρόσβαση από τη SmartphoneKey και λαμβάνουν το API key τους στο Partner Portal, καθώς και το Admin API για το προσωπικό.
 ---
 
-Η SmartphoneKey παραδίδει events στα συστήματα των εταίρων μέσω webhooks. Οι περισσότεροι εταίροι κάνουν onboarding μόνοι τους μέσω του [Partner Portal](/el/partner-portal): σύνδεση με Auth0, αντιγραφή του API key, ορισμός ενός webhook URL, τέλος. Αν χρειάζεστε scripted ή αυτοματοποιημένο onboarding — ή οποιαδήποτε αλλαγή πέρα από το URL (φίλτρο events, περιστροφή secret, πολλαπλά webhooks) — διατίθεται ένα Admin API, το οποίο τεκμηριώνεται παρακάτω σε αυτή τη σελίδα.
+Η SmartphoneKey παραδίδει events στα συστήματα των εταίρων μέσω webhooks, και οι εταίροι καλούν το API με ένα API key. **Οι εταίροι δεν μπορούν να εγγραφούν μόνοι τους**: η SmartphoneKey δημιουργεί τον οργανισμό σας και τον λογαριασμό χρήστη σας, και στη συνέχεια λαμβάνετε το API key σας στη σελίδα [Partner Portal](/el/partner-portal) του SmartphoneKey Admin Panel (Odoo).
 
-## Quickstart: Self-Service μέσω του Partner Portal
+## Πώς γίνεται το onboarding
 
-Για εταίρους που έχουν ήδη λογαριασμό SmartphoneKey στο Auth0:
+1. **Επικοινωνήστε με τον Vitalii στη SmartphoneKey** (`vitalii@smartphonekey.com`) και ζητήστε πρόσβαση εταίρου.
+2. **Ο Vitalii δημιουργεί τον οργανισμό σας και έναν λογαριασμό χρήστη** με τον ρόλο Partner, και σας στέλνει τα στοιχεία σύνδεσης.
+3. **Συνδεθείτε στο Admin Panel και ανοίξτε την κάρτα Partner Portal** στην αρχική σελίδα του portal σας.
+4. **Καταχωρήστε το organization ID σας.** Επιλέξτε το `orgId` που ταυτοποιεί την πλατφόρμα σας σε κάθε κλήση API και webhook. Δεν μπορεί να αλλάξει αργότερα.
+5. **Δημιουργήστε το API key σας και αντιγράψτε το.** Ολόκληρο το key εμφανίζεται μόνο μία φορά — αποθηκεύστε το στον secret manager σας τώρα. Μετά από αυτό, είναι ορατή μόνο μια μασκαρισμένη προεπισκόπηση.
+6. **Καταχωρήστε το webhook σας.** Εισαγάγετε το HTTPS endpoint που θα λαμβάνει events και επιλέξτε τα events που θέλετε. Το secret του webhook εμφανίζεται επίσης μία φορά.
+7. **Τέλος — τα events αρχίζουν να φτάνουν** στο URL σας για το `orgId` σας.
 
-1. **Επισκεφθείτε το partner portal για το περιβάλλον σας.** Για παράδειγμα, το dev βρίσκεται στο `https://partner-portal.spk-dev.workers.dev/`. (Κάθε περιβάλλον έχει το δικό του URL portal — ο account manager σας θα σας δώσει το σωστό για stage / nonprod / prod.)
-2. **Συνδεθείτε με Auth0.** Κάντε κλικ στο **Sign in with Auth0** και ολοκληρώστε τη ροή OIDC.
-3. **Ολοκληρώστε το onboarding (μόνο στην πρώτη σύνδεση).** Οι νέοι εταίροι οδηγούνται σε μια σύντομη φόρμα onboarding για να επιλέξουν ένα **organization ID** και όνομα. Η υποβολή της καταχωρεί τον tenant σας και εκδίδει το αρχικό σας API key.
-4. **Αντιγράψτε το API key που εμφανίζεται μία φορά.** Ολόκληρο το key εμφανίζεται μόνο μία φορά, στον πίνακα ελέγχου, αμέσως μετά την έκδοσή του — αντιγράψτε το και αποθηκεύστε το στον secret manager σας τώρα. Μετά από αυτό, είναι ορατό μόνο ένα μασκαρισμένο πρόθεμα.
-5. **Ορίστε το webhook URL σας στον πίνακα ελέγχου.** Εισαγάγετε το HTTPS endpoint του συστήματός σας που θα λαμβάνει events.
-6. **Τέλος — τα events αρχίζουν να φτάνουν.** Το webhook σας δημιουργείται με κατάσταση `active`, και τα events για το `orgId` σας παραδίδονται στο URL σας.
+Μπορείτε να επιστρέψετε στο Partner Portal ανά πάσα στιγμή για να περιστρέψετε το API key, να αλλάξετε το webhook URL ή να αντικαταστήσετε το webhook.
 
-Μπορείτε να επιστρέψετε στον πίνακα ελέγχου ανά πάσα στιγμή για να περιστρέψετε το API key ή να ενημερώσετε το webhook URL.
-
-Δείτε το [Partner Portal](/el/partner-portal) για την πλήρη ξενάγηση στο περιβάλλον.
+Δείτε το [Partner Portal](/el/partner-portal) για την πλήρη ξενάγηση.
 
 ## Λήψη events
 
@@ -26,21 +25,23 @@ description: Πώς οι εταίροι κάνουν onboarding μόνοι το�
 
 Για τις μορφές των payload, την αυθεντικοποίηση παράδοσης, τη συμπεριφορά retry και τις βέλτιστες πρακτικές ασφάλειας, δείτε [Ρύθμιση Webhooks](/el/events-webhooks) και το [Event Catalog](/el/events-catalog).
 
-## Τι μπορούν να κάνουν οι εταίροι χωρίς βοήθεια διαχειριστή
+## Ποιος κάνει τι
 
-| Ενέργεια | Self-Service (Portal) | Admin API |
-|--------|-----------------------|-----------|
-| Καταχώρηση tenant + δημιουργία αρχικού API key | Ναι (μέσω φόρμας onboarding στην πρώτη σύνδεση) | Ναι (`POST /tenants/{orgId}/register`, μετά `POST /api-keys`) |
-| Προβολή μασκαρισμένου API key | Ναι | Ναι (list/get tenants) |
-| Περιστροφή API key | Ναι | Ναι |
-| Ορισμός/ενημέρωση webhook URL | Ναι | Ναι |
-| Ενημέρωση φίλτρου events | Όχι | Ναι (admin-only) |
-| Περιστροφή webhook secret | Όχι | Ναι (admin-only) |
-| Πολλαπλά webhooks ανά εταίρο | Όχι | Ναι (admin-only) |
+| Ενέργεια | Εταίρος (Partner Portal) | SmartphoneKey |
+|--------|--------------------------|---------------|
+| Δημιουργία του οργανισμού και του λογαριασμού χρήστη Partner | Όχι — επικοινωνήστε με τον Vitalii | Ναι |
+| Καταχώρηση του organization ID (`orgId`) | Ναι | Ναι |
+| Δημιουργία του πρώτου API key | Ναι | Ναι |
+| Προβολή μασκαρισμένου API key | Ναι | Ναι |
+| Περιστροφή API key | Ναι, αφού η SmartphoneKey ανακαλέσει το τρέχον key | Ναι |
+| Καταχώρηση webhook και επιλογή των events του | Ναι | Ναι |
+| Ενημέρωση webhook URL | Ναι | Ναι |
+| Αλλαγή events ή νέο webhook secret | Ναι (**Replace webhook**) | Ναι |
+| Πολλαπλά webhooks ανά εταίρο | Όχι | Ναι |
 
-## Προγραμματιστικό onboarding (Admin API)
+## Admin API (μόνο για το προσωπικό της SmartphoneKey)
 
-Το υπόλοιπο αυτής της σελίδας τεκμηριώνει το Admin API. Χρησιμοποιήστε το για αυτοματισμό, integration tests ή λειτουργίες διαχειριστή που δεν καλύπτει το portal (φίλτρα events, περιστροφή secret, πολλαπλά webhooks ανά εταίρο).
+Το υπόλοιπο αυτής της σελίδας τεκμηριώνει το Admin API που χρησιμοποιεί το προσωπικό της SmartphoneKey για αυτοματοποίηση, integration tests και λειτουργίες που δεν καλύπτει το portal. Απαιτεί διαπιστευτήρια προσωπικού της SmartphoneKey — οι εταίροι δεν μπορούν να το καλέσουν.
 
 ### Προαπαιτούμενα
 
@@ -123,7 +124,8 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
     "events": [
       "LockCreated",
       "KeyAdded"
-    ]
+    ],
+    "secret": "'"$WEBHOOK_SECRET"'"
   }'
 ```
 
@@ -138,7 +140,7 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 
 **Σημειώσεις:**
 - Το URL πρέπει να είναι HTTPS σε production (επιτρέπεται HTTP σε dev)
-- Δημιουργείται αυτόματα ένα webhook secret αν δεν παρασχεθεί
+- Στείλτε το δικό σας `secret` (μια μεγάλη τυχαία τιμή, δημιουργημένη για αυτό το webhook) και δώστε το στον εταίρο μέσω ασφαλούς καναλιού: με αυτό συγκρίνει το `X-Webhook-Secret`. Η απόκριση δεν επιστρέφει το secret, οπότε ένα που δημιουργείται αυτόματα επειδή δεν στάλθηκε κανένα δεν μπορεί να δοθεί στον εταίρο.
 - Το webhook υποστηρίζεται από το AWS EventBridge — events που ταιριάζουν με το `orgId` του εταίρου παραδίδονται στο URL
 
 #### Διαθέσιμοι τύποι event
@@ -225,7 +227,7 @@ curl "https://admin-api.spk-dev.workers.dev/tenants" \
 
 ## Επόμενα βήματα
 
-- [Partner Portal](/el/partner-portal) — Self-service περιβάλλον για εταίρους ώστε να βλέπουν το key τους και να ενημερώνουν το webhook URL τους
+- [Partner Portal](/el/partner-portal) — Όπου οι εταίροι λαμβάνουν το API key τους και διαχειρίζονται το webhook τους
 - [Επισκόπηση Events](/el/events-overview) — Κατανοήστε πώς η SmartphoneKey δημοσιεύει events μέσω EventBridge
 - [Ρύθμιση Webhooks](/el/events-webhooks) — Πλήρης ρύθμιση webhook: αυθεντικοποίηση, παράδοση, συμπεριφορά retry και βέλτιστες πρακτικές ασφάλειας
 - [Event Catalog](/el/events-catalog) — Πλήρης αναφορά για τα payload events με τη μεγαλύτερη αξία

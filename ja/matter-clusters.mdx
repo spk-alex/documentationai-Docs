@@ -1,0 +1,547 @@
+---
+title: Matter デバイスの属性とコマンド
+description: SmartphoneKey の Matter デバイスが備える Matter クラスターの属性、デバイス情報フィールド、およびサポートされるコマンドについて説明します。
+---
+
+# Matter クラスター ドキュメント
+
+## Matter とは
+
+Matter は、スマートデバイスの相互運用性を実現するための標準規格です。ベンダーごとにまったく異なるデバイスデータモデルを考案するのではなく、Matter が共通の構造を定義することで、コントローラー、アプリ、ハブ、クラウドシステムがデバイスを予測可能な形で理解できるようになります。
+
+最も重要な構成要素は次のとおりです。
+
+- **ノード (Node)**: ネットワーク上の物理デバイス全体です。
+- **エンドポイント (Endpoint)**: デバイスの機能上の一部分です。1 つの物理製品が複数のエンドポイントを公開することがあります。
+- **クラスター (Cluster)**: 関連する機能やプロパティをまとめたグループです。クラスターは、*Door Lock*、*Battery*、*Temperature Measurement* のようなトピック領域だと考えてください。
+- **属性 (Attribute)**: クラスター内の特定の 1 つの値です。たとえば `LockState` や `BatVoltage` があります。
+- **コマンド (Command)**: クラスターに送信できるアクションです。たとえばロックデバイスの施錠/解錠があります。
+
+## 表の読み方
+
+- **エンドポイント** は、その行がデバイスのどの機能部分に属するかを示します。
+- **クラスター** は、人が読めるクラスター名と、その後ろの括弧内に数値 ID を示します。例: `Basic Information (40)`。
+- **属性** は、クラスターが公開する正確なプロパティです。
+- **パス** は `endpoint/cluster/attribute` の形式で、インラインコードとして表示されます。
+
+各属性の詳しい意味、値のセマンティクス、および例は、各表の下にある展開可能なカードに記載しています。
+
+## 初めての方への重要な注意
+
+クラスターはデバイスタイプと同じものではありません。
+
+たとえば、**Boolean State** クラスターが返すのは `true/false` の値だけです。この値の意味は、エンドポイントのデバイスタイプによって大きく異なります。
+
+- 接触センサーの場合は、**開/閉** を意味することがあります
+- 漏水センサーの場合は、**漏水あり/漏水なし** を意味することがあります
+
+そのため、Matter のデータは常に次の両方を用いて解釈する必要があります。
+
+1. クラスターと属性
+2. エンドポイントの役割 / デバイスタイプのコンテキスト
+
+## デバイス情報データ
+
+このセクションでは、Matter デバイスのクラスターが報告する値について説明します。これらのフィールドは、インベントリ、状態シャドウ、診断、電源状態、センサー測定値に使用されるデータ属性です。コマンドではありません。
+
+### ルートデバイス / システム情報
+
+これらの行は、デバイス全体の識別情報と、診断およびネットワーク管理に関する情報を表します。インベントリ、トラブルシューティング、サポートにとって重要ですが、ユーザーが直接利用するロックの主要機能を制御するものではありません。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Basic Information (40) | VendorName | `0/40/1` |
+| Basic Information (40) | ProductName | `0/40/3` |
+| Basic Information (40) | HardwareVersionString | `0/40/8` |
+| Basic Information (40) | SoftwareVersionString | `0/40/10` |
+| Basic Information (40) | ManufacturingDate/DateCode | `0/40/11` |
+| Basic Information (40) | SerialNumber | `0/40/15` |
+| Basic Information (40) | VendorID | `0/40/2` |
+| Basic Information (40) | ProductURL | `0/40/14` |
+| General Diagnostics (51) | UpTime | `0/51/2` |
+| General Diagnostics (51) | TotalOperationalHours | `0/51/3` |
+| General Diagnostics (51) | BootReason | `0/51/4` |
+| Thread Network Diagnostics (53) | NeighborTable | `0/53/7` |
+| Thread Network Diagnostics (53) | RoutingRole | `0/53/1` |
+| Thread Network Diagnostics (53) | NetworkName | `0/53/2` |
+| Wi-Fi Network Diagnostics (54) | RSSI | `0/54/4` |
+| ICD Management (70) | IdleModeDuration | `0/70/0` |
+| ICD Management (70) | ActiveModeDuration | `0/70/1` |
+| ICD Management (70) | ActiveModeThreshold | `0/70/2` |
+| ICD Management (70) | UserActiveModeTriggerHint | `0/70/6` |
+| ICD Management (70) | UserActiveModeTriggerInstruction | `0/70/7` |
+
+## フィールドの詳細
+
+**VendorName** — 人が読めるベンダー名です。例: `"SmartphoneKey Systems Inc"`。文字列値です。列挙値ではありません。デバイスが報告するベンダーの表示名であるため、メーカーごとに異なるテキストが返されます。
+
+**ProductName** — 人が読める製品名です。例: `"SmartphoneKey Reader"`。文字列値です。ノードが公開する製品/モデルの表示名であり、デバイスタイプの列挙値ではありません。
+
+**HardwareVersionString** — ハードウェアバージョンの文字列です。例: `"release"`。文字列値です。通常は、人が読めるハードウェアリビジョン、基板リビジョン、またはリリースラベルです。ベンダー定義のテキストとして扱ってください。
+
+**SoftwareVersionString** — ソフトウェア/ファームウェアバージョンの文字列です。例: `"1.26.1+1"`。文字列値です。通常はファームウェア/ソフトウェアのバージョンです。ベンダーがセマンティックバージョン、ビルドメタデータ、独自のラベルを含めることがあるため、テキストとして扱ってください。
+
+**ManufacturingDate/DateCode** — デバイスが提供する製造日または日付コードです。例: `"20250903"`。文字列/日付コードの値です。形式はベンダーが決めます。このエクスポートでは `YYYYMMDD` のように見えますが、すべてのデバイスが同じ形式を使うとは想定しないでください。
+
+**SerialNumber** — シリアル番号の文字列です。例: `"11064672519639222187"`。文字列値です。物理的なシリアル番号です。数値のように見えることがありますが、先頭のゼロや書式が失われないようにテキストとして保存してください。
+
+**VendorID** — ベンダー識別子です。例: `4619`。Matter/CSA のベンダー ID 割り当てプロセスで付与される数値のベンダー識別子です。数値として保存しますが、エンジニアリングログでは 16 進数表示も役立ちます。
+
+**ProductURL** — 製品 URL です (実装されている場合)。例: `""`。実装されている場合は URL の文字列値です。空文字列は、デバイスが製品/サポートの URL を提供していないことを意味します。
+
+**UpTime** — 現在の稼働時間です。例: `588758`。秒単位の数値です。この例は、デバイスが最後の起動から 588,758 秒間稼働していることを意味します。値が急に小さくなった場合は、通常、ノードが最近再起動したことを示します。
+
+**TotalOperationalHours** — 総稼働時間です。例: `163`。時間単位の数値です。この例は、デバイスが合計 163 時間の稼働を報告していることを意味します。デバイスが値を永続化している場合、この値は累積されます。
+
+**BootReason** — 直近の起動の理由です。例: `6`。列挙値です。Matter での一般的な意味は `0 = Unspecified`、`1 = PowerOnReboot`、`2 = BrownOutReset`、`3 = SoftwareWatchdogReset`、`4 = HardwareWatchdogReset`、`5 = SoftwareUpdateCompleted`、`6 = SoftwareReset` です。この例の `6` は、ソフトウェアによるリセット/再起動を意味します。
+
+<Callout type="warning">
+Thread Network Diagnostics (クラスター <code>53</code>) は、現在のブリッジではデバイスの状態シャドウから除外されています。そのため、上記の <code>0/53/&#42;</code> の行は、ブリッジがノードから読み取る内容を表すものであり、シャドウ内に存在するキーではありません。<a href="/matter_cluster_53_thread_network_diagnostics">Cluster 53 — Thread Network Diagnostics</a> を参照してください。Wi-Fi 診断 (<code>0/54/&#42;</code>) はシャドウに反映されます。<a href="/matter_cluster_54_wifi_network_diagnostics">Cluster 54 — Wi-Fi Network Diagnostics</a> を参照してください。
+</Callout>
+
+**NeighborTable** — ネイバーテーブルのエントリです。例: `[{"averageRssi": -25, ...}]`、または簡略化して `[-25]`。テーブル/リストの値です。各エントリは Thread のネイバー 1 つを表します。RSSI 値は通常、負の dBm です。0 に近いほど強く、`-25` 前後は非常に強い、`-50` は良好、`-70` は弱い信号です。
+
+**RoutingRole** — 現在の Thread ルーティングロールです。例: `6`。Thread のロールを表す列挙値です。一般的な値は、実装や仕様のバージョンに応じて、無効、デタッチ、チャイルド/エンドデバイス、ルーター、リーダー、ボーダールーター対応ロールといった状態を表します。主に診断用であり、ビジネス上の状態としては使用しないでください。
+
+**NetworkName** — Thread ネットワーク名です。例: `"OpenThread-952e"`。文字列値です。デバイスが正しいネットワークに参加していれば、想定している Thread メッシュの名前と一致するはずです。
+
+**RSSI** — 受信信号強度インジケーターです。例: `nan`。報告される場合は dBm 単位の数値です。Wi-Fi の RSSI は通常負の値で、0 に近いほど強い信号です。`nan`、null、または値がない場合は、通常、Wi-Fi が使用されていないか、デバイスが値を報告していないことを意味します。
+
+**IdleModeDuration** — ICD 動作におけるアイドルモードの継続時間です。例: `300`。秒単位の数値です。ICD デバイスでは、デバイスがスリープしたり、すぐには到達できなくなったりする可能性があるアイドルモードの間隔を表します。
+
+**ActiveModeDuration** — ICD 動作におけるアクティブモードの継続時間です。例: `300`。Matter の ICD 定義ではミリ秒単位の数値です。ウェイク/アクティブ動作の後、アイドル動作に戻るまでにデバイスがアクティブモードにとどまる時間を表します。
+
+**ActiveModeThreshold** — アクティブモードに入るためのしきい値です。例: `300`。ミリ秒単位の数値のしきい値です。ICD 動作において、アクティブモードのタイミングや応答性を決めるために使用されます。値が大きいほど、通常はデバイスが応答可能な時間が長くなりますが、バッテリーに影響することがあります。
+
+**UserActiveModeTriggerHint** — アクティブモードを起動する方法を示すヒントです。例: `4381`。ビットマップ/ビットマスクの値です。各ビットは、デバイスをウェイクまたはアクティブ化できるユーザー操作の候補を示します。単一の数値としてではなく、フラグとしてデコードしてください。人が読める手順については `UserActiveModeTriggerInstruction` と組み合わせて使用します。
+
+**UserActiveModeTriggerInstruction** — ユーザーがアクティブモードを起動するための手順テキストです。例: `"Restart the application"`。文字列値です。ユーザーがアクティブモードを起動する方法を説明する、人が読める手順です。必要に応じてそのまま表示できるテキストです。
+
+### ドアロック / アクセス制御
+
+これらの行は、デバイスのアクセス制御の動作を表します。入退室ロジック、クレデンシャル、リモート操作、物理セキュリティの動作を扱うチームにとって、ビジネス上最も重要なグループです。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Door Lock (257) | LockState | `1/257/0` |
+| Door Lock (257) | NumberOfTotalUsersSupported | `1/257/17` |
+| Door Lock (257) | NumberOfPINUsersSupported | `1/257/18` |
+| Door Lock (257) | NumberOfCredentialsSupportedPerUser | `1/257/23` |
+| Door Lock (257) | AutoRelockTime | `1/257/27` |
+| Door Lock (257) | SoundVolume | `1/257/28` |
+| Door Lock (257) | LEDSettings | `1/257/41` |
+| Door Lock (257) | AutoRelockBehavior | `1/257/43` |
+| Door Lock (257) | WrongCodeEntryLimit | `1/257/48` |
+| Door Lock (257) | UserCodeTemporaryDisableTime | `1/257/49` |
+| Door Lock (257) | RequirePINforRemoteOperation | `1/257/51` |
+
+
+### バッテリー / 電源
+
+これらの行は、デバイスの給電方法と、メンテナンスが必要かどうかを表します。現場のサポートチームや、バッテリーの状態を表示する必要があるプラットフォームにとって特に重要です。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Power Source (47) | Status | `1/47/0` |
+| Power Source (47) | BatVoltage | `1/47/11` |
+| Power Source (47) | BatPercentRemaining | `1/47/12` |
+| Power Source (47) | BatChargeLevel | `1/47/14` |
+| Power Source (47) | BatReplacementNeeded | `1/47/15` |
+| Power Source (47) | BatReplacementDescription | `1/47/19` |
+| Power Source (47) | BatReplacementNeededLevel | `1/47/24` |
+| Power Source (47) | BatQuantity | `1/47/25` |
+
+
+### 湿度センサー
+
+これらの行は、環境の湿度測定データを示します。主な製品はリーダー/ロック向けのデバイスですが、このエクスポートでは 1 つのエンドポイントで湿度の測定情報も公開されています。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Relative Humidity Measurement (1029) | MeasuredValue | `1/1029/0` |
+
+**MeasuredValue** — 現在の相対湿度の測定値です。例: `3011`。100 分の 1 パーセント単位の湿度の数値です。`value / 100` で変換するため、`3011` は `30.11% RH` を意味します。
+
+### 在室 / 人感センサー
+
+これらの行は、エンドポイントが現在、在室や人の存在を検知しているかどうかを示します。通常は、ロックの中核となるワークフローよりも、自動化や監視システムで使用されます。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Occupancy Sensing (1030) | Occupancy | `1/1030/0` |
+
+**Occupancy** — 現在の在室/人感の状態です。例: `0`。ビットマップ値です。ビット 0 は在室/人の存在を検知したことを示します。`0` は在室を検知していないこと、`1` は在室していることを意味します。今後追加されるビットが、ほかの検知モードを表す可能性があります。
+
+### 接触センサーとしての解釈
+
+このセクションでは、接触センサー/ドアセンサーとして解釈される Boolean State の行を取り上げます。Boolean State の解釈にはデバイスタイプのコンテキストが必要であることを示すため、意図的に分けています。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Boolean State (69) | StateValue | `1/69/0` |
+
+**StateValue** — 2 値の状態値です。このドアセンサーでは、接点の開/閉状態に対応します。例: `true`。ブール値です。接触センサーのエンドポイントでは、エンドポイントのコンテキストに基づいて対応付けます。一般的には `true = closed/contact inactive`、`false = open/contact active` ですが、対象デバイスの実際の動作で確認してください。
+
+### 漏水センサーとしての解釈
+
+このセクションでは、漏水として解釈される Boolean State の行を取り上げます。同じ Boolean State クラスターがまったく異なる現実の状態を表し得ることを示すため、意図的に分けています。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Boolean State (69) | StateValue | `1/69/0` |
+
+<ExpandableGroup>
+  <Expandable title="StateValue">
+
+2 値の状態値です。この解釈では、エンドポイントが Water Leak Detector を報告しているため、漏水の状態に対応します。例: `false`。ブール値です。漏水検知器のエンドポイントでは、通常、`true` は漏水を検知/アラーム作動中、`false` は漏水を検知していないことを意味します。
+
+  </Expandable>
+</ExpandableGroup>
+
+### 温度センサー
+
+これらの行は、温度を報告するエンドポイントの温度測定データを示します。湿度と同様に、生の値をエンドユーザーに表示するには通常、変換が必要です。
+
+| クラスター | 属性 | パス |
+| --- | --- | --- |
+| Temperature Measurement (1026) | MeasuredValue | `2/1026/0` |
+
+**MeasuredValue** — 現在の温度の測定値です。例: `2591`。摂氏 100 分の 1 度単位の温度の数値です。`value / 100` で変換するため、`2591` は `25.91 °C` を意味します。
+
+### 煙検知器
+
+これらの行は、エンドポイントが現在、自身で煙を検知しているか、または連動する別の煙検知器から煙アラームの状態を受信しているかを示します。
+
+| クラスター | 属性 | パス |
+|---|---|---|
+| Smoke CO Alarm (92) | SmokeState | `1/92/1` |
+| Smoke CO Alarm (92) | InterconnectSmokeAlarm | `1/92/8` |
+
+**SmokeState** — この検知器自身のローカルな煙の状態です。
+
+```text
+0 = Normal / no local smoke detected
+1 = Warning / local smoke warning
+2 = Critical / local smoke alarm
+```
+
+**InterconnectSmokeAlarm** — 同じ連動アラームグループ内の別の検知器から受信した煙アラームの状態です。
+
+```text
+0 = Normal / no interconnected smoke alarm
+1 = Warning / another detector reports smoke warning
+2 = Critical / another detector reports critical smoke alarm
+```
+
+#### 違い
+
+`SmokeState` は、この検知器自身が煙を検知していることを意味します。
+
+`InterconnectSmokeAlarm` は、連動している別の検知器が煙を報告しており、この検知器がそのアラーム状態を公開していることを意味します。
+
+例:
+
+```json
+{
+  "1/92/1": 0,
+  "1/92/8": 2
+}
+```
+
+この例は、この検知器自身は煙を検知していないものの、連動している別の検知器が重大な煙アラームを報告していることを意味します。
+
+#### 解釈
+
+| `1/92/1` SmokeState | `1/92/8` InterconnectSmokeAlarm | ローカルの煙 | 連動先の煙 | 最終的な状態 |
+|---|---|---|---|---|
+| `0` | `0` | なし | なし | 正常 / 煙の検知なし |
+| `1` | `0` | 警告 | なし | ローカルの煙警告 |
+| `2` | `0` | 重大 | なし | ローカルの重大な煙アラーム |
+| `0` | `1` | なし | 警告 | 別の検知器が煙警告を報告 |
+| `0` | `2` | なし | 重大 | 別の検知器が重大な煙アラームを報告 |
+| `1` | `1` | 警告 | 警告 | ローカルおよび連動先の煙警告 |
+| `1` | `2` | 警告 | 重大 | 連動先の重大な煙アラームが作動中 |
+| `2` | `1` | 重大 | 警告 | ローカルの重大な煙アラームが作動中 |
+| `2` | `2` | 重大 | 重大 | 重大な煙アラームが作動中 |
+
+## サポートされるコマンド
+
+このセクションでは、コマンドの対応状況について説明します。これらのフィールドは、デバイスがアクションとして受け付けられる内容を表します。Matter では、コマンドのサポートは通常、グローバル属性 `AcceptedCommandList` から検出します。パスの形式は `endpoint/cluster/65529` です。
+
+このセクションは **デバイス情報データ** とは区別して使用してください。
+
+- **デバイス情報データ** = デバイスが報告する属性です。例: `0/40/1`、`1/257/0`、`1/47/12`。
+- **サポートされるコマンド** = デバイス/クラスターが受け付けるアクションです。例: `LockDoor`、`UnlockDoor`、`GetUser`、または一般的なコミッショニングコマンド。
+
+### Matter のコマンド対応状況フィールド
+
+Matter は、クラスターのグローバル属性を通じてコマンドの対応状況を公開します。`endpoint/cluster/attribute` 形式で最も重要なコマンド対応状況のパスは次のとおりです。
+
+| 属性 ID | 16 進数 | 属性名 | 意味 |
+| --- | --- | --- | --- |
+| 65529 | `0xFFF9` | AcceptedCommandList | このクラスターサーバーが受け付けるコマンド ID のリスト。ブリッジ/API がコマンドを送信できるかどうかの判断に使用します。 |
+| 65528 | `0xFFF8` | GeneratedCommandList | このクラスターが応答/イベントとして生成し得るコマンド ID のリスト。コマンド応答の処理に役立ちますが、対応状況を確認する主な手段ではありません。 |
+
+パスの例: `0/49/65529` は、エンドポイント `0`、クラスター `49`、属性 `65529` を意味します。これにより、Network Commissioning クラスターがエンドポイント `0` で受け付けるコマンドがわかります。
+
+### すべての Matter デバイスタイプに共通するエンドポイント 0 のコマンド
+
+エンドポイント `0` は、ルート/システムエンドポイントです。これらのコマンドはロック固有のものではありません。Matter に共通する、システム、コミッショニング、診断、セキュリティ、ファブリック管理の機能です。どのデバイスタイプでも、対応状況に応じてこれらのクラスターの一部を公開することがあります。
+
+| パス | クラスター ID | クラスター名 | 受け付けるコマンド ID | デコードしたコマンド | 意味 |
+| --- | ---: | --- | --- | --- | --- |
+| `0/48/65529` | 48 / `0x0030` | General Commissioning | `[0, 2, 4]` | `0 / 0x00 = ArmFailSafe`<br />`2 / 0x02 = SetRegulatoryConfig`<br />`4 / 0x04 = CommissioningComplete` | デバイスは標準のコミッショニング安全フローをサポートします。これらのコマンドは、デバイスを Matter ファブリックに追加する際に使用されます。 |
+| `0/49/65529` | 49 / `0x0031` | Network Commissioning | `[0, 3, 4, 6, 8]` | `0 / 0x00 = ScanNetworks`<br />`3 / 0x03 = AddOrUpdateThreadNetwork`<br />`4 / 0x04 = RemoveNetwork`<br />`6 / 0x06 = ConnectNetwork`<br />`8 / 0x08 = ReorderNetwork` | デバイスはネットワークコミッショニングの操作をサポートします。このリストには `AddOrUpdateThreadNetwork` があり、Wi-Fi ネットワーク用のコマンドがないため、Thread のコミッショニング機能と考えられます。 |
+| `0/50/65529` | 50 / `0x0032` | Diagnostic Logs | `[0]` | `0 / 0x00 = RetrieveLogsRequest` | デバイスに利用可能なログがあれば、コントローラーはデバイスに診断ログを要求できます。 |
+| `0/51/65529` | 51 / `0x0033` | General Diagnostics | `[0, 1]` | `0 / 0x00 = TestEventTrigger`<br />`1 / 0x01 = TimeSnapshot` | デバイスは診断コマンドをサポートします。主にテスト、認証、トラブルシューティング、時刻スナップショットによる診断に役立ちます。 |
+| `0/53/65529` | 53 / `0x0035` | Thread Network Diagnostics | `[0]` | `0 / 0x00 = ResetCounts` | コントローラーは Thread の診断カウンターをリセットできます。診断専用であり、デバイスの主要機能を制御するものではありません。 |
+| `0/60/65529` | 60 / `0x003C` | Administrator Commissioning | `[0, 1, 2]` | `0 / 0x00 = OpenCommissioningWindow`<br />`1 / 0x01 = OpenBasicCommissioningWindow`<br />`2 / 0x02 = RevokeCommissioning` | デバイスはコミッショニングウィンドウを開いたり、取り消したりできます。別のコントローラー/管理者を追加する場合や、デバイスをコミッショニングモードに戻す場合に使用されます。 |
+| `0/62/65529` | 62 / `0x003E` | Operational Credentials | `[0, 2, 4, 6, 7, 9, 10, 11]` | `0 / 0x00 = AttestationRequest`<br />`2 / 0x02 = CertificateChainRequest`<br />`4 / 0x04 = CSRRequest`<br />`6 / 0x06 = AddNOC`<br />`7 / 0x07 = UpdateNOC`<br />`9 / 0x09 = UpdateFabricLabel`<br />`10 / 0x0A = RemoveFabric`<br />`11 / 0x0B = AddTrustedRootCertificate` | デバイスは Matter のファブリック/セキュリティ証明書の操作をサポートします。これらのコマンドは、コミッショニング、ファブリックのセットアップ、マルチ管理者、運用クレデンシャルの管理で使用されます。 |
+| `0/63/65529` | 63 / `0x003F` | Group Key Management | `[0, 1, 3, 4]` | `0 / 0x00 = KeySetWrite`<br />`1 / 0x01 = KeySetRead`<br />`3 / 0x03 = KeySetRemove`<br />`4 / 0x04 = KeySetReadAllIndices` | デバイスは、安全な Matter グループ通信のためのグループキー管理をサポートします。ユーザー向けのデバイス操作ではありません。 |
+
+ブリッジの実装では、これらのエンドポイント `0` のコマンドリストは通常、システム機能として扱ってください。コミッショニング、診断、ネットワーク設定、ファブリック管理には役立ちますが、施錠/解錠、温度の読み取り、漏水状態のような通常のユーザーコマンドとして公開すべきではありません。
+
+### Door Lock クラスターでサポートされるコマンド
+
+Door Lock クラスターには、ロックの操作、ユーザー/PIN/RFID の管理、スケジュール、クレデンシャル、ログ、Aliro リーダーの設定のためのコマンドセットがあります。重要: 実際のロックは、これらのコマンドの一部しかサポートしていないことがあります。特定のデバイスが何をサポートしているかを知るには、ロックのエンドポイントでクラスター `257` の標準グローバル属性 `AcceptedCommandList` を読み取ってください。`endpoint/cluster/attribute` 形式を使用する場合、たとえばパスは `1/257/65529` です。
+
+python-matter-server / ブリッジを使用する場合、コマンドは通常、ロックのエンドポイント (通常はエンドポイント `1`) のクラスター `257` に送信します。AWS IoT のペイロードでは、ブリッジが `device_uuid -> node_id` を解決したうえで、`node_id`、`endpoint_id`、クラスターのコマンド名、コマンド固有の引数を指定してコマンドを送信する必要があります。
+
+| コマンド ID | 16 進数 | コマンド名 | 分野 | 動作 | 一般的な引数 / 値の詳細 |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 0x00 | LockDoor | ロック操作 | ドアを施錠します。 | 通常は引数なし。`RequirePINforRemoteOperation` が `true` の場合、一部のロックでは `PINCode` が必要になることがあります。ロックが利用不可、ブロック中、すでに動作中、または追加のクレデンシャルデータが必要な場合はコマンドが失敗することがあるため、結果を確認してください。 |
+| 1 | 0x01 | UnlockDoor | ロック操作 | ドアを解錠します。 | ロックがリモート操作に PIN を要求する場合を除き、通常は引数なし。セキュリティ上重要なコマンドです。API では管理されたリモート操作として扱い、誰が/何が実行したかを記録してください。 |
+| 2 | 0x02 | Toggle | ロック操作 | 施錠状態と解錠状態を切り替えます。 | 通常は引数なし。結果が現在の物理的な状態に依存するため、目的の状態を正確に指定する必要があるクラウド/API ワークフローには推奨されません。確定的な動作を得るには `LockDoor` または `UnlockDoor` を使用してください。 |
+| 3 | 0x03 | UnlockWithTimeout | ロック操作 | ドアを一時的に解錠します。タイムアウト後、ロックは再施錠されます。 | 一般的な引数: SDK のバインディングに応じて `timeout` または `timeoutInSeconds`。値は継続時間で、通常は秒単位です。恒久的な解錠ではなく、一時的なアクセスを与えたい場合に使用します。 |
+| 4 | 0x04 | GetLogRecord | 監査/ログ | サポートされている場合、ロックの監査ログからログレコードを 1 件読み取ります。 | 一般的な引数: `logIndex`。トラブルシューティングや監査履歴に使用します。多くのコンシューマー向けロックは、完全なログ取得を実装していないことがあります。 |
+| 5 | 0x05 | SetPINCode | レガシー PIN 管理 | レガシー PIN スロットの PIN コードを作成または更新します。 | 一般的な引数は `userIndex`、`userStatus`、`userType`、`pinCode` など。PIN 専用の旧式の API です。新しいロックでは `SetUser` と `SetCredential` の組み合わせが推奨されることがあります。 |
+| 6 | 0x06 | GetPINCode | レガシー PIN 管理 | サポートされている場合、ユーザー/スロットの PIN 情報を読み取ります。 | 一般的な引数: `userIndex`。コマンドが存在していても、セキュリティ上の理由から秘密の PIN 情報を意図的に返さないデバイスがあります。 |
+| 7 | 0x07 | ClearPINCode | レガシー PIN 管理 | PIN コード/ユーザー PIN スロットを 1 つ消去します。 | 一般的な引数: `userIndex`。その PIN スロットのアクセス権が削除されるため、慎重に使用してください。 |
+| 8 | 0x08 | ClearAllPINCodes | レガシー PIN 管理 | すべての PIN コードを消去します。 | 通常は引数なし。危険な一括操作です。PIN によるアクセスがすべて削除される可能性があるため、バックエンド/API で保護してください。 |
+| 9 | 0x09 | SetUserStatus | レガシーユーザー管理 | ユーザーレコードのステータスを設定します。 | 一般的な引数: `userIndex`、`userStatus`。ユーザーステータスの値は列挙型に近く、Matter のバージョンに応じて、利用可能/有効/無効といった状態が一般的です。 |
+| 10 | 0x0A | GetUserStatus | レガシーユーザー管理 | ユーザーレコードのステータスを読み取ります。 | 一般的な引数: `userIndex`。クレデンシャルを設定する前に、ユーザースロットがアクティブ/有効かどうかを確認するのに役立ちます。 |
+| 11 | 0x0B | SetWeekDaySchedule | スケジュール | 1 人のユーザーに対して、毎週繰り返すアクセススケジュールを設定します。 | 一般的な引数は `weekDayIndex`、`userIndex`、`daysMask`、`startHour`、`startMinute`、`endHour`、`endMinute` など。平日 09:00-17:00 のような、繰り返しのアクセス時間帯に使用します。 |
+| 12 | 0x0C | GetWeekDaySchedule | スケジュール | 毎週繰り返すスケジュールを読み取ります。 | 一般的な引数: `weekDayIndex`、`userIndex`。スケジュールが存在する場合、そのフィールドを返します。 |
+| 13 | 0x0D | ClearWeekDaySchedule | スケジュール | 毎週繰り返すスケジュールを 1 つ消去します。 | 一般的な引数: `weekDayIndex`、`userIndex`。そのスケジュールの時間帯だけを削除し、ユーザーやクレデンシャルまで削除するとは限りません。 |
+| 14 | 0x0E | SetYearDaySchedule | スケジュール | 1 人のユーザーに対して、1 回限り/日付範囲のスケジュールを設定します。 | 一般的な引数は `yearDayIndex`、`userIndex`、`localStartTime`、`localEndTime` など。日付に基づく一時的なアクセス期間に使用します。 |
+| 15 | 0x0F | GetYearDaySchedule | スケジュール | 日付範囲のスケジュールを読み取ります。 | 一般的な引数: `yearDayIndex`、`userIndex`。スケジュールが存在する場合、開始/終了時刻を返します。 |
+| 16 | 0x10 | ClearYearDaySchedule | スケジュール | 日付範囲のスケジュールを 1 つ消去します。 | 一般的な引数: `yearDayIndex`、`userIndex`。その一時的なスケジュールを削除します。 |
+| 17 | 0x11 | SetHolidaySchedule | スケジュール | 休日スケジュール / 例外スケジュールを設定します。 | 一般的な引数は `holidayIndex`、`localStartTime`、`localEndTime`、`operatingModeDuringHoliday` など。カレンダー上の特別な期間にロックの動作を変更するために使用します。 |
+| 18 | 0x12 | GetHolidaySchedule | スケジュール | 休日スケジュールを読み取ります。 | 一般的な引数: `holidayIndex`。サポートされ、設定されている場合、休日スケジュールの情報を返します。 |
+| 19 | 0x13 | ClearHolidaySchedule | スケジュール | 休日スケジュールを 1 つ消去します。 | 一般的な引数: `holidayIndex`。その休日の例外を削除します。 |
+| 20 | 0x14 | SetUserType | レガシーユーザー管理 | ユーザーのタイプ/カテゴリを設定します。 | 一般的な引数: `userIndex`、`userType`。ユーザータイプは、サポートされる列挙値に応じて、無制限ユーザー、スケジュール制限付きユーザー、プログラミングユーザーなどを表します。 |
+| 21 | 0x15 | GetUserType | レガシーユーザー管理 | ユーザーのタイプ/カテゴリを読み取ります。 | 一般的な引数: `userIndex`。ユーザースロットがどのように設定されているかを把握するのに役立ちます。 |
+| 22 | 0x16 | SetRFIDCode | レガシー RFID 管理 | レガシー RFID スロットの RFID クレデンシャルを作成または更新します。 | 一般的な引数は `userIndex`、`userStatus`、`userType`、`rfidCode` など。RFID 専用の旧式の API です。新しいデバイスでは汎用の `SetCredential` を使用することがあります。 |
+| 23 | 0x17 | GetRFIDCode | レガシー RFID 管理 | サポートされている場合、RFID クレデンシャルの情報を読み取ります。 | 一般的な引数: `userIndex`。デバイスによっては、秘密のクレデンシャル情報を返さないことがあります。 |
+| 24 | 0x18 | ClearRFIDCode | レガシー RFID 管理 | RFID クレデンシャルを 1 つ消去します。 | 一般的な引数: `userIndex`。そのスロット/ユーザーの RFID アクセス権を削除します。 |
+| 25 | 0x19 | ClearAllRFIDCodes | レガシー RFID 管理 | すべての RFID クレデンシャルを消去します。 | 通常は引数なし。危険な一括操作のため、管理者専用にしてください。 |
+| 26 | 0x1A | SetUser | ユーザー管理 | 最新方式の Door Lock ユーザーレコードを作成または更新します。 | 一般的な引数は `userIndex`、`userName`、`userUniqueID`、`userStatus`、`userType`、`credentialRule` など。クレデンシャルの設定前、または設定と併せて使用する最新方式のユーザー API です。 |
+| 27 | 0x1B | GetUser | ユーザー管理 | 最新方式の Door Lock ユーザーレコードを 1 件読み取ります。 | 一般的な引数: `userIndex`。応答には `userName`、`userUniqueID`、`userStatus`、`userType`、`credentialRule`、クレデンシャルのリスト、ファブリックインデックスが含まれることがあります。`userName` が利用できる場合は安定した識別情報として使用できるため、プロジェクトで役立ちます。 |
+| 29 | 0x1D | ClearUser | ユーザー管理 | 最新方式のユーザーレコードを 1 件消去します。 | 一般的な引数: `userIndex`。ユーザーを削除します。デバイスの動作によっては、そのユーザーに紐づくクレデンシャルにも影響することがあります。 |
+| 34 | 0x22 | SetCredential | クレデンシャル管理 | PIN、RFID、指紋、顔、Aliro、その他サポートされるクレデンシャルタイプのクレデンシャルを追加または更新します。 | 一般的な引数は `operationType`、`credential`、`credentialData`、`userIndex`、`userStatus`、`userType` など。`credential` 構造体には通常、`credentialType` と `credentialIndex` が含まれます。 |
+| 36 | 0x24 | GetCredentialStatus | クレデンシャル管理 | クレデンシャルスロットが存在するか/データを持つか、および誰のものかを確認します。 | 一般的な引数: `credentialType` と `credentialIndex` を持つ `credential`。クレデンシャルの書き込みや消去の前に役立ちます。 |
+| 38 | 0x26 | ClearCredential | クレデンシャル管理 | クレデンシャルを 1 つ、または指定したクレデンシャル構造体に一致するクレデンシャルを消去します。 | 一般的な引数: `credential`。そのクレデンシャルのアクセス権が削除されるため、慎重に使用してください。 |
+| 39 | 0x27 | UnboltDoor | ロック操作 | デバイスが独立したアンボルト操作をサポートしている場合に、ボルトを引き込み/ドアをアンボルトします。 | 通常は引数なし、またはロックのポリシーに応じて任意の PIN。すべてのロックが `UnlockDoor` と `UnboltDoor` を区別するわけではありません。 |
+| 40 | 0x28 | SetAliroReaderConfig | Aliro / リーダー設定 | 対応するロック/リーダーで Aliro リーダーの動作を設定します。 | 引数は Aliro 固有のリーダー設定フィールドです。Aliro リーダー機能を持つデバイスでのみサポートされます。高度な機能/ベンダー固有/エコシステム固有の機能として扱ってください。 |
+| 41 | 0x29 | ClearAliroReaderConfig | Aliro / リーダー設定 | Aliro リーダーの設定を消去します。 | 通常は引数なし、または実装に応じて Aliro 固有のセレクター。Aliro 対応デバイスでのみサポートされます。 |
+
+#### Door Lock コマンドのサポート確認
+
+Door Lock コマンドのサポートは、上記のエンドポイント `0` の一般的なシステムコマンドとは別のものです。すべての Matter ロックが上記のコマンドをすべてサポートしているとは想定しないでください。実際にサポートを確認する方法は次のとおりです。
+
+| パス | 属性 | わかること | 例 / 値の詳細 |
+| --- | --- | --- | --- |
+| `1/257/65529` | AcceptedCommandList | この特定のロックがエンドポイント `1`、クラスター `257` で受け付けるコマンド。 | 例: `[0, 1, 26, 27, 29, 34, 36, 38]` は、このロックが `LockDoor`、`UnlockDoor`、`SetUser`、`GetUser`、`ClearUser`、`SetCredential`、`GetCredentialStatus`、`ClearCredential` をサポートしていることを意味します。このリストを使用して、公開する API のボタン/機能を決定します。 |
+| `1/257/65528` | GeneratedCommandList | 実装に応じて、このクラスターがコマンドに対して生成する応答/イベント。 | コマンド/応答の処理に役立ちますが、コマンドを送信できるかどうかを判断する主な手段は `AcceptedCommandList` です。 |
+
+---
+
+## Matter デバイスタイプのマッピング
+
+### 信頼できる情報源
+
+Matter デバイスタイプは、Matter の Descriptor クラスターから読み取ります。
+
+```text
+<endpoint>/29/0
+```
+
+次の意味です。
+
+```text
+29 = Descriptor cluster
+0  = DeviceTypeList attribute
+```
+
+`python-matter-server` は値を 10 進数形式で返します。
+
+```json
+"1/29/0": [
+  {
+    "0": 21,
+    "1": 1
+  }
+]
+```
+
+意味:
+
+```text
+"0" = Matter Device Type ID
+"1" = Device Type Revision
+```
+
+Matter SDK の公式データモデルでは、Matter 1.5 のデバイスタイプ ID マップが `connectedhomeip/data_model/1.5/device_types/device_type_ids.json` で公開されています。
+
+出典:
+
+- https://github.com/project-chip/connectedhomeip/blob/master/data_model/1.5/device_types/device_type_ids.json
+
+### ブリッジのルール
+
+#### `device_info` シャドウ
+
+`device_info` シャドウには、Matter デバイスタイプの数値が実際の Matter パスの下に保存されます。
+
+Contact Sensor の例:
+
+```json
+{
+  "1/29/0": 21
+}
+```
+
+次のカスタムフィールドを `device_info` に書き込まないでください。
+
+```json
+{
+  "device_type": "contact_sensor"
+}
+```
+
+#### 複合センサーのルール
+
+物理デバイスによっては、複数のセンサーエンドポイントを公開するものがあります。
+
+例:
+
+```text
+770 = Temperature Sensor
+775 = Humidity Sensor
+```
+
+ブリッジはこれらを次のように統合します。
+
+```text
+temperature_humidity_sensor
+```
+
+この場合も、`device_info` シャドウには、選択された 1 つの数値の Matter パスだけが保存されます。例:
+
+```json
+{
+  "1/29/0": 770
+}
+```
+
+ただし、ブリッジの内部タイプと AWS IoT の Thing Type は次のようになります。
+
+```text
+temperature_humidity_sensor
+```
+
+### Matter デバイスタイプの全一覧
+
+| 10 進数の値 | Matter デバイスタイプ          | ブリッジの内部タイプ               |
+| ------------: | ------------------------------ | ---------------------------------- |
+|        `10` | Door Lock                      | `lock`                           |
+|        `11` | Door Lock Controller           | `door_lock_controller`           |
+|        `14` | Aggregator                     | `aggregator`                     |
+|        `15` | Generic Switch                 | `switch`                         |
+|        `17` | Power Source                   | `power_source`                   |
+|        `18` | OTA Requestor                  | `ota_requestor`                  |
+|        `19` | Bridged Node                   | `bridged_node`                   |
+|        `20` | OTA Provider                   | `ota_provider`                   |
+|        `21` | Contact Sensor                 | `contact_sensor`                 |
+|        `22` | Root Node                      | `root_node`                      |
+|        `23` | Solar Power                    | `solar_power`                    |
+|        `24` | Battery Storage                | `battery_storage`                |
+|        `25` | Secondary Network Interface    | `secondary_network_interface`    |
+|        `34` | Speaker                        | `speaker`                        |
+|        `35` | Casting Video Player           | `casting_video_player`           |
+|        `36` | Content App                    | `content_app`                    |
+|        `39` | Mode Select                    | `mode_select`                    |
+|        `40` | Basic Video Player             | `basic_video_player`             |
+|        `41` | Casting Video Client           | `casting_video_client`           |
+|        `42` | Video Remote Control           | `video_remote_control`           |
+|        `43` | Fan                            | `fan`                            |
+|        `44` | Air Quality Sensor             | `air_quality_sensor`             |
+|        `45` | Air Purifier                   | `air_purifier`                   |
+|        `64` | Irrigation System              | `irrigation_system`              |
+|        `65` | Water Freeze Detector          | `water_freeze_detector`          |
+|        `66` | Water Valve                    | `water_valve`                    |
+|        `67` | Water Leak Detector            | `water_leak_detector`            |
+|        `68` | Rain Sensor                    | `rain_sensor`                    |
+|        `69` | Soil Sensor                    | `soil_sensor`                    |
+|       `112` | Refrigerator                   | `refrigerator`                   |
+|       `113` | Temperature Controlled Cabinet | `temperature_controlled_cabinet` |
+|       `114` | Room Air Conditioner           | `room_air_conditioner`           |
+|       `115` | Laundry Washer                 | `laundry_washer`                 |
+|       `116` | Robotic Vacuum Cleaner         | `robotic_vacuum_cleaner`         |
+|       `117` | Dishwasher                     | `dishwasher`                     |
+|       `118` | Smoke CO Alarm                 | `smoke_co_alarm`                 |
+|       `119` | Cook Surface                   | `cook_surface`                   |
+|       `120` | Cooktop                        | `cooktop`                        |
+|       `121` | Microwave Oven                 | `microwave_oven`                 |
+|       `122` | Extractor Hood                 | `extractor_hood`                 |
+|       `123` | Oven                           | `oven`                           |
+|       `124` | Laundry Dryer                  | `laundry_dryer`                  |
+|       `144` | Network Infrastructure Manager | `network_infrastructure_manager` |
+|       `145` | Thread Border Router           | `thread_border_router`           |
+|       `256` | On/Off Light                   | `on_off_light`                   |
+|       `257` | Dimmable Light                 | `dimmable_light`                 |
+|       `259` | On/Off Light Switch            | `on_off_light_switch`            |
+|       `260` | Dimmer Switch                  | `dimmer_switch`                  |
+|       `261` | Color Dimmer Switch            | `color_dimmer_switch`            |
+|       `262` | Light Sensor                   | `light_sensor`                   |
+|       `263` | Occupancy Sensor               | `occupancy_sensor`               |
+|       `266` | On/Off Plug-in Unit            | `on_off_plug`                    |
+|       `267` | Dimmable Plug-In Unit          | `dimmable_plug`                  |
+|       `268` | Color Temperature Light        | `color_temperature_light`        |
+|       `269` | Extended Color Light           | `extended_color_light`           |
+|       `271` | Mounted On/Off Control         | `mounted_on_off_control`         |
+|       `272` | Mounted Dimmable Load Control  | `mounted_dimmable_load_control`  |
+|       `304` | Joint Fabric Administrator     | `joint_fabric_administrator`     |
+|       `320` | Intercom                       | `intercom`                       |
+|       `321` | Audio Doorbell                 | `audio_doorbell`                 |
+|       `322` | Camera                         | `camera`                         |
+|       `323` | Video Doorbell                 | `video_doorbell`                 |
+|       `324` | Floodlight Camera              | `floodlight_camera`              |
+|       `325` | Snapshot Camera                | `snapshot_camera`                |
+|       `326` | Chime                          | `chime`                          |
+|       `327` | Camera Controller              | `camera_controller`              |
+|       `328` | Doorbell                       | `doorbell`                       |
+|       `514` | Window Covering                | `window_covering`                |
+|       `515` | Window Covering Controller     | `window_covering_controller`     |
+|       `560` | Closure                        | `closure`                        |
+|       `561` | Closure Panel                  | `closure_panel`                  |
+|       `574` | Closure Controller             | `closure_controller`             |
+|       `769` | Thermostat                     | `thermostat`                     |
+|       `770` | Temperature Sensor             | `temperature_sensor`             |
+|       `771` | Pump                           | `pump`                           |
+|       `772` | Pump Controller                | `pump_controller`                |
+|       `773` | Pressure Sensor                | `pressure_sensor`                |
+|       `774` | Flow Sensor                    | `flow_sensor`                    |
+|       `775` | Humidity Sensor                | `humidity_sensor`                |
+|       `777` | Heat Pump                      | `heat_pump`                      |
+|       `778` | Thermostat Controller          | `thermostat_controller`          |
+|      `1292` | Energy EVSE                    | `energy_evse`                    |
+|      `1293` | Device Energy Management       | `device_energy_management`       |
+|      `1295` | Water Heater                   | `water_heater`                   |
+|      `1296` | Electrical Sensor              | `electrical_sensor`              |
+|      `1297` | Electrical Utility Meter       | `electrical_utility_meter`       |
+|      `1298` | Meter Reference Point          | `meter_reference_point`          |
+|      `1299` | Electrical Energy Tariff       | `electrical_energy_tariff`       |
+|      `1300` | Electrical Meter               | `electrical_meter`               |
+|      `2112` | Control Bridge                 | `control_bridge`                 |
+|      `2128` | On/Off Sensor                  | `on_off_sensor`                  |

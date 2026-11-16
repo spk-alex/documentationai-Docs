@@ -1,0 +1,352 @@
+---
+title: よくあるワークフロー
+description: B2C API でよく使う操作を最小限の手順でまとめたレシピ集です。ロックへのキーの追加、モバイルアプリへのロックの表示、ウォレットパスの送信、ドアベルへの入居者の追加を扱います。
+---
+
+このページでは、インテグレーターからの問い合わせが特に多い操作について、**最小限の API 呼び出し手順**をまとめています。各レシピでは、事前に必要なもの、目的を達成するための最小限のリクエスト、知っておくべき注意点を説明します。
+
+各エンドポイントのリクエスト／レスポンスの完全なスキーマについては、**API リファレンス** タブを参照してください。
+
+## はじめる前に
+
+**ベース URL。** 以下の例では Development 環境を使用しています。ホストはご利用の環境に合わせて置き換えてください。
+
+| 環境 | ベース URL |
+|-------------|----------|
+| Production | `https://api.spkey.co` |
+| Staging | `https://b2c-api.spk-stage.workers.dev` |
+| Development | `https://b2c-api.spk-dev.workers.dev` |
+
+**認証。** B2B インテグレーションは、`X-API-Key` ヘッダーに API キーを指定して認証します（以下の例でもこの方法を使用しています）。B2C クライアントは `Authorization: Bearer <token>` で JWT を使用します。どちらか一方だけを送信してください。`X-Org-Id` や `X-User-Id` のような内部ヘッダーを自分で設定してはいけません。設定したリクエストは拒否されます。
+
+```bash
+export API_KEY="your-api-key"
+export BASE="https://b2c-api.spk-dev.workers.dev"
+```
+
+**ID について — 最初に一度お読みください。** これらのレシピには、2 種類の異なる識別子が登場します。
+
+- **ロックのエンドポイント**（`/locks/{id}/...`）には、**数値のロック ID**（例: `123`）を指定します。
+- **ユーザーのエンドポイント**（`/users/{id}/...`）には、**ユーザーの UUID**（例: `550e8400-e29b-41d4-a716-446655440000`）を指定します。
+
+この 2 つの取り違えは、インテグレーションで最もよくあるミスです。
+
+**認可。** B2B の呼び出しでは、API キーの組織が対象のロックを所有している（またはスーパーキーである）必要があります。B2C の呼び出しでは、JWT がロックの所有者（またはすでにキーを持っているユーザー）のものである必要があり、ユーザーが変更できるのは*自分自身の*レコードだけです。
+
+---
+
+## ロックにキーを追加する
+
+> **概要:** 呼び出しは 1 回です — `keyUuid` を指定して `POST /locks/{id}/AddKey` を呼び出します。この 1 回のリクエストで、キーがロックの状態に登録され、**同時に**デバイスにも送信されます。
+
+### 前提条件
+
+- ロックがすでに存在していること。ロックは通常、ハードウェアのプロビジョニング時に `POST /locks/{id}/CreateLock` で作成されます。まだ存在しない場合は、先に作成してください。
+- 認証済みで、そのロックに対する権限があること（[はじめる前に](#はじめる前に)を参照）。
+- **任意:** キーをユーザーの Apple/Google Wallet にも入れる場合は、先にウォレットキーを発行し（ステップ 1）、その ID を `keyUuid` として再利用します。動作するキーが必要なだけであれば、ステップ 1 を省略し、ご自身で生成した任意の UUID を渡してください。
+
+### ステップ 1 — （任意）ウォレットキーをプロビジョニングしてキー ID を取得する
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/AddWalletKey" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "walletType": "APPLE",
+    "keyIndex": 2
+  }'
+```
+
+**レスポンス:**
+```json
+{
+  "success": true,
+  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+  "version": 2,
+  "keyId": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+  "walletType": "APPLE"
+}
+```
+
+`keyId` はサーバーが生成します。リクエストには**含めないでください**。返された `keyId` をステップ 2 の `keyUuid` として再利用すると、ウォレットパスとロックが同じキーを参照するようになります。
+
+### ステップ 2 — ロックにキーを追加する
+
+```bash
+curl -X POST "$BASE/locks/123/AddKey" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "keyUuid": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+    "keyIndexNumber": 2,
+    "userId": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+**レスポンス:**
+```json
+{
+  "success": true,
+  "aggregateId": "123",
+  "version": 7,
+  "event": {
+    "type": "KeyAdded",
+    "data": {
+      "lockId": 123,
+      "uuid": "lock-uuid",
+      "keyUuid": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+      "keyIndexNumber": 2,
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "timestamp": "2026-05-29T12:00:00.000Z"
+    }
+  }
+}
+```
+
+**補足:**
+- **必須なのは `keyUuid` だけです。** `keyIndexNumber` と `userId` は任意のメタデータです。`userId` の設定をおすすめします。設定しておくと、そのユーザーが所有者でなくても、あとからロックを管理できるようになります。
+- ここでの `{id}` は**数値の**ロック ID です。
+- **`WriteKey` は不要です。** `AddKey` がすでにデバイスへコマンドを送信しています。`POST /locks/{id}/WriteKey` は、物理的な NFC カードにキーを書き込むための*別の*コマンドであり、`AddKey` のあとに続けて呼び出すものではありません。
+- この呼び出しはフェイルファストです。デバイスに到達できない場合、リクエストは `502` で失敗し、キーは記録されません。ロックがオンラインであることを確認してください。
+- 1 つのロックに複数のキーを追加するには、`keys` 配列を指定して `POST /locks/{id}/BulkAddKeys` を使用します。追加処理はバックグラウンドで順番に実行され、`instanceId` がすぐに返されます（処理の完了は待ちません）。
+- `GET /locks/{id}/details` で確認できます。新しい `keyUuid` が `keys` 配列に含まれます。
+
+---
+
+## ユーザーのアプリにロックを表示する
+
+> **概要:** 呼び出しは 1 回です — `POST /users/{id}/AddAccessibleLock`。モバイルアプリのロック一覧は `GET /users/{id}/accessible-locks` から読み込まれるため、この呼び出しによってロックがアプリに*表示される*ようになります。
+
+> **アプリでの表示と、実際に使えるキーは別々のものです。** `AddAccessibleLock` はロックをユーザーの一覧に追加するだけで、デバイスにキーをプロビジョニングすることは**ありません**。ユーザーが実際にロックを開けられるようにするには、あわせて[キーを追加する](#ロックにキーを追加する)か、[ウォレットパスを送信する](#ユーザーにウォレットパスを送信する)必要があります。
+
+### 前提条件
+
+- ユーザーがすでに存在していること。存在しない場合は、先に作成してください（ステップ 1）。
+- `{id}` は**ユーザーの UUID** です。
+
+### ステップ 1 — （新規ユーザーの場合）ユーザーを作成する
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/CreateUser" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "jane@example.com",
+    "firstName": "Jane",
+    "lastName": "Doe"
+  }'
+```
+
+パスの `{id}` とボディの `userId` は同じ UUID です。必須フィールド: `userId`、`email`。
+
+### ステップ 2 — ユーザーにロックを付与する
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/AddAccessibleLock" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "lockId": "123",
+    "lockName": "Front Door",
+    "accessLevel": "USER",
+    "grantedBy": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+**レスポンス:**
+```json
+{
+  "success": true,
+  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+  "version": 2,
+  "event": {
+    "type": "AccessibleLockAdded",
+    "data": {
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "lockId": "123",
+      "lockName": "Front Door",
+      "accessLevel": "USER",
+      "grantedBy": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  },
+  "lockId": "123",
+  "accessLevel": "USER"
+}
+```
+
+### ステップ 3 — （確認）アプリが読み込む内容を取得する
+
+```bash
+curl "$BASE/users/550e8400-e29b-41d4-a716-446655440000/accessible-locks" \
+  -H "X-API-Key: $API_KEY"
+```
+
+**レスポンス:**
+```json
+{
+  "locks": [
+    {
+      "lockId": "123",
+      "lockName": "Front Door",
+      "accessLevel": "USER",
+      "grantedBy": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  ],
+  "totalCount": 1
+}
+```
+
+**補足:**
+- 必須フィールド: `lockId`、`lockName`、`accessLevel`、`grantedBy`。
+- `accessLevel` は `OWNER`、`ADMIN`、`USER`、`GUEST` のいずれかです。これはアプリに表示されるラベルであり、それだけでデバイスを開ける権限が付与されるわけでは**ありません**。
+- `validFrom` / `validUntil` はリクエストで受け付けられますが、**現時点では適用されません**。このエンドポイントでは期間を限定したアクセスは設定できません。
+- ロックがすでにユーザーの一覧にある場合は `400` を返します。
+- B2C のユーザートークンでは、自分自身の一覧しか変更できません。*別の*ユーザーにロックを付与するには、B2B の API キーを使用してください。
+
+---
+
+## ユーザーにウォレットパスを送信する
+
+> **概要:** 呼び出しは 2 回です — `POST /users/{id}/AddWalletKey` のあとに `GET /users/{id}/wallet/link` を呼び出します。2 回目の呼び出しで、ユーザーに送るインストール URL が返されます。ユーザーがこの URL を開くと、パスが Apple Wallet または Google Wallet に追加されます。
+
+### 前提条件
+
+- ユーザーがすでに存在していること（存在しない場合は `POST /users/{id}/CreateUser` で作成します。前のレシピのステップ 1 と同じです）。
+- **Apple** Wallet の場合、ユーザーのプロフィールに `email` が登録されている必要があります（作成時に設定）。Google Wallet では不要です。
+
+### ステップ 1 — ウォレットキーをプロビジョニングする
+
+```bash
+curl -X POST "$BASE/users/550e8400-e29b-41d4-a716-446655440000/AddWalletKey" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "walletType": "APPLE",
+    "keyIndex": 0
+  }'
+```
+
+**レスポンス:**
+```json
+{
+  "success": true,
+  "aggregateId": "550e8400-e29b-41d4-a716-446655440000",
+  "version": 2,
+  "keyId": "9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b",
+  "walletType": "APPLE"
+}
+```
+
+必須フィールド: `walletType`（`APPLE` または `GOOGLE`）と `keyIndex`。`keyId` はサーバーが生成するため、送信しないでください。
+
+### ステップ 2 — インストール URL を取得する
+
+```bash
+curl "$BASE/users/550e8400-e29b-41d4-a716-446655440000/wallet/link" \
+  -H "X-API-Key: $API_KEY"
+```
+
+**レスポンス:**
+```json
+{
+  "url": "https://a.wallet.spkey.co/?email=jane%40example.com&uuid=9b2e8f4a-1c3d-4e5f-8a9b-0c1d2e3f4a5b&brand=spkey",
+  "walletType": "APPLE"
+}
+```
+
+`url` は返されたままの形でユーザーに送信してください（メールや SMS など）。ユーザーがスマートフォンで開くと、パスがインストールされます。
+
+**補足:**
+- URL はサーバー側で生成されるため、そのまま送信して問題ありません。Apple 用のリンクにはユーザーのメールアドレスとキー ID が、Google 用のリンクにはキー ID が含まれます。ホストは環境によって異なります。
+- `404` は、ユーザーにまだウォレットキーがないことを意味します。先にステップ 1 を実行してください。`400` は、ウォレットが Apple であるにもかかわらず、ユーザーのメールアドレスが登録されていないことを意味します。
+- **同じ** `walletType` を再度プロビジョニングすると `400` が返されます。**別の** `walletType` をプロビジョニングすると、既存のウォレットキーが置き換えられます。
+- `GET /users/{id}/wallet` は `passUrl` / `serialNumber` フィールドを返しますが、空の場合があります。インストールリンクとしては、`wallet/link` の `url` を正としてください。
+- パスで実際にロックを開けられるようにするには、この `keyId` を `keyUuid` として再利用し、そのロックにも[キーを追加](#ロックにキーを追加する)してください。
+
+---
+
+## ドアベルに入居者を追加する
+
+> **概要:** 呼び出しは 2 回です — `GET /users/by-email`（必要に応じてユーザーを自動作成します）のあとに、`{ email, name }` を指定して `POST /locks/{id}/AddResident` を呼び出します。入居者には、ドアベルが押されたときに通知が届きます。
+
+### 前提条件
+
+- ドアベル／ロックがすでに存在し、それに対する権限があること。
+- `{id}` は**数値の**ロック ID です。
+
+### ステップ 1 — 入居者のユーザーが存在することを確認する
+
+```bash
+curl "$BASE/users/by-email?email=resident@example.com" \
+  -H "X-API-Key: $API_KEY"
+```
+
+**レスポンス:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "resident@example.com",
+  "created_at": "2026-05-29T10:30:00.000Z"
+}
+```
+
+このエンドポイントは **find-or-create**（検索、なければ作成）です。指定したメールアドレスのユーザーが存在しない場合は、ユーザーをプロビジョニングして返します。冪等であるため、入居者を追加する前に毎回呼び出しても問題ありません。まったく新しいユーザーを作成する際に特定の UUID を割り当てるには、`&uuid=<your-uuid>` を渡します（その UUID がすでに使用されている場合は `409` を返します）。
+
+### ステップ 2 — ドアベルに入居者を追加する
+
+```bash
+curl -X POST "$BASE/locks/123/AddResident" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "resident@example.com",
+    "name": "Jane Doe"
+  }'
+```
+
+**レスポンス:**
+```json
+{
+  "success": true,
+  "aggregateId": "123",
+  "version": 5,
+  "event": {
+    "type": "ResidentAdded",
+    "data": {
+      "lockId": 123,
+      "uuid": "lock-uuid",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Jane Doe",
+      "email": "resident@example.com",
+      "timestamp": "2026-05-29T12:00:00.000Z"
+    }
+  },
+  "email": "resident@example.com"
+}
+```
+
+**補足:**
+- このレシピでは `email` と `name` を送信します。`name` は常に必須で、入居者は `email`、`phoneNumber`（メールアドレスが登録されていないユーザー向け）、`userId` のいずれか 1 つで指定します。指定した識別子からユーザーへの解決は、サーバーが内部で行います。
+- ステップ 1 を省略し、そのメールアドレスのユーザーが存在しない場合、`AddResident` は `404` を返し、先に `GET /users/by-email` を呼び出すよう求めます。これはまさにステップ 1 で行っている処理です。
+- 同じ入居者を 2 回追加すると `400` が返されます。
+- 現在の入居者一覧は `GET /locks/{id}/residents` で取得できます。入居者を削除するには `POST /locks/{id}/RemoveResident` を使用します（ボディ: `{ "email": "..." }`）。
+
+---
+
+## すべてを組み合わせる
+
+ウォレットキーを使って入居者をオンボーディングする際の、一般的なエンドツーエンドのフローは次のとおりです。
+
+1. **ユーザーを作成する** — `POST /users/{userId}/CreateUser`。
+2. **ウォレットキーをプロビジョニングする** — `POST /users/{userId}/AddWalletKey` → `keyId` が返されます。
+3. **ユーザーのロックにキーを追加する** — `keyUuid` にその `keyId` を指定して `POST /locks/{lockId}/AddKey`。
+4. **ユーザーのアプリにロックを表示する** — `POST /users/{userId}/AddAccessibleLock`。
+5. **ウォレットパスを送信する** — `GET /users/{userId}/wallet/link` → `url` をユーザーに送信します。
+6. **（ドアベル）** 通知の対象に追加する — `POST /locks/{lockId}/AddResident`。
+
+## 次のステップ
+
+- **API リファレンス** タブ — ここで使用したすべてのエンドポイントの完全なスキーマ。
+- [イベントの概要](/ja/events-overview) — SmartphoneKey がイベント（例: `KeyAdded`、`ResidentAdded`）を Webhook に配信する仕組み。
+- [パートナーオンボーディング](/ja/partner-onboarding) — API キーを取得し、Webhook を設定します。

@@ -1,0 +1,63 @@
+---
+title: イベントの概要
+description: SmartphoneKey が EventBridge を使用して、パートナー連携向けのリアルタイムイベントを発行する仕組みを説明します。
+---
+
+SmartphoneKey は、アクセス制御システムで重要な状態変化が発生するたびに、AWS EventBridge を介してリアルタイムイベントを発行します。パートナーは Webhook を通じてこれらのイベントをサブスクライブし、変化が起きた時点で即座に反応する連携を構築できます。ポーリングは不要です。
+
+## イベントソース
+
+SmartphoneKey は 2 つのソースからイベントを発行します。
+
+### `spk.api`
+
+B2C API のドメインイベントです。ロック、ユーザー、ハブ、カメラ、一時キー、Matter デバイスが対象です (例: `LockCreated`、`KeyAdded`、`ResidentAdded`、`AccessibleLockAdded`)。`detail-type` は PascalCase のイベント名で、ドメインのペイロードは `detail.data` の下にラップされます。ほとんどの連携で利用するイベントの大半は、このソースのものです。全一覧は [イベントカタログ](/ja/events-catalog) と [パートナー Webhook](/ja/events-webhooks) を参照してください。
+
+### `spk.iot.shadow`
+
+IoT ハブデバイスが AWS IoT Device Shadow を更新したときに、`Shadow Update` イベントを発行します。このイベントには `thingName`、`version`、`desiredState`、`reportedState`、`deltaState` が含まれます。デバイスが desired の設定変更をまだすべて適用していない場合、delta は空ではありません。`spk.api` イベントとは異なり、シャドウのフィールドは `detail` の直下に置かれます (`detail.data` によるラップはありません)。
+
+## イベントエンベロープ
+
+すべての EventBridge イベントは、AWS のエンベロープにラップされた状態で届きます。
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "source": "spk.iot.shadow",
+  "detail-type": "Shadow Update",
+  "time": "2024-03-15T10:30:00Z",
+  "region": "eu-west-1",
+  "account": "123456789012",
+  "version": "0",
+  "resources": [],
+  "detail": {
+    "partnerId": "<tenant-org-id>",
+    "thingName": "<device-uuid>",
+    "reportedState": "<stringified JSON of reported state>",
+    "desiredState": "<stringified JSON of desired state>",
+    "deltaState": "{}",
+    "metadata": "<stringified IoT shadow metadata>",
+    "version": 42
+  }
+}
+```
+
+`detail` オブジェクトがイベントのペイロードです。各フィールドの詳しい説明は [イベントカタログ](/ja/events-catalog) を参照してください。
+
+## Webhook スキーマ
+
+Webhook イベントのペイロード構造全体を記述した OpenAPI 3.1 スキーマを公開しています。このスキーマは次の用途に利用できます。
+
+- [OpenAPI Generator](https://openapi-generator.tech/) を使って、任意の言語で型付きの Webhook ハンドラーを生成する
+- Webhook エンドポイントで受信したペイロードを検証する
+- Postman、Insomnia などの API ツールにインポートしてテストする
+- フィールド単位のドキュメントが付いた、すべてのイベントタイプ定義を参照する
+
+**ダウンロード:** [eventbridge-schemas.yaml](https://raw.githubusercontent.com/spk-alex/documentationai-Docs/main/eventbridge-schemas.yaml)
+
+## イベントのサブスクライブ
+
+パートナーは Webhook サブスクリプションを通じてイベントを受信します。イベントがサブスクリプションの条件に一致すると、SmartphoneKey は登録済みのエンドポイントに対して、イベントのペイロードを含む HTTP POST を送信します。
+
+設定の詳細は [パートナー Webhook](/ja/events-webhooks) ガイドを、イベントペイロードの完全なリファレンスは [イベントカタログ](/ja/events-catalog) を参照してください。

@@ -1,24 +1,23 @@
 ---
 title: Partner Onboarding
-description: How partners onboard themselves via the Partner Portal, plus the Admin API for scripted/automated onboarding.
+description: How partners get access from SmartphoneKey and get their API key on the Partner Portal, plus the staff-only Admin API.
 ---
 
-SmartphoneKey delivers events to partner systems via webhooks. Most partners onboard themselves through the [Partner Portal](/partner-portal): sign in with Auth0, copy your API key, set a webhook URL, done. If you need scripted or automated onboarding — or any change beyond the URL (events filter, secret rotation, multiple webhooks) — an Admin API is available and documented further down this page.
+SmartphoneKey delivers events to partner systems via webhooks, and partners call the API with an API key. **Partners cannot register themselves**: SmartphoneKey creates your organization and your user account, and you then get your API key on the [Partner Portal](/partner-portal) page of the SmartphoneKey Admin Panel (Odoo).
 
-## Quickstart: Self-Service via the Partner Portal
+## How to onboard
 
-For partners who already have a SmartphoneKey account in Auth0:
+1. **Contact Vitalii at SmartphoneKey** (`vitalii@smartphonekey.com`) and ask for partner access.
+2. **Vitalii creates your organization and a user account** with the Partner role, and sends you the sign-in details.
+3. **Sign in to the Admin Panel and open the Partner Portal** card on your portal home.
+4. **Register your organization ID.** Choose the `orgId` that identifies your platform in every API call and webhook. It cannot be changed later.
+5. **Create your API key and copy it.** The full key is shown only once — store it in your secret manager now. After that, only a masked preview is visible.
+6. **Register your webhook.** Enter the HTTPS endpoint that will receive events and choose the events you want. The webhook secret is also shown once.
+7. **Done — events start arriving** at your URL for your `orgId`.
 
-1. **Visit the partner portal for your environment.** For example, dev is at `https://partner-portal.spk-dev.workers.dev/`. (Each environment has its own portal URL — your account manager will share the right one for stage / nonprod / prod.)
-2. **Sign in with Auth0.** Click **Sign in with Auth0** and complete the OIDC flow.
-3. **Complete onboarding (first sign-in only).** New partners are sent to a short onboarding form to choose an **organization ID** and name. Submitting it registers your tenant and issues your initial API key.
-4. **Copy the API key shown once.** The full key is shown only once, on the dashboard, immediately after it's issued — copy and store it in your secret manager now. After that, only a masked prefix is visible.
-5. **Set your webhook URL on the dashboard.** Enter the HTTPS endpoint in your system that will receive events.
-6. **Done — events start arriving.** Your webhook is created with status `active`, and events for your `orgId` are delivered to your URL.
+You can return to the Partner Portal any time to rotate the API key, change the webhook URL or replace the webhook.
 
-You can return to the dashboard any time to rotate the API key or update the webhook URL.
-
-See [Partner Portal](/partner-portal) for the full UI walkthrough.
+See [Partner Portal](/partner-portal) for the full walkthrough.
 
 ## Receiving events
 
@@ -26,21 +25,23 @@ Events arrive at your webhook URL as HTTP POST requests carrying an AWS EventBri
 
 For payload shapes, delivery authentication, retry behavior, and security best practices, see [Setting Up Webhooks](/events-webhooks) and the [Event Catalog](/events-catalog).
 
-## What partners can do without admin help
+## Who does what
 
-| Action | Self-Service (Portal) | Admin API |
-|--------|-----------------------|-----------|
-| Register tenant + create initial API key | Yes (via onboarding form on first sign-in) | Yes (`POST /tenants/{orgId}/register`, then `POST /api-keys`) |
-| View masked API key | Yes | Yes (list/get tenants) |
-| Rotate API key | Yes | Yes |
-| Set/update webhook URL | Yes | Yes |
-| Update events filter | No | Yes (admin-only) |
-| Rotate webhook secret | No | Yes (admin-only) |
-| Multiple webhooks per partner | No | Yes (admin-only) |
+| Action | Partner (Partner Portal) | SmartphoneKey |
+|--------|--------------------------|---------------|
+| Create the organization and the Partner user account | No — contact Vitalii | Yes |
+| Register the organization ID (`orgId`) | Yes | Yes |
+| Create the first API key | Yes | Yes |
+| View masked API key | Yes | Yes |
+| Rotate API key | Yes, after SmartphoneKey revokes the current key | Yes |
+| Register a webhook and choose its events | Yes | Yes |
+| Update webhook URL | Yes | Yes |
+| Change events or get a new webhook secret | Yes (**Replace webhook**) | Yes |
+| Multiple webhooks per partner | No | Yes |
 
-## Programmatic onboarding (Admin API)
+## Admin API (SmartphoneKey staff only)
 
-The rest of this page documents the Admin API. Use this for automation, integration tests, or admin operations the portal doesn't cover (events filters, secret rotation, multiple webhooks per partner).
+The rest of this page documents the Admin API that SmartphoneKey staff use for automation, integration tests and operations the portal doesn't cover. It requires SmartphoneKey staff credentials — partners cannot call it.
 
 ### Prerequisites
 
@@ -123,7 +124,8 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
     "events": [
       "LockCreated",
       "KeyAdded"
-    ]
+    ],
+    "secret": "'"$WEBHOOK_SECRET"'"
   }'
 ```
 
@@ -138,7 +140,7 @@ curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" 
 
 **Notes:**
 - URL must be HTTPS in production (HTTP allowed in dev)
-- A webhook secret is auto-generated if not provided
+- Send your own `secret` (a long random value, generated for this webhook) and pass it to the partner over a secure channel: it is what they compare `X-Webhook-Secret` against. The response does not return the secret, so one that is auto-generated because none was sent cannot be given to the partner.
 - The webhook is backed by AWS EventBridge — events matching the partner's `orgId` are delivered to the URL
 
 #### Available Event Types
@@ -225,7 +227,7 @@ Events include `partnerId` in the detail so partners receive only events for the
 
 ## Next Steps
 
-- [Partner Portal](/partner-portal) — Self-service UI for partners to view their key and update their webhook URL
+- [Partner Portal](/partner-portal) — Where partners get their API key and manage their webhook
 - [Events Overview](/events-overview) — Understand how SmartphoneKey publishes events via EventBridge
 - [Setting Up Webhooks](/events-webhooks) — Full webhook configuration: authentication, delivery, retry behavior, and security best practices
 - [Event Catalog](/events-catalog) — Complete reference for the highest-value event payloads

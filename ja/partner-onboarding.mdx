@@ -1,0 +1,233 @@
+---
+title: パートナーオンボーディング
+description: パートナーが SmartphoneKey からアクセスを取得し、Partner Portal で API キーを取得するまでの流れと、スタッフ専用の Admin API について説明します。
+---
+
+SmartphoneKey は Webhook を通じてパートナーのシステムにイベントを配信し、パートナーは API キーを使って API を呼び出します。**パートナーご自身で登録することはできません**。SmartphoneKey がお客様の組織とユーザーアカウントを作成し、その後、SmartphoneKey Admin Panel（Odoo）の [Partner Portal](/ja/partner-portal) ページで API キーを取得していただきます。
+
+## オンボーディングの手順
+
+1. **SmartphoneKey の Vitalii に連絡し**（`vitalii@smartphonekey.com`）、パートナーアクセスを依頼します。
+2. **Vitalii がお客様の組織とユーザーアカウントを作成します。** アカウントには Partner ロールが付与され、サインイン情報が送られます。
+3. **Admin Panel にサインインし、ポータルのホームにある Partner Portal カードを開きます。**
+4. **Organization ID を登録します。** すべての API 呼び出しと Webhook でお客様のプラットフォームを識別する `orgId` を決めます。後から変更することはできません。
+5. **API キーを作成してコピーします。** キーの全体が表示されるのは一度だけです。その場でシークレットマネージャーに保管してください。それ以降はマスクされたプレビューのみが表示されます。
+6. **Webhook を登録します。** イベントを受信する HTTPS エンドポイントを入力し、受信したいイベントを選びます。Webhook のシークレットも一度だけ表示されます。
+7. **完了です。** お客様の `orgId` のイベントが、指定した URL に届き始めます。
+
+Partner Portal にはいつでも戻って、API キーのローテーション、Webhook URL の変更、Webhook の置き換えを行えます。
+
+操作の詳細は [Partner Portal](/ja/partner-portal) をご覧ください。
+
+## イベントの受信
+
+イベントは、AWS EventBridge のエンベロープを持つ HTTP POST リクエストとして Webhook URL に届きます。`detail` フィールドにはお客様の `orgId` と一致する `partnerId` が含まれるため、受信するのはお客様の組織のイベントだけです。配信に失敗した場合は自動的にリトライされます。
+
+ペイロードの形式、配信の認証、リトライの動作、セキュリティのベストプラクティスについては、[Webhook の設定](/ja/events-webhooks) と [イベントカタログ](/ja/events-catalog) をご覧ください。
+
+## 役割分担
+
+| 操作 | パートナー（Partner Portal） | SmartphoneKey |
+|--------|--------------------------|---------------|
+| 組織と Partner ユーザーアカウントの作成 | 不可 — Vitalii に連絡してください | 可 |
+| Organization ID（`orgId`）の登録 | 可 | 可 |
+| 最初の API キーの作成 | 可 | 可 |
+| マスクされた API キーの表示 | 可 | 可 |
+| API キーのローテーション | 可（SmartphoneKey が現在のキーを失効させた後） | 可 |
+| Webhook の登録とイベントの選択 | 可 | 可 |
+| Webhook URL の更新 | 可 | 可 |
+| イベントの変更、または新しい Webhook シークレットの取得 | 可（**Replace webhook**） | 可 |
+| パートナーごとの複数 Webhook | 不可 | 可 |
+
+## Admin API（SmartphoneKey スタッフ専用）
+
+このページの以降の部分では、SmartphoneKey のスタッフが自動化、結合テスト、およびポータルでは対応していない操作のために使用する Admin API について説明します。利用には SmartphoneKey スタッフの認証情報が必要で、パートナーが呼び出すことはできません。
+
+### 前提条件
+
+- Admin API キー（`X-Admin-API-Key`）— Doppler に `ADMIN_API_KEY` として保管されています
+- Admin JWT トークン（`Authorization: Bearer <token>`）— `email` が `@smartphonekey.com` ドメインである必要があります
+
+admin-api へのすべてのリクエストで、両方のヘッダーが必要です。
+
+### 環境
+
+| 環境 | Admin API URL |
+|-------------|---------------|
+| Dev | `https://admin-api.spk-dev.workers.dev` |
+| Nonprod | `https://admin-api.spk-nonprod.workers.dev` |
+| Stage | `https://admin-api.spk-stage.workers.dev` |
+| Prod | `https://admin-api.spk-prod.workers.dev` |
+
+### ステップ 1: パートナー（テナント）の登録
+
+API キーを作成する**前に**テナントを登録します。`orgId` はパスのセグメントです（以下の例では `acme-corp`）。
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/register" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orgName": "ACME Corporation",
+    "ownerEmail": "owner@acme-corp.com"
+  }'
+```
+
+まずこの呼び出しが成功している必要があります。テナントが存在しない場合、`POST /api-keys` は `404 Tenant not registered` を返します。
+
+### ステップ 2: API キーの作成
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/api-keys" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orgId": "acme-corp",
+    "orgName": "ACME Corporation"
+  }'
+```
+
+任意の `expiresAt`（ISO 8601）フィールドを指定すると、有効期限付きのキーを発行できます。
+
+**レスポンス:**（HTTP `201`）
+```json
+{
+  "apiKey": "xK7mP9qR2wT5vN8jL4hG6cF3bA0eD1iY...",
+  "orgId": "acme-corp",
+  "orgName": "ACME Corporation",
+  "createdAt": "2026-04-02T10:00:00.000Z",
+  "createdBy": "admin@smartphonekey.com",
+  "expiresAt": null
+}
+```
+
+`apiKey` を保存してください。再表示はされません（一覧取得のエンドポイントではプレフィックスのみ表示されます）。
+
+**補足:**
+- 有効な API キーは組織ごとに 1 つです
+- 組織にすでに有効なキーがある場合は `409 Conflict` が返ります
+- API キーは 40 文字のランダムな英数字です
+
+### ステップ 3: Webhook の設定
+
+このパートナーのイベントを受信する Webhook URL を登録します。認証やリトライの動作を含む設定の詳細は、[Webhook の設定](/ja/events-webhooks) をご覧ください。
+
+```bash
+curl -X POST "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.com/webhooks/smartphonekey",
+    "events": [
+      "LockCreated",
+      "KeyAdded"
+    ],
+    "secret": "'"$WEBHOOK_SECRET"'"
+  }'
+```
+
+**レスポンス:**
+```json
+{
+  "success": true,
+  "aggregateId": "acme-corp",
+  "version": 1
+}
+```
+
+**補足:**
+- 本番環境では URL は HTTPS である必要があります（dev では HTTP も可）
+- 独自の `secret`（この Webhook 用に生成した十分に長いランダムな値）を送信し、安全な経路でパートナーに渡してください。パートナーはこの値と `X-Webhook-Secret` を照合します。レスポンスにシークレットは含まれないため、指定せずに自動生成されたシークレットをパートナーに渡すことはできません。
+- Webhook は AWS EventBridge を基盤としており、パートナーの `orgId` に一致するイベントが URL に配信されます
+
+#### 利用可能なイベントタイプ
+
+`spk.api` のドメインイベントタイプ（例: `LockCreated`、`OwnerSet`、`KeyAdded`、`KeyRemoved`、`ResidentAdded`、`ResidentRemoved`、およびユーザー、ハブ、カメラ、一時キー、Matter のイベント）のいずれも購読できます。加えて、`spk.iot.shadow` をソースとする唯一のタイプである `Shadow Update` も購読できます。
+
+| 購読する対象 | `events` に渡す値 |
+|------------------|------------------|
+| 特定のイベント | PascalCase の `detail-type`。例: `["LockCreated", "KeyAdded"]` |
+| 組織のすべてのイベント | `["*"]`（ワイルドカード） |
+| IoT ハブのシャドウ更新 | `["Shadow Update"]` |
+
+`detail-type` の全一覧は [Partner Webhooks](/ja/events-webhooks) を、ペイロードの形式は [イベントカタログ](/ja/events-catalog) をご覧ください。
+
+### ステップ 4: Webhook の確認
+
+Webhook が作成されたことと、そのステータスを確認します。
+
+```bash
+curl "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+**レスポンス:**
+```json
+{
+  "webhooks": [
+    {
+      "id": "32bc72f9-1676-4cd5-b568-15a39a80536e",
+      "url": "https://acme-corp.com/webhooks/smartphonekey",
+      "events": ["LockCreated", "KeyAdded"],
+      "status": "active",
+      "createdAt": "2026-04-02T10:01:00.000Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+（レスポンスは省略しています。各 Webhook には `verifiedAt`、`updatedAt`、最後のエラーに関するフィールドも含まれ、最上位には `limit`/`offset` が含まれます。）
+
+新しく作成した Webhook はすぐに `active` になります。後で URL を変更すると、新しいエンドポイントが再検証されるまでステータスは `pending` に戻ります。
+
+### Webhook の更新
+
+```bash
+curl -X PUT "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://acme-corp.com/webhooks/v2",
+    "events": ["LockCreated", "KeyAdded"]
+  }'
+```
+
+`url`、`events`、`secret` のうち少なくとも 1 つのフィールドを指定する必要があります。
+
+### Webhook の削除
+
+```bash
+curl -X DELETE "https://admin-api.spk-dev.workers.dev/tenants/acme-corp/webhooks/WEBHOOK_ID" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+### パートナーの一覧
+
+```bash
+curl "https://admin-api.spk-dev.workers.dev/tenants" \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_JWT_TOKEN"
+```
+
+## イベントが Webhook に届くまで
+
+1. B2C API で操作が行われます（例: ロックの解錠、キーの割り当て）
+2. イベントが、`source: "spk.api"` と、ロックの組織に一致する `partnerId` を付けて AWS EventBridge に発行されます
+3. EventBridge が Webhook サブスクリプションのルールとイベントを照合します
+4. イベントがパートナーの Webhook URL に配信されます
+
+イベントの detail には `partnerId` が含まれるため、パートナーが受信するのは自分の組織のイベントだけです。
+
+## 次のステップ
+
+- [Partner Portal](/ja/partner-portal) — パートナーが API キーを取得し、Webhook を管理する場所
+- [イベントの概要](/ja/events-overview) — SmartphoneKey が EventBridge を通じてイベントを発行する仕組み
+- [Webhook の設定](/ja/events-webhooks) — Webhook 設定の詳細: 認証、配信、リトライの動作、セキュリティのベストプラクティス
+- [イベントカタログ](/ja/events-catalog) — 主要なイベントペイロードのリファレンス

@@ -327,7 +327,7 @@ curl -X POST "$BASE/locks/123/AddResident" \
 ```
 
 **Notes:**
-- Both `email` and `name` are required. The server resolves the email to a user behind the scenes.
+- This recipe sends `email` and `name`. `name` is always required; the resident is identified by exactly one of `email`, `phoneNumber` (for a user with no email on file) or `userId`. The server resolves the identifier to a user behind the scenes.
 - If you skip Step 1 and no user exists for that email, `AddResident` returns `404` asking you to call `GET /users/by-email` first — which is exactly what Step 1 does.
 - Adding the same resident twice returns `400`.
 - The current resident list is readable at `GET /locks/{id}/residents`. Remove a resident with `POST /locks/{id}/RemoveResident` (body: `{ "email": "..." }`).

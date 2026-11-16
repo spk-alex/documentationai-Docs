@@ -26,7 +26,7 @@ All `spk.api` events share the same envelope structure. The domain payload is wr
 }
 ```
 
-`detail.timestamp` is the projection time as **epoch milliseconds** (a number). The ISO-8601 timestamp inside `detail.data.timestamp` is the domain-event time. The fields documented below describe `detail.data` — the actual domain event.
+`detail.timestamp` is the projection time as **epoch milliseconds** (a number). `detail.data.timestamp` is the domain-event time: an ISO-8601 string on most events, epoch milliseconds (a number) on the few whose table says so. The fields documented below describe `detail.data` — the actual domain event.
 
 ---
 
@@ -1935,7 +1935,7 @@ A PIN credential slot was provisioned on a Matter door lock (the PIN itself is n
 | `thingName` | `string` | yes | AWS IoT thing name |
 | `userIndex` | `number` | yes |  |
 | `credentialIndex` | `number` | yes |  |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 
 ### MatterPinCleared
 
@@ -1955,7 +1955,7 @@ A PIN credential slot was cleared on a Matter door lock.
 | `thingName` | `string` | yes | AWS IoT thing name |
 | `userIndex` | `number` | no |  |
 | `credentialIndex` | `number` | yes |  |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 
 ### AppPinSendRequested
 
@@ -1973,7 +1973,7 @@ An app-PIN delivery attempt was sent to the lock.
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `messageId` | `string` | yes |  |
 | `attempt` | `number` | yes |  |
 | `userIndex` | `number` | yes |  |
@@ -1997,7 +1997,7 @@ An app-PIN write could not be made to the device shadow; the attempt will be ret
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `command` | `"SetCredential" \| "ClearCredential"` | yes |  |
 | `messageId` | `string \| null` | yes |  |
 | `error` | `string` | yes |  |
@@ -2018,7 +2018,7 @@ The lock acknowledged an app-PIN write.
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `outcome` | `"success" \| "failure" \| "duplicate" \| "occupied" \| "invalid-field" \| "not-found"` | yes |  |
 | `matchedMessageId` | `string` | yes |  |
 | `errorCode` | `number \| string` | no |  |
@@ -2041,7 +2041,7 @@ An app-PIN slot clear was sent to the lock.
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `credentialIndex` | `number` | yes |  |
 | `messageId` | `string \| null` | no |  |
 
@@ -2061,7 +2061,7 @@ The lock refused every app-PIN attempt; delivery stopped.
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `reason` | `string` | yes |  |
 | `attemptCount` | `number` | yes |  |
 | `lastOutcome` | `string \| null` | yes |  |
@@ -2082,7 +2082,7 @@ App-PIN delivery was restarted from the beginning.
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `reason` | `string` | yes |  |
 | `priorState` | `"pending" \| "sent" \| "verified" \| "unverified" \| "failed" \| null` | yes |  |
 | `priorAttempts` | `number` | yes |  |
@@ -2105,7 +2105,7 @@ App-PIN delivery was dropped because the lock does not require a remote PIN.
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `reason` | `string` | yes |  |
 | `credentialIndex` | `number` | yes |  |
 
@@ -2125,7 +2125,7 @@ The bridge answered an app-PIN write without the lock carrying it out; the attem
 |---|---|---|---|
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 | `command` | `"SetCredential" \| "ClearCredential"` | yes |  |
 | `messageId` | `string \| null` | yes |  |
 | `reason` | `"unreachable" \| "no-ack" \| "refused"` | yes |  |
@@ -2148,7 +2148,7 @@ The display name of a Matter device has been set.
 | `deviceId` | `string` | yes | Device UUID |
 | `thingName` | `string` | yes | AWS IoT thing name |
 | `name` | `string` | yes |  |
-| `timestamp` | `number` | yes | ISO-8601 time of the domain event |
+| `timestamp` | `number` | yes | Unix epoch ms |
 
 ---
 
