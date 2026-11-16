@@ -280,27 +280,28 @@ curl -X PATCH "https://admin-api.spk-dev.workers.dev/webhooks/$WEBHOOK_ID" \
 
 Notes:
 
-- Only the `url` field is mutable through this endpoint — to change the event list or rotate the secret, contact your account manager.
+- Only the `url` field is mutable through this endpoint — to change the event list or get a new secret, use **Replace webhook** in the Partner Portal.
 - HTTPS is required in every environment for partner self-service updates.
 - The webhook status is reset to `pending` until EventBridge re-verifies the new URL.
 
 ## Webhook Authentication
 
-So your endpoint can confirm that incoming requests are genuinely from SmartphoneKey, a delivery can carry a **static secret** that SmartphoneKey includes on every request. This is configured admin-side on the EventBridge connection — contact your account manager to set it up.
+Every delivery carries a **static shared secret** in the `X-Webhook-Secret` header, so your endpoint can confirm that a request is genuinely from SmartphoneKey. The secret is the one shown **once** when you register the webhook in the [Partner Portal](/partner-portal) — store it in your secret manager. A delivery looks like this on the wire:
 
-### Supported Authentication Types
+```
+POST /webhooks/smartphonekey HTTP/1.1
+User-Agent: Amazon/EventBridge/ApiDestinations
+Content-Type: application/json; charset=utf-8
+X-Webhook-Secret: <your-secret>
+```
 
-| `auth_type` | Description |
-|-------------|-------------|
-| `none` | No authentication header is added. This is the default for self-service webhooks. |
-| `apiKeyHeader` | A static secret is sent in a custom request header of your choosing. |
-| `bearerToken` | A static token is sent in the `Authorization: Bearer <token>` header. |
+Reject any request that does not carry the header or carries a different value. If you lose the secret, use **Replace webhook** in the Partner Portal: it creates a new subscription with a new secret and removes the old one.
 
-> **Per-request HMAC body signing is not currently available.** There is no `X-SPK-Signature` HMAC of the request body — don't build verification around one. Webhooks created through self-service default to `none`; to have SmartphoneKey attach a static header or bearer token, ask your account manager to configure `apiKeyHeader` or `bearerToken`.
+> **Per-request HMAC body signing is not available.** The secret is a static header value, not a signature of the request body — there is no `X-SPK-Signature`, so don't build verification around one.
 
-### Verifying a static token
+### Verifying the secret
 
-When a static header or bearer token is configured, compare the received value against your stored secret using a **constant-time comparison** to avoid timing attacks:
+Compare the received header value against your stored secret using a **constant-time comparison** to avoid timing attacks:
 
 ```python
 import hmac
