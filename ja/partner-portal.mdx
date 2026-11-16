@@ -1,0 +1,53 @@
+---
+title: Partner Portal
+description: SmartphoneKey Admin Panel（Odoo）内のパートナー向けページです。API キーの取得と Webhook の管理を行います。
+---
+
+Partner Portal は SmartphoneKey Admin Panel（Odoo）内のページで、連携パートナーが API キーを取得し、Webhook を接続し、配信状況を確認するための場所です。
+
+## アクセスの取得
+
+**セルフ登録はできません。** アクセスは SmartphoneKey が設定します。
+
+1. SmartphoneKey の **Vitalii**（`vitalii@smartphonekey.com`）に連絡し、パートナーアクセスを依頼します。
+2. Vitalii がお客様の組織と、**Partner** ロールを持つユーザーアカウントを作成し、サインイン情報をお送りします。
+3. Admin Panel にサインインします。ポータルのホームに **Partner Portal** カードが表示されるので、それを開きます。
+
+同じ組織で Partner ロールを持つアカウントは、すべて同じ登録・同じキー・同じ Webhook を共有します。同僚を追加するには、Vitalii に追加のアカウントを依頼してください。
+
+## 連携のセットアップ
+
+このページでは、上部に進捗バーとして表示される 3 つのステップを順に進めます。
+
+1. **Register organization.** **Organization name** を確認し、**Organization ID**（`orgId`）を決めます。使用できるのは 3〜64 文字の英小文字、数字、ハイフンです。ポータルが候補を提案し、使用可能かどうかを確認します。この ID は、すべての API 呼び出しと Webhook（`detail.partnerId`）でお客様のプラットフォームを識別するもので、**後から変更することはできません**。
+2. **Create API key.** お客様のプラットフォームがすべてのリクエストの `X-API-Key` ヘッダーで送信するキーです。キーは **一度だけ** ダイアログに表示され、保存したことを確認するまでダイアログを閉じることはできません。シークレットマネージャーに保管してください。それ以降、ページにはキーの先頭と末尾のみが表示されます。
+3. **Register webhook.** SmartphoneKey がイベントを配信する、お客様のプラットフォーム上の HTTPS アドレスと、受信したいイベントを指定します。イベントは **All events** か、イベントタイプのリスト（PascalCase。例: `LockCreated`）から選べます。Webhook の **シークレット** も一度だけ表示されます。すべての配信の `X-Webhook-Secret` ヘッダーにこのシークレットが含まれるため、サーバー側でシークレットのない呼び出しを拒否できます。
+
+あるステップが SmartphoneKey API で確認できなかった場合、ページはそのステップを未確認として保持し、やり直す代わりに **Finish**、**Check**、**Discard** のいずれかを提示します。
+
+## 連携の管理
+
+セットアップが完了すると、ページには次のカードが表示されます。
+
+- **Organization** — お客様の `orgId` と、登録したユーザーおよび日時。
+- **API key** — マスクされたキー。**Rotate API key** は新しいキーを発行し、一度だけ表示します。現在のキーが有効な間はローテーションが拒否されます。先に SmartphoneKey に現在のキーの失効を依頼し、その後ローテーションして、すぐにお客様のプラットフォームを更新してください。
+- **Webhook** — URL、イベント、ステータス。**Update webhook URL** は配信先を新しい HTTPS アドレスに変更します（新しいアドレスで再度検証されます）。**Replace webhook** は新しいシークレットで新しいサブスクリプションを作成し、その後古いものを削除します。シークレットを紛失した場合や、イベントの組み合わせを変更する場合に使用してください。
+- **Webhook health** — 直近 15 分間と 24 時間の配信失敗数、最後の配信エラー、最近のエラー。
+- **Delivery stats** — 合計（配信済み、失敗、リトライ）と日次グラフ。**Reset stats** で、テスト用に新しい基準点から集計をやり直せます。
+- **Activity** — 誰が、いつ、何を登録・作成・ローテーション・変更したかの履歴。
+
+## トラブルシューティング
+
+| 症状 | 考えられる原因 | 対処 |
+|---------|--------------|-----|
+| サインイン後に **Partner Portal** カードが表示されない | アカウントに Partner ロールが付与されていない | Vitalii に連絡してください |
+| "This organization ID is already registered…" | その ID が SmartphoneKey 側にすでに存在する | 別の ID を選ぶか、既存の ID をお客様のアカウントに接続するよう SmartphoneKey に依頼してください |
+| **Rotate API key** が拒否される | 現在のキーがまだ有効である | SmartphoneKey にキーの失効を依頼してから、再度ローテーションしてください |
+| ページに未接続と表示され、操作が無効になっている | SmartphoneKey がこの環境のポータル設定を完了していない | SmartphoneKey に連絡してください |
+| Webhook が `pending` のままになる | エンドポイントが検証リクエストに `2xx` で応答していない | エンドポイントのログを確認し、`2xx` を返していることを確かめてください |
+
+## 関連ページ
+
+- [パートナーオンボーディング](/ja/partner-onboarding) — オンボーディングの手順全体
+- [Partner Webhooks](/ja/events-webhooks) — Webhook の配信、認証、リトライの動作
+- [イベントカタログ](/ja/events-catalog) — 受信するイベントのリファレンス

@@ -1,0 +1,49 @@
+---
+title: SmartphoneKey API ドキュメント
+description: SmartphoneKey B2C API のリファレンスです。Apple Wallet と Google Wallet を使い、集合住宅や短期賃貸物件向けに、アプリ不要の安全な入退室管理を提供します。
+---
+
+## 概要
+
+SmartphoneKey は、集合住宅や短期賃貸物件向けに、アプリ不要の安全な入退室管理を提供します。入居者やゲストは、Apple Wallet または Google Wallet に保存されたデジタルキーでドアを解錠でき、アプリをダウンロードする必要はありません。
+
+このドキュメントでは、ユーザー、ロック、キー、入退室管理の操作を担うバックエンドである **B2C API** について説明します。
+
+## パートナー連携をされる方へ
+
+外部システムを連携して SmartphoneKey のイベントを受信する場合の手順は次のとおりです。
+
+1. **SmartphoneKey の Vitalii にご連絡ください**（`vitalii@smartphonekey.com`）。パートナーご自身で登録することはできません。Vitalii がお客様の組織とユーザーアカウントを作成します。
+2. サインインして [Partner Portal](/ja/partner-portal) を開き、API キーを取得して Webhook を登録します。
+3. POST リクエストを受け付けて 2xx を返す HTTPS エンドポイントを実装します。詳しくは [Webhooks](/ja/events-webhooks) をご覧ください。
+4. API キーは秘密として管理し、必要に応じて Partner Portal からローテーションしてください。
+
+全体の流れについては [パートナーオンボーディング](/ja/partner-onboarding) をご覧ください。
+
+## API リファレンス
+
+API リファレンスは OpenAPI 仕様から自動生成され、本番デプロイのたびに CI によって最新の状態に保たれます。
+
+エンドポイントは、上部の **API リファレンス** タブからご覧いただけます。
+
+**OpenAPI スキーマ**（環境ごとの最新版。クライアントの生成や、Postman / Swagger UI での確認にご利用ください）：
+- 開発環境: [b2c-api.spk-dev.workers.dev/openapi.json](https://b2c-api.spk-dev.workers.dev/openapi.json)
+- 本番環境: [b2c-api.spk-prod.workers.dev/openapi.json](https://b2c-api.spk-prod.workers.dev/openapi.json)
+
+## 環境
+
+| 環境 | ベース URL |
+|-------------|----------|
+| 本番 | `https://api.spkey.co` |
+| ステージング | `https://b2c-api.spk-stage.workers.dev` |
+| 開発 | `https://b2c-api.spk-dev.workers.dev` |
+
+## 認証
+
+API は JWT ベースの認証を使用します。`Authorization` ヘッダーに Bearer トークンを含めてください。
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+B2B 連携では、`X-API-Key` ヘッダーで API キーを使用します。
