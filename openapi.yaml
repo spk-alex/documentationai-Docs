@@ -8750,7 +8750,7 @@
     "/locks/{id}/residents": {
       "get": {
         "summary": "Get residents list",
-        "description": "Get residents list for doorbell notifications (public endpoint)",
+        "description": "Get residents list for doorbell notifications. Readable without credentials; an organization key is held to the lock's organization. Residents whose user was erased are left out.",
         "operationId": "get_GetResidentsRoute",
         "parameters": [
           {
@@ -8802,6 +8802,35 @@
                   },
                   "required": [
                     "residents"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lock belongs to another organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "message"
                   ]
                 }
               }
