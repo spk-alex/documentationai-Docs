@@ -1,5 +1,5 @@
 {
-  "version": "78bac15d",
+  "version": "45283a3f",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
