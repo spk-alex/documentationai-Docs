@@ -1,5 +1,5 @@
 {
-  "version": "077025c6",
+  "version": "cf3aec43",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -4113,6 +4113,48 @@
       "required": [
         "cameraId",
         "enabled",
+        "changedBy",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraLowLatencyConfigured": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "previousEnabled": {
+          "type": "boolean"
+        },
+        "changedBy": {
+          "type": "string",
+          "enum": [
+            "admin",
+            "super"
+          ]
+        },
+        "changedByOrgId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "auditId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "enabled",
+        "previousEnabled",
         "changedBy",
         "updatedAt"
       ],
