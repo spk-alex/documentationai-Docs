@@ -11384,9 +11384,6 @@
           "monitoring": {
             "type": "boolean"
           },
-          "lowLatency": {
-            "type": "boolean"
-          },
           "onvif": {
             "type": [
               "object",
