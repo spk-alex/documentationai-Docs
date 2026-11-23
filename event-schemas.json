@@ -1,5 +1,5 @@
 {
-  "version": "655f9c40",
+  "version": "471aa132",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -1340,6 +1340,10 @@
             "number",
             "null"
           ]
+        },
+        "orgId": {
+          "description": "The organization whose plate for the user changed; absent when the user's own plate changed",
+          "type": "string"
         }
       },
       "required": [

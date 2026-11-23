@@ -945,6 +945,7 @@ A user's vehicle plate has been set or cleared (the plate itself is never carrie
 | `userId` | `string` | yes | User ID |
 | `action` | `"set" \| "cleared"` | yes | set or cleared |
 | `setAt` | `number \| null` | yes | Unix epoch ms of the write; null when cleared |
+| `orgId` | `string` | no | The organization whose plate for the user changed; absent for the user's own plate |
 
 ### DeviceAdded
 

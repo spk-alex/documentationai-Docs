@@ -1,5 +1,5 @@
 {
-  "version": "655f9c40",
+  "version": "471aa132",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
@@ -1458,6 +1458,28 @@
       },
       "additionalProperties": false,
       "description": "A patch of the organization's subscription status entry; omitted fields are left unchanged"
+    },
+    "UpdateVehiclePlate": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "plate": {
+          "anyOf": [
+            {
+              "description": "Vehicle licence plate; spaces, \"-\" and \".\" are ignored, Cyrillic look-alikes are read as Latin",
+              "type": "string",
+              "maxLength": 32
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The plate to set (replacing any current one), or null to clear it"
+        }
+      },
+      "required": [
+        "plate"
+      ]
     },
     "WriteKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
