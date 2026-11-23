@@ -6580,7 +6580,7 @@
     "/rtsp-cameras/{id}": {
       "get": {
         "summary": "Get RTSP camera state",
-        "description": "Returns the camera's public state, including a signed playback link when the camera is supposed to be streaming. Pass `refreshPlayback=1` to re-sign that link instead of serving the cached one — send it only after the playback host answered 403 for the link you were given, and play the link in that response.",
+        "description": "Returns the camera's public state, including a signed playback link when the camera is supposed to be streaming. Pass `refreshPlayback=1` to re-sign that link instead of serving the cached one — send it only after the playback host answered 403 for the link you were given, and play the link in that response. A camera in low-latency mode whose box can serve it also carries `webrtc`, a WebRTC (WHEP) link beside the HLS link, signed and re-signed with it.",
         "operationId": "get_GetRtspCameraRoute",
         "parameters": [
           {
@@ -11557,6 +11557,66 @@
           },
           "lowLatency": {
             "type": "boolean"
+          },
+          "webrtc": {
+            "type": "object",
+            "properties": {
+              "whepUrl": {
+                "type": "string",
+                "description": "Signed WHEP endpoint: POST an SDP offer to it to receive the live video over WebRTC."
+              },
+              "expiresAt": {
+                "type": "number",
+                "description": "When the link stops being accepted, in Unix seconds; the same as hlsExpiresAt."
+              },
+              "iceServers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "urls": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "credential": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "urls"
+                  ],
+                  "description": "An ICE server in the WebRTC RTCIceServer shape. Clients pass the list to their peer connection unchanged."
+                },
+                "description": "ICE servers for the peer connection. Always present; empty in this version."
+              },
+              "codec": {
+                "type": "string",
+                "enum": [
+                  "H264",
+                  "H265"
+                ],
+                "description": "The video codec the camera sends: H264 or H265."
+              }
+            },
+            "required": [
+              "whepUrl",
+              "expiresAt",
+              "iceServers",
+              "codec"
+            ],
+            "description": "Low-latency WebRTC link (signed WHEP endpoint, expiry, ICE servers, codec). Only for a camera in low-latency mode whose VMS box serves WebRTC; signedHlsUrl is always beside it."
           },
           "onvif": {
             "type": [
