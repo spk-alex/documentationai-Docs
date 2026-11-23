@@ -1847,6 +1847,28 @@ A monitored RTSP camera is still unavailable; repeated at most every five minute
 | `unavailableSince` | `string` | ναι | When the camera entered that status (ISO-8601) |
 | `checkedAt` | `string` | ναι | When the probe or heartbeat that confirmed it ran (ISO-8601) |
 
+### RtspCameraLowLatencyConfigured
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraLowLatencyConfigured` |
+| **aggregateType** | `RtspCameraAggregate` |
+
+An RTSP camera's low-latency mode was switched on or off.
+
+**Πεδία payload (`detail.data`):**
+
+| Πεδίο | Τύπος | Υποχρεωτικό | Περιγραφή |
+|---|---|---|---|
+| `cameraId` | `string` | ναι | Camera ID |
+| `enabled` | `boolean` | ναι |  |
+| `previousEnabled` | `boolean` | ναι |  |
+| `changedBy` | `"admin" \| "super"` | ναι |  |
+| `changedByOrgId` | `string` | όχι |  |
+| `auditId` | `string` | όχι |  |
+| `updatedAt` | `string` | ναι |  |
+
 ---
 
 ## Video worker events
