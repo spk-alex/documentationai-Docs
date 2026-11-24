@@ -1,5 +1,5 @@
 {
-  "version": "6a61c044",
+  "version": "11cdc845",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
@@ -1500,6 +1500,66 @@
       "required": [
         "keyUuid"
       ]
+    },
+    "low-latency-starts": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "const": "started",
+              "description": "The first frame of the WebRTC video was shown."
+            },
+            "clientKind": {
+              "type": "string",
+              "enum": [
+                "odoo",
+                "app"
+              ],
+              "description": "The client whose player made the start: odoo or app."
+            }
+          },
+          "required": [
+            "outcome",
+            "clientKind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "const": "failed",
+              "description": "The WebRTC video did not start and the player fell back to HLS."
+            },
+            "reason": {
+              "type": "string",
+              "enum": [
+                "codec-not-playable",
+                "network-connection-failed",
+                "no-frame-in-time"
+              ],
+              "description": "Why the low-latency video did not start: codec-not-playable (the client cannot decode the camera's codec over WebRTC), network-connection-failed (the WHEP request or the peer connection failed) or no-frame-in-time (no picture arrived in time)."
+            },
+            "clientKind": {
+              "type": "string",
+              "enum": [
+                "odoo",
+                "app"
+              ],
+              "description": "The client whose player made the start: odoo or app."
+            }
+          },
+          "required": [
+            "outcome",
+            "reason",
+            "clientKind"
+          ]
+        }
+      ],
+      "description": "How one low-latency (WebRTC) start of the camera ended, sent once per start: started at the first frame, or failed with its reason when the player fell back to HLS."
     },
     "create-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",

@@ -4366,7 +4366,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — the camera at this id belongs to somebody else, or the body names an owner the caller may not register for.",
+            "description": "Forbidden — the camera at this id belongs to somebody else, the body names an owner the caller may not register for, or it names both orgId and ownerId.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4376,11 +4376,11 @@
             }
           },
           "409": {
-            "description": "Conflict — the id already belongs to a different camera (`CameraIdTaken`), or the control plane holds a previous camera's state under it.",
+            "description": "Conflict — another active camera already uses this RTSP link (`RTSP_URL_ALREADY_USED`), the id already belongs to a different camera (`CameraIdTaken`), or the control plane holds a previous camera's state under it.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandError"
+                  "$ref": "#/components/schemas/RegisterRtspCameraConflictResponse"
                 }
               }
             }
@@ -4784,11 +4784,11 @@
             }
           },
           "409": {
-            "description": "Another camera already uses this RTSP URL.",
+            "description": "Another camera already uses this RTSP link: RTSP_URL_ALREADY_USED",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandError"
+                  "$ref": "#/components/schemas/RtspCameraLinkInUseResponse"
                 }
               }
             }
@@ -4854,6 +4854,89 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "RtspCamera",
+          "Query"
+        ]
+      }
+    },
+    "/rtsp-cameras/{id}/low-latency-starts": {
+      "post": {
+        "summary": "Report how a low-latency (WebRTC) start of the camera ended",
+        "operationId": "post_ReportRtspLowLatencyStartRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRtspLowLatencyStartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The start was recorded for the camera and its organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RtspLowLatencyStartReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The report is malformed: an unknown outcome, reason or client kind, or a failure without its reason",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — the caller may not watch this camera",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
                 }
               }
             }
@@ -6948,11 +7031,11 @@
             }
           },
           "409": {
-            "description": "Another camera already uses the same RTSP URL",
+            "description": "Another camera already uses this RTSP link (`RTSP_URL_ALREADY_USED`), or the id already belongs to a different camera (`CameraIdTaken`)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandError"
+                  "$ref": "#/components/schemas/RegisterRtspCameraConflictResponse"
                 }
               }
             }
@@ -13594,6 +13677,16 @@
           "password"
         ]
       },
+      "RegisterRtspCameraConflictResponse": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/RtspCameraLinkInUseResponse"
+          },
+          {
+            "$ref": "#/components/schemas/CommandError"
+          }
+        ]
+      },
       "RegisterRtspCameraRequest": {
         "type": "object",
         "properties": {
@@ -14121,6 +14214,99 @@
           "event"
         ]
       },
+      "ReportRtspLowLatencyStartRequest": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "started"
+                ],
+                "description": "The first frame of the WebRTC video was shown."
+              },
+              "clientKind": {
+                "type": "string",
+                "enum": [
+                  "odoo",
+                  "app"
+                ],
+                "description": "The client whose player made the start: odoo or app."
+              }
+            },
+            "required": [
+              "outcome",
+              "clientKind"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "failed"
+                ],
+                "description": "The WebRTC video did not start and the player fell back to HLS."
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "codec-not-playable",
+                  "network-connection-failed",
+                  "no-frame-in-time"
+                ],
+                "description": "Why the low-latency video did not start: codec-not-playable (the client cannot decode the camera's codec over WebRTC), network-connection-failed (the WHEP request or the peer connection failed) or no-frame-in-time (no picture arrived in time)."
+              },
+              "clientKind": {
+                "type": "string",
+                "enum": [
+                  "odoo",
+                  "app"
+                ],
+                "description": "The client whose player made the start: odoo or app."
+              }
+            },
+            "required": [
+              "outcome",
+              "reason",
+              "clientKind"
+            ]
+          }
+        ],
+        "description": "How one low-latency (WebRTC) start of the camera ended, sent once per start: started at the first frame, or failed with its reason when the player fell back to HLS."
+      },
+      "RequestError": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "success",
+          "errors"
+        ]
+      },
       "ResidentAddedData": {
         "type": "object",
         "properties": {
@@ -14359,6 +14545,40 @@
         "required": [
           "cameraId",
           "deletedAt"
+        ]
+      },
+      "RtspCameraLinkInUseResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "\"RTSP_URL_ALREADY_USED: another camera already uses this RTSP link\", followed by \" (camera &lt;id>)\" only for the holder's own organization or owner, an admin or a super API key. Never a login or password."
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "success",
+          "errors"
         ]
       },
       "RtspCameraMonitoringConfiguredData": {
@@ -14741,6 +14961,35 @@
         "type": "object",
         "properties": {},
         "additionalProperties": false
+      },
+      "RtspLowLatencyStartReportResponse": {
+        "type": "object",
+        "properties": {
+          "cameraId": {
+            "type": "string",
+            "description": "The camera the start was recorded for."
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "started",
+              "failed"
+            ],
+            "description": "The recorded outcome."
+          },
+          "orgId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The organization that owns the camera, resolved by the server; null for a camera a user owns."
+          }
+        },
+        "required": [
+          "cameraId",
+          "outcome",
+          "orgId"
+        ]
       },
       "SearchPhysicalKeysResponse": {
         "type": "object",
