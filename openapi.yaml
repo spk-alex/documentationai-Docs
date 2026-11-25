@@ -973,7 +973,7 @@
     "/cameras/{id}/DeleteCamera": {
       "post": {
         "summary": "Delete camera",
-        "description": "Deletes the camera from 3dEye and persists the deletion event.",
+        "description": "Deletes the camera's 3dEye camera unless the registration-code table gives it to another live camera, frees its registration code and persists the deletion event.",
         "operationId": "post_DeleteCameraRoute",
         "parameters": [
           {
