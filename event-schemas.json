@@ -1,5 +1,5 @@
 {
-  "version": "46e6468f",
+  "version": "30015ece",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {

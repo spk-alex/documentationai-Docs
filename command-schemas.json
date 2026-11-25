@@ -1,5 +1,5 @@
 {
-  "version": "46e6468f",
+  "version": "30015ece",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
@@ -1539,9 +1539,10 @@
               "enum": [
                 "codec-not-playable",
                 "network-connection-failed",
-                "no-frame-in-time"
+                "no-frame-in-time",
+                "camera-did-not-wake"
               ],
-              "description": "Why the low-latency video did not start: codec-not-playable (the client cannot decode the camera's codec over WebRTC), network-connection-failed (the WHEP request or the peer connection failed) or no-frame-in-time (no picture arrived in time)."
+              "description": "Why the low-latency video did not start: codec-not-playable (the client cannot decode the camera's codec over WebRTC), network-connection-failed (the WHEP request or the peer connection failed), no-frame-in-time (no picture arrived in time after the box answered) or camera-did-not-wake (the camera in standby did not wake within the waiting window)."
             },
             "clientKind": {
               "type": "string",
