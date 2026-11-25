@@ -3408,7 +3408,7 @@
     "/lpr-cameras/{id}/RegisterLprCamera": {
       "post": {
         "summary": "Register an LPR camera",
-        "description": "Registers an LPR camera for the calling organization at the client-chosen UUID in the path. No camera name is stored: the event that records it is append-only.",
+        "description": "Registers an LPR camera for the calling organization at the client-chosen UUID in the path. With `rtspUrl`, the stream is registered in the SKEY LPR service first, under the camera id as its device id: the service checks the link (up to about 25 s), and when it gets no video nothing is registered anywhere (422 LPR_STREAM_NO_VIDEO). The RTSP link and the name go to the service only: neither is stored, logged or answered. Without `rtspUrl` the camera is registered without a stream.",
         "operationId": "post_RegisterLprCameraRoute",
         "parameters": [
           {
@@ -3492,8 +3492,142 @@
               }
             }
           },
+          "409": {
+            "description": "LPR_CAMERA_LIMIT_REACHED — the recognition account holds as many cameras as it may",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "LPR_STREAM_NO_VIDEO — the service got no video from the link; nothing was registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
           "503": {
-            "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "description": "LPR_SERVICE_UNAVAILABLE — the recognition service did not answer (nothing changed, repeat the request); LPR_SERVICE_NOT_CONFIGURED — no recognition service in this environment; LPR_API_UNAVAILABLE — the camera service is not reachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/RemoveLprCamera": {
+      "post": {
+        "summary": "Remove an LPR camera",
+        "description": "The SKEY LPR service stops reading the camera and forgets its stream, and the camera is recorded as removed: it opens nothing and answers every request as a camera that does not exist. When the service cannot be told, nothing changes (503, repeat the request).",
+        "operationId": "post_RemoveLprCameraRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LprCameraEmptyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Camera removed: its stream is no longer read and it answers as a camera that does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemoveLprCameraResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND — no such camera for this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "LPR_STREAM_REMOVE_REFUSED — the recognition service refused to remove the stream now; nothing changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "LPR_STREAM_NO_VIDEO — the service got no video from the link; nothing was registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_SERVICE_UNAVAILABLE — the recognition service did not answer (nothing changed, repeat the request); LPR_SERVICE_NOT_CONFIGURED — no recognition service in this environment; LPR_API_UNAVAILABLE — the camera service is not reachable",
             "content": {
               "application/json": {
                 "schema": {
@@ -3587,6 +3721,120 @@
           },
           "503": {
             "description": "LPR_API_UNAVAILABLE — the camera service is not reachable or not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LPR Camera",
+          "Command"
+        ]
+      }
+    },
+    "/lpr-cameras/{id}/UpdateLprCameraStream": {
+      "post": {
+        "summary": "Change the RTSP link of an LPR camera's stream",
+        "description": "Gives the camera's stream in the SKEY LPR service a new RTSP link and, optionally, a new name. The service applies a new link within 1-2 minutes and does not check it first: a link without video shows as the stream status ERROR in the camera details. A camera without a stream gets one registered now, checked first like a new camera (422 LPR_STREAM_NO_VIDEO when there is no video). The link is never stored, logged or answered.",
+        "operationId": "post_UpdateLprCameraStreamRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "LPR camera ID (UUID chosen by the client)"
+            },
+            "required": true,
+            "description": "LPR camera ID (UUID chosen by the client)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLprCameraStreamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The stream has the new link (applied by the service within 1-2 minutes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateLprCameraStreamResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "LPR_CAMERA_B2B_ONLY — LPR cameras are managed with an organization API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LPR_CAMERA_NOT_FOUND — no such camera for this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "LPR_CAMERA_LIMIT_REACHED — the recognition account holds as many cameras as it may",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "LPR_STREAM_NO_VIDEO — the service got no video from the link; nothing was registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LprError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "LPR_SERVICE_UNAVAILABLE — the recognition service did not answer (nothing changed, repeat the request); LPR_SERVICE_NOT_CONFIGURED — no recognition service in this environment; LPR_API_UNAVAILABLE — the camera service is not reachable",
             "content": {
               "application/json": {
                 "schema": {
@@ -11164,6 +11412,76 @@
               "null"
             ],
             "exclusiveMinimum": 0
+          },
+          "stream": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "ACTIVE",
+                  "DISABLED",
+                  "ERROR",
+                  "MISSING",
+                  "UNAVAILABLE"
+                ]
+              },
+              "pendingAction": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "ADD",
+                  "ENABLE",
+                  "DISABLE",
+                  "REMOVE",
+                  null
+                ],
+                "description": "The change the service is still applying"
+              },
+              "online": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Whether frames are arriving now; null when unknown"
+              },
+              "lastPlateAt": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "ISO time of the last plate the service read; null when none or unknown"
+              },
+              "error": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Why the stream failed, as the service says it (no login or password)"
+              },
+              "host": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Address of the camera, without its login and password"
+              }
+            },
+            "required": [
+              "status",
+              "pendingAction",
+              "online",
+              "lastPlateAt",
+              "error",
+              "host"
+            ],
+            "description": "The stream in the SKEY LPR service; null when the camera has none"
           }
         },
         "required": [
@@ -13567,6 +13885,18 @@
             "type": "string",
             "minLength": 1,
             "description": "Organization that owns the camera"
+          },
+          "rtspUrl": {
+            "type": "string",
+            "maxLength": 2048,
+            "pattern": "^rtsps?:\\/\\/\\S+$/i",
+            "description": "RTSP link of the camera, with its login and password when it needs them"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Camera name shown in the SKEY LPR service's lists and reports (not stored by the platform)"
           }
         },
         "required": [
@@ -13608,6 +13938,11 @@
                   },
                   "timestamp": {
                     "type": "string"
+                  },
+                  "streamCameraId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;1,80&#125;$",
+                    "description": "The SKEY LPR service's id of the stream registered with the camera; absent when the camera was registered without a stream"
                   }
                 },
                 "required": [
@@ -14021,6 +14356,72 @@
               },
               "data": {
                 "$ref": "#/components/schemas/UserVehiclePlateUpdatedData"
+              }
+            },
+            "required": [
+              "type",
+              "data"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "aggregateId",
+          "version",
+          "event"
+        ]
+      },
+      "RemoveLprCameraResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "event": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LprCameraRemoved"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string"
+                  },
+                  "lockId": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "exclusiveMinimum": 0,
+                    "description": "The lock the camera was linked to when removed, or null"
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "organizationId",
+                  "timestamp",
+                  "lockId"
+                ]
               }
             },
             "required": [
@@ -16017,6 +16418,89 @@
               },
               "data": {
                 "$ref": "#/components/schemas/DesiredShadowUpdatedData"
+              }
+            },
+            "required": [
+              "type",
+              "data"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "aggregateId",
+          "version",
+          "event"
+        ]
+      },
+      "UpdateLprCameraStreamRequest": {
+        "type": "object",
+        "properties": {
+          "rtspUrl": {
+            "type": "string",
+            "maxLength": 2048,
+            "pattern": "^rtsps?:\\/\\/\\S+$/i",
+            "description": "RTSP link of the camera, with its login and password when it needs them"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Camera name shown in the SKEY LPR service's lists and reports (not stored by the platform)"
+          }
+        },
+        "required": [
+          "rtspUrl"
+        ]
+      },
+      "UpdateLprCameraStreamResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "event": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LprCameraStreamUpdated"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "cameraId": {
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string"
+                  },
+                  "streamCameraId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._:-]&#123;1,80&#125;$",
+                    "description": "The SKEY LPR service's id of the camera's stream"
+                  }
+                },
+                "required": [
+                  "cameraId",
+                  "organizationId",
+                  "timestamp",
+                  "streamCameraId"
+                ]
               }
             },
             "required": [

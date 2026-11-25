@@ -1,5 +1,5 @@
 {
-  "version": "30015ece",
+  "version": "34e90712",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
@@ -841,6 +841,18 @@
           "type": "string",
           "minLength": 1,
           "description": "Organization that owns the camera"
+        },
+        "rtspUrl": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^rtsps?:\\/\\/\\S+$",
+          "description": "RTSP link of the camera, with its login and password when it needs them"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Camera name shown in the SKEY LPR service's lists and reports (not stored by the platform)"
         }
       },
       "required": [
@@ -1033,6 +1045,11 @@
       "required": [
         "plate"
       ]
+    },
+    "RemoveLprCamera": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {}
     },
     "RemovePhysicalKey": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1370,6 +1387,27 @@
       },
       "required": [
         "email"
+      ]
+    },
+    "UpdateLprCameraStream": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "rtspUrl": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^rtsps?:\\/\\/\\S+$",
+          "description": "RTSP link of the camera, with its login and password when it needs them"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Camera name shown in the SKEY LPR service's lists and reports (not stored by the platform)"
+        }
+      },
+      "required": [
+        "rtspUrl"
       ]
     },
     "UpdatePhoneNumber": {
