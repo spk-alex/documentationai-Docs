@@ -4350,6 +4350,7 @@
     "/rtsp-cameras/{id}/DeleteRtspCamera": {
       "post": {
         "summary": "Soft-delete a RTSP camera",
+        "description": "Once this answers 200 the camera's RTSP link is normally free at once; if the video control plane was unavailable it is freed shortly after, and a registration refused with 409 RTSP_URL_ALREADY_USED can be retried.",
         "operationId": "post_DeleteRtspCameraRoute",
         "parameters": [
           {
