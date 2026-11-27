@@ -1,5 +1,5 @@
 {
-  "version": "7a320e16",
+  "version": "1484e0d4",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
@@ -1557,11 +1557,18 @@
                 "app"
               ],
               "description": "The client whose player made the start: odoo or app."
+            },
+            "attemptId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "Names one low-latency start: the client mints it when the start begins and sends the same id on every send of that start's report; a report whose id was already counted for this caller and camera in the last 10 minutes answers counted false."
             }
           },
           "required": [
             "outcome",
-            "clientKind"
+            "clientKind",
+            "attemptId"
           ]
         },
         {
@@ -1589,16 +1596,23 @@
                 "app"
               ],
               "description": "The client whose player made the start: odoo or app."
+            },
+            "attemptId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "Names one low-latency start: the client mints it when the start begins and sends the same id on every send of that start's report; a report whose id was already counted for this caller and camera in the last 10 minutes answers counted false."
             }
           },
           "required": [
             "outcome",
             "reason",
-            "clientKind"
+            "clientKind",
+            "attemptId"
           ]
         }
       ],
-      "description": "How one low-latency (WebRTC) start of the camera ended, sent once per start: started at the first frame, or failed with its reason when the player fell back to HLS."
+      "description": "How one low-latency (WebRTC) start of the camera ended, sent once per start, with the start's attemptId: started at the first frame, or failed with its reason when the player fell back to HLS."
     },
     "create-temp-key": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",

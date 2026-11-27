@@ -5151,7 +5151,7 @@
         },
         "responses": {
           "200": {
-            "description": "The start was recorded for the camera and its organization",
+            "description": "The start was recorded for the camera and its organization; `counted` is false when this caller already reported the same attemptId for this camera, so the start was counted before",
             "content": {
               "application/json": {
                 "schema": {
@@ -5196,6 +5196,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "At most 30 reports per caller and camera in any 60 seconds: this report was dropped, not recorded, and is not to be sent again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The report could not be counted and nothing was recorded: send the same report again. The same holds for any 5xx answer, such as the 500 of an unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
                 }
               }
             }
@@ -14635,11 +14655,17 @@
                   "app"
                 ],
                 "description": "The client whose player made the start: odoo or app."
+              },
+              "attemptId": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Names one low-latency start: the client mints it when the start begins and sends the same id on every send of that start's report; a report whose id was already counted for this caller and camera in the last 10 minutes answers counted false."
               }
             },
             "required": [
               "outcome",
-              "clientKind"
+              "clientKind",
+              "attemptId"
             ]
           },
           {
@@ -14669,16 +14695,22 @@
                   "app"
                 ],
                 "description": "The client whose player made the start: odoo or app."
+              },
+              "attemptId": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Names one low-latency start: the client mints it when the start begins and sends the same id on every send of that start's report; a report whose id was already counted for this caller and camera in the last 10 minutes answers counted false."
               }
             },
             "required": [
               "outcome",
               "reason",
-              "clientKind"
+              "clientKind",
+              "attemptId"
             ]
           }
         ],
-        "description": "How one low-latency (WebRTC) start of the camera ended, sent once per start: started at the first frame, or failed with its reason when the player fell back to HLS."
+        "description": "How one low-latency (WebRTC) start of the camera ended, sent once per start, with the start's attemptId: started at the first frame, or failed with its reason when the player fell back to HLS."
       },
       "RequestError": {
         "type": "object",
@@ -15386,12 +15418,17 @@
               "null"
             ],
             "description": "The organization that owns the camera, resolved by the server; null for a camera a user owns."
+          },
+          "counted": {
+            "type": "boolean",
+            "description": "True when this report counted the start; false when the start was already counted for this caller and camera."
           }
         },
         "required": [
           "cameraId",
           "outcome",
-          "orgId"
+          "orgId",
+          "counted"
         ]
       },
       "SearchPhysicalKeysResponse": {
