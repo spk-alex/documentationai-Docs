@@ -1,5 +1,5 @@
 {
-  "version": "1b6b7110",
+  "version": "017506df",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "events": {
     "AlarmTriggered": {
@@ -4161,6 +4161,52 @@
         "previousEnabled",
         "changedBy",
         "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraLockAssigned": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "lockId": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "assignedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "lockId",
+        "assignedAt"
+      ],
+      "additionalProperties": false
+    },
+    "RtspCameraLockUnassigned": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "cameraId": {
+          "type": "string"
+        },
+        "lockId": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "unassignedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cameraId",
+        "lockId",
+        "unassignedAt"
       ],
       "additionalProperties": false
     },

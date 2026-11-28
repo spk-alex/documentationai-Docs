@@ -1870,6 +1870,42 @@ An RTSP camera's low-latency mode was switched on or off.
 | `auditId` | `string` | いいえ |  |
 | `updatedAt` | `string` | はい |  |
 
+### RtspCameraLockAssigned
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraLockAssigned` |
+| **aggregateType** | `RtspCameraAggregate` |
+
+A lock was assigned to an RTSP camera: the app shows the lock's open button on the camera's view.
+
+**ペイロードのフィールド（`detail.data`）：**
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `cameraId` | `string` | はい | Camera ID |
+| `lockId` | `number` | はい | Numeric id of the assigned lock |
+| `assignedAt` | `string` | はい |  |
+
+### RtspCameraLockUnassigned
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraLockUnassigned` |
+| **aggregateType** | `RtspCameraAggregate` |
+
+A lock assigned to an RTSP camera was taken off it.
+
+**ペイロードのフィールド（`detail.data`）：**
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `cameraId` | `string` | はい | Camera ID |
+| `lockId` | `number` | はい | Numeric id of the lock taken off the camera |
+| `unassignedAt` | `string` | はい |  |
+
 ---
 
 ## Video worker events

@@ -1870,6 +1870,42 @@ An RTSP camera's low-latency mode was switched on or off.
 | `auditId` | `string` | no |  |
 | `updatedAt` | `string` | yes |  |
 
+### RtspCameraLockAssigned
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraLockAssigned` |
+| **aggregateType** | `RtspCameraAggregate` |
+
+A lock was assigned to an RTSP camera: the app shows the lock's open button on the camera's view.
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `cameraId` | `string` | yes | Camera ID |
+| `lockId` | `number` | yes | Numeric id of the assigned lock |
+| `assignedAt` | `string` | yes |  |
+
+### RtspCameraLockUnassigned
+
+| | |
+|--|--|
+| **Source** | `spk.api` |
+| **detail-type** | `RtspCameraLockUnassigned` |
+| **aggregateType** | `RtspCameraAggregate` |
+
+A lock assigned to an RTSP camera was taken off it.
+
+**Payload fields (`detail.data`):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `cameraId` | `string` | yes | Camera ID |
+| `lockId` | `number` | yes | Numeric id of the lock taken off the camera |
+| `unassignedAt` | `string` | yes |  |
+
 ---
 
 ## Video worker events

@@ -4347,6 +4347,99 @@
         ]
       }
     },
+    "/rtsp-cameras/{id}/AssignLock": {
+      "post": {
+        "summary": "Assign a lock to a RTSP camera, so the app shows the lock's open button on the camera's view",
+        "operationId": "post_AssignLockRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignLockRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lock assigned (or already assigned).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignLockResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not `&#123; lockId &#125;` with a positive whole lock id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not change this camera: only its owner, its own organization or a super key may.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found, or no lock the caller may assign has this id (`LOCK_NOT_FOUND`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The camera is deleted, or it already has 10 locks assigned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The lock could not be read just now; retry after `Retry-After`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ]
+      }
+    },
     "/rtsp-cameras/{id}/DeleteRtspCamera": {
       "post": {
         "summary": "Soft-delete a RTSP camera",
@@ -4971,6 +5064,89 @@
           },
           "502": {
             "description": "Worker returned a server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "RtspCamera",
+          "Command"
+        ]
+      }
+    },
+    "/rtsp-cameras/{id}/UnassignLock": {
+      "post": {
+        "summary": "Take a lock off a RTSP camera",
+        "operationId": "post_UnassignLockRoute",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "RTSP camera UUID (aggregate id)"
+            },
+            "required": true,
+            "description": "RTSP camera UUID (aggregate id)",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnassignLockRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lock taken off the camera.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnassignLockResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not `&#123; lockId &#125;` with a positive whole lock id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not change this camera: only its owner, its own organization or a super key may.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RTSP camera not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The camera is deleted, or the lock is not assigned to it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8764,6 +8940,61 @@
           "event"
         ]
       },
+      "AssignLockRequest": {
+        "type": "object",
+        "properties": {
+          "lockId": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Numeric id of the lock whose open button the camera's view shows"
+          }
+        },
+        "required": [
+          "lockId"
+        ],
+        "additionalProperties": false
+      },
+      "AssignLockResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "event": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "RtspCameraLockAssigned"
+                ]
+              },
+              "data": {
+                "$ref": "#/components/schemas/RtspCameraLockAssignedData"
+              }
+            },
+            "required": [
+              "type",
+              "data"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "aggregateId",
+          "version",
+          "event"
+        ]
+      },
       "AssignUserRequest": {
         "type": "object",
         "properties": {
@@ -11980,6 +12211,14 @@
           "lowLatency": {
             "type": "boolean"
           },
+          "lockIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "description": "Numeric ids of the locks assigned to the camera; the app shows each lock's open button on the camera's view"
+          },
           "webrtc": {
             "type": "object",
             "properties": {
@@ -12081,6 +12320,7 @@
           "accessGrants",
           "recordingEnabled",
           "retentionDays",
+          "lockIds",
           "createdAt",
           "updatedAt"
         ]
@@ -15016,6 +15256,46 @@
           "errors"
         ]
       },
+      "RtspCameraLockAssignedData": {
+        "type": "object",
+        "properties": {
+          "cameraId": {
+            "type": "string"
+          },
+          "lockId": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "assignedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cameraId",
+          "lockId",
+          "assignedAt"
+        ]
+      },
+      "RtspCameraLockUnassignedData": {
+        "type": "object",
+        "properties": {
+          "cameraId": {
+            "type": "string"
+          },
+          "lockId": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "unassignedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cameraId",
+          "lockId",
+          "unassignedAt"
+        ]
+      },
       "RtspCameraMonitoringConfiguredData": {
         "type": "object",
         "properties": {
@@ -16242,6 +16522,61 @@
           "changes",
           "updatedBy",
           "timestamp"
+        ]
+      },
+      "UnassignLockRequest": {
+        "type": "object",
+        "properties": {
+          "lockId": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Numeric id of the lock to take off the camera"
+          }
+        },
+        "required": [
+          "lockId"
+        ],
+        "additionalProperties": false
+      },
+      "UnassignLockResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "event": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "RtspCameraLockUnassigned"
+                ]
+              },
+              "data": {
+                "$ref": "#/components/schemas/RtspCameraLockUnassignedData"
+              }
+            },
+            "required": [
+              "type",
+              "data"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "aggregateId",
+          "version",
+          "event"
         ]
       },
       "UnlinkCameraFromLockRequest": {

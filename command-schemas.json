@@ -1,5 +1,5 @@
 {
-  "version": "1b6b7110",
+  "version": "017506df",
   "schemaDraft": "https://json-schema.org/draft/2020-12/schema",
   "commands": {
     "AddAccessibleLock": {
@@ -186,6 +186,22 @@
         "cameraId",
         "permissions"
       ]
+    },
+    "AssignLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Numeric id of the lock whose open button the camera's view shows"
+        }
+      },
+      "required": [
+        "lockId"
+      ],
+      "additionalProperties": false
     },
     "AssignUser": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1321,6 +1337,22 @@
         "reason",
         "userId"
       ]
+    },
+    "UnassignLock": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Numeric id of the lock to take off the camera"
+        }
+      },
+      "required": [
+        "lockId"
+      ],
+      "additionalProperties": false
     },
     "UnlinkCameraFromLock": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
